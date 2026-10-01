@@ -86,6 +86,42 @@ test("model routing preserves the declared capability exactly", async () => {
   assert.equal(legacyRoute.adapter.asyncResultDelivery, "SYNCHRONOUS");
 });
 
+test("native fulfilled call rejects a second terminal result even with a different transition id", () => {
+  const state = createAsyncResultContextState();
+  stageAsyncResultTransitions({
+    state,
+    transitions: [{
+      operationId: "detached:op-provider",
+      callId: "call-provider",
+      effectOperationId: "effect-provider",
+      generation: 1,
+      sequence: 3,
+      transitionId: "detached:op-provider:g1:s3:FAILED",
+      status: "FAILED",
+      error: { message: "late" }
+    }]
+  });
+  const otherTerminal = state.stagedItems[0];
+  assert.throws(
+    () => translateAsyncResultForProvider({
+      mode: "NATIVE_PENDING_CALL",
+      item: otherTerminal,
+      providerCallId: "provider-call-1",
+      fulfilledProviderCallIds: ["provider-call-1"]
+    }),
+    (error) => error instanceof AsyncResultContextPairingError
+      && error.code === "ASYNC_RESULT_CONTEXT_PAIRING_VIOLATION"
+  );
+  const pending = translateAsyncResultForProvider({
+    mode: "NATIVE_PENDING_CALL",
+    item: runningItem(),
+    providerCallId: "provider-call-1",
+    fulfilledProviderCallIds: ["provider-call-1"]
+  });
+  assert.equal(pending.pendingCall, true);
+  assert.equal(pending.toolResult, null);
+});
+
 test("native terminal output is delivered once; repeats are rejected", () => {
   const first = translateAsyncResultForProvider({
     mode: "NATIVE_PENDING_CALL",

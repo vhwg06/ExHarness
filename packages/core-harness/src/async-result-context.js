@@ -555,6 +555,15 @@ export function translateAsyncResultForProvider({
         waiting: false
       });
     }
+    // Exactly one terminal result may close the original pending call: a
+    // different terminal transition for an already-fulfilled call id is a
+    // second tool result and fails closed rather than emitting it.
+    if (alreadyFulfilled) {
+      throw new AsyncResultContextPairingError(
+        `native provider route already fulfilled ${providerCallId}; a second terminal tool result is rejected`,
+        { providerCallId, mode: resolvedMode }
+      );
+    }
     return Object.freeze({
       mode: resolvedMode,
       providerCallId,
