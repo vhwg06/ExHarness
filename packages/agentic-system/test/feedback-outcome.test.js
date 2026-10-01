@@ -1,3 +1,4 @@
+// Delivery rebuild 2026-10-01: re-validated on current main.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { classifyFeedbackOutcome } from "../src/feedback-outcome.js";

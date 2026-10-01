@@ -1,3 +1,4 @@
+// Delivery rebuild 2026-10-01: re-validated on current main.
 import { createHash } from "node:crypto";
 
 export const FEEDBACK_EPISODE_KIND = "FEEDBACK_EPISODE_V1";

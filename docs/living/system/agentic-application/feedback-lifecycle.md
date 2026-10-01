@@ -122,3 +122,4 @@ code.
 - Aggregating episodes, proposing improvements, scheduling the work an
   acted response references or integrating episodes into orchestrator
   transitions; those concerns live outside this lifecycle.
+<!-- Delivery rebuild 2026-10-01: re-validated on current main. -->
