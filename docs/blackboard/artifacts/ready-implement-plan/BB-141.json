@@ -29,7 +29,7 @@
     "D1 — commandSmoke forwards --model, --permission and --trace-dir into runSupervisedTask, copying commandRun's observation construction. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError before mkdtemp. model = options.model ?? null. If options[\"trace-dir\"] is set, createSupervisedObservation({ tool, arm: options.arm ?? \"SMOKE\", taskId: `smoke-${toolId}`, writer: createRunTraceWriter({ dir }) }) and pass invocationObserver/eventSinks/tracer; finalize after the run. --arm requires --trace-dir (same UsageError as commandRun). Default arm SMOKE so report can distinguish from EXHARNESS_SUPERVISED. DELIVERED_TRUTH: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true.",
     "D2 — Keep current smoke defaults when flags are omitted: no model, WORKSPACE_EDIT, no traces, maxAttempts 2, timeoutMs positiveInteger(--timeout-ms, 600000). Keep SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths. No --recovery-dir on smoke. Do not write supervisor.js or observation.js.",
     "D3 — USAGE smoke line gains [--model M] [--permission WORKSPACE_EDIT|FULL_AUTO] [--trace-dir <dir> [--arm <label>]]. Header comment matches.",
-    "D4 — Tests in packages/agent-tools/test/smoke-cli-options.test.js. P1: spawn BIN smoke --model x --permission FULL_AUTO --trace-dir T --command fake FIX_FIRST; traces.jsonl is digest-chained and report reads it; arm label SMOKE. P2: --trace-dir without --arm still writes SMOKE. N1: --permission NOPE UsageError before spawn (no mkdtemp). N2: omitted flags keep no model, WORKSPACE_EDIT, no traces; missing-tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED. --arm without --trace-dir UsageError. Hermetic fake CLI.",
+    "D4 — Focused tests follow testContract: capture actual fake CLI argv for supplied and omitted model/permission; verify digest chain and invoke actual report; assert default SMOKE arm and no traces when omitted. Distinct invalid permission/arm and SKIPPED fixtures prove no dispatch and existing reasons. Never infer option forwarding from PASS alone.",
     "D5 — Living docs. state.md smoke sentence names --model/--permission/--trace-dir, default arm SMOKE, --arm requires --trace-dir, SKIPPED reasons unchanged. observation.md CLI sentence adds smoke --trace-dir. No Blackboard ids.",
     "D6 — Evidence at 5386e2ad: commandSmoke currently passes only maxAttempts 2 and timeoutMs."
   ],
@@ -303,6 +303,7 @@
         }
       ],
       "supportingPlanFields": [
+        "testContract",
         "researchEvidence"
       ]
     },
@@ -343,7 +344,7 @@
         }
       ],
       "supportingPlanFields": [
-        "negativeCaseBindings"
+        "testContract"
       ]
     },
     {
@@ -393,5 +394,10 @@
         "verificationPlan"
       ]
     }
-  ]
+  ],
+  "testContract": {
+    "forwarding": "Launch actual BIN smoke with a capture launcher that records argv and then executes delivered fake FIX_FIRST. Assert --model x and Codex --sandbox danger-full-access for FULL_AUTO; omission has no model arg and workspace-write sandbox. A smoke PASS alone is insufficient.",
+    "trace": "With --trace-dir, read every JSONL record using delivered readTraces/verify trace facilities and invoke BIN report on that exact directory. Assert valid digest chain, SMOKE arm, tool identity, task identity, invocation counts and per-invocation permission/model launch facts. Corrupt one digest in a copied trace and assert report rejects it. Explicit --arm label overrides SMOKE only when trace-dir present.",
+    "failClosed": "Unknown permission or --arm without --trace-dir exits64 before capture marker. Separate missing-tool and TOOL_FAILED_BEFORE_EDIT fixtures assert existing SKIPPED reasons and exit semantics. Omitted model/permission/traces must preserve defaults without creating a trace directory."
+  }
 }
