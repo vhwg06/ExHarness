@@ -373,3 +373,27 @@ node --test benchmarks/harness-efficiency/test/*.test.mjs
 ```
 
 The committed report proves the pipeline runs end to end; it establishes no quality, cost or latency result. The live synchronous baseline on the frozen route has not been executed yet — `run.mjs --live` refuses without the route credential and Harbor substrate, and a live run additionally requires an explicitly authorized paid run. The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this tooling executes no async candidate and publishes no promotion verdict.
+
+## HELD-OUT HARNESS PROFILE ACCEPTANCE
+
+`benchmarks/harness_efficiency/bb081/` implements the held-out acceptance protocol the living-docs decision above rests on. The tooling never executes a live paid cohort by itself; `run.mjs --mode heldout` refuses without the `TYPESAFE_API_KEY` credential and Harbor substrate:
+
+```text
+preflight()        -> held-out profile + evidence binding + dependency digests check
+runCohort()        -> 32 preregistered units (8 D / 8 A paired repeats, B/C diagnostic arms),
+                      budget-capped at $0.60/unit and $25/cohort
+auditAttempt()     -> per-attempt audit against the frozen protocol
+runFaultMatrix()   -> fault injection x ablation cell matrix
+buildReport()      -> report vector with evidence binding
+decide()           -> frozen reducer: PROMOTE_ASYNC / KEEP_SYNC_BASELINE / INCONCLUSIVE
+```
+
+The offline fixture cohort (`BB081-HELD-OUT-V1`) proves the pipeline — 32/32 units settled, all verification runs green — and is NOT a measurement: no profile promotion follows from it. A live run additionally requires an explicitly authorized paid run. Only a `PROMOTE_ASYNC` decision with exact evidence binding publishes `CORE_ASYNC_FIRST_V1`; any drift or mutation throws `STALE` instead of silently publishing.
+
+To re-verify the acceptance offline locally (no credentials, no model calls):
+
+```text
+node --test benchmarks/harness_efficiency/bb081/test/*.test.mjs
+node --test packages/core-harness/test/execution-profile.test.js
+npm run test:core
+```
