@@ -1,0 +1,237 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-058-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+    "hash": "edd49e7b64b67107d54ffc177cceafacff072cc1f40b107700cf41d5a56b8baf"
+  },
+  "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+  "baselineSha": "b48037560bbeb4686664e48395e2036a13c32963",
+  "candidateTree": "08be41fbfb1e3e9a23923b3d9078db6d65d59838",
+  "verificationRuns": [
+    {
+      "id": "causal-reconstruction",
+      "command": "node --test packages/agentic-system/test/causal-reconstruction.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+      "logHash": "266ce666c50821e69182e955398f21af10216d820851c37dc8cce70041ff734d"
+    },
+    {
+      "id": "owner-attribution",
+      "command": "node --test packages/agentic-system/test/owner-attribution.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/owner-attribution.txt",
+      "logHash": "f42cfdd8a1408f67f5b311d85dbb92c7b930d233eff885ae9e5deef482525be0"
+    },
+    {
+      "id": "lineage-observation",
+      "command": "node --test packages/agentic-system/test/lineage-observation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/lineage-observation.txt",
+      "logHash": "1683b261450833e62ff662590e54170722b2dd528cfa072178ddce62c7d32376"
+    },
+    {
+      "id": "execution-identity-observation",
+      "command": "node --test packages/agentic-system/test/execution-identity-observation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/execution-identity-observation.txt",
+      "logHash": "10a546a692e723ef9afbcb74cfaa76bf2ab382b2cf4dc5ada62eee98217dc5fd"
+    },
+    {
+      "id": "causal-timing",
+      "command": "node --test packages/agentic-system/test/causal-timing.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/causal-timing.txt",
+      "logHash": "ddd0ab5ab5dd505e13d13b448ed6264411016d42a348a898e71816055c7a1a89"
+    },
+    {
+      "id": "missing-provenance",
+      "command": "node --test packages/agentic-system/test/missing-provenance.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/missing-provenance.txt",
+      "logHash": "a5d476bd8c954f1597ddf35057ec1893a9d0cb54c32978507180e0cc753cdc04"
+    },
+    {
+      "id": "evidence-chain",
+      "command": "node --test packages/agentic-system/test/evidence-chain.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/evidence-chain.txt",
+      "logHash": "e0bca4f11a33529651c57d65df777667c7df6197c908f81c515ae51aa89ad56b"
+    },
+    {
+      "id": "historical-observation",
+      "command": "node --test packages/agentic-system/test/historical-observation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/historical-observation.txt",
+      "logHash": "9d01343fed56dada350c47166ef8cd82402716373c95434368402bce5ed9b30f"
+    },
+    {
+      "id": "observation-authority",
+      "command": "node --test packages/agentic-system/test/observation-authority.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/observation-authority.txt",
+      "logHash": "688a45ecfaa7b071cdbcf95e5586c860a70cf70ad10420c8e1dbb17e0c110a28"
+    },
+    {
+      "id": "fresh-observer-e2e",
+      "command": "node --test packages/agentic-system/test/fresh-observer-e2e.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt",
+      "logHash": "036e751288f1786a6c9714ff290e711f3662acd87b3c698f57402a83c4b9394c"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5c3dde8f10b5e12d286298a744853fdddad80af6",
+      "logRef": "docs/blackboard/evidence/BB-058/agentic-regression.txt",
+      "logHash": "21438b2278109bc16d814002b3b02da1e78d3d72f22568f4421e8d43e2702621"
+    }
+  ],
+  "claims": [
+    {
+      "id": "AC-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+        "docs/blackboard/evidence/BB-058/owner-attribution.txt"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/lineage-observation.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/execution-identity-observation.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/execution-identity-observation.txt"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-timing.txt",
+        "docs/blackboard/evidence/BB-058/missing-provenance.txt"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/evidence-chain.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "AC-8",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "AC-9",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/historical-observation.txt"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/observation-authority.txt",
+        "docs/blackboard/evidence/BB-058/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/observation-authority.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/missing-provenance.txt",
+        "docs/blackboard/evidence/BB-058/fresh-observer-e2e.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/execution-identity-observation.txt"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+        "docs/blackboard/evidence/BB-058/lineage-observation.txt"
+      ]
+    },
+    {
+      "id": "INV-5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/owner-attribution.txt",
+        "docs/blackboard/evidence/BB-058/observation-authority.txt"
+      ]
+    },
+    {
+      "id": "INV-6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-timing.txt",
+        "docs/blackboard/evidence/BB-058/missing-provenance.txt"
+      ]
+    },
+    {
+      "id": "INV-7",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/causal-reconstruction.txt",
+        "docs/blackboard/evidence/BB-058/observation-authority.txt"
+      ]
+    },
+    {
+      "id": "INV-8",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-058/historical-observation.txt"
+      ]
+    }
+  ]
+}
