@@ -68,3 +68,23 @@ genericAbstractionJustified: false
 Therefore this gate establishes deterministic application-contract/regression evidence only. It does **not** establish production effectiveness, model/provider quality, real-repository task success, latency/cost performance, Advisor value-add or justification for a generic Worker/WorkOrder/context/review abstraction.
 
 Those unresolved evidence requirements remain operational work rather than being inferred from fixture success.
+
+## HOW-evolution evaluation protocol
+
+`packages/agentic-system/src/how-evolution.js` adds one evidence-gated HOW-evolution loop over the delivered execution-policy machinery. It is not a generic optimizer, experiment platform or telemetry warehouse.
+
+```text
+HOW_EVOLUTION_FINDING (evidence only, from one causal observation projection)
+  -> HOW_EVOLUTION_EVALUATION_PROTOCOL/v1 (pinned fixed WHAT + A/B HOW refs)
+  -> paired baseline/candidate EVALUATION_RUN receipts (identical cases)
+  -> HOW_EVOLUTION_JEV_RECEIPT (semantic rubric only)
+  -> HOW_EVOLUTION_EVALUATION_RESULT (PROPOSE_FOR_PROMOTION | KEEP_BASELINE)
+  -> HOW_EVOLUTION_PROMOTION_PROPOSAL (independent review only)
+  -> EXECUTION_POLICY generation+1 via createDomainExecutionPolicyPublisher
+```
+
+Only versioned HOW may vary. The protocol pins the exact work-contract/acceptance refs and digests, the finding ref and digest, the domain/workload scope, the baseline policy head tuple, both strategy refs and digests, the candidate-producer identity, the evaluator identity/revision/model/policy ref and digest, the trigger/regression/evaluator-owned-holdout scenario-set ref/version/digest, the metric-policy ref/digest with its predeclared `minEffect`, the replay budget, the evidence-snapshot refs and digests, and the expected policy-head tuple. Baseline and candidate execute identical pinned cases. Deterministic workloads may run once; stochastic model-backed workloads require at least three paired repeats unless the pinned metric policy declares a stronger sample plan. The candidate producer cannot mutate evaluator-owned recorded holdout membership after protocol creation. A missing case, required measurement, evaluator receipt or evidence ref is `INCONCLUSIVE`, never coerced to zero or pass.
+
+Hard gates are checked before any value comparison: no new failure on any pinned critical product/acceptance regression case, 100% policy/authority compliance with no forbidden external mutation, 100% required evidence/currentness completeness, and no recovery regression on pinned recovery cases. The held-out primary-metric delta (candidate minus baseline) must then meet the predeclared `minEffect`. Aggregate averages are secondary and cannot override a critical-case regression. Stored comparison state keeps paired case-level deltas first.
+
+Evaluation evidence is not promotion authority and is not product acceptance authority. A `PASS` result creates only a promotion proposal. `FAIL`, `INCONCLUSIVE`, stale evidence or an authority mismatch deterministically keeps the baseline current.
