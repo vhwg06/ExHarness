@@ -554,11 +554,11 @@
     }
   ],
   "negativeVerificationCases": [
-    "NEG: a 9000-byte file under 40000 bytes remaining is reported BUDGET_EXHAUSTED because plan() reserved a stale 8192 bytes instead of the remaining budget — must fail closed: reserve from remaining budget.",
-    "NEG: a 9000-byte file under a 100-byte budget is truncated to fit instead of reported BUDGET_EXHAUSTED — must fail closed: BUDGET_EXHAUSTED with no truncated content.",
-    "NEG: LOOKUP_SYMBOL reserves all remaining items so SEARCH_LEXICAL gets no reservation when maxItems is 2 — must fail closed: each work unit reserves its share.",
-    "NEG: execute() failure objects gain a code field or drop detail — must fail closed: failures carry exactly reason and detail.",
-    "NEG: living docs still state an 8192-byte per-item cap — must fail closed: docs describe remaining-budget reservation with no per-item cap."
+    "A 9000-byte file under 40000 bytes remaining must not be reported BUDGET_EXHAUSTED from a stale 8192-byte reservation; it reserves from the remaining budget and resolves COMPLETE.",
+    "A 9000-byte file under a 100-byte budget must fail closed as BUDGET_EXHAUSTED with no truncated content.",
+    "When maxItems is 2, LOOKUP_SYMBOL must not starve SEARCH_LEXICAL of reservations; each work unit reserves its share.",
+    "execute() failure objects must fail closed carrying exactly reason and detail, with no code field and no dropped detail.",
+    "Living docs must not state an 8192-byte per-item cap; they describe remaining-budget reservation."
   ],
   "negativeCaseBindings": [
     {
@@ -567,7 +567,7 @@
       "criterionId": "RP1",
       "verificationId": "rp1-fit",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP1 9000-byte file under 40000 budget avoids the stale 8192-byte reservation and is COMPLETE",
+      "testTitle": "RP1 9000-byte file under 40000 budget must not BUDGET_EXHAUSTED from a stale 8192-byte reservation",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -576,7 +576,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 oversize file under 100-byte budget is BUDGET_EXHAUSTED without truncation",
+      "testTitle": "RP2 9000-byte file under 100-byte budget fails closed BUDGET_EXHAUSTED with no truncated content",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -585,7 +585,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 LOOKUP_SYMBOL and SEARCH_LEXICAL each reserve items when maxItems is 2",
+      "testTitle": "RP2 LOOKUP_SYMBOL must not starve SEARCH_LEXICAL of reservations when maxItems is 2",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -594,7 +594,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 execute failures carry reason and detail with no code field",
+      "testTitle": "RP2 execute() failures carry exactly reason and detail with no code field",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -603,7 +603,7 @@
       "criterionId": "RP3",
       "verificationId": "rp3-docs",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP3 living docs omit any 8192-byte per-item cap",
+      "testTitle": "RP3 living docs must not state an 8192-byte per-item cap",
       "subjectSymbol": "createRetrievalPlanner"
     }
   ]
