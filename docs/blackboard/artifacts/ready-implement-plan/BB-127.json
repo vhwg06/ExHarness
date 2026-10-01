@@ -610,7 +610,9 @@
       "verificationIds": [
         "pinning",
         "recovery",
-        "focused"
+        "focused",
+        "agent-tools-regression",
+        "agentic-regression"
       ],
       "decisionIndexes": [
         0,
@@ -641,9 +643,7 @@
           "match": "requireUnchangedTree = true"
         }
       ],
-      "supportingPlanFields": [
-        "deliveryContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
@@ -659,7 +659,10 @@
       "verificationIds": [
         "quality",
         "compatibility",
-        "legacy-deliver"
+        "legacy-deliver",
+        "focused",
+        "agent-tools-regression",
+        "docs"
       ],
       "decisionIndexes": [
         0,
@@ -700,7 +703,14 @@
       ],
       "verificationIds": [
         "focused",
-        "docs"
+        "docs",
+        "pinning",
+        "agent-tools-regression",
+        "agentic-regression",
+        "quality",
+        "recovery",
+        "compatibility",
+        "legacy-deliver"
       ],
       "decisionIndexes": [
         9,
@@ -726,8 +736,55 @@
   ],
   "readinessBlockers": [],
   "researchEvidenceSummary": {
-    "classification": "EXECUTED_RESEARCH_PROTOTYPE_NOT_PRODUCT",
-    "limits": "Actual future product/QA identities and resume are Worker tests.",
-    "prototypeRef": "researchEvidence.prototype; single canonical copy of executed seven-case prototype and full reproduction."
-  }
+    "node": "v24.20.0",
+    "git": "git version 2.43.0",
+    "providerCalls": 0,
+    "evaluatorSha256": "6ec465a6cb4dd6c4fc136f4c588152e16ab4f07cba48642533e75937d022386a",
+    "evaluatorSource": "import assert from \"node:assert/strict\";\nimport {pathToFileURL} from \"node:url\";\nimport {join} from \"node:path\";\nconst {sum}=await import(pathToFileURL(join(process.argv.at(-1),\"sum.mjs\")));\nassert.equal(sum(2,3),5);\nassert.equal(sum(-2,4),2);\n",
+    "results": [
+      {
+        "case": "broken base",
+        "legacyQa": "PASS",
+        "gate": "FAIL",
+        "candidateSha": "ed49ead9388670be67b5d1bb865f4e5f533a9557",
+        "candidateTree": "ed2c0ad616447696914f970361792a1015a8d0ee"
+      },
+      {
+        "case": "weakened test external",
+        "legacyQa": "PASS",
+        "gate": "FAIL",
+        "candidateSha": "dac7bfc4b3fdea358e4a06cf278e838e780b458a",
+        "candidateTree": "20c0d90aeb6c85aab4124c3649f19b2dea9479f9"
+      },
+      {
+        "case": "weakened protected test",
+        "legacyQa": "PASS",
+        "gate": "PROTECTED_PATH_CHANGED"
+      },
+      {
+        "case": "evaluator replaced by noop",
+        "legacyQa": "PASS",
+        "gate": "EVALUATOR_DIGEST_MISMATCH"
+      },
+      {
+        "case": "missing digest",
+        "legacyQa": "PASS",
+        "gate": "EVALUATOR_DIGEST_MISMATCH"
+      },
+      {
+        "case": "real fix",
+        "legacyQa": "PASS",
+        "gate": "PASS",
+        "candidateSha": "d2c26ab2fac36fd111031403a0b21f618d16ecaa",
+        "candidateTree": "91ea0bdcdc094fbf804ec77ee1aa670376763a8f"
+      },
+      {
+        "case": "candidate drift",
+        "legacyQa": "PASS",
+        "gate": "REVISION_MISMATCH"
+      }
+    ],
+    "limits": "Controlled scratch checkout plus experimental gate; no new API/durable sidecar/fresh delivery implemented or claimed. Future Worker fixtures invoke product exports on fresh createLocalGitWorkspace with exact candidate evidence."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
