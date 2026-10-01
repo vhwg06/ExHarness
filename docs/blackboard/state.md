@@ -57,6 +57,7 @@ NONE
 - BB-131 [RESEARCH_SA/RESEARCH] — Prepare a reproducible repository preview for local feature delivery
 - BB-132 [RESEARCH_SA/RESEARCH] — Verify local web feature journeys through an independently pinned browser evaluator
 - BB-133 [RESEARCH_SA/RESEARCH] — Verify API compatibility and persisted state for local feature changes
+- BB-134 [WORKER/EXECUTION] — Carry every executed verification log through trusted Jev CI bundles
 - BB-135 [RESEARCH_SA/RESEARCH] — Expose durable recovery on the operator run command
 - BB-136 [RESEARCH_SA/RESEARCH] — Wire observation traces through the local deliver slice
 - BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
@@ -143,6 +144,7 @@ BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
 BB-131 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130
 BB-132 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 BB-133 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
+BB-134 [WORKER_SCHEDULABLE] <- BB-056
 BB-135 [RESEARCH_SCHEDULABLE] <- BB-101
 BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
 BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
