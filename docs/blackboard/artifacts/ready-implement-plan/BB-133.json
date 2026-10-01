@@ -85,9 +85,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects. Validate exact own-key schemas and immutable byte hashes from profileContract; implement the plan-owned previewLifecycle adapter rather than assuming new exports from BB-131. Separate preview readiness from independent Product QA identities. Capture store realpath/ownership token once and reject foreign or symlink roots before migration/disposal.",
+    "S1 — After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects. Validate exact own-key schemas and immutable byte hashes from profileContract; implement the plan-owned previewLifecycle adapter rather than assuming new exports from BB-131. Separate preview readiness from independent Product QA identities. Capture store realpath/ownership token once and reject foreign or symlink roots before migration/disposal. Public createApiStateVerifier({resolvePinnedInput,previewLifecycle,evidenceStore,now}) returns verify({snapshotRef,environmentRef,components,criterionRef,verifierPolicyRef}). Resolver pins exact Git candidate/tree/config, independent QA release/snapshot/environment, preview receipt and external priorClient/business/evaluator/seed/migration file refs+hashes. Profile supports Node24/Linuxx64 node:sqlite DatabaseSync only; no dynamic schema oracle. Private lifecycle prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose uses BB-131 startup/readiness/ownership without its reseeding reset. Runtime/version/binary and pinned bytes rechecked before effects and after phases.",
     "S2 — Verify baseline client/seed, execute candidate forward migration, old-client/new-feature assertions and restart a fresh process on the same store. Record old/new row/schema facts, enforce budgets and dispose only owned resources. Fixed oracle: seed row1 legacy/open, schema v1; forward migration adds non-null priority default0 v2 without dropping old fields/rows; prior client creates/reads row2; new client row3 priority2 updates title. Stop and reap candidate, restart on identical owned DB without reset/reseed, then reread rows and required schema. Protected prior client/business assertions determine expected values, never candidate schema. Record each mandatory assertion id and exact bounded request/response.",
-    "S3 — Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver.",
+    "S3 — Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver. Return {verdict,evidenceRefs}; evidenceStore.put stores immutable API_STATE_CRITERION_EVIDENCE with exact criterion/QA/candidate/schema/data/evaluator/preview bindings and executed assertion IDs. FAIL means observed protected behavioral mismatch; setup/parse/timeout/missing identities/coverage/digest drift INCONCLUSIVE. PASS only after all required assertions, unchanged protected bytes, durable evidence and owned cleanup. Limits20requests/1s each, startup/migration/stop2s, total30s, response8KiB/evidence64KiB. Retain first mismatch before cleanup; evidenceStore or cleanup failure prevents PASS. Adapter has no acceptance publisher; actual ProductQA injection and runtimeObserver independently govern publication.",
     "S4 — Run declared focused/QA/regression/docs checks under Node24/Linux x64, retain exact bound Worker evidence and update Living limits. Before execution ensure dependencies DONE and delivered APIs match the explicit projections. Any mismatch invalidates READY and returns to research; no implementation authority follows from a shim or prototype."
   ],
   "acceptanceCriteria": [
@@ -833,6 +833,104 @@
     ],
     "resultsDigest": "7a8890a2c49f5af37d16848611736b735923c3c3df1ababfd2eb12f8fc919b93",
     "sourceSha256": "b6d610eb2e4b9a0c902cf287a4c486ea2741b9e44450f3aa8b3a9b79b8eed233",
-    "limits": "Synthetic SHA-256 candidateDigest, not Git/deployment identity. Separate service processes and real SQLite. Proposed shims, no delivered BB-127/131 invocation. Small required-field descriptor, no OpenAPI engine. No external CLI/Docker/provider/production trial."
+    "limits": "Synthetic SHA-256 candidateDigest, not Git/deployment identity. Separate service processes and real SQLite. Proposed shims, no delivered BB-127/131 invocation. Small required-field descriptor, no OpenAPI engine. No external CLI/Docker/provider/production trial.",
+    "freshReplay": {
+      "runtime": "v24.19.0",
+      "sqlite": "3.53.3",
+      "sourceSha256": "b6d610eb2e4b9a0c902cf287a4c486ea2741b9e44450f3aa8b3a9b79b8eed233",
+      "results": [
+        {
+          "mode": "correct",
+          "verdict": "PASS",
+          "requests": 11,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "required-input",
+          "verdict": "FAIL",
+          "requests": 5,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "response-break",
+          "verdict": "FAIL",
+          "requests": 4,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "data-loss",
+          "verdict": "FAIL",
+          "requests": 4,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "record-corruption",
+          "verdict": "FAIL",
+          "requests": 4,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "reset-on-restart",
+          "verdict": "FAIL",
+          "requests": 10,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "weakened-schema",
+          "verdict": "FAIL",
+          "requests": 6,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "evaluator-drift",
+          "verdict": "FAIL",
+          "requests": 0,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "assertion-deletion",
+          "verdict": "FAIL",
+          "requests": 0,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "missing-identity",
+          "verdict": "FAIL",
+          "requests": 0,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "wrong-preview",
+          "verdict": "FAIL",
+          "requests": 3,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "setup-failure",
+          "verdict": "INCONCLUSIVE",
+          "requests": 2,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        },
+        {
+          "mode": "malformed-response",
+          "verdict": "INCONCLUSIVE",
+          "requests": 4,
+          "ownedCleanup": true,
+          "foreignPreserved": true
+        }
+      ]
+    }
   }
 }
