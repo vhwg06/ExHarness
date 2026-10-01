@@ -125,7 +125,6 @@
           "criterionId": "SMOKE_FAIL_CLOSED"
         }
       ],
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution.",
       "criterionIds": [
         "SMOKE_OPTIONS_FORWARDED",
         "SMOKE_FAIL_CLOSED"
@@ -135,18 +134,15 @@
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run verify:current-docs"
     },
     {
       "id": "repository",
-      "command": "npm test",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
@@ -154,31 +150,56 @@
       "invariant": "Smoke CLI forwards selected model and permission into the actual Backend invocation.",
       "criterionIds": [
         "SMOKE_OPTIONS_FORWARDED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 P1 actual smoke forwarding",
+      "requiredObservations": "Actual BIN smoke with capture fake launcher shows --model model-x and --sandbox danger-full-access; normalized request matches model-x/FULL_AUTO."
     },
     {
       "invariant": "Requested traces contain the exact observed invocation count, tool/task/arm identity and a valid digest chain readable by report.",
       "criterionIds": [
         "SMOKE_OPTIONS_FORWARDED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 P1 trace and report",
+      "requiredObservations": "Verify every trace digest and exactly observed attempt count; report exit0, corrupt copy report exit1. Bind tool/task/defaultSMOKE and explicit arm. Trace-dir retained while smoke scratch is removed."
     },
     {
       "invariant": "Unknown permission and arm without trace-dir exit64 before agent dispatch.",
       "criterionIds": [
         "SMOKE_FAIL_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 N1 invalid permission and arm",
+      "requiredObservations": "Actual commandSmoke via BIN exits64 with fake marker absent; arm without trace-dir also rejects before dispatch."
     },
     {
       "invariant": "Omitted options retain WORKSPACE_EDIT, model null, maxAttempts2, timeout600000 and no trace writer.",
       "criterionIds": [
         "SMOKE_FAIL_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 N2 omission",
+      "requiredObservations": "Captured request WORKSPACE_EDIT/model-null/maxAttempts2/timeout600000, argv workspace-write/no model, no writer or trace artifacts."
     },
     {
       "invariant": "Missing tool and TOOL_FAILED_BEFORE_EDIT preserve their existing SKIPPED output and exit semantics.",
       "criterionIds": [
         "SMOKE_FAIL_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 missing/pre-edit tool controls",
+      "requiredObservations": "Separate controlled missing tool and pre-edit failure fixtures assert unchanged SKIPPED NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT and delivered exit semantics."
     }
   ],
   "negativeVerificationCases": [
@@ -331,7 +352,7 @@
       "sourceAnchors": [
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "const observation = options[\"trace-dir\"] === undefined"
+          "match": "async function commandSmoke(options) {"
         },
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
@@ -384,7 +405,8 @@
         }
       ],
       "supportingPlanFields": [
-        "testContract"
+        "testContract",
+        "prototypeEvidence"
       ]
     },
     {
@@ -400,7 +422,8 @@
       ],
       "verificationIds": [
         "focused",
-        "docs"
+        "docs",
+        "agent-tools-regression"
       ],
       "decisionIndexes": [
         4,
@@ -429,7 +452,9 @@
           "match": "## Digest chain"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "testContract"
+      ]
     }
   ],
   "testContract": {
@@ -467,5 +492,6 @@
     "replay": "/workspace/research-plans/isolated-cli-prototype-check.mjs",
     "method": "Executed task-specific source copy changes only this CLI command; imports delivered modules, uses real Git and fake agent. Other commands are baseline. Worker still implements source and executes the bound focused tests after exact READY.",
     "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
