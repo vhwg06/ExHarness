@@ -108,6 +108,10 @@ export function crash(message = "simulated process crash") {
 //     throws (crash after publication, before terminal commit/continuation).
 //   hooks.beforeRuntime / hooks.afterRuntime: deterministic pauses inside the
 //     test-owned stub runtime adapter (pauses test code, not production).
+//   hooks.beforeTerminalCas: deterministic pause inside the harness attempt
+//     CAS wrapper before the production call (still no production lock held).
+//   The wrapper keeps attemptCasLog (wrapper-in/production/wrapper-out) proving
+//     1:1 transparent delegation to the production CAS function.
 // A "fresh process" is a brand-new cell reopened over the same directory with
 // fresh counters and no shared memory: `reopenExecutionCell(dir, seed)`.
 // ---------------------------------------------------------------------------
@@ -358,13 +362,30 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
       };
     },
   };
+  const attemptCasLog = [];
+  const productionCompareAndSwap = attemptRaw.compareAndSwap.bind(attemptRaw);
   const attemptStore = {
     current: (key) => attemptRaw.current(key),
     async compareAndSwap(key, expected, next) {
+      // Delegation log for transparency proofs: one wrapper-in entry per
+      // call, exactly one production entry with identical arguments, and one
+      // wrapper-out entry carrying the unchanged production result. Any raise
+      // inside the wrapper would break the 1:1:1 balance.
+      attemptCasLog.push({ side: "wrapper-in", key, expected, next: structuredClone(next) });
+      if (hooks.beforeTerminalCas && next?.status === "TERMINAL") await hooks.beforeTerminalCas({ key, expected, next });
       if (killState.terminalCommits && next?.status === "TERMINAL") {
         throw crash("simulated kill after publication before terminal commit");
       }
-      return attemptRaw.compareAndSwap(key, expected, next);
+      const result = await productionCompareAndSwap(key, expected, next).catch((error) => {
+        // Production contention (e.g. the file lock held by a concurrent
+        // worker) is logged and rethrown unchanged: the wrapper never
+        // invents its own failure.
+        attemptCasLog.push({ side: "production", key, expected, next: structuredClone(next), error: String(error?.message ?? error) });
+        throw error;
+      });
+      attemptCasLog.push({ side: "production", key, expected, next: structuredClone(next), result });
+      attemptCasLog.push({ side: "wrapper-out", result });
+      return result;
     },
   };
   const committedPublications = createCommittedPublicationReader({ lineage, artifactRegistry: domain });
@@ -395,6 +416,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
     claimController,
     counts,
     killState,
+    attemptCasLog,
     addWork,
     recordFor,
     attemptSubjectKey: (contract) =>
