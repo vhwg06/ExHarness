@@ -191,7 +191,7 @@ export {
   resolveExecutionJudgmentBundle
 } from "./domain-execution-control.js";
 export {defineCrossDomainObligation,crossDomainObligationSubjectKey,crossDomainObligationRevisionRef} from "./cross-domain-obligation.js";
-export {createProductLineageStore,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
+export {createProductLineageStore,createCommittedPublicationReader,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
 export {createDomainWriteAuthority,defineDomainWriteAuthorityPolicy,domainWriteAuthoritySubjectKey,createDomainPublicationGate} from "./domain-write-authority.js";
 export {createDependencyInvalidationController} from "./dependency-invalidation.js";
 export {

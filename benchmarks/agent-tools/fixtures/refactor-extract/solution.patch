@@ -1,0 +1,19 @@
+diff --git a/format.mjs b/format.mjs
+new file mode 100644
+index 0000000..99f19fb
+--- /dev/null
++++ b/format.mjs
+@@ -0,0 +1 @@
++export const formatName = (first, last) => `${last.toUpperCase()}, ${first}`;
+diff --git a/user.mjs b/user.mjs
+index e79b1f0..112bd70 100644
+--- a/user.mjs
++++ b/user.mjs
+@@ -1,4 +1,5 @@
++import { formatName } from "./format.mjs";
++
+ export function describe(user) {
+-  const name = `${user.last.toUpperCase()}, ${user.first}`;
+-  return `${name} (${user.age})`;
++  return `${formatName(user.first, user.last)} (${user.age})`;
+ }

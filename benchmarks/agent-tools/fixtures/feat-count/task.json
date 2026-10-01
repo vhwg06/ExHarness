@@ -1,0 +1,27 @@
+{
+  "id": "feat-count",
+  "category": "feature",
+  "prompt": "Add and export countWords(text) in text.mjs. It returns the number of whitespace-separated words, and 0 for empty or blank text. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}

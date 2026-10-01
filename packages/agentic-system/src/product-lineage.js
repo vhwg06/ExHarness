@@ -141,3 +141,22 @@ export function createProductLineageStore({path,artifactStore,projectGuard=null,
   publicationWriters.set(surface,commitAcceptedPublication);
   return surface;
 }
+
+// Read-only recovery lookup over the committed lineage journal: the committed
+// publication for one stable publication key, if any. Recovery reuses the
+// committed receipt instead of rerunning accepted domain work; absence means
+// no publication committed yet. Pure snapshot read; no locks, no mutation.
+export function createCommittedPublicationReader({lineage,artifactRegistry}){
+  inv(lineage&&typeof lineage.snapshot==="function","committed publication reader requires lineage.snapshot()");
+  inv(artifactRegistry&&typeof artifactRegistry.resolveDomainPublicationReceipt==="function","committed publication reader requires artifactRegistry.resolveDomainPublicationReceipt()");
+  async function resolveCommittedPublication({publicationKey}){
+    productText(publicationKey,"publicationKey");
+    const state=await lineage.snapshot();
+    const entry=state.publications[publicationKey]??null;
+    if(entry==null)return null;
+    const receipt=await artifactRegistry.resolveDomainPublicationReceipt(entry.receiptRef);
+    inv(receipt,"committed publication receipt missing: "+entry.receiptRef);
+    return canonicalProductValue({publicationKey,receiptRef:entry.receiptRef,receipt,recordRefs:[...entry.recordRefs]});
+  }
+  return Object.freeze({resolveCommittedPublication});
+}

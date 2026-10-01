@@ -1,0 +1,27 @@
+{
+  "id": "multifile-config",
+  "category": "multi-file",
+  "prompt": "greeting.mjs hard-codes the greeting. Add config.json with {\"greeting\": \"Hello\"} and make greet(name) in greeting.mjs read the greeting from config.json via loadConfig() exported from config.mjs. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}

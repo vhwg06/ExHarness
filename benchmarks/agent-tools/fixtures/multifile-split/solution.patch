@@ -1,0 +1,23 @@
+diff --git a/lib/add.mjs b/lib/add.mjs
+new file mode 100644
+index 0000000..d0f87bf
+--- /dev/null
++++ b/lib/add.mjs
+@@ -0,0 +1 @@
++export const add = (a, b) => a + b;
+diff --git a/lib/mul.mjs b/lib/mul.mjs
+new file mode 100644
+index 0000000..c206336
+--- /dev/null
++++ b/lib/mul.mjs
+@@ -0,0 +1 @@
++export const mul = (a, b) => a * b;
+diff --git a/math.mjs b/math.mjs
+index 39f8943..c780af4 100644
+--- a/math.mjs
++++ b/math.mjs
+@@ -1,2 +1,2 @@
+-export const add = (a, b) => a + b;
+-export const mul = (a, b) => a * b;
++export { add } from "./lib/add.mjs";
++export { mul } from "./lib/mul.mjs";

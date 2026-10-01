@@ -161,7 +161,30 @@ export function assertDeliveryArtifact(a) {
   return a;
 }
 export function scopeContains(pattern, file) {
-  return pattern === '**' || pattern === file || (pattern.endsWith('/**') && (file === pattern.slice(0, -3) || file.startsWith(pattern.slice(0, -2))));
+  if (pattern === '**' || pattern === file) return true;
+  if (pattern.endsWith('/**')) {
+    const dir = pattern.slice(0, -3);
+    const prefix = pattern.slice(0, -2);
+    if (file === dir || file.startsWith(prefix)) return true;
+    if (!dir.includes('*')) return false;
+  } else if (!pattern.includes('*')) return false;
+  return globMatch(pattern.split('/'), file.split('/'));
+}
+function globSegmentMatch(patSeg, fileSeg) {
+  const rx = '^' + patSeg.split('*').map(part => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*') + '$';
+  return new RegExp(rx).test(fileSeg);
+}
+function globMatch(patSegs, fileSegs) {
+  if (patSegs.length === 0) return fileSegs.length === 0;
+  if (patSegs[0] === '**') {
+    for (let i = 0; i <= fileSegs.length; i++) {
+      if (globMatch(patSegs.slice(1), fileSegs.slice(i))) return true;
+    }
+    return false;
+  }
+  if (fileSegs.length === 0) return false;
+  if (!globSegmentMatch(patSegs[0], fileSegs[0])) return false;
+  return globMatch(patSegs.slice(1), fileSegs.slice(1));
 }
 export function loadSubject(root, id) {
   const graph = read(root, 'docs/blackboard/work-graph.json');

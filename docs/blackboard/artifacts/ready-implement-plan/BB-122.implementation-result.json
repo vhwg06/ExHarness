@@ -1,0 +1,177 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-122-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-122.json",
+    "hash": "b9b5b5855cbe0a6e4d1bdc81b1acf79d1643269204955c9965eb74d4a8eac7a4"
+  },
+  "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+  "baselineSha": "61161d7227116cd2158800c5e5ca81db3f237ffb",
+  "candidateTree": "40288183b7f0e404851f682eb6db0246fff143bf",
+  "verificationRuns": [
+    {
+      "id": "oc1-argv",
+      "command": "node --test --test-name-pattern=\"^OC1 \" packages/agent-tools/test/opencode-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/oc1-argv.txt",
+      "logHash": "019ffae848bb68f4af3bc2b5073521eee1dee8528d3b3785798f51893adff02e"
+    },
+    {
+      "id": "oc2-parser",
+      "command": "node --test --test-name-pattern=\"^OC2 \" packages/agent-tools/test/opencode-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/oc2-parser.txt",
+      "logHash": "4e4fd10082627ccaf69c0f7e31d5e8a7745dd325b978b97bd2473f179a8a4868"
+    },
+    {
+      "id": "oc3-arms",
+      "command": "node --test --test-name-pattern=\"^OC3 \" packages/agent-tools/test/opencode-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/oc3-arms.txt",
+      "logHash": "78ce37426a3a0ca43a39970afc54b8d8398475ddce2074d038bce99f357e9f32"
+    },
+    {
+      "id": "oc4-fake",
+      "command": "node --test --test-name-pattern=\"^OC4 \" packages/agent-tools/test/opencode-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/oc4-fake.txt",
+      "logHash": "fc6b2a69c7719ddbb0085f649b44662de6d20a677813d8433485981dc62d5e60"
+    },
+    {
+      "id": "oc5-docs",
+      "command": "node --test --test-name-pattern=\"^OC5 \" packages/agent-tools/test/opencode-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/oc5-docs.txt",
+      "logHash": "bf1b96ad8af76101d65373f482b66f7fd1e3ae5017bb99f814404290881e0d9d"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/agent-tools.txt",
+      "logHash": "82b98b83febd8e7015fa8ed59ae25b6fa439539260e3f1f0ee7afda17a76f2ea"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/docs.txt",
+      "logHash": "e911be76a7272646aa0e2f51623329e183e7ccac0f77bd501c12283abf693906"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a055bfc6e56dc0287e0ed24f011b4d9ff2318138",
+      "logRef": "docs/blackboard/evidence/BB-122/repository.txt",
+      "logHash": "bea1af461d9553eb4d13fea08082350b2df2f17bd145bbcb17f2b30e639a8930"
+    }
+  ],
+  "claims": [
+    {
+      "id": "OC1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-122/oc1-argv.txt",
+        "docs/blackboard/evidence/BB-122/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-OC-workspace",
+          "logRef": "docs/blackboard/evidence/BB-122/oc1-argv.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "556e78e9354040b323f3b84a8b45e8e41b3db5173be2f903ed702087611f08ae"
+        },
+        {
+          "id": "NC-OC-fullauto",
+          "logRef": "docs/blackboard/evidence/BB-122/oc1-argv.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "716cfa8ac6774f273c5164b8b0e28a9e567bbd063786e2cd25c67f6259845f83"
+        }
+      ]
+    },
+    {
+      "id": "OC2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-122/oc2-parser.txt",
+        "docs/blackboard/evidence/BB-122/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-OC-nousage",
+          "logRef": "docs/blackboard/evidence/BB-122/oc2-parser.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "ea46506f38bb283a7eccd4bf91666f05b64037c4d320ab97673885a143f8f541"
+        },
+        {
+          "id": "NC-OC-prompt",
+          "logRef": "docs/blackboard/evidence/BB-122/oc2-parser.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "e089df0a6cb3a026675dfc095ca9c64ed3634b74c993dc1a12ae7134409da80c"
+        }
+      ]
+    },
+    {
+      "id": "OC3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-122/oc3-arms.txt",
+        "docs/blackboard/evidence/BB-122/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-OC-npmtest",
+          "logRef": "docs/blackboard/evidence/BB-122/oc3-arms.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "0a6f7a99e461e054bcb8fe73f337c7f5a12f8258c414dd2b31cf52f14c77e520"
+        }
+      ]
+    },
+    {
+      "id": "OC4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-122/oc4-fake.txt",
+        "docs/blackboard/evidence/BB-122/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-OC-missing",
+          "logRef": "docs/blackboard/evidence/BB-122/oc4-fake.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "34c6926fa4d488b3d809c51fdd66fd9bbc9b1e66ec464cf1cc9abf0b91bd83c9"
+        }
+      ]
+    },
+    {
+      "id": "OC5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-122/oc5-docs.txt",
+        "docs/blackboard/evidence/BB-122/docs.txt",
+        "docs/blackboard/evidence/BB-122/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-OC-scope",
+          "logRef": "docs/blackboard/evidence/BB-122/oc5-docs.txt",
+          "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+          "bodyHash": "fa2594892afbdd0bee719ef8f04ebbf89e60faa517be0bcae9c9e020ce73fe11"
+        }
+      ]
+    }
+  ]
+}

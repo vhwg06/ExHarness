@@ -15,8 +15,8 @@ AGENT_TOOL_RUN_TRACE_V1 {
   promptSha256, argvRedacted,
   stdout|stderr { sha256 (full stream), capturedBytes, truncated, excerpt (<= 4000 chars, redacted) },
   logFile { sha256, bytes, excerpt } | null,        // agy --log-file
-  toolEvents { counts by type, invalidLines } | { num_turns, stopReason, invalidJson } | null, // codex or grok JSON, else null
-  usage { inputTokens, cachedInputTokens, outputTokens, reasoningOutputTokens, source, unavailableReason }, // grok adds observed totalCostUsd
+  toolEvents { counts by type, invalidLines } | { num_turns, stopReason, invalidJson } | null, // codex/opencode JSONL or grok JSON, else null
+  usage { inputTokens, cachedInputTokens, outputTokens, reasoningOutputTokens, source, unavailableReason }, // grok and opencode add observed totalCostUsd
   diff { filesChanged, insertions, deletions, binaryFiles },
   verification [{ name, status, reason }],
   harness { events [{ type, capability, scope }], spans [{ kind, name, status, durationMs, scope }] } | null
@@ -55,6 +55,7 @@ CLI: `exharness-agent run … --trace-dir <dir> [--arm <label>]` writes supervis
 | `kiro` | none; the delivered adapter runs plain-text `--no-interactive` | null | `KIRO_TEXT_OUTPUT_NO_USAGE` |
 | `agy` | none; the `--log-file` is stored only as digest, size and redacted excerpt | null | `AGY_USAGE_NOT_REPORTED` |
 | `grok` | `{ num_turns, stopReason, invalidJson }` from the `--output-format json` object | integer `usage` tokens plus the observed finite `total_cost_usd` (`totalCostUsd`); cached/reasoning fields only when reported as integers | `GROK_USAGE_NOT_REPORTED`, or `GROK_JSON_TRUNCATED` when a truncated stream had none |
+| `opencode` | `run --format json` event counts by `type`; malformed lines counted in `invalidLines` | summed only over `step_finish` events whose `part.tokens` has integer `input` and `output`; `totalCostUsd` only when every counted event reported a finite non-negative numeric `part.cost` (an explicit 0 stays 0, otherwise null; never coerced from null, strings or booleans); reasoning and `cache.read` fields only when every counted event reported them | `OPENCODE_USAGE_NOT_REPORTED`, or `OPENCODE_JSONL_TRUNCATED` when a truncated stream had none |
 | any | none | null for a timed-out or missing tool | `TIMED_OUT`, `TOOL_UNAVAILABLE` |
 
 Token values are never estimated from text length. A reported zero stays zero, and an unreported value stays null. Kiro documents `--output-format stream-json`, but the delivered adapter does not request it and its usage fields are undocumented, so Kiro usage stays unobserved.
@@ -79,6 +80,6 @@ Before appending, the writer re-checks the serialized line against the same secr
 - verification status counts and diff totals;
 - duration min/median/max;
 - token totals over covered traces only, with `coveredTraces`, `uncoveredTraces` and `unavailableReasonCounts`;
-- the summed grok `total_cost_usd` over covered traces (`totalCostUsdOverCoveredTraces`), else null.
+- the summed grok/opencode `total_cost_usd` over covered traces (`totalCostUsdOverCoveredTraces`), else null.
 
 `exharness-agent report <trace-dir>` verifies the chain first; a broken chain exits 1. It prints `{ kind: AGENT_TOOL_RUN_REPORT_V1, label: DESCRIPTIVE, traceCount, groups }`. The report has no acceptance, winner, pass-rate or value field.

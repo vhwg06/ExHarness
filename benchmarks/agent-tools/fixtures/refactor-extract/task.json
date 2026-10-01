@@ -1,0 +1,27 @@
+{
+  "id": "refactor-extract",
+  "category": "test-guided-refactor",
+  "prompt": "Extract the name formatting in user.mjs into a new module format.mjs that exports formatName(first, last). user.mjs must import and use it, and describe(user) must keep its output. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}

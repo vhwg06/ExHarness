@@ -1,4 +1,4 @@
-import { defineContextRequirement, defineContextResolution } from './context-contract.js';
+import { defineContextRequirement, defineContextResolution, contextMaterializationId, contextResolutionId } from './context-contract.js';
 import { observationDigest } from './resolution-durability.js';
 
 const fail = (m) => { throw new TypeError(m); };
@@ -18,6 +18,50 @@ export class ProgressionRefused extends Error {
   }
 }
 
+// Underflow budget: the empty item list still materializes more bytes than
+// maxMaterializedBytes, so no consumed value can satisfy the delivered
+// contract triple (consumed >= materialization while consumed <= budget).
+// The honest empty-list materialization is probed through the unchanged
+// contract under a widened budget, then reported truthfully. This is the
+// single case where the returned resolution is a typed non-consumable
+// diagnostic whose consumed bytes exceed the budget: contract validation
+// (defineContextResolution / assertConsumableContextResolution) rejects it.
+// Status is always UNSATISFIED, whatever the necessities: nothing is
+// materializable, so it can never be PARTIAL or COMPLETE. Only used when the
+// overflow loop has exhausted its drop order; never throws consumed below
+// materialization/step.
+function underflowResolution(requirement, unresolvedList, providerCalls) {
+  // Probe status must satisfy the contract under the widened requirement;
+  // the reported diagnostic status below is always UNSATISFIED.
+  const probeStatus = unresolvedList.some((u) => requirement.evidence.find((e) => e.id === u.evidenceId)?.necessity === 'REQUIRED') ? 'UNSATISFIED' : unresolvedList.length ? 'PARTIAL' : 'COMPLETE';
+  const wideBudget = { ...requirement.budget, maxMaterializedBytes: 2 ** 31 };
+  const wideRequirement = defineContextRequirement({
+    consumerRef: requirement.consumerRef,
+    semanticNeed: requirement.semanticNeed,
+    evidence: requirement.evidence,
+    budget: wideBudget,
+  });
+  const probe = defineContextResolution({
+    requirementId: wideRequirement.requirementId,
+    step: { index: 0, previousResolutionId: null },
+    status: probeStatus,
+    items: [],
+    unresolved: unresolvedList.map((u) => ({ ...u })),
+    consumed: { items: 0, materializedBytes: wideBudget.maxMaterializedBytes, providerCalls, resolutionSteps: 1 },
+  }, wideRequirement);
+  const body = {
+    kind: 'CONTEXT_RESOLUTION',
+    version: 1,
+    requirementId: requirement.requirementId,
+    step: { index: 0, previousResolutionId: null },
+    status: 'UNSATISFIED',
+    items: [],
+    unresolved: unresolvedList.map((u) => ({ ...u })),
+    materialization: probe.materialization,
+    consumed: { items: 0, materializedBytes: probe.materialization.bytes, providerCalls, resolutionSteps: 1 },
+  };
+  return Object.freeze({ ...body, resolutionId: contextResolutionId(body) });
+}
 // Pin one delivered facade result so an application can hand that exact step to
 // Core's once-per-call injected resolver port without any Core change.
 export function createPinnedResolver(result) {
@@ -40,7 +84,17 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
   async function preObserve(requirement) {
     const out = [];
     for (const e of requirement.evidence) {
-      const authority = sourceCatalog.authorityFor({ kind: e.source.kind, ref: e.source.ref });
+      // Typed skip: evidence whose source has no registered snapshot authority
+      // is not observed and never throws. The catalog keeps throwing its
+      // TypeError for direct callers; only the facade maps it to a typed
+      // CURRENTNESS_UNVERIFIABLE skip. Any other TypeError still rethrows.
+      let authority;
+      try {
+        authority = sourceCatalog.authorityFor({ kind: e.source.kind, ref: e.source.ref });
+      } catch (error) {
+        if (error instanceof TypeError && typeof error.message === 'string' && error.message.includes('missing/ambiguous snapshot authority')) continue;
+        throw error;
+      }
       const seen = await authority.observe({ kind: e.source.kind, ref: e.source.ref });
       if (!seen || typeof seen.snapshotRef !== 'string' || !seen.snapshotRef.trim()) {
         const { defineSourceObservation } = await import('./resolution-durability.js');
@@ -69,7 +123,39 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
     }
     // D1: candidate collection is delegated to the delivered planner execution,
     // which applies per-work reservations and types every provider failure.
-    const executed = await retrievalPlanner.execute(requirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });
+    // Evidence skipped by preObserve (missing snapshot authority) is resolved
+    // as typed CURRENTNESS_UNVERIFIABLE and excluded from execute() so zero
+    // provider retrieve calls happen for it.
+    const observedIds = new Set(pre.map((o) => o.evidenceId));
+    const authoritySkippedIds = new Set();
+    for (const e of requirement.evidence) {
+      if (observedIds.has(e.id)) continue;
+      let authority = null;
+      try {
+        authority = sourceCatalog.authorityFor({ kind: e.source.kind, ref: e.source.ref });
+      } catch (error) {
+        if (error instanceof TypeError && typeof error.message === 'string' && error.message.includes('missing/ambiguous snapshot authority')) {
+          authoritySkippedIds.add(e.id);
+          continue;
+        }
+        throw error;
+      }
+      if (authority) fail(`preObserve dropped evidence with a registered authority: ${e.id}`);
+    }
+    let executed;
+    if (authoritySkippedIds.size === 0) {
+      executed = await retrievalPlanner.execute(requirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });
+    } else if (authoritySkippedIds.size === requirement.evidence.length) {
+      executed = { requirementId: requirement.requirementId, planned: { reserved: { providerCalls: 0, items: 0, materializedBytes: 0, resolutionSteps: 1 } }, candidates: [], unresolved: [], failures: [] };
+    } else {
+      const subRequirement = defineContextRequirement({
+        consumerRef: requirement.consumerRef,
+        semanticNeed: requirement.semanticNeed,
+        evidence: requirement.evidence.filter((e) => !authoritySkippedIds.has(e.id)),
+        budget: { ...requirement.budget },
+      });
+      executed = await retrievalPlanner.execute(subRequirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });
+    }
     const evidenceIds = new Set(requirement.evidence.map((e) => e.id));
     const byEvidence = new Map();
     for (const c of executed.candidates) {
@@ -81,7 +167,9 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
     // covers evidence that has neither a candidate nor a typed reason.
     const unresolved = executed.unresolved.map((u) => ({ evidenceId: u.evidenceId, reason: u.reason }));
     for (const e of requirement.evidence) {
-      if (!byEvidence.has(e.id) && !unresolved.some((u) => u.evidenceId === e.id)) unresolved.push({ evidenceId: e.id, reason: 'MISSING' });
+      if (authoritySkippedIds.has(e.id)) {
+        if (!unresolved.some((u) => u.evidenceId === e.id)) unresolved.push({ evidenceId: e.id, reason: 'CURRENTNESS_UNVERIFIABLE' });
+      } else if (!byEvidence.has(e.id) && !unresolved.some((u) => u.evidenceId === e.id)) unresolved.push({ evidenceId: e.id, reason: 'MISSING' });
     }
     // D3: planner order, rank per evidence; the planner already bounded items by budget.maxItems.
     const itemsFor = (dropped) => {
@@ -101,6 +189,7 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
       .filter((e) => byEvidence.has(e.id)).map((e) => e.id);
     const dropped = new Set();
     let items, finalUnresolved, sized;
+    let underflowUnresolved = null;
     for (;;) {
       items = itemsFor(dropped);
       finalUnresolved = [...unresolved, ...[...dropped].map((evidenceId) => ({ evidenceId, reason: 'BUDGET_EXHAUSTED' }))];
@@ -109,12 +198,31 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
         sized = build(items, finalUnresolved, requirement.budget.maxMaterializedBytes);
         break;
       } catch (error) {
-        if (!(error instanceof TypeError) || error.message !== 'consumed below materialization/step' || dropped.size === dropOrder.length) throw error;
+        if (!(error instanceof TypeError) || error.message !== 'consumed below materialization/step') throw error;
+        if (dropped.size === dropOrder.length) {
+          // Underflow: the drop order is exhausted, yet even the empty item
+          // list cannot fit the tiny byte budget. Nothing is materializable,
+          // so every evidence keeps its earlier typed reason, or is marked
+          // BUDGET_EXHAUSTED when it has none (MISSING is not informative
+          // here), and the diagnostic reports UNSATISFIED. Build empty
+          // instead of rethrowing. DurabilityFailure is never caught here.
+          for (const e of requirement.evidence) {
+            const existing = finalUnresolved.find((u) => u.evidenceId === e.id);
+            if (!existing) finalUnresolved.push({ evidenceId: e.id, reason: 'BUDGET_EXHAUSTED' });
+            else if (existing.reason === 'MISSING') existing.reason = 'BUDGET_EXHAUSTED';
+          }
+          items = [];
+          try {
+            sized = build(items, finalUnresolved, requirement.budget.maxMaterializedBytes);
+          } catch (emptyError) {
+            if (!(emptyError instanceof TypeError) || emptyError.message !== 'consumed below materialization/step') throw emptyError;
+            underflowUnresolved = finalUnresolved;
+          }
+          break;
+        }
         dropped.add(dropOrder[dropped.size]);
       }
     }
-    // D4 pass 2: report exactly the contract-computed materialization bytes (identity excludes consumed).
-    const resolution = build(items, finalUnresolved, sized.materialization.bytes);
     const failures = executed.failures.map((f) => ({ evidenceId: f.evidenceId, providerId: f.providerId, reason: f.reason, detail: f.detail }));
     const post = await preObserve(requirement);
     const preDigests = new Map(pre.map((o) => [o.evidenceId, observationDigest(o)]));
@@ -126,6 +234,15 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
         throw err;
       }
     }
+    if (underflowUnresolved) {
+      // Even the empty item list cannot satisfy consumed >= materialization
+      // under the tiny budget: return fail-closed UNSATISFIED with typed
+      // BUDGET_EXHAUSTED rather than throwing. The drift fence above still ran.
+      const resolution = underflowResolution(requirement, underflowUnresolved, providerCalls);
+      return { outcome: 'FRESH', resolution, preObservations: pre, postObservations: post, reuseKey: null, receiptRef: null, failures };
+    }
+    // D4 pass 2: report exactly the contract-computed materialization bytes (identity excludes consumed).
+    const resolution = build(items, finalUnresolved, sized.materialization.bytes);
     return { outcome: 'FRESH', resolution, preObservations: pre, postObservations: post, reuseKey: null, receiptRef: null, failures };
   }
 
@@ -163,16 +280,17 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
       }
     }
     // Operational sub-requirement: only retriable evidence, budgeted at the
-    // true remaining values. Zeros are raised to 1 for requirement validity
-    // while execute() still plans under the exact remaining budget. The
-    // sub-requirement never becomes resolution identity.
+    // full requirement budget for requirement validity. execute() still plans
+    // under the exact remaining budget, so a zero remaining counter honestly
+    // yields BUDGET_EXHAUSTED for the re-attempted evidence instead of
+    // pretending budget remains. The sub-requirement never becomes
+    // resolution identity.
     const retriableIds = new Set(retriable.map((u) => u.evidenceId));
-    const subBudget = Object.fromEntries(Object.entries(remaining).map(([k, v]) => [k, Math.max(1, v)]));
     const subRequirement = defineContextRequirement({
       consumerRef: requirement.consumerRef,
       semanticNeed: requirement.semanticNeed,
       evidence: requirement.evidence.filter((e) => retriableIds.has(e.id)),
-      budget: subBudget,
+      budget: { ...requirement.budget },
     });
     const executed = await retrievalPlanner.execute(subRequirement, { remainingBudget: { ...remaining } });
     const evidenceIds = new Set(subRequirement.evidence.map((e) => e.id));

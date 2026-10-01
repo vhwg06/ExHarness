@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // exharness-agent: run a CLI coding agent under ExHarness supervision.
-//   run   --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N]
+//   run   --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N]
 //         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
 //         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
+//   eval  --tool <id>[,<id>] --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N]
+//         [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]
+//         pre-registered DIRECT_SINGLE / DIRECT_RETRY / EXHARNESS_SUPERVISED evaluation on the owned suite
 //   deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]
 //         run one local Backend-then-QA delivery slice with independent QA
 //   report <trace-dir>        verify the trace chain and print the DESCRIPTIVE AGENT_TOOL_RUN_REPORT_V1
@@ -30,8 +33,9 @@ import {
   runProcess,
   runSupervisedTask
 } from "../src/index.js";
+import { EvalUsageError, runAgentToolsEval } from "../src/experiment/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]";
 
 class UsageError extends Error {}
 
@@ -186,6 +190,44 @@ async function commandSmoke(options) {
   }
 }
 
+const EVAL_FLAGS = Object.freeze(["tool", "out", "command", "model", "tasks", "repeats", "max-invocations", "max-usd", "fake-scenario", "seed"]);
+
+/** Runs the pre-registered evaluation; exit 0 when the report is written, whatever the verdicts. */
+async function commandEval(options) {
+  for (const flag of Object.keys(options)) if (!EVAL_FLAGS.includes(flag)) throw new UsageError(`unknown eval flag --${flag}`);
+  if (!options.tool) throw new UsageError("eval requires --tool");
+  if (!options.out) throw new UsageError("eval requires --out");
+  let maxUsd = null;
+  if (options["max-usd"] !== undefined) {
+    maxUsd = Number(options["max-usd"]);
+    if (!Number.isFinite(maxUsd) || maxUsd <= 0) throw new UsageError("--max-usd must be a positive number");
+  }
+  try {
+    const { report, out } = await runAgentToolsEval({
+      tools: options.tool.split(",").map((id) => id.trim()).filter(Boolean),
+      out: options.out,
+      command: options.command ?? null,
+      model: options.model ?? null,
+      tasks: options.tasks ? options.tasks.split(",").map((id) => id.trim()).filter(Boolean) : null,
+      repeats: positiveInteger(options.repeats, "--repeats", 1),
+      maxInvocations: positiveInteger(options["max-invocations"], "--max-invocations", null),
+      maxUsd,
+      fakeScenario: options["fake-scenario"] ?? null,
+      seed: options.seed ?? 1
+    });
+    const summary = Object.fromEntries(Object.entries(report.tools).map(([id, tool]) => [id, {
+      status: tool.status,
+      notEvaluatedReason: tool.notEvaluatedReason,
+      verdicts: Object.fromEntries(Object.entries(tool.comparisons).map(([versus, comparison]) => [versus, comparison.verdict]))
+    }]));
+    print({ out, report: join(out, "report.json"), tools: summary });
+    return 0;
+  } catch (error) {
+    if (error instanceof EvalUsageError || error?.code === "UNKNOWN_TASK") throw new UsageError(error.message);
+    throw error;
+  }
+}
+
 /** Runs one local Backend-then-QA delivery slice; exit 0 only for ACCEPTED. */
 async function commandDeliverCli(options) {
   if (!options.slice) throw new UsageError("deliver requires --slice");
@@ -233,6 +275,7 @@ async function main(args) {
   const [command, ...rest] = args;
   try {
     if (command === "run") return await commandRun(parseOptions(rest));
+    if (command === "eval") return await commandEval(parseOptions(rest));
     if (command === "deliver") return await commandDeliverCli(parseOptions(rest));
     if (command === "report") return commandReport(rest);
     if (command === "probe") return await commandProbe();

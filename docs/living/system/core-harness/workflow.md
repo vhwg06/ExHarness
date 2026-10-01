@@ -182,6 +182,54 @@ A confirmed mutating effect may therefore be ahead of Core candidate persistence
 
 Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
 
+## DETACHED OPERATION PATH
+
+Detached scheduling is a transport projection over the existing effect boundary; it adds no new correctness, acceptance or external-effect authority:
+
+```text
+manager.capability(name).execute(input, runtime)
+  -> existing effect.operationKey()               (exact semantic identity)
+  -> durable RUNNING record, generation 1         (compare-and-set persisted first)
+  -> handle returns immediately                   (background continues independently)
+  -> underlying effect capability runs with AbortSignal + scheduler binding
+  -> journal INTENDED -> DISPATCHED -> CONFIRMED | UNKNOWN   (unchanged authority)
+  -> scheduler converges to exactly one terminal
+       SUCCEEDED (only from journal CONFIRMED)
+     | FAILED    (deterministic pre-dispatch failure only)
+     | CANCELLED (cancel fence, per replay-policy matrix)
+     | UNKNOWN   (unresolved ambiguity, escalated explicitly)
+```
+
+Recovery and cancellation ordering:
+
+```text
+manager.recover()
+  -> CAS-increment generation (one current generation across managers)
+  -> verify exact capability/input/call/turn/action/effect binding, else UNKNOWN
+  -> CONFIRMED        -> SUCCEEDED with the confirmed result
+  -> absent/INTENDED  -> execute the exact capability (no dispatch recorded yet)
+  -> DISPATCHED/UNKNOWN -> existing reconcileEffectOperation()
+       CONTINUE -> SUCCEEDED | RETRY (same operation, no cancel fence) | ESCALATE -> UNKNOWN
+
+manager.cancel(operationId)
+  -> CAS RUNNING -> CANCEL_REQUESTED (fences dispatch/retry) + cooperative abort
+  -> CONFIRMED at settle time -> SUCCEEDED for every policy
+  -> pre-dispatch  -> CANCELLED (all policies)
+  -> post-dispatch with the local attempt still capable of committing
+     -> stay CANCEL_REQUESTED (all policies) until it settles
+  -> post-dispatch once settled (or with no live attempt, e.g. after restart)
+     -> PURE: CANCELLED once settled
+        IDEMPOTENT: UNKNOWN unless confirmed
+        OBSERVABLE: SUCCEEDED if observed satisfied,
+                    CANCELLED if settled and observed absent,
+                    UNKNOWN on observer failure or unsettled attempt
+        NON_RECONCILABLE: UNKNOWN
+```
+
+A raw success that never confirms the journal converges `UNKNOWN`, never `SUCCEEDED`. An unexpected internal run error fails closed to `UNKNOWN` with evidence instead of leaving the record silently `RUNNING`. All operations of one scope share a single persisted document, so a revision conflict caused by a different operation's write retries the mutation against the fresh document (bounded, loud on exhaustion); only an observable move of the same operation short-circuits.
+
+Consumers observe transitions with monotonic sequence and deterministic transition ids and must deduplicate by transition id; repeated delivery never creates a second semantic completion, and stale generations cannot publish authoritative terminal transitions. Synchronous capabilities keep working unchanged alongside detached wrappers. Wakeup/steering integration and cache-stable context projection over these updates are explicitly out of scope here.
+
 ## CURRENT ABSTRACTION BOUNDARY
 
 The concrete recovery composition shows insufficient repeated pressure for a higher-level executable Core lifecycle facade.
@@ -194,4 +242,36 @@ Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Age
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`; the current no-facade constraint is stated directly above; no separate decision-history document is required.
+## SYNCHRONOUS HARNESS-ECONOMICS COMPARISON
+
+The tooling in `benchmarks/harness-efficiency/` is built to isolate orchestration cost without changing Core behavior:
+
+```text
+preregistered cohort (6 tasks x 3 repeats x 2 arms)
+  -> fixed-factor protocol binds model/task/prompt/workspace/tools/evaluator/budget
+  -> both arm adapters really execute the shared JavaScript CodeAct strategy
+     (shim versus createAgentRuntime) against an offline scripted model client
+  -> arm adapters return measured raw producer observations only
+  -> shared kernel registers experiments/units, ledgers attempts, binds evidence,
+     normalizes outcome/accounting, audits
+  -> economics observations: measured model turns, tool calls, fixture-clock
+     MODEL/CALL intervals, stable-prefix/dynamic-suffix hashes, cache labels
+  -> reducer: paired distributions/medians over ALL attempts (retries included),
+     nullable UNKNOWN preserved, no winner score
+  -> versioned comparison manifest + held-out manifest + preregistered gate
+```
+
+Cache labels are conservative: provider cached tokens above zero prove CONFIRMED, known zero is MISS, a repeated stable prefix without provider evidence is ELIGIBLE, and anything else is UNKNOWN. A repeated prefix never proves a provider cache hit. Missing cost/token/cache observations stay null and every retry stays in the ledger and in denominators; producer or provider termination never rewrites independent verifier quality. The independent evaluator step judges only the artifact the producer wrote.
+
+To reproduce the offline fixture pipeline locally (no credentials, no model calls):
+
+```text
+preflight()         -> kernel + substrate manifest check
+runCohort()         -> 36 paired strategy executions + 1 retry, all settled
+auditAttempt()      -> 37/37 PASS on reopened evidence (pipeline proof, not a measurement)
+buildReport()       -> multidimensional vector report, no winner score
+buildHandoff()      -> versioned comparison / held-out / gate handoff
+node --test benchmarks/harness-efficiency/test/*.test.mjs
+```
+
+The committed report proves the pipeline runs end to end; it establishes no quality, cost or latency result. The live synchronous baseline on the frozen route has not been executed yet — `run.mjs --live` refuses without the route credential and Harbor substrate, and a live run additionally requires an explicitly authorized paid run. The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this tooling executes no async candidate and publishes no promotion verdict.

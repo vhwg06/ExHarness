@@ -315,6 +315,18 @@ export {
 } from "./javascript-codeact-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export {
+  DETACHED_OPERATION_PROTOCOL_VERSION,
+  DetachedOperationBindingError,
+  DetachedOperationStatus,
+  createInMemoryDetachedOperationStore,
+  createSessionDetachedOperationStore,
+  deriveDetachedOperationId,
+  deriveDetachedTransitionId,
+  digestDetachedValue,
+  isDetachedTerminalStatus
+} from "./detached-operation-store.js";
+export { createDetachedOperationManager } from "./detached-operation.js";
+export {
   Agent,
   ObjectAgent,
   ObjectAgentMemberKind,

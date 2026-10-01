@@ -117,9 +117,20 @@ function candidate(t, f, { target = 'BB-1', mutate = () => {}, receiptBase = f.b
   return { subject, sha: git('rev-parse', 'HEAD') };
 }
 const verify = (f, c, extra = {}) => verifySupersession({ trustedRoot: f.root, subjectRoot: c.subject, prBaseSha: f.base, candidateSha: c.sha, targetWorkId: 'BB-1', ...extra });
+const verifyTarget = (f, c, target) => verifySupersession({ trustedRoot: f.root, subjectRoot: c.subject, prBaseSha: f.base, candidateSha: c.sha, targetWorkId: target });
 function rejects(t, mutate, pattern, extra) {
   const f = fixture(t); const c = candidate(t, f, { mutate });
   assert.throws(() => verify(f, c, extra), pattern);
+}
+// Mutate the trusted Board for `target`, commit, and advance f.base so the
+// candidate is built from the mutated base. Used for trusted-state negatives
+// (ACTIVE/claimed, worker authority) which verifySupersession reads from trusted.
+function rebaseTrustedTarget(f, target, mutateTask) {
+  const graph = readJson(f.root, GRAPH);
+  mutateTask(graph.tasks.find(x => x.id === target));
+  writeJson(f.root, GRAPH, graph);
+  f.git('add', '-A'); f.git('commit', '-qm', `trusted ${target} mutated`);
+  f.base = f.git('rev-parse', 'HEAD');
 }
 
 test('CONTRACT/TARGET_RESET/DEPENDENT_IMPACT: valid supersession resets target and conservatively classifies every direct dependent', t => {
@@ -170,10 +181,10 @@ test('FRESHNESS/INV-2: stale base, old hash, routing, plan and replacement-hash 
   assert.throws(() => verify(f, c), /trusted checkout differs from PR base/);
 });
 
-test('TARGET_RESET/INV-3: DONE/WORKER targets, retained authority and identity changes are rejected', t => {
+test('TARGET_RESET/INV-3: DONE/WORKER-authority targets, retained authority and identity changes are rejected', t => {
   const f = fixture(t);
-  assert.throws(() => verify(f, candidate(t, f, { target: 'BB-6' }), { targetWorkId: 'BB-6' }), /unfinished RESEARCH_SA/);
-  assert.throws(() => verify(f, candidate(t, f, { target: 'BB-4' }), { targetWorkId: 'BB-4' }), /unfinished RESEARCH_SA/);
+  assert.throws(() => verify(f, candidate(t, f, { target: 'BB-4' }), { targetWorkId: 'BB-4' }), /must be unfinished work: BB-4 is DONE/);
+  assert.throws(() => verify(f, candidate(t, f, { target: 'BB-2' }), { targetWorkId: 'BB-2' }), /retains worker authority/);
   rejects(t, c => { c.byId('BB-1').contract.evaluationRef = 'docs/blackboard/artifacts/ready-implement-plan/BB-1.readiness-jev-evaluation.json'; }, /stale authority/);
   rejects(t, c => { c.byId('BB-1').contract.candidateSha = 'a'.repeat(40); }, /stale authority/);
   rejects(t, c => { Object.assign(c.byId('BB-1'), { status: 'ACTIVE', claim: { workerId: 'w' }, currentContextRef: 'x' }); }, /PLANNED RESEARCH_SA/);
@@ -184,6 +195,85 @@ test('TARGET_RESET/INV-3: DONE/WORKER targets, retained authority and identity c
   rejects(t, c => { c.byId('BB-1').title = 'renamed'; }, /changed BB-1.title/);
   rejects(t, c => { c.byId('BB-2').dependencies = []; }, /BB-2.dependencies/);
   rejects(t, c => { c.byId('BB-1').components = ['other']; }, /BB-1.components/);
+});
+
+test('WORKER_TARGET (a): PLANNED unclaimed WORKER with READY plan and evaluationRef is superseded to research', t => {
+  // Old line-99 behaviour rejects this with 'unfinished RESEARCH_SA work'; the
+  // fix accepts it and applies the same TARGET_RESET rules as research targets.
+  const f = fixture(t); const c = candidate(t, f, { target: 'BB-6' });
+  const result = verifyTarget(f, c, 'BB-6');
+  assert.equal(result.publication, 'OBJECTIVE_SUPERSESSION');
+  assert.equal(result.workId, 'BB-6');
+  const target = readJson(c.subject, GRAPH).tasks.find(x => x.id === 'BB-6');
+  assert.equal(target.lane, 'RESEARCH_SA'); assert.equal(target.phase, 'RESEARCH'); assert.equal(target.status, 'PLANNED');
+  assert.equal(target.claim, null); assert.equal(target.currentContextRef, null);
+  assert.deepEqual(Object.keys(target.contract).sort(), ['objectiveRef', 'planRef', 'researchBaselineSha']);
+  const draft = readJson(c.subject, PLAN('BB-6'));
+  const receipt = readJson(c.subject, supersessionRef('BB-6'));
+  assert.equal(draft.status, 'DRAFT'); assert.equal(draft.readinessRef, undefined);
+  assert.equal(draft.objective.hash, receipt.replacementObjective.hash);
+  assert.equal(fs.existsSync(path.join(c.subject, 'docs/blackboard/artifacts/ready-implement-plan/BB-6.readiness-jev-evaluation.json')), false);
+});
+
+test('WORKER_TARGET (b): ACTIVE/claimed WORKER target is rejected', t => {
+  // Old code rejects with 'unfinished RESEARCH_SA work'; the fix rejects with
+  // the precise unclaimed-WORKER message.
+  const f1 = fixture(t);
+  rebaseTrustedTarget(f1, 'BB-6', x => Object.assign(x, { status: 'ACTIVE', claim: { workerId: 'w' }, currentContextRef: 'docs/blackboard/context/BB-6/current.json' }));
+  writeText(f1.root, 'docs/blackboard/context/BB-6/current.json', '{"active":true}\n');
+  f1.git('add', '-A'); f1.git('commit', '-qm', 'trusted BB-6 active'); f1.base = f1.git('rev-parse', 'HEAD');
+  assert.throws(() => verifyTarget(f1, candidate(t, f1, { target: 'BB-6' }), 'BB-6'), /must be unclaimed PLANNED WORKER work: BB-6 has status ACTIVE/);
+  const f2 = fixture(t);
+  rebaseTrustedTarget(f2, 'BB-6', x => { x.claim = { workerId: 'w' }; });
+  assert.throws(() => verifyTarget(f2, candidate(t, f2, { target: 'BB-6' }), 'BB-6'), /must be unclaimed PLANNED WORKER work: BB-6 is claimed/);
+});
+
+test('WORKER_TARGET (c): WORKER target with candidateSha or mergeSha is rejected', t => {
+  // Old code rejects with 'unfinished RESEARCH_SA work'; the fix rejects with
+  // the precise worker-authority message naming the held field.
+  const f1 = fixture(t);
+  rebaseTrustedTarget(f1, 'BB-6', x => { x.contract.candidateSha = 'a'.repeat(40); });
+  assert.throws(() => verifyTarget(f1, candidate(t, f1, { target: 'BB-6' }), 'BB-6'), /retains worker authority: BB-6 candidateSha/);
+  const f2 = fixture(t);
+  rebaseTrustedTarget(f2, 'BB-6', x => { x.contract.mergeSha = 'b'.repeat(40); });
+  assert.throws(() => verifyTarget(f2, candidate(t, f2, { target: 'BB-6' }), 'BB-6'), /retains worker authority: BB-6 mergeSha/);
+});
+
+test('WORKER_TARGET (g): a pre-assigned evidenceRef pointer is not authority unless the implementation result exists', t => {
+  // Readiness publication sets evidenceRef to the future implementation-result path before any worker ran.
+  const evidence = 'docs/blackboard/artifacts/ready-implement-plan/BB-6.implementation-result.json';
+  const f1 = fixture(t);
+  rebaseTrustedTarget(f1, 'BB-6', x => { x.contract.evidenceRef = evidence; });
+  assert.equal(fs.existsSync(path.join(f1.root, evidence)), false);
+  const result = verifyTarget(f1, candidate(t, f1, { target: 'BB-6' }), 'BB-6');
+  assert.equal(result.publication, 'OBJECTIVE_SUPERSESSION');
+  const f2 = fixture(t);
+  writeJson(f2.root, evidence, { artifactType: 'IMPLEMENTATION_RESULT' });
+  rebaseTrustedTarget(f2, 'BB-6', x => { x.contract.evidenceRef = evidence; });
+  assert.throws(() => verifyTarget(f2, candidate(t, f2, { target: 'BB-6' }), 'BB-6'), /retains worker authority: BB-6 evidenceRef/);
+});
+
+test('WORKER_TARGET (d): WORKER readiness evaluation modified instead of deleted is rejected', t => {
+  // Old code never reaches the retention audit for a WORKER target; the fix
+  // reuses the existing deletable logic and fails on rewrite.
+  const f = fixture(t);
+  const c = candidate(t, f, { target: 'BB-6', mutate(c) { c.write('docs/blackboard/artifacts/ready-implement-plan/BB-6.readiness-jev-evaluation.json', { rewritten: true }); } });
+  assert.throws(() => verifyTarget(f, c, 'BB-6'), /historical artifact cannot be rewritten/);
+});
+
+test('WORKER_TARGET (e): WORKER plan staying READY is rejected', t => {
+  // Old code rejects the WORKER target before plan checks; the fix applies the
+  // same DRAFT-without-readinessRef rule as research targets.
+  const f = fixture(t);
+  const c = candidate(t, f, { target: 'BB-6', mutate(c) { const p = c.read(PLAN('BB-6')); p.status = 'READY'; p.readinessRef = 'docs/blackboard/artifacts/ready-implement-plan/BB-6.readiness-jev-evaluation.json'; c.write(PLAN('BB-6'), p); } });
+  assert.throws(() => verifyTarget(f, c, 'BB-6'), /DRAFT without readinessRef/);
+});
+
+test('WORKER_TARGET (f): DONE target is still rejected', t => {
+  // Old code rejects DONE with 'unfinished RESEARCH_SA work'; the fix keeps
+  // rejecting DONE with the precise unfinished-work message.
+  const f = fixture(t);
+  assert.throws(() => verifyTarget(f, candidate(t, f, { target: 'BB-4' }), 'BB-4'), /must be unfinished work: BB-4 is DONE/);
 });
 
 test('DEPENDENT_IMPACT/INV-4: omitted, duplicated, misclassified or mutated dependents are rejected', t => {
@@ -216,7 +306,9 @@ test('RETENTION/MIGRATION_BOUNDARY: changed-path audit rejects code bundling, ve
 
 test('MIGRATION_BOUNDARY: this repository carries the mechanism only; no BB-065 objective migration is bundled', () => {
   const graph = readJson('.', GRAPH);
-  assert.deepEqual(verifyRetainedSupersessions('.', graph), []);
+  const retained = verifyRetainedSupersessions('.', graph);
+  assert.equal(retained.includes('BB-065'), false);
+  for (const id of retained) assert.equal(fs.existsSync(supersessionRef(id)), true);
   assert.equal(fs.existsSync(supersessionRef('BB-065')), false);
   const bb065 = graph.tasks.find(x => x.id === 'BB-065');
   const bb065Plan = readJson('.', bb065.contract.planRef);
