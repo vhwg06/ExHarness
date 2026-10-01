@@ -176,91 +176,25 @@
       "id": "browser-focused",
       "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js",
       "requiredTests": "Correctx3,N1-N12,0 skips/cancellations. Browser behavior cases real; contract faults may inject runner/observer while invoking adapter.",
-      "setup": "Verification-only browser-journey-fixtures.cjs owns one external mkdtemp fixture root, writes a fixed package manifest with exact @playwright/test@1.63.0, verifies all three recorded package SRI values and provisions Chromium1243 with disk-backed TMPDIR. Bootstrap may install this explicit test prerequisite; createBrowserJourneyVerifier itself never installs. Network/install failure fails focused verification, never skips. Reuse only a caller-provided root after identical pin checks; record actual lock/browser digests in protected fixture policy. Run setup before focused tests and npm test:agentic so the default CI kernel can execute native browser positives without undeclared environment setup. Remove only the owned root/browser children in after-hook. Bound install/download deadline180s and output64KiB; test total within collector300s. Production operator still provides independent pinned root/policy.",
-      "negativeCases": [
-        {
-          "title": "BB-132 N1 inert submit",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "FAILURE_CLASSIFICATION"
-        },
-        {
-          "title": "BB-132 N2 stale list",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "FAILURE_CLASSIFICATION"
-        },
-        {
-          "title": "BB-132 N3 reload persistence",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "FAILURE_CLASSIFICATION"
-        },
-        {
-          "title": "BB-132 N4 validation",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "FAILURE_CLASSIFICATION"
-        },
-        {
-          "title": "BB-132 N5 skip or noop",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "INDEPENDENT_EVIDENCE"
-        },
-        {
-          "title": "BB-132 N6 empty assertion steps",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "INDEPENDENT_EVIDENCE"
-        },
-        {
-          "title": "BB-132 N7 missing coverage or retries",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "INDEPENDENT_EVIDENCE"
-        },
-        {
-          "title": "BB-132 N8 evaluator drift",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "IDENTITY_BINDING"
-        },
-        {
-          "title": "BB-132 N9 preview or runtime drift",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "IDENTITY_BINDING"
-        },
-        {
-          "title": "BB-132 N10 setup or timeout",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "FAILURE_CLASSIFICATION"
-        },
-        {
-          "title": "BB-132 N11 invalid artifacts",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "EVIDENCE_RETENTION"
-        },
-        {
-          "title": "BB-132 N12 cleanup and authority",
-          "subject": "createBrowserJourneyVerifier",
-          "criterionId": "OWNED_RESOURCES"
-        }
-      ],
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "setup": "Mandatory owned before-hook browser bootstrap per browserContract.testProvisioning, both focused and package suite; installation failure fails, no skips.",
+      "negativeCases": "Run every literal testTitle N1-N12 in negativeCaseBindings; each invokes createBrowserJourneyVerifier and its verify method with the bound criterion and actual or injected fault. Names, subject symbols and criterion ids have one canonical copy in negativeCaseBindings."
     },
     {
       "id": "qa-seam",
       "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/acceptance-snapshot.test.js",
-      "coverage": "Regression authority only; adapter integration/corrupt reporter/preview/evaluator cases belong to browser-focused and call actual createBrowserJourneyVerifier.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "coverage": "Regression authority only; adapter integration/corrupt reporter/preview/evaluator cases belong to browser-focused and call actual createBrowserJourneyVerifier."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agent-tools"
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agentic"
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run verify:current-docs"
     }
   ],
   "invariantCoverage": [
@@ -731,29 +665,6 @@
       ],
       "verificationIds": [
         "browser-focused"
-      ],
-      "decisionIndexes": [
-        0,
-        1,
-        3,
-        4
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/product-qa.js",
-        "packages/agentic-system/src/acceptance-snapshot.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/product-qa.js",
-          "match": "criterionVerifier.verify(deepFreeze("
-        },
-        {
-          "ref": "packages/agentic-system/src/acceptance-snapshot.js",
-          "match": "criterionRefs: [...policy.criterionRefs]"
-        }
-      ],
-      "supportingPlanFields": [
-        "browserContract"
       ]
     },
     {
@@ -770,24 +681,6 @@
       ],
       "verificationIds": [
         "browser-focused"
-      ],
-      "decisionIndexes": [
-        2,
-        5,
-        6
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/product-qa.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/product-qa.js",
-          "match": "every pinned acceptance criterion must PASS"
-        }
-      ],
-      "supportingPlanFields": [
-        "browserContract",
-        "researchEvidenceSummary"
       ]
     },
     {
@@ -809,182 +702,14 @@
       "verificationIds": [
         "browser-focused",
         "docs"
-      ],
-      "decisionIndexes": [
-        3,
-        7
-      ],
-      "sourceRefs": [
-        "docs/blackboard/evidence/BB-132/discovery.json"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/blackboard/evidence/BB-132/discovery.json",
-          "match": "plannedExperiment"
-        }
-      ],
-      "supportingPlanFields": [
-        "researchEvidenceSummary"
       ]
     }
   ],
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "researchEvidenceSummary": {
-    "classification": "EXECUTED_ISOLATED_BROWSER_CALIBRATION_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
-    "providerCalls": 0,
-    "calibration": {
-      "protocol": "Real Chromium -> owned HTTP tracker/JSON rows; fresh [] reset/server/port/preview per run; fixed validation/create/list/reload/update/reload without stubbing. Health-only comparison, no build/model/productivity trial.",
-      "assertionIds": [
-        "empty",
-        "invalid-message",
-        "invalid-no-write",
-        "create-visible",
-        "create-reload",
-        "update-visible",
-        "update-reload"
-      ],
-      "summary": "3 correct PASS, 4 behavioral seeds FAIL, 4 setup/coverage controls INCONCLUSIVE; 11 classifier controls INCONCLUSIVE. No observed false accepts in this fixed matrix; no statistical/live-value inference.",
-      "runs": [
-        [
-          1,
-          "correct",
-          "PASS",
-          "ALL_ASSERTIONS_OBSERVED",
-          7
-        ],
-        [
-          2,
-          "correct",
-          "PASS",
-          "ALL_ASSERTIONS_OBSERVED",
-          7
-        ],
-        [
-          3,
-          "correct",
-          "PASS",
-          "ALL_ASSERTIONS_OBSERVED",
-          7
-        ],
-        [
-          4,
-          "inert-submit",
-          "FAIL",
-          "ASSERT:create-visible",
-          3
-        ],
-        [
-          5,
-          "stale-list",
-          "FAIL",
-          "ASSERT:create-visible",
-          3
-        ],
-        [
-          6,
-          "missing-persistence",
-          "FAIL",
-          "ASSERT:create-reload",
-          4
-        ],
-        [
-          7,
-          "validation-broken",
-          "FAIL",
-          "ASSERT:invalid-message",
-          1
-        ],
-        [
-          8,
-          "skip",
-          "INCONCLUSIVE",
-          "SKIPPED_OR_RETRIED",
-          0
-        ],
-        [
-          9,
-          "noop",
-          "INCONCLUSIVE",
-          "ASSERTION_COVERAGE_MISSING",
-          0
-        ],
-        [
-          10,
-          "setup",
-          "INCONCLUSIVE",
-          "IDENTITY_MISSING",
-          0
-        ],
-        [
-          11,
-          "empty-steps",
-          "INCONCLUSIVE",
-          "ASSERTION_EVENTS_MISSING",
-          7
-        ]
-      ],
-      "reportControls": {
-        "count": 11,
-        "all": "INCONCLUSIVE",
-        "cases": [
-          "evaluatorDigest",
-          "candidateDigest",
-          "fixtureDigest",
-          "previewId",
-          "environmentId",
-          "browserVersion",
-          "screenshot-only",
-          "omitted-assertion",
-          "expected-failure",
-          "duplicate-retry",
-          "missing-trace"
-        ],
-        "method": "Clone/mutate positive report or expected binding; classifier controls, not browser runs."
-      },
-      "traceAudit": [
-        {
-          "run": 1,
-          "bytes": 11457,
-          "sha256": "68707b0c1fa391a94d76fa16d02d3240d6afb5bb9843cf8bab4a429520de8a49",
-          "domSnapshots": 35,
-          "networkBytes": 19595
-        },
-        {
-          "run": 4,
-          "bytes": 10170,
-          "sha256": "e07e1a514888fef5b4d131f6299d438f7d3d64b792174283c02df7470b59cf3e",
-          "domSnapshots": 19,
-          "networkBytes": 3880
-        }
-      ],
-      "limitations": "Laboratory source/config/fixture bindings and injected classifier identity controls do not establish deployed runtime identity or confinement. Pre/post lifecycle, Product QA integration and durable evidenceStore are Worker tests.",
-      "shared": "Health=200 all11; correct/skip/noop/empty-steps exit0, defects/setup exit1. Correct has7 successful expect events; empty-steps has7 wrappers/0 expect events.",
-      "traceCapture": "All11 archives:screen/source entries0. Correct:35 DOM snapshots/~19.5KiB network JSON. Seed failures retain diagnostics; submitted values remain.",
-      "runsColumns": [
-        "run",
-        "case",
-        "verdict",
-        "reason",
-        "successfulSteps"
-      ],
-      "reportSha256": {
-        "1": "ef5eb6ce48ce32f6eb6ba2bc30999783feb6b7f55c6500cb9659c68e9939cb70",
-        "4": "8469c24edcff70a7e5fb0f01abd2e46c6205125b4e638c045e8f9782e01673ed",
-        "5": "57a769a360e9ee78bd6e48e68d0f263443013239dfc142fb45f86ebfc4194852",
-        "6": "65f83099047ad7243151ba0d766e0bbfc69c26b78c7cb88787d9313e295bfc61",
-        "7": "32e1db651fd6f0a46d1eb32fae871535e70f4fcaace53ad69fb253452ea80a97"
-      },
-      "fullResultsSha256": "5c930bdc92de66e60dd4b5c74e87647fca9cb9ed11a7b54316b948083c569852"
-    },
-    "prototypeSourceSha256": "c74ee188dc47574f1100dd385a325781a0ec0878f84d36e02aa063d7a9b748ec",
-    "reproduction": "python3 - <absolute-plan-json> <owned-research-dir> <<'PY'\nimport sys,json,gzip,base64,pathlib,hashlib\nr=json.load(open(sys.argv[1]))[\"prototypeReproduction\"]; b=gzip.decompress(base64.b64decode(r[\"sourceGzipBase64\"])); assert hashlib.sha256(b).hexdigest()==r[\"sourceSha256\"]; d=pathlib.Path(sys.argv[2]); d.mkdir(parents=True,exist_ok=True); (d/\"prototype.cjs\").write_bytes(b)\nPY",
-    "upstreamPins": {
-      "sourceSha": "1b025d7e20a026371cd5f98ba0cdce48892737c8",
-      "release": "1.63.0",
-      "browserRevision": "1243",
-      "browserVersion": "153.0.8010.12",
-      "browserExecutableSha256": "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
-      "packageLockSha256": "e1b439b9f7fced52fbfd04c850a244ee699d9bfbde6fe65a9baec9e68aa08b45"
-    }
+    "classification": "EXECUTED_RESEARCH_BROWSER_CALIBRATION_NOT_PRODUCT",
+    "calibrationRef": "researchEvidence.calibration",
+    "sourceRef": "prototypeReproduction",
+    "upstreamRef": "researchEvidence.upstream",
+    "limits": "Single canonical in-plan copies retain all rows/hashes/prototype bytes; future product integration is not claimed executed."
   }
 }
