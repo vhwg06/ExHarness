@@ -58,16 +58,33 @@ function walkJs(dir, out = []) {
   return out;
 }
 
-test("no LangMem/DSPy/LangGraph/gepa dependency in packages/agentic-system/src", () => {
+test("no LangMem/DSPy/LangGraph/gepa runtime dependency in packages/agentic-system/src", () => {
+  // Intent (plan D1/D8, negative cases): the product package has no Python/GEPA
+  // runtime dependency and introduces no LangMem/DSPy/LangGraph/gepa[full].
+  // What is forbidden is a module *dependency* (import/require), not the mere
+  // mention of the pinned optimizer engine name 'gepa' as a string constant
+  // (required by the proposal/handoff envelope, D7/D10).
   const tokens = ["langmem", "dspy", "langgraph", "gepa"];
+  const importRe = new RegExp(
+    `(?:from\\s+|import\\s*\\(\\s*|require\\s*\\(\\s*)["'](${tokens.join("|")})(?:[^"']*)["']`,
+    "i",
+  );
   const hits = [];
   for (const file of walkJs(join(repoRoot, "packages/agentic-system/src"))) {
-    const text = readFileSync(file, "utf8").toLowerCase();
-    for (const token of tokens) {
-      if (text.includes(token)) hits.push(`${file.split("src/")[1] || file} contains ${token}`);
+    const text = readFileSync(file, "utf8");
+    const m = text.match(importRe);
+    if (m) hits.push(`${file.split("src/")[1] || file} imports forbidden dependency: ${m[1]}`);
+  }
+  // Also forbid declaring them as package dependencies.
+  const pkg = JSON.parse(readFileSync(join(repoRoot, "packages/agentic-system/package.json"), "utf8"));
+  for (const section of ["dependencies", "peerDependencies", "optionalDependencies"]) {
+    for (const name of Object.keys(pkg[section] || {})) {
+      if (tokens.some((t) => name.toLowerCase().includes(t))) {
+        hits.push(`packages/agentic-system/package.json [${section}] declares forbidden dependency: ${name}`);
+      }
     }
   }
-  assert.deepEqual(hits, [], `PLAN_INPUT_CONTRADICTION: forbidden dependency token found:\n${hits.join("\n")}`);
+  assert.deepEqual(hits, [], `PLAN_INPUT_CONTRADICTION: forbidden dependency found:\n${hits.join("\n")}`);
 });
 
 test("docs/blackboard/** and scripts/feedback/** are unmodified vs origin/main merge-base", () => {

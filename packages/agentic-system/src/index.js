@@ -365,3 +365,16 @@ export {
   createJsonFeedbackEpisodeHeadStore,
   feedbackEpisodeHeadKeyFor
 } from "./feedback-lifecycle-controller.js";
+export {
+  PATTERN_POLICY_V1,
+  projectImprovementPatterns
+} from "./improvement-pattern.js";
+export {
+  HOW_IMPROVEMENT_PROPOSAL_KIND,
+  IMPROVEMENT_EVALUATION_HANDOFF_KIND,
+  PINNED_OPTIMIZER_IDENTITY,
+  defineHowImprovementProposal,
+  defineImprovementEvaluationHandoff,
+  buildHowEvolutionHandoff,
+  evaluateHandoffOutcome
+} from "./improvement-proposal.js";
