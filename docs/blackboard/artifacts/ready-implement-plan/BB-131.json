@@ -19,7 +19,7 @@
     "BB-132/133 journeys/API compatibility and existing Product QA acceptance authority."
   ],
   "constraints": [
-    "RESEARCH_SA only; DRAFT supplies no implementation or readiness authority. Worker requires exact independently READY plan and delivered direct dependencies.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Preserve existing generic command/injected verifier authority; no survey-based score, effort or capability claim. Product/runtime and development Blackboard remain distinct.",
     "Public OSS requires >=1000 stars at lookup, pinned relevant implementation/tests and live seam proof before adoption. Neither container library is adopted.",
     "BB-104 is DONE; BB-130 env API is PLANNED_CONTRACT pending DONE. Initial support is explicit Node 24/Linux x64.",
@@ -173,76 +173,14 @@
     {
       "id": "focused",
       "command": "node --test packages/agent-tools/test/local-preview.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-131 N1 Wrong candidate or health identity rejected",
-          "subject": "startLocalPreview",
-          "criterionId": "PREVIEW_IDENTITY"
-        },
-        {
-          "title": "BB-131 N2 Foreign occupied port preserved",
-          "subject": "startLocalPreview",
-          "criterionId": "RESOURCE_LIFECYCLE"
-        },
-        {
-          "title": "BB-131 N3 Readiness timeout cleans owned services",
-          "subject": "startLocalPreview",
-          "criterionId": "RESOURCE_LIFECYCLE"
-        },
-        {
-          "title": "BB-131 N4 Missing service cleans partial start",
-          "subject": "startLocalPreview",
-          "criterionId": "RESOURCE_LIFECYCLE"
-        },
-        {
-          "title": "BB-131 N5 Interrupt or controller death preserves foreign server",
-          "subject": "startLocalPreview",
-          "criterionId": "RESOURCE_LIFECYCLE"
-        },
-        {
-          "title": "BB-131 N6 Config runtime evaluator drift rejects readiness",
-          "subject": "startLocalPreview",
-          "criterionId": "PREVIEW_IDENTITY"
-        },
-        {
-          "title": "BB-131 N7 Wrong seed or stale generation rejects reset",
-          "subject": "startLocalPreview",
-          "criterionId": "SEEDED_RESET"
-        },
-        {
-          "title": "BB-131 N8 Unsupported profile or runtime executes no hooks",
-          "subject": "startLocalPreview",
-          "criterionId": "PROFILE_ENV"
-        },
-        {
-          "title": "BB-131 N9 Parent secret and test channel excluded",
-          "subject": "startLocalPreview",
-          "criterionId": "PROFILE_ENV"
-        },
-        {
-          "title": "BB-131 N10 Cleanup timeout stays unresolved",
-          "subject": "startLocalPreview",
-          "criterionId": "RECEIPT_FAILURES"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests NEG_131_1, NEG_131_2, NEG_131_3, NEG_131_4, NEG_131_5, NEG_131_6, NEG_131_7, NEG_131_8, NEG_131_9, NEG_131_10. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "composition",
       "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
       "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only.",
-      "negativeCases": [
-        {
-          "title": "BB-131 N11 Preview cannot override failed QA",
-          "subject": "runSliceQa",
-          "criterionId": "QA_COMPOSITION"
-        },
-        {
-          "title": "BB-131 N12 Failed setup or stale receipt blocks acceptance",
-          "subject": "runSliceQa",
-          "criterionId": "QA_COMPOSITION"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests NEG_131_11, NEG_131_12. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
