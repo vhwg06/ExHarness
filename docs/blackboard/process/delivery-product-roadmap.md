@@ -15,9 +15,15 @@ Value hypothesis: ExHarness improves software-delivery economics and reliability
 
 ## What exists and what remains
 
-Current source and terminal receipts confirm the Oracle foundation/Context Graph/planner/progressive resolution, neutral benchmark package, real local git/command verification, supervised CLI agents, observation, durable recovery, Backend adapter, declared context and MCP verification. BB-052/053/054 and BB-096..103/105 are delivered. BB-104 local deliver is DONE in the refreshed graph, following merged PR #416 and its exact delivery receipt. BB-055/057..059, BB-066..081, BB-083..086, BB-093..095 and BB-099 remain planned rather than delivered.
+Current source and terminal receipts confirm the Oracle foundation/Context Graph/planner/progressive resolution, neutral benchmark package, real local git/command verification, supervised CLI agents, observation, durable recovery, Backend adapter, declared context and MCP verification. BB-052/053/054 and BB-096..103/105 are delivered. BB-104 local deliver is DONE in the refreshed graph, following merged PR #416 and its exact delivery receipt. BB-055/057..059, BB-066..081, BB-083..086, BB-094/095 remain planned rather than delivered. BB-093 budget profiles and BB-099 experiment tooling are now DONE; live comparative value remains unclaimed.
 
 The current [research roadmap](research-roadmap.md) and [delivery improvement discovery](delivery-value-improvement-research.md) add a near-term local path: protect env/accounting/exact resume, expose available CLIs through deliver, bind independent acceptance, and export a portable reviewer handoff. This path reuses delivered source without waiting on the broad OpenHands/async program. Existing worker dependencies and acceptance gates remain intact; local source/fixture success does not prove BB-069/074 live value.
+
+## Current value-discovery priority
+
+The [2026-09-30 capability discovery](delivery-capability-discovery.md) adds BB-131 repository preview, BB-132 independent browser journeys and BB-133 API/data compatibility as DRAFT research. The useful milestone is a runnable existing-repository feature, observed user behavior, retained prior behavior and a replayable reviewer handoff. Six eligible OSS candidates and primary reports are pinned in the source ledger; adoption and capability prototypes remain open.
+
+Goal/document clarification, live feature feasibility, requirement evolution, supported installation and measured human effort remain with BB-070/069/071/073/074. Their existing objectives/plans are preserved. Defer optimization with an unclear baseline or target, including BB-126 policy priority, until independent quality/value controls are ratified. Existing correctness repairs retain their bounded gates.
 
 ## Technology evidence and reuse decisions
 

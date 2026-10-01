@@ -1,0 +1,192 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-131",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-131.json",
+    "hash": "0e2e6d50a7e9160970c657b1787d570df1c8d4f0eebaa5328e0aa38d5fa037c9"
+  },
+  "scope": [
+    "local-delivery.preview-profile",
+    "local-delivery.repository-readiness"
+  ],
+  "outOfScope": [
+    "BB-067 sandbox/network/tool capability enforcement",
+    "BB-073 distribution and installer support",
+    "Production deployment, arbitrary stack inference, credential provisioning and a new lifecycle scheduler"
+  ],
+  "constraints": [
+    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
+    "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
+    "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
+    "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
+    "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
+  ],
+  "invariants": [
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+  ],
+  "architectureDecisions": [
+    "Compare explicit operator-declared commands with a pinned Dev Container CLI adapter; discovery reports requirements and does not execute arbitrary discovered lifecycle hooks.",
+    "Use a narrow local trusted web/service profile first. Compare Testcontainers for owned disposable dependencies; pin images and seeded data. A container is not automatically a sandbox.",
+    "Keep preview receipt and actual readiness observation separate from BB-054 DeploymentRelease/QualityAcceptance. Bind the product identities through existing contracts when that profile is composed."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-131/discovery.json"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/local-preview.js",
+      "packages/agent-tools/test/local-preview.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/local-preview.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-131/discovery.json",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**"
+    ],
+    "write": [
+      "packages/agent-tools/src/local-preview.js",
+      "packages/agent-tools/test/local-preview.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
+    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
+    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "PREVIEW_IDENTITY",
+      "statement": "A declared supported profile starts from the exact candidate/config/input digests and records owned endpoints, service image/version identities, readiness observations and the reset dataset; process creation alone is not READY.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    },
+    {
+      "id": "RESOURCE_LIFECYCLE",
+      "statement": "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/local-preview.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE"
+      ]
+    },
+    {
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE"
+      ]
+    },
+    {
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A listening process serving the wrong candidate cannot produce a READY preview receipt",
+    "Readiness timeout or port conflict cannot delete an unrelated process or service"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_131_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "RESOURCE_LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N1 A listening process serving the wrong candidate cannot produce a READY preview receipt",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "RESOURCE_LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N2 Readiness timeout or port conflict cannot delete an unrelated process or service",
+      "subjectSymbol": "startLocalPreview"
+    }
+  ],
+  "researchGaps": [
+    "Ratify the initial web/service stack, supported hosts and explicit command/env contract with three fixture repositories; compare manual profile versus Dev Container CLI setup cost.",
+    "Prototype child-process/container ownership, readiness identity, reset and crash cleanup, including Docker-unavailable and non-container branches.",
+    "Inspect pinned Dev Container CLI/Testcontainers lifecycle source and tests; finalize exact receipt/API, subject-invoking bindings and objective coverage before Jev."
+  ],
+  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Describe the delivered profile, exact identity binding, supported environment and limitations after Worker delivery, without roadmap status or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Enable an observable running candidate and repeatable service state without a session-specific manual setup recipe.",
+    "measurement": "Use three declared web/service fixtures from fresh checkouts; record setup interventions and time-to-observable-preview. Seed wrong-release, missing-service, occupied-port and partial-start cases. Reproduce all owned cleanup and retain foreign resources.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
+    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "kind": "ROADMAP_DISCOVERY_EVIDENCE",
+  "classification": "EXECUTED_MANIFEST_BOUNDARY_AUDIT_AND_PRIMARY_SOURCE_RESEARCH",
+  "baselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "providerCalls": 0,
+  "auditRef": "docs/blackboard/evidence/BB-131/capability-audit.json",
+  "sourceLedgerRef": "docs/blackboard/process/delivery-capability-sources.json",
+  "capabilityGap": "DELIVER_SLICE_V1 normalizes caller-supplied command checks but ignores a synthetic preview descriptor. There is no named local preview profile/receipt connecting candidate tree, service/config identities, startup, readiness, reset and cleanup. Existing caller-authored commands can perform these steps manually.",
+  "hypothesis": "Enable an observable running candidate and repeatable service state without a session-specific manual setup recipe.",
+  "sourceIds": [
+    "devcontainers/cli",
+    "testcontainers/testcontainers-node",
+    "ANTHROPIC_LONG_RUNNING"
+  ],
+  "plannedExperiment": "Use three declared web/service fixtures from fresh checkouts; record setup interventions and time-to-observable-preview. Seed wrong-release, missing-service, occupied-port and partial-start cases. Reproduce all owned cleanup and retain foreign resources.",
+  "experimentStatus": "NOT_RUN; only the source/manifest boundary audit has executed",
+  "directDependencies": [
+    "BB-104",
+    "BB-130"
+  ],
+  "nonDuplication": [
+    "BB-067 sandbox/network/tool capability enforcement",
+    "BB-073 distribution and installer support",
+    "Production deployment, arbitrary stack inference, credential provisioning and a new lifecycle scheduler"
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-132",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-132.json",
+    "hash": "0e4cadc7b0d551c9823d43afc9178c12c49ed28a02d100a5063d3572698506c4"
+  },
+  "scope": [
+    "product-qa.browser-journey-profile"
+  ],
+  "outOfScope": [
+    "A new QA judgment or publication authority",
+    "General autonomous visual design grading, accessibility certification and arbitrary browser automation",
+    "Changing accepted BB-054/069 contracts or declaring live feature delivery from fixture tests"
+  ],
+  "constraints": [
+    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
+    "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
+    "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
+    "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
+    "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
+  ],
+  "invariants": [
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+  ],
+  "architectureDecisions": [
+    "Compare a deterministic Playwright Test runner with a constrained exploratory browser observer. Start with operator-owned executable journeys; model exploration may propose findings but cannot silently alter acceptance.",
+    "Adapt results into the existing criterionVerifier interface and retain local trace/DOM/network evidence. Screenshot presence is not a behavioral assertion and browser traffic can contain sensitive data.",
+    "Consume BB-127 protected evaluator content and BB-131 preview receipts. BB-054 keeps exact acceptance/publication authority; the runner supplies criterion evidence only."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-132/discovery.json"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/browser-journey-verifier.js",
+      "packages/agentic-system/test/browser-journey-verifier.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/browser-journey-verifier.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-132/discovery.json",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/browser-journey-verifier.js",
+      "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
+    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
+    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "USER_JOURNEY",
+      "statement": "A protected create/list/update and validation journey invokes the running app, reloads and checks expected visible/persisted behavior; criterion-specific PASS/FAIL/INCONCLUSIVE includes evaluator, preview, fixture, browser and candidate identities.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    },
+    {
+      "id": "INDEPENDENT_EVIDENCE",
+      "statement": "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "INDEPENDENT_EVIDENCE"
+      ]
+    },
+    {
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "INDEPENDENT_EVIDENCE"
+      ]
+    },
+    {
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "INDEPENDENT_EVIDENCE"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "An inert submit button cannot PASS a create-and-reload journey",
+    "A changed evaluator or mismatched preview identity cannot publish criterion PASS"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_132_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "INDEPENDENT_EVIDENCE",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N1 An inert submit button cannot PASS a create-and-reload journey",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "INDEPENDENT_EVIDENCE",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N2 A changed evaluator or mismatched preview identity cannot publish criterion PASS",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    }
+  ],
+  "researchGaps": [
+    "Calibrate deterministic browser assertions on correct and seeded-broken request-tracker fixtures, including reload, validation and browser/setup failure.",
+    "Pin Playwright release/browser binaries; inspect relevant runner/trace tests and define trace retention/redaction and cross-host support.",
+    "Finalize protected evaluator digest, runtime identity and criterion evidence mapping; discriminate false accepts from tool failures before Jev."
+  ],
+  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Describe the delivered profile, exact identity binding, supported environment and limitations after Worker delivery, without roadmap status or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Give a reviewer evidence that the feature works through its user workflow, including interactions missed by build-only checks.",
+    "measurement": "Compare build/health-only checks with independent browser journeys on correct, inert-submit, stale-list and missing-persistence fixtures. Predeclare the seeded defect matrix; record missed criteria, false accepts, setup failures and review steps. No live model is needed for calibration.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
+    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
+  }
+}

@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-131
+next-work-id: BB-134
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -54,6 +54,9 @@ NONE
 - BB-128 [RESEARCH_SA/RESEARCH] — Expose delivered Grok and OpenCode adapters through operator delivery
 - BB-129 [RESEARCH_SA/RESEARCH] — Export a durable review bundle for the exact local candidate
 - BB-130 [RESEARCH_SA/RESEARCH] — Constrain local verifier child environment
+- BB-131 [RESEARCH_SA/RESEARCH] — Prepare a reproducible repository preview for local feature delivery
+- BB-132 [RESEARCH_SA/RESEARCH] — Verify local web feature journeys through an independently pinned browser evaluator
+- BB-133 [RESEARCH_SA/RESEARCH] — Verify API compatibility and persisted state for local feature changes
 
 ## Dependency graph
 
@@ -127,6 +130,9 @@ BB-127 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130, BB-125
 BB-128 [RESEARCH_SCHEDULABLE] <- BB-104, BB-122
 BB-129 [RESEARCH_SCHEDULABLE] <- BB-127
 BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
+BB-131 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130
+BB-132 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
+BB-133 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 ```
 
 ## Context semantics
