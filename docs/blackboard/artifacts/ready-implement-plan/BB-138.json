@@ -13,22 +13,25 @@
   ],
   "outOfScope": [
     "Changing the deliver tool-id whitelist owned by BB-128.",
-    "Adding adapters, sandbox flags, or a new permission profile enum."
+    "Adding adapters, sandbox flags, a new PermissionProfile value, or an extra FULL_AUTO confirmation prompt."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered PermissionProfile and runSupervisedTask model/permission arguments. Do not add adapters or change the BB-128 tool-id whitelist.",
-    "Unknown permission values fail before spawn. Default remains WORKSPACE_EDIT when omitted.",
-    "No sandbox, SCM push, or live-value claim."
+    "Product edits are packages/agent-tools/src/deliver-slice.js and bin/exharness-agent.mjs plus the named test and Living docs in sourceScope.write. tool-adapters.js and supervisor.js are read-only.",
+    "Reuse delivered PermissionProfile and runSupervisedTask model/permission arguments. Unknown permission values fail before spawn. Default remains WORKSPACE_EDIT when omitted; model default remains null.",
+    "CLI override wins over the manifest the same way --recovery-dir already wins over slice.recoveryDir.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "Unknown permission values never spawn an agent process.",
-    "Omitting permission and model keeps the delivered run defaults.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "A deliver manifest or CLI override that sets permissionProfile and model is forwarded into every Backend runSupervisedTask/resumeSupervisedTask call.",
+    "Unknown permission values, non-string models and non-string permissionProfile fail closed in validateDeliverSlice or commandDeliverCli before any agent process starts. Omitted fields keep WORKSPACE_EDIT and model null. Extra undeclared JSON keys stay ignored. FULL_AUTO needs no extra confirmation."
   ],
   "architectureDecisions": [
-    "Accept optional permission and model on the deliver manifest and as CLI overrides, then forward them to runSupervisedTask. Extra unknown fields remain ignored except these two declared options.",
-    "Validate permission against PermissionProfile before any process starts. CLI override wins over the manifest the same way --recovery-dir already wins over slice.recoveryDir."
+    "D1 — Optional permissionProfile and model on DELIVER_SLICE_V1. validateDeliverSlice: if slice.permissionProfile !== undefined it must be Object.values(PermissionProfile).includes, else TypeError before spawn; if slice.model !== undefined it must be a string (empty allowed only if run allows; pin: non-empty string or omit; null is omit). Frozen return includes the fields when present. Extra unknown JSON keys remain ignored. DELIVERED_TRUTH: validateDeliverSlice never mentions permissionProfile or model; audit deliverMentionsPermissionProfile false, deliverMentionsModel false; run CLI already maps --permission/--model.",
+    "D2 — CLI --permission and --model on deliver. USAGE adds [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] to the deliver line. commandDeliverCli maps permission: options.permission, model: options.model. commandDeliver/runDeliverSlice options: permissionProfile default null meaning \"use slice then WORKSPACE_EDIT\", model default null meaning \"use slice then null\". Precedence: CLI option if provided, else slice field, else PermissionProfile.WORKSPACE_EDIT / null. Same pattern as recoveryDir: options.recoveryDir ?? slice.recoveryDir. Unknown --permission is UsageError like commandRun. No extra FULL_AUTO confirmation — run already accepts FULL_AUTO without one.",
+    "D3 — Forward into Backend only. All runSupervisedTask and resumeSupervisedTask calls in runDeliverSlice pass permissionProfile and model. QA is unchanged. Import PermissionProfile from tool-adapters.js (already imported there).",
+    "D4 — Tests in packages/agent-tools/test/deliver-run-options.test.js. P1: validateDeliverSlice accepts permissionProfile FULL_AUTO and model \"gpt-test\"; runDeliverSlice with fake FIX_FIRST ACCEPTED. P2: CLI --permission FULL_AUTO --model x overrides manifest WORKSPACE_EDIT. N1: validateDeliverSlice({...slice, permissionProfile: \"NOPE\"}) throws TypeError before spawn. N2: omitted fields, runDeliverSlice uses WORKSPACE_EDIT and model null (compare against a control that sets them explicitly only if observable via onHandleWrite/env; at minimum the call does not throw and ACCEPTED matches the no-option control). N3: slice.model: 1 throws TypeError before spawn. Existing deliver-slice.test.js stays green. Hermetic fake CLI.",
+    "D5 — Living docs. operator.md manifest list gains optional permissionProfile and model, CLI --permission/--model, CLI-wins, default WORKSPACE_EDIT/null, unknown permission fails before spawn, no extra FULL_AUTO prompt. state.md operator deliver sentence names the same options. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: discovery deliverMentionsPermissionProfile false, deliverMentionsModel false, runCliPassesPermission true, runCliPassesModel true."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -37,6 +40,7 @@
       "packages/agent-tools/src/tool-adapters.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
       "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-138/discovery.json",
       "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
@@ -55,7 +59,9 @@
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-138/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/src/deliver-slice.js",
@@ -65,37 +71,43 @@
       "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/supervisor.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin manifest fields, CLI overrides and fail-closed unknown permission in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward permission/model into runSupervisedTask on the deliver Backend path.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Manifest + CLI + Backend forward [OPTIONS_FORWARDED]: implement D1–D3. validateDeliverSlice optional permissionProfile/model; CLI --permission/--model with CLI-wins; forward into runSupervisedTask/resumeSupervisedTask.",
+    "S2 — Fail-closed fixtures [UNKNOWN_FAILS_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults; N3 non-string model. deliver-slice.test.js stays green.",
+    "S3 — Living docs [OPTIONS_FORWARDED]: implement D5. operator.md and state.md name permission/model, CLI-wins, WORKSPACE_EDIT default, fail-before-spawn. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "OPTIONS_FORWARDED",
       "statement": "A deliver manifest or CLI override can set permission and model; the Backend supervised run receives those values.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "P1 validateDeliverSlice+runDeliverSlice FULL_AUTO/model ACCEPTED; P2 CLI override wins over manifest."
       ]
     },
     {
       "id": "UNKNOWN_FAILS_CLOSED",
       "statement": "Unknown permission values, non-string models and extra unknown option types fail closed before any agent process starts. Omitted fields keep the delivered run defaults.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "BB-138 N1 validateDeliverSlice unknown permission; N2 omitted keeps WORKSPACE_EDIT/model null; N3 non-string model TypeError."
       ]
     }
   ],
@@ -105,39 +117,40 @@
       "command": "node --test packages/agent-tools/test/deliver-run-options.test.js"
     },
     {
+      "id": "deliver-regression",
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+    },
+    {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Unknown permission values never spawn an agent process.",
+      "invariant": "A deliver manifest or CLI override that sets permissionProfile and model is forwarded into every Backend runSupervisedTask/resumeSupervisedTask call.",
       "criterionIds": [
-        "UNKNOWN_FAILS_CLOSED"
+        "OPTIONS_FORWARDED"
       ]
     },
     {
-      "invariant": "Omitting permission and model keeps the delivered run defaults.",
+      "invariant": "Unknown permission values, non-string models and non-string permissionProfile fail closed in validateDeliverSlice or commandDeliverCli before any agent process starts. Omitted fields keep WORKSPACE_EDIT and model null. Extra undeclared JSON keys stay ignored. FULL_AUTO needs no extra confirmation.",
       "criterionIds": [
-        "OPTIONS_FORWARDED",
-        "UNKNOWN_FAILS_CLOSED"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "OPTIONS_FORWARDED",
         "UNKNOWN_FAILS_CLOSED"
       ]
     }
   ],
   "negativeVerificationCases": [
     "Unknown permission must fail before spawn",
-    "Omitted permission and model must keep run defaults"
+    "Omitted permission and model must keep run defaults",
+    "Non-string model must fail before spawn"
   ],
   "negativeCaseBindings": [
     {
@@ -156,26 +169,265 @@
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
       "testTitle": "BB-138 N2 Omitted permission and model must keep run defaults",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NEG_138_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "UNKNOWN_FAILS_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
+      "testTitle": "BB-138 N3 Non-string model must fail before spawn",
       "subjectSymbol": "validateDeliverSlice"
     }
   ],
-  "researchGaps": [
-    "Ratify CLI versus manifest precedence for model/permission and whether FULL_AUTO on deliver needs an extra operator confirmation, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that deliver accepts optional permissionProfile and model on the manifest and --permission/--model on the CLI, that CLI overrides the manifest, that omitted fields keep WORKSPACE_EDIT and a null model, and that unknown permission fails before spawn. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-138/discovery.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: deliverMentionsPermissionProfile false, deliverMentionsModel false, runCliPassesPermission true, runCliPassesModel true."
+    },
+    {
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "finding": "DELIVERED_TRUTH: validateDeliverSlice ignores extra fields and never copies permissionProfile or model; runDeliverSlice does not pass those keys to runSupervisedTask."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandRun maps --permission default WORKSPACE_EDIT and --model default null; commandDeliverCli maps only slice/command/recovery-dir."
+    },
+    {
+      "ref": "packages/agent-tools/src/tool-adapters.js",
+      "finding": "DELIVERED_TRUTH: PermissionProfile is WORKSPACE_EDIT | FULL_AUTO."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-104"
+    ],
+    "workerStart": "Confirm validateDeliverSlice still omits permission/model, commandRun still maps --permission/--model, and PermissionProfile is still two values. BB-104 DONE. deliver-slice.test.js stays green. Do not wait on BB-128 whitelist work.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "PermissionProfile enum",
+        "run --permission --model",
+        "runSupervisedTask defaults",
+        "validateDeliverSlice extra fields ignored",
+        "recovery-dir CLI-wins precedence"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "deliver permissionProfile/model manifest+CLI",
+        "CLI-wins",
+        "fail-before-spawn"
+      ]
+    },
+    "contradiction": "None. BB-104 owns the slice; this task only forwards already-delivered run options. No extra FULL_AUTO prompt because run has none."
+  },
+  "deliveryContract": {
+    "precondition": "BB-104 DONE.",
+    "completion": "focused + deliver-slice.test.js + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No tool-adapters.js/supervisor.js edits, no extra FULL_AUTO prompt, no new permission enum, no BB-128 whitelist change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "deliver-regression",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "WORKSPACE_EDIT default",
+      "model null default",
+      "extra JSON keys ignored",
+      "PermissionProfile enum",
+      "deliver-slice.test.js"
+    ],
+    "add": [
+      "manifest+CLI permission/model",
+      "deliver-run-options tests"
+    ],
+    "rollback": "Remove permissionProfile/model from validateDeliverSlice, runDeliverSlice and deliver USAGE; delete deliver-run-options.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-138 objective + discovery.json + delivered deliver-slice/run CLI/PermissionProfile",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-104",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "new permission enum, extra FULL_AUTO prompt, whitelist change."
+      ]
+    }
+  ],
   "valueHypothesis": {
     "expectedValue": "Deliver uses the same run contract the operator can already declare on run, instead of silently defaulting.",
     "measurement": "Fake-CLI deliver fixture forwards FULL_AUTO and a model string; unknown permission fails before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A deliver manifest or CLI override can set permission and model; the Backend supervised run receives those values.",
+      "criterionIds": [
+        "OPTIONS_FORWARDED"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/tool-adapters.js",
+        "docs/blackboard/evidence/BB-138/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-138/discovery.json",
+          "match": "\"deliverMentionsPermissionProfile\": false"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "const permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT;"
+        },
+        {
+          "ref": "packages/agent-tools/src/tool-adapters.js",
+          "match": "export const PermissionProfile = Object.freeze({"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "/** Validates DELIVER_SLICE_V1 before any process starts; extra fields are ignored. */"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unknown permission values, non-string models and extra unknown option types fail closed before any agent process starts. Omitted fields keep the delivered run defaults.",
+      "criterionIds": [
+        "UNKNOWN_FAILS_CLOSED"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/src/tool-adapters.js",
+        "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+        "packages/agent-tools/bin/exharness-agent.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/tool-adapters.js",
+          "match": "WORKSPACE_EDIT: \"WORKSPACE_EDIT\""
+        },
+        {
+          "ref": "packages/agent-tools/src/tool-adapters.js",
+          "match": "FULL_AUTO: \"FULL_AUTO\""
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+          "match": "\"runCliPassesPermission\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "export function validateDeliverSlice(slice) {"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "OPTIONS_FORWARDED",
+        "UNKNOWN_FAILS_CLOSED"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-composition.md",
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/agent-tools/operator.md",
+        "docs/blackboard/evidence/BB-138/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-composition.md",
+          "match": "| Permission/model on deliver"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "## Operator deliver slice"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/operator.md",
+          "match": "`exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]`"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-138/discovery.json",
+          "match": "\"deliverMentionsModel\": false"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
