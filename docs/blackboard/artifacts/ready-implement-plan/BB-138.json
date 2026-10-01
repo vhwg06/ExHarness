@@ -26,8 +26,8 @@
     "Unknown permission values, non-string models and non-string permissionProfile fail closed in validateDeliverSlice or commandDeliverCli before any agent process starts. Omitted fields keep WORKSPACE_EDIT and model null. Extra undeclared JSON keys stay ignored. FULL_AUTO needs no extra confirmation."
   ],
   "architectureDecisions": [
-    "D1 — Preserve optional permissionProfile/model fields on DELIVER_SLICE_V1. Permission must be WORKSPACE_EDIT or FULL_AUTO; model must be a non-empty string when present. Explicit null, empty string, number, boolean, array and object are rejected before any process. Omission alone selects the delivered WORKSPACE_EDIT/null defaults. Undeclared JSON keys retain delivered ignore behavior; declared options and overrides require exact types.",
-    "D2 — Add deliver CLI --permission and --model; commandDeliverCli maps permissionProfile:options.permission and model:options.model only when supplied. Programmatic options use undefined for omission; explicit null/empty/non-string overrides reject before dispatch. Effective permission/model is supplied option, then manifest field, then WORKSPACE_EDIT/null. Manifest fields use D1 validation. CLI permission must be exact enum and model nonempty string. Update USAGE. No extra confirmation beyond existing run FULL_AUTO behavior.",
+    "D1 — DELIVER_SLICE_V1 carries optional permissionProfile/model. permissionProfile must be WORKSPACE_EDIT or FULL_AUTO; supplied model is nonempty string. Explicit null/empty/number/boolean/array/object rejects before processes. Only omission yields WORKSPACE_EDIT/null. Reject unrecognized manifest keys too; recognized current keys are id,repositoryRoot,baseRevision,prompt,tool,backendVerifications,qaVerifications,requiredFiles,recoveryDir,maxAttempts,timeoutMs plus these two fields. Already-delivered additive fields must retain their own validation; unknown fields never silently grant options. No widening tool-id parity.",
+    "D2 — Add deliver CLI --permission and --model; commandDeliverCli maps permissionProfile:options.permission and model:options.model only when supplied. Programmatic options use undefined for omission; explicit null/empty/non-string overrides reject before dispatch. Effective permission/model is supplied option, then manifest field, then WORKSPACE_EDIT/null. Manifest fields use D1 validation. CLI permission must be exact enum and model nonempty string. Update USAGE. No extra confirmation beyond existing run FULL_AUTO behavior. Add DELIVER_FLAGS whitelist slice,command,recovery-dir,permission,model; reject unknown CLI flags before manifest reading or tool resolution. runDeliverSlice/commandDeliver reject unrecognized programmatic option keys; recognized existing tool/command/recovery/env/maxAttempts/timeoutMs/onHandleWrite and aliases retain their validation.",
     "D3 — Forward into Backend only. All runSupervisedTask and resumeSupervisedTask calls in runDeliverSlice pass permissionProfile and model. QA is unchanged. Import PermissionProfile from tool-adapters.js (already imported there).",
     "D4 — Focused tests follow testContract. Reject every malformed declared manifest and programmatic override before fake dispatch, directly exercise validateDeliverSlice in bound N1/N3, and exercise runDeliverSlice with captured invocation for bound N2. Capture actual permission/model in fresh and durable-resume invocations, exact CLI argv and unchanged omitted defaults; success status alone cannot establish forwarding. Existing deliver tests remain green.",
     "D5 — Living docs. operator.md manifest list gains optional permissionProfile and model, CLI --permission/--model, CLI-wins, default WORKSPACE_EDIT/null, unknown permission fails before spawn, no extra FULL_AUTO prompt. state.md operator deliver sentence names the same options. No Blackboard ids.",
@@ -130,6 +130,11 @@
           "title": "BB-138 N3 Non-string model must fail before spawn",
           "subject": "validateDeliverSlice",
           "criterionId": "UNKNOWN_FAILS_CLOSED"
+        },
+        {
+          "title": "BB-138 N4 Unrecognized manifest or deliver option fails before dispatch",
+          "subject": "validateDeliverSlice",
+          "criterionId": "UNKNOWN_FAILS_CLOSED"
         }
       ],
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
@@ -172,7 +177,8 @@
   "negativeVerificationCases": [
     "Unknown permission must fail before spawn",
     "Omitted permission and model must keep run defaults",
-    "Non-string model must fail before spawn"
+    "Non-string model must fail before spawn",
+    "Unrecognized manifest or deliver option fails before dispatch"
   ],
   "negativeCaseBindings": [
     {
@@ -200,6 +206,15 @@
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
       "testTitle": "BB-138 N3 Non-string model must fail before spawn",
+      "subjectSymbol": "validateDeliverSlice"
+    },
+    {
+      "id": "NEG_138_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "UNKNOWN_FAILS_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
+      "testTitle": "BB-138 N4 Unrecognized manifest or deliver option fails before dispatch",
       "subjectSymbol": "validateDeliverSlice"
     }
   ],
@@ -358,7 +373,7 @@
       ],
       "supportingPlanFields": [
         "testContract",
-        "researchObservedResult"
+        "prototypeEvidence"
       ]
     },
     {
@@ -451,9 +466,10 @@
     }
   ],
   "testContract": {
-    "validation": "Distinct direct validateDeliverSlice tests reject permissionProfile NOPE/null/1/false/[]/{}, and model null/empty/1/false/[]/{}. Repeat declared-option validation on runDeliverSlice options before resolveTool/probe/run; rejected calls leave fake-cli dispatch marker absent and repository HEAD/status/refs unchanged. Unknown JSON keys are ignored as before. CLI malformed permission/model exits 64 before dispatch; CLI boolean flags cannot become true model/permission values.",
+    "validation": "Distinct direct validateDeliverSlice tests reject permissionProfile NOPE/null/1/false/[]/{}, and model null/empty/1/false/[]/{}. Repeat declared-option validation on runDeliverSlice options before resolveTool/probe/run; rejected calls leave fake-cli dispatch marker absent and repository HEAD/status/refs unchanged. Unrecognized JSON/programmatic keys, including modelOptions:{} and permissionOptions:1, reject before dispatch; missing fields retain defaults. Unknown deliver CLI flags exit64 before manifest read/dispatch. CLI malformed permission/model exits 64 before dispatch; CLI boolean flags cannot become true model/permission values.",
     "forwarding": "Fresh actual runDeliverSlice invokes a wrapped fake adapter capturing buildInvocation request and actual argv: FULL_AUTO/gpt-test in request and --sandbox danger-full-access/--model gpt-test in fresh Codex argv. CLI supplied options override manifest WORKSPACE_EDIT/manifest-model. Durable interrupt/resume captures request.model and request.permissionProfile after normalization; Codex resume argv intentionally omits both options because its session carries them, so do not assert fresh flags on resume. Dispatch through both runSupervisedTask and resumeSupervisedTask must receive resolved values. Status alone is not forwarding evidence.",
-    "defaults": "Direct validateDeliverSlice omitted-field test plus captured invocation asserts WORKSPACE_EDIT/model null, no model argv and workspace-write sandbox. Explicit valid options differ observably. No future product result is asserted in this research plan."
+    "defaults": "Direct validateDeliverSlice omitted-field test plus captured invocation asserts WORKSPACE_EDIT/model null, no model argv and workspace-write sandbox. Explicit valid options differ observably. No future product result is asserted in this research plan.",
+    "prototypeLimit": "The source-copy prototype validates declared malformed option types, defaults and manifest/programmatic precedence; strict unknown-key/CLI-flag validation is additionally required by the new focused N4. No claim that N4 ran against future product code."
   },
   "researchSeamProbe": {
     "classification": "EXECUTED_RESEARCH_SEAM_PROBE_NOT_PRODUCT_FEATURE",
@@ -534,5 +550,47 @@
       "EXHARNESS_SUPERVISED"
     ],
     "limits": "Direct delivered mapBackendOrderToAgentTask/runSupervisedTask/eval/observation seams. Does not execute the future deliver manifest, CLI eval/smoke or Application recovery forwarding; Worker focused tests must call those public subjects."
+  },
+  "prototypeEvidence": {
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_PRODUCT_DELIVERY",
+      "runtime": "v24.19.0",
+      "sourceSha256": "3e01111173b511954fb14432e4c42e635437a5adbb4e8a97a57deab1e8e056c7",
+      "manifestArgv": [
+        "exec",
+        "--json",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "danger-full-access",
+        "--model",
+        "manifest-model",
+        "-"
+      ],
+      "overrideArgv": [
+        "exec",
+        "--json",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "danger-full-access",
+        "--model",
+        "override-model",
+        "-"
+      ],
+      "defaultsArgv": [
+        "exec",
+        "--json",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "workspace-write",
+        "-"
+      ],
+      "acceptedRuns": 3,
+      "malformedCases": 12,
+      "unexpectedDispatches": 0,
+      "sourcePreserved": true,
+      "limits": "Copied deliver module changes only normalization/forwarding; imports delivered leaf modules and runs actual independent QA. Does not prove BB-125 future durable factor binding or product CLI integration."
+    },
+    "replay": "/workspace/research-plans/deliver-prototype-check.mjs",
+    "method": "Actual scratch source-copy prototype executes delivered modules with deterministic fake agent and real Git; every assertion was executed. Exact generated source hash is retained. This is feasibility evidence and does not grant Worker authority or claim tracked product delivery."
   }
 }
