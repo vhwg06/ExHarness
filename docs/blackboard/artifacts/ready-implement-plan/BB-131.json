@@ -102,8 +102,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes.",
-    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics.",
+    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes. The seed format is JSON array/object <=1MiB; service-specific owned data directory receives seed.json with exact protected bytes. No generic database seeding inference.",
+    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics. Inject reserved PREVIEW_CANDIDATE_SHA/TREE, PREVIEW_CONFIG_DIGEST/SEED_DIGEST as checked public identity inputs so the service can answer required health fields. Validate inherited env is absent and all internal overrides rejected. Node DATA_DIR is each service own generation directory; reset copies protected seed.json only after reaping prior groups.",
     "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
     "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority."
   ],
@@ -173,30 +173,25 @@
     {
       "id": "focused",
       "command": "node --test packages/agent-tools/test/local-preview.test.js",
-      "negativeCases": "Execute distinct bound tests NEG_131_1, NEG_131_2, NEG_131_3, NEG_131_4, NEG_131_5, NEG_131_6, NEG_131_7, NEG_131_8, NEG_131_9, NEG_131_10. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests NEG_131_1, NEG_131_2, NEG_131_3, NEG_131_4, NEG_131_5, NEG_131_6, NEG_131_7, NEG_131_8, NEG_131_9, NEG_131_10. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "composition",
       "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
       "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only.",
-      "negativeCases": "Execute distinct bound tests NEG_131_11, NEG_131_12. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests NEG_131_11, NEG_131_12. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agent-tools"
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agentic"
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run verify:current-docs"
     }
   ],
   "invariantCoverage": [
@@ -379,9 +374,9 @@
       "kind": "NODE_HTTP_V1",
       "runtime": "Operator-selected absolute Node executable with expected version and SHA256. Recheck actual binary/version at observe/reset. Initial support: Node 24/Linux x64.",
       "commands": "services:[{id,entry,args,env,port,healthPath}]; unique ids, literal string args, tracked relative JS entrypoints, shell:false. No installers, wrappers, hooks or external-service adoption.",
-      "configuration": "configInputs:[{path,sha256}],seed:{path,sha256}; tracked regular files, no symlink escape/traversal. Strict shape/limit checks before effects. Canonical sorted JSON for objects, raw SHA256 for files.",
+      "configuration": "configInputs:[{path,sha256}],seed:{path,sha256}; tracked regular files, no symlink escape/traversal. Strict shape/limit checks before effects. Canonical sorted JSON for objects, raw SHA256 for files. Seed must be UTF-8 JSON array/object for this finite profile; parse/schema/size failure INVALID_PROFILE before effects, max seed1MiB. Config regular-file digest set remains unchanged through run.",
       "ports": "Fixed 127.0.0.1; default port 0 is OS-assigned, nonzero conflict never cleared. No external URLs/redirects. Size/schema-check owned IPC messages and identify child sender.",
-      "environment": "Literal minimal env plus reserved PREVIEW_RUN_TOKEN/SERVICE_ID/DATA_DIR/PORT; reject internal overrides and credential-bearing keys; remove NODE_OPTIONS/NODE_TEST_CONTEXT. QA gets protected PREVIEW_RECEIPT_PATH through BB-130 explicit overlay. Receipt stores keys/digest, no raw values/token.",
+      "environment": "Literal minimal env plus reserved PREVIEW_RUN_TOKEN/SERVICE_ID/DATA_DIR/PORT; reject internal overrides and credential-bearing keys; remove NODE_OPTIONS/NODE_TEST_CONTEXT. QA gets protected PREVIEW_RECEIPT_PATH through BB-130 explicit overlay. Receipt stores keys/digest, no raw values/token. Reserve and inject PREVIEW_CANDIDATE_SHA, PREVIEW_CANDIDATE_TREE, PREVIEW_CONFIG_DIGEST and PREVIEW_SEED_DIGEST from independently checked pins, so entrypoint can echo expected health bindings. Caller overrides of these keys reject.",
       "budgets": "Positive bounded integers: startup default 30000/max120000 ms; probe default1000 within remaining deadline; response max16384 bytes; output default65536 per stream; shutdown default5000/max30000 ms. Bound runtime probes too."
     },
     "receipt": {
@@ -433,7 +428,7 @@
     "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
     "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
     "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
-    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference."
+    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation."
   },
   "researchBrief": {
     "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
@@ -778,6 +773,15 @@
         "No container live/setup comparison or third-party stack trial",
         "Fixture generation/authoring is excluded from setupMs and interventions; no human-effort claim"
       ]
+    },
+    "freshReplay": {
+      "method": "Original byte-verified prototype first rejected historical dockerUnavailable assertion on this host. Derived replay changes only that assertion into actual availability observation; no container feature/comparison added.",
+      "node": "v24.19.0",
+      "dockerUnavailable": false,
+      "checks": 12,
+      "allChecksPass": true,
+      "sourceRef": "preview-replay-observe.mjs",
+      "limits": "Research feasibility only; production strict protocol/bounds remain Worker checks."
     }
   }
 }
