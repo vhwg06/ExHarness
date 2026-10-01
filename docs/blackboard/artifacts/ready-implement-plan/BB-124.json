@@ -4,186 +4,32 @@
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-124",
   "status": "DRAFT",
-  "objective": {
-    "ref": "docs/blackboard/artifacts/objective/BB-124.json",
-    "hash": "9b7459c45debcf0dd4d6094f942e856ae07be0fdb6f400bc9c7df18f90f8b285"
-  },
-  "scope": [
-    "agent-tools.observation.usage-completeness",
-    "agent-tools.report.field-coverage"
-  ],
-  "outOfScope": [
-    "Rewriting BB-099 experiment or loosening its thresholds.",
-    "Inventing Kiro/agy usage schemas or inferring tokens from text.",
-    "Grok total_cost_usd type/null normalization and grounded exclusion fixes owned by the existing main BB-123."
-  ],
-  "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
-    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
-    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
-  ],
-  "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
-  ],
-  "architectureDecisions": [
-    "Prefer conservative null complete totals plus separately labelled observed partial counts; do not infer unreported tokens or prices. Consider streaming collection only if a bounded real-output probe justifies the extra complexity.",
-    "Reuse the observed-cost guard delivered by BB-123 unchanged. Add per-field coverage for optional token/cost aggregates; a sum over reporting records is not a complete total over the cohort. Do not infer unreported tokens or prices."
-  ],
-  "sourceSeams": {
-    "requiredExisting": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
-      "docs/blackboard/evidence/BB-124/discovery.json",
-      "docs/blackboard/process/delivery-value-improvement-research.md"
-    ],
-    "expectedNew": [
-      "packages/agent-tools/test/accounting-completeness.test.js"
-    ],
-    "expectedTests": [
-      "packages/agent-tools/test/accounting-completeness.test.js"
-    ]
-  },
-  "sourceScope": {
-    "read": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
-      "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
-      "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
-      "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-124/discovery.json"
-    ],
-    "write": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
-      "packages/agent-tools/test/accounting-completeness.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
-    ],
-    "forbiddenWrite": [
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "packages/benchmark/**",
-      "docs/blackboard/**",
-      ".github/**"
-    ]
-  },
-  "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
-  ],
-  "acceptanceCriteria": [
-    {
-      "id": "USAGE_TRUTH",
-      "statement": "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
-      "verificationIds": [
-        "focused"
-      ],
-      "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
-      ]
-    },
-    {
-      "id": "FIELD_COVERAGE",
-      "statement": "Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.",
-      "verificationIds": [
-        "focused"
-      ],
-      "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
-      ]
-    }
-  ],
-  "verificationPlan": [
-    {
-      "id": "focused",
-      "command": "node --test packages/agent-tools/test/accounting-completeness.test.js"
-    },
-    {
-      "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
-    },
-    {
-      "id": "docs",
-      "command": "npm run verify:current-docs"
-    }
-  ],
-  "invariantCoverage": [
-    {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-      "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
-      ]
-    },
-    {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-      "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
-      ]
-    }
-  ],
-  "negativeVerificationCases": [
-    "Truncated stream with a completed turn cannot be complete usage",
-    "Missing optional fields cannot be reported as complete per-field totals"
-  ],
-  "negativeCaseBindings": [
-    {
-      "id": "NEG_124_1",
-      "negativeCaseIndex": 0,
-      "criterionId": "USAGE_TRUTH",
-      "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
-      "testTitle": "BB-124 N1 Truncated stream with a completed turn cannot be complete usage",
-      "subjectSymbol": "parseToolOutput"
-    },
-    {
-      "id": "NEG_124_2",
-      "negativeCaseIndex": 1,
-      "criterionId": "FIELD_COVERAGE",
-      "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
-      "testTitle": "BB-124 N2 Missing optional fields cannot be reported as complete per-field totals",
-      "subjectSymbol": "summarizeTraces"
-    }
-  ],
-  "researchGaps": [
-    "Ratify the trace compatibility strategy and field-level completeness representation, including aggregation of optional token fields; pin fixtures before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-  "livingDocs": {
-    "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
-    ],
-    "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
-  },
-  "valueHypothesis": {
-    "expectedValue": "Prevent incomplete token/accounting coverage from appearing to demonstrate a cost advantage.",
-    "measurement": "Every incomplete trace has explicit coverage; complete per-tool comparison uses matched observed coverage or reports INCONCLUSIVE.",
-    "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+  "objective": {"ref":"docs/blackboard/artifacts/objective/BB-124.json","hash":"9b7459c45debcf0dd4d6094f942e856ae07be0fdb6f400bc9c7df18f90f8b285"},
+  "scope": ["agent-tools.observation.usage-completeness","agent-tools.report.field-coverage"],
+  "outOfScope": ["Rewriting BB-099 experiment or loosening its thresholds.","Inventing Kiro/agy usage schemas or inferring tokens from text.","BB-123 Grok cost normalization and grounded exclusion; consumed unchanged after DONE."],
+  "constraints": ["RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.","Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.","Provider/live results, accounting and quality acceptance stay separate; no provider calls or inferred prices in this research.","Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."],
+  "invariants": ["Missing, invalid or uncertain accounting never becomes an observed zero or a complete total; each field carries its own coverage and zero is an observation.","Legacy and newly appended trace bytes remain digest-bound; historical records cannot be upgraded to complete accounting without evidence.","Observed cost guard and grounded-context changes remain exclusively owned by BB-123; this task consumes its cost contract without changing it.","Trace/report evidence is descriptive only; exact plan/candidate/evaluator bindings and independent Jev judgment remain necessary for readiness and delivery."],
+  "architectureDecisions": ["D1 — Keep usage's six keys for Codex/Kiro/agy and existing totalCostUsd for Grok/OpenCode. Add sibling usageAccounting to parser results and trace bodies. Keep V1 trace/report identifiers, digest algorithm and old bytes unchanged.","D2 — usageAccounting={version:'USAGE_ACCOUNTING_V1',state,reasons,fields}. All five fields (four tokens plus totalCostUsd) have {state:COMPLETE|PARTIAL|UNAVAILABLE,observedUnits,expectedUnits,observedTotal,total}. Units include EVERY Codex turn.completed/OpenCode step_finish, even invalid or absent usage; Grok is one response. Collect each field independently, including cost without tokens. Unsupported fields are UNAVAILABLE.","D3 — COMPLETE requires a nonempty known cohort, a valid value in every unit and no capture/lifecycle uncertainty; total=observedTotal. PARTIAL requires observations without full coverage; total=null. UNAVAILABLE has observedTotal=total=null. Zero counts as observed. expectedUnits=null for unknown cohort (truncation, invalid output, timeout, unfinished lifecycle), else all-unit count. Tokens/count sums are safe nonnegative integers; costs/sums finite nonnegative numbers; overflow publishes no sum and adds AGGREGATE_OVERFLOW.","D4 — Core state COMPLETE requires both input/output COMPLETE; otherwise PARTIAL if any field observed, else UNAVAILABLE. Optional states are independent. Each legacy usage[field] equals its complete field total, never observedTotal; independently complete fields survive a missing partner. uncertain streams have all legacy totals null. unavailableReason=null only for complete core. The existing experiment consumer thus receives conservative nullable fields without edits.","D5 — JSONL counts all completions before validation and retains event counts/invalidLines. Nonblank bad JSON, nonobject or missing-type lines add INVALID_OUTPUT. Truncation always applies, even after valid completions. Track starts/terminals in order: an open observed start or failed/error terminal adds INCOMPLETE_LIFECYCLE. Completion-only fixtures do not need starts. Missing required fields add MISSING_REQUIRED_USAGE; known-cohort complete fields remain independently complete.","D6 — Grok invalidJson (including outside-object text) or truncated flag prevents complete fields; balanced valid prefixes retain observed partial values; unparseable JSON has none. num_turns is never a usage denominator. Reuse BB-123's exact finite-number >=0 cost guard unchanged; no Number coercion or new cost contract. Preserve OpenCode's strict part.cost guard.","D7 — Timeout parses retained stdout for all three structured tools and retains partial observations only in metadata. TOOL_UNAVAILABLE, unknown, Kiro/agy keep existing null usage/source/reason and UNAVAILABLE metadata. Unique reasons use fixed priority: TIMED_OUT, tool-specific truncation, INVALID_OUTPUT, INCOMPLETE_LIFECYCLE, AGGREGATE_OVERFLOW, MISSING_REQUIRED_USAGE, existing not-reported/unsupported reason. Optional omissions use field states. No text/stderr inference.","D8 — Report fieldCoverage has all five fields; each={state,completeTraces,partialTraces,unavailableTraces,observedTotal,total}. Counts partition ALL group traces. COMPLETE needs every trace field complete in a nonempty group; PARTIAL has observations without full coverage; otherwise UNAVAILABLE. observedTotal includes partials, total only whole-cohort completeness. No core-token gate for cost. Validate metadata version/state/values/counts/totals; invalid metadata never grants completeness and records INVALID_ACCOUNTING_METADATA.","D9 — Keep coveredTraces as COMPLETE-core count and uncoveredTraces its complement; add core complete/partial/unavailable counts. Retain named totalsOverCoveredTraces and totalCostUsdOverCoveredTraces for that subset, but an optional total is null unless every covered trace has that field COMPLETE; empty subset all null. Only fieldCoverage.total represents all traces. Preserve reason counts, deterministic grouping and DESCRIPTIVE-only semantics.","D10 — Missing metadata means LEGACY_COMPLETENESS_UNKNOWN: valid legacy fields are PARTIAL observations, never complete from null reason/exit/excerpts/absent flags. Trace timeout/truncation/invalid-output flags only downgrade accounting. Old lines verify and append byte-identically; new metadata is digest-bound and tampering fails. No migration rewrite/version bump.","D11 — Focused subject-invoking fixtures pin exact counts/states/null/zero. Update stale existing parser tests only where behavior changes: BB-098 codex-usage.jsonl contains malformed records and now supplies partial observations. Preserve fixture bytes and valid Grok/OpenCode complete outputs. Exercise read-only usageObservationFromTraces with parsed incomplete streams.","D12 — Keep bounded capture; defer streaming. Actual child-process capture retained 10 of synthetic 40 input tokens with truncated=true; in-memory model kept observed 10 while withholding complete total. No real-provider/streaming benefit was measured. Prototype proves feasibility only; Worker invokes actual symbols.","D13 — Living docs describe metadata, independent denominators, observed partial sums, unknown legacy completeness and unchanged digest verification. No Blackboard ids/readiness claims. Only authorized files may change; preserve BB-123 cost validation and grounded-context behavior."],
+  "sourceSeams": {"requiredExisting":["packages/agent-tools/src/output-parsers.js","packages/agent-tools/src/report.js","packages/agent-tools/src/run-trace.js","docs/blackboard/evidence/BB-124/discovery.json","docs/blackboard/process/delivery-value-improvement-research.md","packages/agent-tools/src/process-runner.js","packages/agent-tools/test/run-trace.test.js","packages/agent-tools/test/grok-adapter.test.js","docs/blackboard/artifacts/ready-implement-plan/BB-123.json"],"expectedNew":["packages/agent-tools/test/accounting-completeness.test.js"],"expectedTests":["packages/agent-tools/test/accounting-completeness.test.js"]},
+  "sourceScope": {"read":["packages/agent-tools/src/**","packages/agent-tools/test/**","packages/agentic-system/src/**","packages/agentic-system/test/**","scripts/blackboard-*.mjs","docs/blackboard/work-graph.json","docs/blackboard/jev-policy.json","docs/blackboard/artifacts/objective/BB-124.json","docs/blackboard/artifacts/ready-implement-plan/BB-123.json","docs/blackboard/process/delivery-value-improvement-research.md","docs/blackboard/evidence/BB-124/discovery.json","docs/living/system/agent-tools/**"],"write":["packages/agent-tools/src/output-parsers.js","packages/agent-tools/src/report.js","packages/agent-tools/src/run-trace.js","packages/agent-tools/test/accounting-completeness.test.js","docs/living/system/agent-tools/state.md","docs/living/system/agent-tools/observation.md","packages/agent-tools/test/run-trace.test.js","packages/agent-tools/test/grok-adapter.test.js","packages/agent-tools/test/opencode-adapter.test.js"],"forbiddenWrite":["packages/core-harness/**","packages/oracle/**","packages/benchmark/**","docs/blackboard/**",".github/**","packages/agentic-system/**","packages/agent-tools/src/process-runner.js","packages/agent-tools/src/experiment/**","packages/agent-tools/src/task-context.js"]},
+  "implementationSlices": ["S1 — output-parsers.js: implement D2-D7 unit/field completeness plus sibling metadata, preserve partial observations and zero, consume unchanged BB-123 guard. accounting-completeness.test.js U fixtures call parseToolOutput directly; update existing run-trace/Grok/OpenCode test expectations only where the newly truthful contract changes them.","S2 — report.js: implement D8-D10 fieldCoverage and conservative legacy normalization, keep deterministic grouping/subset fields; accounting-completeness.test.js R fixtures call summarizeTraces directly over mixed coverage and cost-only observations.","S3 — run-trace.js: copy parsed.usageAccounting in buildTraceBody before digesting, with unchanged chain algorithm and no old-file rewrite. accounting-completeness.test.js T fixtures build bodies, append a legacy line then a new line, verify byte-identical prefix, and reject metadata mutation. Exercise read-only usageObservationFromTraces with parsed partial traces.","S4 — Living observation/state documentation and scoped regression expectation updates under D11/D13; run all named criterion checks, package/consumer regressions and docs. Collect exact candidate-bound evidence for independent Worker Jev; do not self-issue READY or delivery."],
+  "acceptanceCriteria": [{"id":"USAGE_TRUTH","statement":"Structured parser results classify capture/lifecycle uncertainty and missing required unit fields conservatively, preserve valid independent partial observations, and expose only complete field totals through legacy usage; explicit zero is observed.","verificationIds":["usage","focused","agent-tools-regression"],"evidenceRequired":["usage.log/focused.log bound to candidate: passing U titles directly invoke parseToolOutput and assert exact legacy nulls, observedTotal, unit counts, reasons, independent fields and zero for all structured tools."]},{"id":"FIELD_COVERAGE","statement":"Each token/cost field independently reports cohort coverage with complete/partial/unavailable trace counts; whole-cohort totals are null unless every trace covers that field completely, while separately labelled observed totals retain partial values.","verificationIds":["coverage","focused","agent-tools-regression"],"evidenceRequired":["coverage.log/focused.log bound to candidate: passing R titles directly invoke summarizeTraces; partitioned field counts, independent cost/optional coverage, legacy downgrade and zero are asserted."]},{"id":"TRACE_COMPAT","statement":"New traces persist digest-bound usageAccounting without changing legacy usage keys, old trace bytes or chain verification, and newly parsed incomplete stream totals cannot be consumed as complete numeric accounting by the existing experiment adapter.","verificationIds":["trace-compat","focused","agent-tools-regression","agentic-regression"],"evidenceRequired":["trace-compat.log bound to candidate: buildTraceBody/readTraces calls, old-prefix byte equality, append/read, metadata tamper rejection, six usage keys, and read-only usageObservationFromTraces regression on incomplete/zero traces."]},{"id":"DOCS_SCOPE","statement":"Living docs accurately describe the implemented completeness/compatibility contract, and the candidate changes only the narrow authorized files while preserving BB-123 cost and grounded-context contracts.","verificationIds":["docs-scope","focused","docs","agent-tools-regression"],"evidenceRequired":["docs-scope.log/docs.log bound to candidate, implemented doc assertions and preserved BB-123 cost matrix; independent candidate scope audit plus BB-123 delivered followup regression in test:agent-tools."]}],
+  "verificationPlan": [{"id":"usage","command":"node --test --test-name-pattern=\"^BB-124 U\" packages/agent-tools/test/accounting-completeness.test.js"},{"id":"coverage","command":"node --test --test-name-pattern=\"^BB-124 R\" packages/agent-tools/test/accounting-completeness.test.js"},{"id":"trace-compat","command":"node --test --test-name-pattern=\"^BB-124 T\" packages/agent-tools/test/accounting-completeness.test.js"},{"id":"docs-scope","command":"node --test --test-name-pattern=\"^BB-124 D\" packages/agent-tools/test/accounting-completeness.test.js"},{"id":"focused","command":"node --test packages/agent-tools/test/accounting-completeness.test.js"},{"id":"agent-tools-regression","command":"npm run test:agent-tools"},{"id":"agentic-regression","command":"npm run test:agentic"},{"id":"docs","command":"npm run verify:current-docs"}],
+  "invariantCoverage": [{"invariant":"Missing, invalid or uncertain accounting never becomes an observed zero or a complete total; each field carries its own coverage and zero is an observation.","criterionIds":["USAGE_TRUTH","FIELD_COVERAGE"]},{"invariant":"Legacy and newly appended trace bytes remain digest-bound; historical records cannot be upgraded to complete accounting without evidence.","criterionIds":["TRACE_COMPAT"]},{"invariant":"Observed cost guard and grounded-context changes remain exclusively owned by BB-123; this task consumes its cost contract without changing it.","criterionIds":["DOCS_SCOPE"]},{"invariant":"Trace/report evidence is descriptive only; exact plan/candidate/evaluator bindings and independent Jev judgment remain necessary for readiness and delivery.","criterionIds":["TRACE_COMPAT","DOCS_SCOPE"]}],
+  "negativeVerificationCases": ["Truncated Codex stream keeps partial observations and null complete totals","Malformed Codex line prevents complete usage despite a valid turn","Missing Codex turn field stays in the denominator","Truncated OpenCode stream cannot publish complete tokens or cost","Missing OpenCode step tokens do not erase reported cost","Truncated or invalid Grok object cannot publish complete usage","Timeout retains observed partial usage without complete totals","Open start or failed terminal prevents complete lifecycle accounting","Missing optional fields cannot appear as whole-cohort totals","Legacy null reason cannot upgrade unknown completeness","Malformed metadata cannot grant complete field coverage","Changing accounting metadata breaks the trace digest chain"],
+  "negativeCaseBindings": [{"id":"NEG_124_U1","negativeCaseIndex":0,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U1 Truncated Codex stream keeps partial observations and null complete totals","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U2","negativeCaseIndex":1,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U2 Malformed Codex line prevents complete usage despite a valid turn","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U3","negativeCaseIndex":2,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U3 Missing Codex turn field stays in the denominator","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U4","negativeCaseIndex":3,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U4 Truncated OpenCode stream cannot publish complete tokens or cost","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U5","negativeCaseIndex":4,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U5 Missing OpenCode step tokens do not erase reported cost","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U6","negativeCaseIndex":5,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U6 Truncated or invalid Grok object cannot publish complete usage","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U7","negativeCaseIndex":6,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U7 Timeout retains observed partial usage without complete totals","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_U8","negativeCaseIndex":7,"criterionId":"USAGE_TRUTH","verificationId":"usage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 U8 Open start or failed terminal prevents complete lifecycle accounting","subjectSymbol":"parseToolOutput"},{"id":"NEG_124_R1","negativeCaseIndex":8,"criterionId":"FIELD_COVERAGE","verificationId":"coverage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 R1 Missing optional fields cannot appear as whole-cohort totals","subjectSymbol":"summarizeTraces"},{"id":"NEG_124_R2","negativeCaseIndex":9,"criterionId":"FIELD_COVERAGE","verificationId":"coverage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 R2 Legacy null reason cannot upgrade unknown completeness","subjectSymbol":"summarizeTraces"},{"id":"NEG_124_R3","negativeCaseIndex":10,"criterionId":"FIELD_COVERAGE","verificationId":"coverage","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 R3 Malformed metadata cannot grant complete field coverage","subjectSymbol":"summarizeTraces"},{"id":"NEG_124_T1","negativeCaseIndex":11,"criterionId":"TRACE_COMPAT","verificationId":"trace-compat","testRef":"packages/agent-tools/test/accounting-completeness.test.js","testTitle":"BB-124 T1 Changing accounting metadata breaks the trace digest chain","subjectSymbol":"readTraces"}],
+  "researchGaps": [],
+  "researchBaselineSha": "9597574729b68e600ce94add111d24f4c6270e19",
+  "livingDocs": {"refs":["docs/living/system/agent-tools/state.md","docs/living/system/agent-tools/observation.md"],"questionId":"LIVING_DOCS","statement":"Living docs describe implemented usageAccounting, independent five-field coverage, null complete totals for partial/legacy evidence, observed zero, unchanged V1 digest chains and descriptive-only reports; no Blackboard ids or research status."},
+  "valueHypothesis": {"expectedValue":"Prevent incomplete token/accounting coverage from appearing to demonstrate a cost advantage.","measurement":"Complete whole-cohort comparisons require fieldCoverage COMPLETE or remain INCONCLUSIVE; BB-099 protocol unchanged.","evidenceClass":"RESEARCH_DESIRED_STATE","valueOwner":"BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"},
+  "fixtureContract": {"file":"packages/agent-tools/test/accounting-completeness.test.js","positiveCases":["BB-124 U9 Complete Codex zero: core COMPLETE, numeric 0, units=1/1; absent optional fields UNAVAILABLE.","BB-124 U10 Input-only unit: input COMPLETE,total=7; output unavailable,core partial. Fields remain independent.","BB-124 U11 Complete Grok/OpenCode cost 0/0.25; omitted/null/boolean/string/negative invalid costs stay unavailable; tokens independent.","BB-124 R4 Mixed zero/complete/partial cohort: input counts2/1/0,observed20,total=null; cached1/1/1,observed0,total=null; cost2/0/1,observed0.25,total=null.","BB-124 R5 Cost-only accounting independent of token core; unsupported cost unavailable; fully covered zero cost totals to 0.","BB-124 R6 Input permutation deterministic; empty records yield no groups or fabricated totals.","BB-124 T2 Build/append new trace after valid legacy line; old prefix bytes identical, both read/verify; metadata digest-bound.","BB-124 T3 usageObservationFromTraces cannot report numeric totals for parsed timeout/truncated streams; complete zero survives; six legacy usage keys unchanged.","BB-124 D1 Living docs match contract; BB-123 parseGrokJson strict cost matrix unchanged; independent candidate diff scope audit."],"implementationEvidence":"All titles are future Worker tests, not executed product evidence. Each negative calls its bound subject directly. Include unknown-version, negative/string values, conflicting metadata, open starts/errors, overflowing sums and timeout matrices. Preserve existing fixture bytes."},
+  "researchAuditSha": "9597574729b68e600ce94add111d24f4c6270e19",
+  "dependencyResolution": {"direct":[{"taskId":"BB-098","status":"DONE","classification":"DELIVERED_TRUTH","refs":["docs/living/system/agent-tools/observation.md","docs/living/system/agent-tools/state.md"]},{"taskId":"BB-105","status":"DONE","classification":"DELIVERED_TRUTH","refs":["docs/living/system/agent-tools/observation.md"]},{"taskId":"BB-123","status":"PLANNED","lane":"WORKER","phase":"EXECUTION","classification":"PLANNED_CONTRACT","ref":"docs/blackboard/artifacts/ready-implement-plan/BB-123.json","requiredBehavior":"Consume exact observed finite-number >=0 cost guard after DONE; do not modify its contract or grounded-context seam."}],"additionalCurrentSource":"BB-122 OpenCode is DONE at audit SHA; affected delivered parser shares output-parsers.js. No graph dependency added; not present at canonical earlier baseline.","workerStart":"All direct dependencies DONE and exact-plan Jev SATISFIED; recheck objective binding and BB-123 guard. Contract contradictions return to research.","baselineBinding":"Plan researchBaselineSha now pins audited origin/main 9597574729b68e600ce94add111d24f4c6270e19. Graph contract still pins 29935fa23cb19af278a6fa8db68b9448bc6b1a0e, which lacks discovery/process evidence files. Only plan edits are authorized here; publication owner must refresh graph baseline to this exact SHA before real Jev materialization. No fabricated readiness.","classification":"Proposed metadata/report/tests=RESEARCH_DESIRED_STATE; executed source defects=DELIVERED_TRUTH; standalone model=feasibility only."},
+  "researchEvidence": [{"ref":"docs/blackboard/evidence/BB-124/discovery.json","classification":"EXECUTED_LOCAL_PROBE","baselineSha":"29935fa23cb19af278a6fa8db68b9448bc6b1a0e","finding":"Original probe's truncatedCodexUsageReportedComplete=true remains reproducible on researchAuditSha; its Grok null-cost defect belongs to BB-123."},{"classification":"EXECUTED_LOCAL_PROBE_AND_IN_MEMORY_DESIGN_PROTOTYPE","baselineSha":"9597574729b68e600ce94add111d24f4c6270e19","evidenceDate":"2026-10-01","providerCalls":0,"sourceHashes":{"packages/agent-tools/src/output-parsers.js":"46f5fb880ed8ca77fc281ef6c7d56fb9189a82b068a9473dc36dc86e792986ee","packages/agent-tools/src/report.js":"89b3f7072798913b247726923cf22c4f9d9de75b91a50cea267d109116c39970"},"reproduceCommand":"node --input-type=module - <<'JS'\nimport assert from 'node:assert/strict';\nimport {parseToolOutput as parse} from './packages/agent-tools/src/output-parsers.js';\nimport {runProcess} from './packages/agent-tools/src/process-runner.js';\nconst turn=usage=>JSON.stringify({type:'turn.completed',usage});\nconst step=(tokens,cost=0)=>JSON.stringify({type:'step_finish',part:{tokens,cost}});\nconst a=turn({input_tokens:10,output_tokens:2,cached_input_tokens:0});\nconst run=(tool,stdout,extra={})=>parse(tool,{status:'COMPLETED',stdout,truncated:{stdout:false},...extra});\nconst cases={codexTruncated:run('codex',a,{truncated:{stdout:true}}),codexInvalidLine:run('codex',a+'\\nnot json'),codexMissingTurnUsage:run('codex',a+'\\n'+turn({output_tokens:4})),codexIndependentField:run('codex',turn({input_tokens:7})),opencodeTruncated:run('opencode',step({input:10,output:2},0.25),{truncated:{stdout:true}}),opencodeMissingStepUsage:run('opencode',step({input:10,output:2})+'\\n'+step({output:4})),grokTruncated:run('grok','{\"usage\":{\"input_tokens\":10,\"output_tokens\":2},\"total_cost_usd\":0.25}',{truncated:{stdout:true}}),timeout:run('codex',a,{status:'TIMED_OUT',timedOut:true}),zero:run('codex',turn({input_tokens:0,output_tokens:0}))};\nconst cap=await runProcess(process.execPath,['-e','process.stdout.write('+JSON.stringify(a+'\\n'+turn({input_tokens:30,output_tokens:3})+'\\n')+')'],{cwd:process.cwd(),maxOutputBytes:Buffer.byteLength(a+'\\n'),timeoutMs:3000,env:{}});\nassert.equal(cap.truncated.stdout,true);assert.equal(run('codex',cap.stdout,{truncated:cap.truncated}).usage.inputTokens,10);\nfunction field(values,uncertain=false){\n const valid=values.filter(x=>typeof x==='number'&&Number.isSafeInteger(x)&&x>=0),sum=valid.length?valid.reduce((a,b)=>a+b,0):null;\n const state=!valid.length?'UNAVAILABLE':!uncertain&&valid.length===values.length?'COMPLETE':'PARTIAL';\n return {state,observedUnits:valid.length,expectedUnits:uncertain?null:values.length,observedTotal:sum,total:state==='COMPLETE'?sum:null};\n}\nconst partial=field([10],true),missing=field([10,null]),output=field([2,4]),zero=field([0]);\nassert.equal(partial.total,null);assert.equal(partial.observedTotal,10);assert.equal(missing.total,null);assert.equal(missing.expectedUnits,2);assert.equal(output.total,6);assert.equal(zero.total,0);\nconst cells=[field([0]),field([10]),partial],complete=cells.filter(x=>x.state==='COMPLETE').length,observed=cells.reduce((n,x)=>n+(x.observedTotal??0),0);\nconst mixed={completeTraces:complete,partialTraces:1,unavailableTraces:0,observedTotal:observed,total:complete===cells.length?observed:null};\nassert.deepEqual(mixed,{completeTraces:2,partialTraces:1,unavailableTraces:0,observedTotal:20,total:null});\nconsole.log(JSON.stringify({providerCalls:0,existing:Object.fromEntries(Object.entries(cases).map(([k,v])=>[k,[v.usage.inputTokens,v.usage.outputTokens,v.usage.totalCostUsd??null,v.usage.unavailableReason]])),capture:{keptBytes:Buffer.byteLength(cap.stdout),truncated:cap.truncated.stdout,retainedInputTokens:10,syntheticFullInputTokens:40},prototype:{partialInput:partial,missingInput:missing,completeOutput:output,zero,mixed,assertions:'passed'}}));\nJS","exitCode":0,"observedResult":{"providerCalls":0,"existing":{"codexTruncated":[10,2,null,null],"codexInvalidLine":[10,2,null,null],"codexMissingTurnUsage":[10,2,null,null],"codexIndependentField":[null,null,null,"CODEX_USAGE_NOT_REPORTED"],"opencodeTruncated":[10,2,0.25,null],"opencodeMissingStepUsage":[10,2,0,null],"grokTruncated":[10,2,0.25,null],"timeout":[null,null,null,"TIMED_OUT"],"zero":[0,0,null,null]},"capture":{"keptBytes":96,"truncated":true,"retainedInputTokens":10,"syntheticFullInputTokens":40},"prototype":{"partialInput":{"state":"PARTIAL","observedUnits":1,"expectedUnits":null,"observedTotal":10,"total":null},"missingInput":{"state":"PARTIAL","observedUnits":1,"expectedUnits":2,"observedTotal":10,"total":null},"completeOutput":{"state":"COMPLETE","observedUnits":2,"expectedUnits":2,"observedTotal":6,"total":6},"zero":{"state":"COMPLETE","observedUnits":1,"expectedUnits":1,"observedTotal":0,"total":0},"mixed":{"completeTraces":2,"partialTraces":1,"unavailableTraces":0,"observedTotal":20,"total":null},"assertions":"passed"},"existingColumns":["inputTokens","outputTokens","totalCostUsd","unavailableReason"]},"finding":"Probes reproduce false completeness and dropped independent fields. Earlier full probe also found mixed optional cached total=0 despite missing coverage; legacy accounting model downgraded old numeric traces and preserved zero. Bounded capture plus replayable field model establish conservative design feasibility.","limits":"Synthetic output/model only; no live providers or product edits. Replay models field arithmetic, not lifecycle/overflow/metadata-validation/persistence/BB-123 implementation. Future subject-invoking Worker tests verify those specified behaviors; no delivery claim."}],
+  "deliveryContract": {"precondition":"BB-098, BB-105 and BB-123 DONE; exact DRAFT becomes READY only after independently satisfied Jev judgment.","completion":"All acceptance/evidence and negative bindings satisfied for exact Worker candidate, Living docs changed, clean scope audit, fresh Worker Jev, evaluated candidate merged with exact tree before delivery.","forbidden":"No partial/legacy upgrade, estimated token/cost, provider-quality/value claim, experiment threshold change, provider call in default tests, historical trace rewrite or duplicated BB-123 normalization."},
+  "ciContract": {"checks":["usage","coverage","trace-compat","docs-scope","focused","agent-tools-regression","agentic-regression","docs"],"negativeEnforcement":"All negativeCaseBindings required by BB-100 threshold in jev-policy.json, distinct passing title per case and direct bound subject invocation.","publication":"DRAFT only; deterministic checks do not imply Jev SATISFIED."},
+  "migrationContract": {"preserve":["V1 trace/report identifiers and chain algorithm","Existing six-key usage shape and numeric complete zero","BB-123 cost guard and grounded exclusion","Descriptive-only reports and independent value acceptance"],"add":["Sibling digest-bound usageAccounting","Five independent report fieldCoverage records","Conservative legacy/partial compatibility","New accounting fixtures and updated stale regression expectations"],"rollback":"Revert new source/docs/tests together; never rewrite persisted traces. Old readers ignore sibling metadata and safely read nullable legacy totals."},
+  "laneContracts": [{"lane":"RESEARCH_SA","input":"Canonical BB-124 objective/hash, graph dependencies and source-bound local probes","output":"DRAFT READY_IMPLEMENT_PLAN only in this branch","binding":"Exact objective hash + plan researchBaselineSha; graph baseline refresh required before Jev","convergence":"researchGaps=[] means choices resolved; fresh independent Jev SATISFIED is still required to mark READY.","forbidden":["Product-source mutation","Treating BB-123 as delivered","Self-issued READY or delivery","Graph/objective/context changes in this branch"]},{"lane":"WORKER","input":"Exact READY plan; BB-098/105/123 DONE","output":"Candidate-bound evidence and independently evaluated delivery","binding":"Exact plan hash/candidate SHA/tree/commands/evidence hashes","convergence":"All acceptance criteria, bound negative cases and Living docs satisfy independent Jev; exact evaluated candidate in main.","forbidden":["Changing upstream plan","Unreported values as zero","Report or telemetry as acceptance authority","Out-of-scope writes"]}],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [{"objectiveCriterion":"Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.","criterionIds":["USAGE_TRUTH","TRACE_COMPAT"],"planElements":["S1","S3"],"verificationIds":["usage","trace-compat","focused"],"decisionIndexes":[0,1,2,3,4,5,6,9,11],"sourceRefs":["packages/agent-tools/src/output-parsers.js","packages/agent-tools/src/run-trace.js","docs/blackboard/evidence/BB-124/discovery.json"],"sourceAnchors":[{"ref":"packages/agent-tools/src/output-parsers.js","match":"if (turns.length === 0)"},{"ref":"packages/agent-tools/src/output-parsers.js","match":"if (invocation.timedOut === true || invocation.status === \"TIMED_OUT\")"},{"ref":"packages/agent-tools/src/run-trace.js","match":"usage: parsed.usage"},{"ref":"docs/blackboard/evidence/BB-124/discovery.json","match":"\"truncatedCodexUsageReportedComplete\": true"}],"supportingPlanFields":["fixtureContract","migrationContract"]},{"objectiveCriterion":"Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.","criterionIds":["FIELD_COVERAGE","DOCS_SCOPE"],"planElements":["S1","S2","S4"],"verificationIds":["coverage","docs-scope","focused"],"decisionIndexes":[1,2,3,5,7,8,9,12],"sourceRefs":["packages/agent-tools/src/report.js","packages/agent-tools/src/output-parsers.js"],"sourceAnchors":[{"ref":"packages/agent-tools/src/report.js","match":"const TOKEN_FIELDS = [\"inputTokens\", \"cachedInputTokens\", \"outputTokens\", \"reasoningOutputTokens\"];"},{"ref":"packages/agent-tools/src/report.js","match":"coveredTraces += 1;"},{"ref":"packages/agent-tools/src/report.js","match":"if (Number.isFinite(usage.totalCostUsd))"},{"ref":"packages/agent-tools/src/output-parsers.js","match":"const cost = Number(value.total_cost_usd);"}],"supportingPlanFields":["fixtureContract","dependencyResolution","livingDocs"]},{"objectiveCriterion":"Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.","criterionIds":["USAGE_TRUTH","FIELD_COVERAGE","TRACE_COMPAT","DOCS_SCOPE"],"planElements":["S1","S2","S3","S4"],"verificationIds":["usage","coverage","trace-compat","docs-scope","focused","agent-tools-regression","agentic-regression","docs"],"decisionIndexes":[10,11,12],"sourceRefs":["docs/blackboard/process/delivery-value-improvement-research.md","docs/blackboard/evidence/BB-124/discovery.json","packages/agent-tools/src/run-trace.js"],"sourceAnchors":[{"ref":"docs/blackboard/process/delivery-value-improvement-research.md","match":"Partial observations may be exposed separately, never mixed with complete totals."},{"ref":"docs/blackboard/evidence/BB-124/discovery.json","match":"\"providerCalls\": 0"},{"ref":"packages/agent-tools/src/run-trace.js","match":"export function traceDigest(record)"}],"supportingPlanFields":["researchEvidence","fixtureContract","ciContract","dependencyResolution"]}]
 }
