@@ -22,9 +22,9 @@
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "A resume is authorized only by the exact persisted task and execution digests; id/repository/base identity alone never authorizes resume.",
+    "Changed bindings fail closed before any spawn; drift is rejected, never retried as a new attempt or silently upgraded.",
+    "Legacy V1 handles never acquire a binding; they fail closed with an explicit migration or restart instruction."
   ],
   "architectureDecisions": [
     "Digest spec (sha256 over canonicalJson from packages/agent-tools/src/run-trace.js: canonical key sort, undefined dropped): taskDigest = sha256(canonicalJson({id, repositoryRoot: resolve(repositoryRoot), baseRevision, prompt, verifications: [{name, command, args, timeoutMs}], requiredFiles: requiredFiles ?? []})) \u2014 the ORIGINAL canonical task exactly as validateAgentTask (packages/agent-tools/src/supervisor.js) returns it; declaredContextDigest = sha256(canonicalJson({taskId, baseRevision, requiredFiles: requiredFiles ?? [], maxMaterializedBytes})); materializedContextDigest = sha256(canonicalJson({items: items.map(({path, sourceRef, snapshotRef, contentSha256: sha256(content)})), promptPrefixDigest: sha256(promptPrefix)})) from resolveAgentTaskContext (packages/agent-tools/src/task-context.js) \u2014 used:false maps to {items: [], promptPrefixDigest: sha256('')}; executionDigest = sha256(canonicalJson({model: model ?? null, permissionProfile, maxAttempts, maxFeedbackChars, timeoutMs, toolVersion})). Never hash or persist credential values: env is excluded from every digest and from the handle body. The V2 binding is persisted by persistRecoverableHandle in runRecoverableTask immediately after workspace/session creation and before harness.vary (first dispatch), then refreshed on every onActCompleted/onAttemptCompleted and terminal status write.",
@@ -126,20 +126,20 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "invariant": "A resume is authorized only by the exact persisted task and execution digests; id/repository/base identity alone never authorizes resume.",
       "criterionIds": [
         "EXACT_RESUME",
         "LEGACY_AND_RECOVERY"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "invariant": "Changed bindings fail closed before any spawn; drift is rejected, never retried as a new attempt or silently upgraded.",
       "criterionIds": [
         "EXACT_RESUME"
       ]
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "Legacy V1 handles never acquire a binding; they fail closed with an explicit migration or restart instruction.",
       "criterionIds": [
         "LEGACY_AND_RECOVERY"
       ]
@@ -255,19 +255,19 @@
       "sourceAnchors": [
         {
           "ref": "packages/agent-tools/src/recovery.js",
-          "match": "export const AGENT_TOOL_RUN_HANDLE_VERSION = \"AGENT_TOOL_RUN_HANDLE_V1\""
+          "match": "export function createAgentToolRunHandle(fields)"
         },
         {
           "ref": "packages/agent-tools/src/recovery.js",
-          "match": "export function verifyAgentToolRunHandle(handle)"
+          "match": "export function handleDigest(body)"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "await persistRecoverableHandle({"
         },
         {
           "ref": "packages/agent-tools/src/supervisor.js",
           "match": "export async function resumeSupervisedTask("
-        },
-        {
-          "ref": "packages/agent-tools/src/supervisor.js",
-          "match": "resume task identity does not match the handle"
         }
       ],
       "supportingPlanFields": [
@@ -303,15 +303,19 @@
       "sourceAnchors": [
         {
           "ref": "packages/agent-tools/src/recovery.js",
-          "match": "export const AGENT_TOOL_RUN_HANDLE_VERSION = \"AGENT_TOOL_RUN_HANDLE_V1\""
+          "match": "export async function reopenRecoverableWorkspace({ repositoryRoot, worktreeRoot })"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export async function disposeRecoverableRun(handle)"
         },
         {
           "ref": "packages/agent-tools/src/supervisor.js",
           "match": "initialSessionRef: handle.toolSessionRef"
         },
         {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "HANDLE_COMPLETE: never resumeSupervisedTask an accepted handle"
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "await harness.recover(sessionId, { force: true });"
         }
       ],
       "supportingPlanFields": [
