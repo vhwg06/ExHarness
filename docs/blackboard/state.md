@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,16 +31,22 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-058
 ```
 
 ## Active work
 
-NONE
+
+BB-058
+task: Implement causal reconstruction and read-only observation
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-058/current.json
+components: agentic/organization-work, agentic/domain-execution-control, agentic/product-lineage, agentic/product-qa, agentic/product-closure, agentic/causal-observation
+worker: grok-bot
 
 ## Schedulable tasks
 
-- BB-058 [WORKER/EXECUTION] — Implement causal reconstruction and read-only observation
 - BB-079 [WORKER/EXECUTION] — Implement cache-stable async result context
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
@@ -65,7 +71,7 @@ BB-054 [DONE] <- BB-053
 BB-055 [DONE] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [DONE] <- BB-055
-BB-058 [WORKER_SCHEDULABLE] <- BB-057
+BB-058 [ACTIVE] <- BB-057
 BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [DONE] <- ROOT
 BB-061 [DONE] <- BB-060
