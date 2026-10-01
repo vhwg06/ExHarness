@@ -1,0 +1,31 @@
+✖ live contract: dispatch through the real opencode backend (77464.791368ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77743.493481
+
+✖ failing tests:
+
+test at test/delivery/bb-066-live-contract.test.mjs:52:1
+✖ live contract: dispatch through the real opencode backend (77464.791368ms)
+  AssertionError [ERR_ASSERTION]: agent run failed without backend cause: opencode exited 1
+  + actual - expected
+  
+  + 'FAILED'
+  - 'SUCCEEDED'
+  
+      at TestContext.<anonymous> (file:///home/hatch/workspace/ExHarness-bb066-worker/test/delivery/bb-066-live-contract.test.mjs:122:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'FAILED',
+    expected: 'SUCCEEDED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
