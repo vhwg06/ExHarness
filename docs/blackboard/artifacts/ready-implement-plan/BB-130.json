@@ -24,16 +24,16 @@
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
-    "Every command result stays bound to the evaluated candidate revision; revision mismatch must stop before the verification command, and post-run HEAD or tree changes fail closed.",
-    "No process started by local-command-verifier.js implicitly inherits parent keys outside the published allowlist; NODE_TEST_CONTEXT cannot be restored by an overlay.",
-    "Caller env is an explicit command-only grant, copied at factory construction; it cannot override verifier-owned Git identity checks or Windows termination utilities.",
-    "Argument arrays, shell:false, bounded output/digests and timeout status/process-tree termination retain the delivered BB-096 semantics.",
-    "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance.",
-    "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT.",
-    "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks."
+    "Every command result stays bound to the evaluated candidate revision; revision mismatch must stop before the verification command, and post-run HEAD or tree changes fail closed. Acceptance coverage: INTEGRITY.",
+    "No process started by local-command-verifier.js implicitly inherits parent keys outside the published allowlist; NODE_TEST_CONTEXT cannot be restored by an overlay. Acceptance coverage: ENV_BOUNDARY, TEST_CHANNEL, INTERNAL_ENV.",
+    "Caller env is an explicit command-only grant, copied at factory construction; it cannot override verifier-owned Git identity checks or Windows termination utilities. Acceptance coverage: OVERLAY, INTERNAL_ENV.",
+    "Argument arrays, shell:false, bounded output/digests and timeout status/process-tree termination retain the delivered BB-096 semantics. Acceptance coverage: INTEGRITY, PLATFORM.",
+    "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance. Acceptance coverage: EXPORTS_DOCS.",
+    "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL.",
+    "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL."
   ],
   "architectureDecisions": [
-    "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle.",
+    "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
     "D2 — Produce a fresh null-prototype map from own enumerable string-valued allowlisted parent keys, lexically sorted. Windows uppercases before membership/deduplication; first inherited variant wins. POSIX matches exact case. Apply own operator entries last; Windows normalizes them and later case variants win. Remove NODE_TEST_CONTEXT after merging (all Windows case variants). Omit missing names; never synthesize PATH/HOME or read credential/config files.",
     "D3 — Add factory env={}; require a plain or null-prototype record. Reject null, arrays, non-plain objects, empty/'='/NUL keys, non-string values and NUL values with TypeError before verify/spawn. Validate even stripped NODE_TEST_CONTEXT entries. Copy/freeze own entries at construction. Explicit non-allowlisted grants and empty strings are valid; no coercion, null deletion or vendor auth inference.",
     "D4 — Sample one filtered parent base per verify. Thread it into before/after gitState and win32 killTree/taskkill; force Git GIT_CONFIG_NOSYSTEM=1 last. Only executeProcess gets the frozen command overlay, built from that same base. Eliminate ambient process.env spreads and implicit child env defaults in this module. Command GIT_DIR/GIT_CONFIG_COUNT grants cannot redirect verifier identity checks or termination helpers.",
@@ -109,7 +109,8 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Candidate-bound env-boundary/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion ENV_BOUNDARY."
+        "Candidate-bound env-boundary/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion ENV_BOUNDARY.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -119,7 +120,8 @@
         "overlay"
       ],
       "evidenceRequired": [
-        "Candidate-bound overlay logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion OVERLAY."
+        "Candidate-bound overlay logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion OVERLAY.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -129,7 +131,8 @@
         "test-channel"
       ],
       "evidenceRequired": [
-        "Candidate-bound test-channel logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion TEST_CHANNEL."
+        "Candidate-bound test-channel logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion TEST_CHANNEL.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -139,7 +142,8 @@
         "platform"
       ],
       "evidenceRequired": [
-        "Candidate-bound platform logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion PLATFORM."
+        "Candidate-bound platform logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion PLATFORM.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -151,7 +155,8 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Candidate-bound integrity/agentic-regression/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTEGRITY."
+        "Candidate-bound integrity/agentic-regression/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTEGRITY.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -161,7 +166,8 @@
         "internal-env"
       ],
       "evidenceRequired": [
-        "Candidate-bound internal-env logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTERNAL_ENV."
+        "Candidate-bound internal-env logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTERNAL_ENV.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
     {
@@ -172,7 +178,8 @@
         "docs"
       ],
       "evidenceRequired": [
-        "Candidate-bound exports/docs logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion EXPORTS_DOCS."
+        "Candidate-bound exports/docs logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion EXPORTS_DOCS.",
+        "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     }
   ],
@@ -224,13 +231,13 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Every command result stays bound to the evaluated candidate revision; revision mismatch must stop before the verification command, and post-run HEAD or tree changes fail closed.",
+      "invariant": "Every command result stays bound to the evaluated candidate revision; revision mismatch must stop before the verification command, and post-run HEAD or tree changes fail closed. Acceptance coverage: INTEGRITY.",
       "criterionIds": [
         "INTEGRITY"
       ]
     },
     {
-      "invariant": "No process started by local-command-verifier.js implicitly inherits parent keys outside the published allowlist; NODE_TEST_CONTEXT cannot be restored by an overlay.",
+      "invariant": "No process started by local-command-verifier.js implicitly inherits parent keys outside the published allowlist; NODE_TEST_CONTEXT cannot be restored by an overlay. Acceptance coverage: ENV_BOUNDARY, TEST_CHANNEL, INTERNAL_ENV.",
       "criterionIds": [
         "ENV_BOUNDARY",
         "TEST_CHANNEL",
@@ -238,27 +245,27 @@
       ]
     },
     {
-      "invariant": "Caller env is an explicit command-only grant, copied at factory construction; it cannot override verifier-owned Git identity checks or Windows termination utilities.",
+      "invariant": "Caller env is an explicit command-only grant, copied at factory construction; it cannot override verifier-owned Git identity checks or Windows termination utilities. Acceptance coverage: OVERLAY, INTERNAL_ENV.",
       "criterionIds": [
         "OVERLAY",
         "INTERNAL_ENV"
       ]
     },
     {
-      "invariant": "Argument arrays, shell:false, bounded output/digests and timeout status/process-tree termination retain the delivered BB-096 semantics.",
+      "invariant": "Argument arrays, shell:false, bounded output/digests and timeout status/process-tree termination retain the delivered BB-096 semantics. Acceptance coverage: INTEGRITY, PLATFORM.",
       "criterionIds": [
         "INTEGRITY",
         "PLATFORM"
       ]
     },
     {
-      "invariant": "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance.",
+      "invariant": "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance. Acceptance coverage: EXPORTS_DOCS.",
       "criterionIds": [
         "EXPORTS_DOCS"
       ]
     },
     {
-      "invariant": "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT.",
+      "invariant": "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL.",
       "criterionIds": [
         "ENV_BOUNDARY",
         "OVERLAY",
@@ -267,7 +274,7 @@
       ]
     },
     {
-      "invariant": "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks.",
+      "invariant": "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL.",
       "criterionIds": [
         "ENV_BOUNDARY",
         "OVERLAY",
@@ -393,22 +400,28 @@
   },
   "testContract": [
     {
-      "title": "BB-130 N1 parent-only synthetic secrets are absent"
+      "title": "BB-130 N1 parent-only synthetic secrets are absent",
+      "assertions": "Plant both synthetic secret names in isolated parent; assert child booleans false and PASS, baseline true."
     },
     {
-      "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel"
+      "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
+      "assertions": "Parent and overlay marker valid strings; assert absent in real child/nested node:test."
     },
     {
-      "title": "BB-130 N3 malformed overlay is rejected before verification"
+      "title": "BB-130 N3 malformed overlay is rejected before verification",
+      "assertions": "Direct factory throws TypeError for null/array/non-plain, non-string own value, empty/'='/NUL key, NUL value. Empty strings/null-prototype are controls."
     },
     {
-      "title": "BB-130 N4 command overlay cannot redirect Git identity checks"
+      "title": "BB-130 N4 command overlay cannot redirect Git identity checks",
+      "assertions": "Grant synthetic nonexistent GIT_DIR/GIT_CONFIG_COUNT only to command; child sees grants, actual Git helpers do not; correct revision PASSes."
     },
     {
-      "title": "BB-130 N5 revision mismatch fails before command side effects"
+      "title": "BB-130 N5 revision mismatch fails before command side effects",
+      "assertions": "Wrong 40-hex candidate: FAIL/REVISION_MISMATCH, actual revision and empty-stream digest; absent command sentinel."
     },
     {
-      "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL"
+      "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL",
+      "assertions": "Exit-zero append to fixture.txt: FAIL/TREE_MUTATED with before-revision evidence."
     },
     {
       "title": "BB-130 E1 secret explicitly granted through env is available",
@@ -534,13 +547,7 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": [
-        "environmentContract",
-        "testContract",
-        "researchEvidence",
-        "negativeCaseTestDetails",
-        "workerEvidenceContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
@@ -579,13 +586,7 @@
           "match": "test(\"RB4 QA ACCEPTs on the accepted sha with both QA records PASS at that revision\""
         }
       ],
-      "supportingPlanFields": [
-        "environmentContract",
-        "testContract",
-        "researchEvidence",
-        "negativeCaseTestDetails",
-        "workerEvidenceContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
@@ -623,13 +624,7 @@
           "match": "} from \"./local-command-verifier.js\";"
         }
       ],
-      "supportingPlanFields": [
-        "testContract",
-        "dependencyResolution",
-        "deliveryContract",
-        "negativeCaseTestDetails",
-        "workerEvidenceContract"
-      ]
+      "supportingPlanFields": []
     }
   ],
   "researchEvidence": {
