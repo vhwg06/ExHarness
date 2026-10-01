@@ -96,18 +96,18 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Fresh captured Backend request and real fake argv prove manifest and CLI/programmatic precedence; durable resume asserts normalized request values rather than fresh-only Codex flags. Prototype feasibility is separate from required future subject-invoking product tests."
+        "Future focused P1 directly calls runDeliverSlice with manifest FULL_AUTO/model-manifest and captures fake argv; P2 commandDeliver actual CLI override selects model-cli/WORKSPACE_EDIT over manifest. P3 interrupts owned recovery at ACT_COMPLETED, resumes with unchanged options, captures normalized buildInvocation request and asserts permissionProfile/model on resume; accepted-handle replay has zero Backend dispatch. Each record binds exact candidate revision and fake invocation count."
       ]
     },
     {
       "id": "UNKNOWN_FAILS_CLOSED",
-      "statement": "Unknown permission values, non-string model values, and invalid option value types fail closed in validateDeliverSlice before any agent process starts. Omitted permission/model keep the delivered run defaults (WORKSPACE_EDIT and null). Unrecognized manifest/programmatic option keys and CLI flags fail before dispatch; the stricter behavior is covered by N4.",
+      "statement": "Unknown permission values, non-string models and non-string permissionProfile fail closed in validateDeliverSlice or commandDeliverCli before any agent process starts. Omitted fields keep WORKSPACE_EDIT and model null. Unrecognized manifest/programmatic option keys and CLI flags reject before dispatch. FULL_AUTO needs no extra confirmation.",
       "verificationIds": [
         "focused",
         "deliver-regression"
       ],
       "evidenceRequired": [
-        "Distinct subject-invoking malformed-type matrix plus absent dispatch marker; captured omitted-default invocation; CLI exit64; manifest/override validation happens before probing or spawning."
+        "N1/N3 typed manifest failures and corresponding malformed overrides throw before version probe, dispatch or handle write; matrix null/empty/number/boolean/array/object. N4 rejects unrecognized key at validator, runDeliverSlice, commandDeliver and actual CLI before effects. N2 omission captures WORKSPACE_EDIT/null; explicit FULL_AUTO dispatches without an added interactive prompt. Each assertion has a named body invoking the bound subject; sentinel probe/dispatch counters and preserved recovery bytes distinguish early failures."
       ]
     }
   ],
