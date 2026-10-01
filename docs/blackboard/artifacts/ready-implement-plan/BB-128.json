@@ -29,7 +29,7 @@
   "architectureDecisions": [
     "Resolve delivered adapters through AGENT_TOOLS with a minimal capability contract rather than growing another hard-coded tool list. Pin the BB-122 delivered adapter at Worker start.",
     "Keep provider/auth/model inputs explicit; fixture tests do not call a model. Do not require Codex/Kiro/agy installation to exercise a supported local Grok/OpenCode path.",
-    "Derive deliver eligibility from delivered AGENT_TOOLS entries that satisfy the headless/edit/resume contract instead of a static id whitelist: admit grok|opencode (both pass assertInvocationRequest; the supervisor invocation request always supplies promptFile and cwd, satisfying grok's --prompt-file and opencode's --dir; both parseResult emit the uniform {claimedSuccess, finalMessage, sessionRef} tuple with exitCode-driven success). Unknown ids still throw in validateDeliverSlice before spawn; missing binaries fail through resolveExecutable to TOOL_UNAVAILABLE with reason NOT_INSTALLED; a mismatched recovery handle throws HANDLE_INVALID before resume; a non-sha acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. None of these paths can fabricate ACCEPTED."
+    "Replace the SLICE_TOOLS id whitelist with a no-spawn capability probe in packages/agent-tools/src/deliver-slice.js: probeDeliverCapability(tool) calls tool.buildInvocation with the exact deliver request shape {prompt, resume: null, model: null, permissionProfile: 'WORKSPACE_EDIT', logFile, promptFile, cwd, timeoutMs} and again with resume: {sessionRef: 'probe-session'}, then checks tool.parseResult({exitCode: 0, stdout: ''}) returns the {claimedSuccess, finalMessage, sessionRef} tuple. validateDeliverSlice accepts exactly the AGENT_TOOLS ids whose probe succeeds (codex, kiro, agy, grok, opencode at the contract baseline) and throws TypeError before any spawn otherwise. Missing binaries still fail through resolveExecutable to TOOL_UNAVAILABLE with reason NOT_INSTALLED; a tool-mismatched resume throws RecoveryError TOOL_MISMATCH in resumeSupervisedTask before spawn; a non-sha acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. None of these paths can fabricate ACCEPTED."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -79,14 +79,14 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 \u2014 After fresh READY, implement only the declared seam and focused positive/negative fixtures: P1 grok manifest accepted by validateDeliverSlice, P2 opencode manifest accepted, N1 unknown tool rejected pre-spawn, N2 missing binary resolves to TOOL_UNAVAILABLE/NOT_INSTALLED.",
+    "S1 \u2014 Pin AGENT_TOOL_ADAPTER_V1 and execute the discriminating prototype: the no-spawn probeDeliverCapability probe against all five delivered AGENT_TOOLS entries (codex, kiro, agy, grok, opencode) using the exact deliver request shape; record per-adapter probe outcomes (argv built for resume:null and resume:{sessionRef}, parseResult tuple shape) as research evidence that grok|opencode satisfy the headless/edit/resume contract and that a probe failure is rejected pre-spawn.",
+    "S2 \u2014 After fresh READY, implement only the declared seam and focused positive/negative fixtures: P1 grok manifest accepted by validateDeliverSlice, P2 opencode manifest accepted, N1 unknown tool rejected pre-spawn, N2 missing binary resolves to TOOL_UNAVAILABLE/NOT_INSTALLED, N3 tool-mismatched resume throws TOOL_MISMATCH before spawn.",
     "S3 \u2014 Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
       "id": "CAPABILITY_PARITY",
-      "statement": "Delivered registered tools supporting the required headless/edit/resume contract can run Backend plus QA through deliver; unsupported capabilities fail before spawning.",
+      "statement": "Delivered registered tools satisfying the headless/edit/resume contract (proven by the no-spawn probeDeliverCapability probe: buildInvocation succeeds for the exact deliver request shape with resume null and resume {sessionRef}, and parseResult returns the {claimedSuccess, finalMessage, sessionRef} tuple) can run Backend plus QA through deliver; adapters failing the probe throw in validateDeliverSlice before any process starts.",
       "verificationIds": [
         "focused"
       ],
@@ -96,7 +96,7 @@
     },
     {
       "id": "FAIL_CLOSED",
-      "statement": "Unknown tools, missing binaries and incompatible resume capability never return ACCEPTED; deterministic fixtures cover Grok and delivered OpenCode.",
+      "statement": "Unknown tools, missing binaries and incompatible resume capability never return ACCEPTED: unknown ids throw in validateDeliverSlice pre-spawn, missing binaries resolve to TOOL_UNAVAILABLE with reason NOT_INSTALLED, and a resume whose tool id differs from the handle's recorded toolId throws RecoveryError TOOL_MISMATCH in resumeSupervisedTask before spawn; deterministic fixtures cover Grok and delivered OpenCode.",
       "verificationIds": [
         "focused"
       ],
@@ -148,7 +148,8 @@
   ],
   "negativeVerificationCases": [
     "Unknown adapter must be rejected before spawn",
-    "Missing delivered CLI cannot fabricate successful local delivery"
+    "Missing delivered CLI cannot fabricate successful local delivery",
+    "Resume with a tool id different from the recovery handle's recorded toolId must throw TOOL_MISMATCH before any agent process starts"
   ],
   "negativeCaseBindings": [
     {
@@ -168,6 +169,15 @@
       "testRef": "packages/agent-tools/test/deliver-tool-parity.test.js",
       "testTitle": "BB-128 N2 Missing delivered CLI cannot fabricate successful local delivery",
       "subjectSymbol": "validateDeliverSlice"
+    },
+    {
+      "id": "NEG_128_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-tool-parity.test.js",
+      "testTitle": "BB-128 N3 Tool-mismatched resume throws TOOL_MISMATCH before spawn",
+      "subjectSymbol": "resumeSupervisedTask"
     }
   ],
   "researchGaps": [],
@@ -197,7 +207,7 @@
     },
     {
       "ref": "packages/agent-tools/src/deliver-slice.js",
-      "finding": "DELIVERED_TRUTH: SLICE_TOOLS=[codex,kiro,agy]; validateDeliverSlice throws TypeError 'tool must be one of codex|kiro|agy' before any process starts, so an unknown tool can never reach ACCEPTED. resolveSliceTool returns null when AGENT_TOOLS lacks the id or resolveExecutable misses the binary; the slice then returns TOOL_UNAVAILABLE with reason NOT_INSTALLED. A mismatched recovery handle throws RecoveryError HANDLE_INVALID before resume/QA/dispose; a non-40-hex acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. Missing-binary and invalid-acceptance paths never fabricate ACCEPTED."
+      "finding": "DELIVERED_TRUTH: SLICE_TOOLS=[codex,kiro,agy]; validateDeliverSlice throws TypeError 'tool must be one of codex|kiro|agy' before any process starts, so an unknown tool can never reach ACCEPTED. resolveSliceTool returns null when AGENT_TOOLS lacks the id or resolveExecutable misses the binary; the slice then returns TOOL_UNAVAILABLE with reason NOT_INSTALLED. A mismatched recovery handle throws RecoveryError HANDLE_INVALID before resume/QA/dispose; a non-40-hex acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. Missing-binary and invalid-acceptance paths never fabricate ACCEPTED. The planned replacement is a no-spawn capability probe (buildInvocation over the exact deliver request shape for resume null and resume {sessionRef}, plus the parseResult tuple check); validateDeliverSlice will accept exactly the AGENT_TOOLS ids whose probe succeeds."
     },
     {
       "ref": "docs/blackboard/evidence/BB-128/discovery.json",
@@ -206,6 +216,10 @@
     {
       "ref": "packages/agent-tools/bin/exharness-agent.mjs",
       "finding": "DELIVERED_TRUTH: exharness-agent run and smoke already accept --tool <codex|kiro|agy|grok|opencode>; deliver delegates tool gating to validateDeliverSlice, which is the single exclusion point for grok|opencode."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: resumeSupervisedTask verifies the on-disk handle digest, then throws RecoveryError TOOL_MISMATCH when tool.id !== handle.toolId, before reopening any workspace or spawning any process. A deliver resume that switches tools (e.g. a codex handle resumed under a grok manifest) therefore fails closed instead of passing one tool's sessionRef to another tool's --resume/--session/--continue flags."
     }
   ],
   "dependencyResolution": {
@@ -349,7 +363,8 @@
         "architectureDecisions",
         "sourceSeams",
         "sourceScope",
-        "researchEvidence"
+        "researchEvidence",
+        "dependencyResolution"
       ]
     },
     {
@@ -370,6 +385,7 @@
       ],
       "sourceRefs": [
         "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/src/supervisor.js",
         "packages/agent-tools/src/tool-adapters.js",
         "docs/blackboard/evidence/BB-128/discovery.json"
       ],
@@ -379,8 +395,8 @@
           "match": "invalid(\"tool must be one of codex|kiro|agy\")"
         },
         {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "throw new RecoveryError(\"HANDLE_INVALID\", \"deliver slice identity does not match the recovery handle\")"
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "throw new RecoveryError(\"TOOL_MISMATCH\""
         },
         {
           "ref": "packages/agent-tools/src/tool-adapters.js",
@@ -395,7 +411,8 @@
         "negativeVerificationCases",
         "negativeCaseBindings",
         "architectureDecisions",
-        "researchEvidence"
+        "researchEvidence",
+        "dependencyResolution"
       ]
     },
     {
