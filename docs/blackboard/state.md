@@ -62,7 +62,7 @@ NONE
 - BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
 - BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
 - BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
-- BB-140 [RESEARCH_SA/RESEARCH] — Pin eval permission and timeout factors from the operator CLI
+- BB-140 [WORKER/EXECUTION] — Pin eval permission and timeout factors from the operator CLI
 - BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
 - BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
 - BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
@@ -149,7 +149,7 @@ BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
 BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
 BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
 BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
-BB-140 [RESEARCH_SCHEDULABLE] <- BB-099
+BB-140 [WORKER_SCHEDULABLE] <- BB-099
 BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
 BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
