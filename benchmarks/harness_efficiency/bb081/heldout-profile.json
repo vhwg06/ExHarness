@@ -1,0 +1,56 @@
+{
+  "kind": "BB081_HELD_OUT_PROFILE_V1",
+  "experimentId": "BB081-HELD-OUT-ABLATION-V1",
+  "cohortId": "BB081-HELD-OUT-V1",
+  "protocol": {
+    "id": "BB081-FIXED-FACTOR-HELDOUT-V1",
+    "version": "1"
+  },
+  "arms": {
+    "A": "CORE_SYNC control",
+    "B": "A + BB-078 detached operations (diagnostic)",
+    "C": "B + BB-079 async-result context (diagnostic)",
+    "D": "C + BB-080 steering/wakeup/recovery (promotion candidate)"
+  },
+  "heldout": [
+    ["terminal-bench/git-leak-recovery", "sha256:22a9ec10dbd4cd8b99477b70e1944103775ca41de9b9e0025ec4898cd17bd334"],
+    ["terminal-bench/pypi-server", "sha256:1a1e0542f58e2d3362fec17a9bbb98667717d9a4a3e9a4c8413d3150a4fa0ff1"],
+    ["terminal-bench/kv-store-grpc", "sha256:973c5d4c111fb61a344457936f1c36400acd2d9e44389e7b319586fe23a7a307"],
+    ["terminal-bench/sanitize-git-repo", "sha256:73c94a21ebe370bae843adbeeaaa9e991374867b18483aaf56c7cd470dcddea7"]
+  ],
+  "repeats": 2,
+  "registeredArmUnits": 32,
+  "schedule": [
+    "git-leak r1 A-B-D-C; r2 C-D-B-A",
+    "pypi r1 B-C-A-D; r2 D-A-C-B",
+    "kv-store r1 C-D-B-A; r2 A-B-D-C",
+    "sanitize r1 D-A-C-B; r2 B-C-A-D"
+  ],
+  "budget": {
+    "maxUnitCostUsd": 0.6,
+    "maxCohortCostUsd": 25,
+    "maxTurns": 16,
+    "maxHostCalls": 64,
+    "maxElapsedMs": 900000,
+    "maxInputTokens": 180000,
+    "maxOutputTokens": 12000
+  },
+  "modelProfile": {
+    "transport": "OpenRouter",
+    "model": "anthropic/claude-sonnet-4.6",
+    "provider": "Anthropic",
+    "fallback": "disabled"
+  },
+  "substrate": {
+    "kind": "BENCHMARK_SUBSTRATE_MANIFEST_V1",
+    "ref": "benchmarks/substrate/manifests/terminal-bench-2.1.json"
+  },
+  "dependencies": {
+    "BB-077": "docs/blackboard/artifacts/ready-implement-plan/BB-077.delivered-feature.json",
+    "BB-078": "docs/blackboard/artifacts/ready-implement-plan/BB-078.delivered-feature.json",
+    "BB-079": "docs/blackboard/artifacts/ready-implement-plan/BB-079.delivered-feature.json",
+    "BB-080": "docs/blackboard/artifacts/ready-implement-plan/BB-080.delivered-feature.json"
+  },
+  "dataKind": "OFFLINE_SCRIPTED_FIXTURE",
+  "notes": "Frozen held-out profile. Live paid execution requires an explicitly authorized run; offline fixtures never become promotion evidence."
+}
