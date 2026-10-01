@@ -313,7 +313,8 @@ export function createAgentRuntime({
     liveObjects: scopedLiveObjects = [],
     model: invocationModel = null,
     budget = null,
-    onCapabilityInvoke = null
+    onCapabilityInvoke = null,
+    signal = null
   } = {}, runtimeContract = {}) {
     invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
@@ -345,6 +346,10 @@ export function createAgentRuntime({
     }
     if (runtimeContract.validateResult != null) {
       invariant(typeof runtimeContract.validateResult === "function", "runtime validateResult must be a function");
+    }
+    const runSignal = signal ?? runtimeContract.signal ?? null;
+    if (runSignal != null) {
+      invariant(typeof runSignal === "object" && typeof runSignal.aborted === "boolean", "agent run signal must be an AbortSignal");
     }
 
     let capabilityCalls = 0;
@@ -683,6 +688,8 @@ export function createAgentRuntime({
               validateResult: runtimeContract.validateResult ?? null,
               model: resolvedModelRoute?.adapter ?? null,
               modelRoute: modelRouteView,
+              modelSignal: runSignal,
+              signal: runSignal,
               trace: turnTraceSurface
             }));
             closeActiveTurn(TurnOutcome.RESULT, true, null, { result: true });

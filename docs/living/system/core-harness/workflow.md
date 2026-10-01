@@ -274,7 +274,59 @@ SYNCHRONOUS:        RUNNING -> wait (no progressive context)
                      terminal -> one ordinary terminal tool result
 ```
 
-This projection cannot confirm effects, accept products, or authorize external work, and it publishes no efficiency verdict. It is checkpoint state only; persisting it with model-turn state, waking the model, and recovery-loop scheduling belong to future steering/wakeup integration and are explicitly out of scope here.
+This projection cannot confirm effects, accept products, or authorize external work, and it publishes no efficiency verdict. It is checkpoint state only; persisting it with model-turn state, waking the model, and recovery-loop scheduling are delivered as coordinator behavior below.
+
+## ASYNC STEERING, WAKEUP AND RECOVERY COORDINATION
+
+The coordinator owns durable ingress/wake/model-generation coordination only and composes the delivered detached-operation manager plus async-result projector; it never becomes effect, acceptance or product authority:
+
+```text
+ingest (one CAS domain: enqueue + dedupe + wake claim)
+  USER_INPUT { inputId } ── persist ingressSeq ── cancel grace ── fence generation ── abort (after commit)
+                           ── exactly one replacement wake (covers input high-water)
+                           ── detached operations keep RUNNING
+  STOP { inputId }       ── persist stopFence FIRST ── fence generation ── abort (after commit)
+                           ── request operation cancels ── no new wake/dispatch/retry
+                           ── fence survives restart until terminal/reconcilable
+  OPERATION_TRANSITION   ── dedupe by transitionId ── stage via the async-result checkpoint (fail closed)
+                           ── if model ACTIVE: hold for next turn (never preempt)
+                           ── if idle: accumulate burst until 1ms quiet or 100 max
+                                then one wake (USER_INPUT/STOP bypass immediately)
+  EXPLICIT_WAKE { wakeId } ── persist ── if idle: immediate wake; if ACTIVE: record for next turn
+  liveness inspect        ── read-only, zero model calls without semantic work
+```
+
+Model-generation fencing and cancellation:
+
+```text
+takeNextModelTurn() -> { submissionId, generation, coveredIngressSeq, signal, projection }
+  STOP fenced or ACTIVE present -> reject (one active model only)
+  no wake and no staged work  -> empty (no heartbeat)
+  else commit staged async-result items for this submission
+
+model.generate(request[, { signal }])   (ABORT_SIGNAL routes get the signal; FENCE_ONLY ignores it)
+  -> dispatchModelResponse(submissionId, response)
+       current generation + no STOP -> accepted (may dispatch once)
+       fenced / stale / STOP        -> rejected before normalization/dispatch/publication
+
+completeModelTurn() -> clears ACTIVE, arms quickCompletionGraceMs (1000ms default) for completion-only follow-ups
+```
+
+Crash recovery (fresh process over the same SessionStore docs):
+
+```text
+load coordinator CAS state
+  -> reapply stopFence if present (still blocks wakes/dispatch)
+  -> manager.recover() reconciles every nonterminal operation
+       absent/INTENDED -> execute exact identity once
+       DISPATCHED/UNKNOWN -> reconcileEffectOperation (CONTINUE/RETRY same id/ESCALATE->UNKNOWN)
+       CONFIRMED -> SUCCEEDED with confirmed result (no second effect)
+  -> stage unseen operation transitions through the async-result checkpoint once (dedupe by transitionId)
+  -> mark crash-time ACTIVE submission ABANDONED, increment generation
+  -> if durable pending work and no STOP: at most one replacement wake
+```
+
+Development probes (`benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs`) run DEV-only matched sync/async fixtures over the same task semantics and record turns, steering latency, coalesced counts, abort/fence outcomes, replacement/recovery turns, duplicate effects and unknown provider usage. They execute no `HOLD-*` tasks and publish no `PROMOTE_ASYNC`/`KEEP_SYNC` verdict; held-out acceptance remains held-out future work.
 
 ## CURRENT ABSTRACTION BOUNDARY
 
