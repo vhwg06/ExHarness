@@ -33,16 +33,16 @@
     "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL."
   ],
   "architectureDecisions": [
-    "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
-    "D2 — Produce a fresh null-prototype map from own enumerable string-valued allowlisted parent keys, lexically sorted. Windows uppercases before membership/deduplication; first inherited variant wins. POSIX matches exact case. Apply own operator entries last; Windows normalizes them and later case variants win. Remove NODE_TEST_CONTEXT after merging (all Windows case variants). Omit missing names; never synthesize PATH/HOME or read credential/config files. Parent validation explicitly accepts parentEnv===process.env as the native exotic environment record; other injected maps are plain/null-prototype. Do not apply the operator-overlay plain-object test to native process.env. Inspect selected descriptors safely; never read non-allowlisted values or invoke accessors.",
-    "D3 — Add factory env={}; require a plain or null-prototype record. Reject null, arrays, non-plain objects, empty/'='/NUL keys, non-string values and NUL values with TypeError before verify/spawn. Validate even stripped NODE_TEST_CONTEXT entries. Copy/freeze own entries at construction. Explicit non-allowlisted grants and empty strings are valid; no coercion, null deletion or vendor auth inference.",
-    "D4 — Sample one filtered parent base per verify. Thread it into before/after gitState and win32 killTree/taskkill; force Git GIT_CONFIG_NOSYSTEM=1 last. Only executeProcess gets the frozen command overlay, built from that same base. Eliminate ambient process.env spreads and implicit child env defaults in this module. Command GIT_DIR/GIT_CONFIG_COUNT grants cannot redirect verifier identity checks or termination helpers.",
-    "D5 — Preserve shell:false, detached/platform behavior, windowsHide, ignored stdin, bounded capture, stream digests, summary limit and reason/result schemas. Revision mismatch rejects before command launch; exit-zero PASS, nonzero/spawn-error FAIL, timeout INCONCLUSIVE and tree-mutation FAIL precedence remain. requireUnchangedTree=true default and explicit false compatibility remain. Add no env dumps/values to records; existing trusted-command stdout capture is not a redaction guarantee.",
-    "D6 — Real host child/fixture tests plus injected POSIX/win32 maps cover casing, duplicate PATH variants, overlay precedence, missing names and own properties. Native Windows smoke is conditional and separately labelled; simulation cannot prove launch/kill. HOME/XDG/USERPROFILE/APPDATA preserve config compatibility and allow filesystem credential access.",
-    "D7 — Overlay is the local verifier factory API only. Existing Backend/QA, supervisor, deliver, MCP and re-grounding callers inherit restricted defaults automatically. Their agent env options are not verifier grants. Do not add CLI/task-schema forwarding here; callers constructing verifiers can supply env. Missing auth/proxy/build config requires a separately authorized grant, never restored ambient inheritance.",
-    "D8 — Use exact distinct literal negativeCaseBindings/testContract titles. Each negative test directly invokes its bound subject and asserts behavior, without skip/todo, env dumps or helper-only subject calls. Isolate or serialize synthetic planted variables and restore in finally; never inspect actual credentials.",
-    "D9 — Living docs document list/exports, command-only grants, precedence, channel stripping, casing and helper isolation, retaining trusted-command limits. BB-120 policy is delivered only when DONE. No Blackboard ids/research/value claims. Logs route by criterion/run to exact candidate and independent Jev.",
-    "D10 — Graph and plan researchBaselineSha are both 5386e2adee15a3175a5b6635b63a54f6e24128cb. Objective sources and source anchors materialize successfully at this baseline. Keep historical prototype source pins as historical evidence; no product implementation or upstream DONE claims are added."
+    "D1 \u2014 Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
+    "D2 \u2014 Produce a fresh null-prototype map from own enumerable string-valued allowlisted parent keys, lexically sorted. Windows uppercases before membership/deduplication; first inherited variant wins. POSIX matches exact case. Apply own operator entries last; Windows normalizes them and later case variants win. Remove NODE_TEST_CONTEXT after merging (all Windows case variants). Omit missing names; never synthesize PATH/HOME or read credential/config files. Parent validation explicitly accepts parentEnv===process.env as the native exotic environment record; other injected maps are plain/null-prototype. Do not apply the operator-overlay plain-object test to native process.env. Inspect selected descriptors safely; never read non-allowlisted values or invoke accessors.",
+    "D3 \u2014 Add factory env={}; require a plain or null-prototype record. Reject null, arrays, non-plain objects, empty/'='/NUL keys, non-string values and NUL values with TypeError before verify/spawn. Validate even stripped NODE_TEST_CONTEXT entries. Copy/freeze own entries at construction. Explicit non-allowlisted grants and empty strings are valid; no coercion, null deletion or vendor auth inference.",
+    "D4 \u2014 Sample one filtered parent base per verify. Thread it into before/after gitState and win32 killTree/taskkill; force Git GIT_CONFIG_NOSYSTEM=1 last. Only executeProcess gets the frozen command overlay, built from that same base. Eliminate ambient process.env spreads and implicit child env defaults in this module. Command GIT_DIR/GIT_CONFIG_COUNT grants cannot redirect verifier identity checks or termination helpers.",
+    "D5 \u2014 Preserve shell:false, detached/platform behavior, windowsHide, ignored stdin, bounded capture, stream digests, summary limit and reason/result schemas. Revision mismatch rejects before command launch; exit-zero PASS, nonzero/spawn-error FAIL, timeout INCONCLUSIVE and tree-mutation FAIL precedence remain. requireUnchangedTree=true default and explicit false compatibility remain. Add no env dumps/values to records; existing trusted-command stdout capture is not a redaction guarantee.",
+    "D6 \u2014 Real host child/fixture tests plus injected POSIX/win32 maps cover casing, duplicate PATH variants, overlay precedence, missing names and own properties. Native Windows smoke is conditional and separately labelled; simulation cannot prove launch/kill. HOME/XDG/USERPROFILE/APPDATA preserve config compatibility and allow filesystem credential access.",
+    "D7 \u2014 Overlay is the local verifier factory API only. Existing Backend/QA, supervisor, deliver, MCP and re-grounding callers inherit restricted defaults automatically. Their agent env options are not verifier grants. Do not add CLI/task-schema forwarding here; callers constructing verifiers can supply env. Missing auth/proxy/build config requires a separately authorized grant, never restored ambient inheritance.",
+    "D8 \u2014 Use exact distinct literal negativeCaseBindings/testContract titles. Each negative test directly invokes its bound subject and asserts behavior, without skip/todo, env dumps or helper-only subject calls. Isolate or serialize synthetic planted variables and restore in finally; never inspect actual credentials.",
+    "D9 \u2014 Living docs document list/exports, command-only grants, precedence, channel stripping, casing and helper isolation, retaining trusted-command limits. BB-120 policy is delivered only when DONE. No Blackboard ids/research/value claims. Logs route by criterion/run to exact candidate and independent Jev.",
+    "D10 \u2014 Graph and plan researchBaselineSha are both 5386e2adee15a3175a5b6635b63a54f6e24128cb. Objective sources and source anchors materialize successfully at this baseline. Keep historical prototype source pins as historical evidence; no product implementation or upstream DONE claims are added."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -95,10 +95,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — In local-command-verifier.js publish the frozen 28-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import. Native process.env is an allowed parent by identity despite its exotic prototype; injected maps/overlay remain plain or null-prototype. Descriptor-based selection reads only allowed parent values and rejects accessors before invocation, with copied immutable overlay.",
-    "S2 — Thread one filtered parent snapshot per verify into gitState, executeProcess and killTree. Only executeProcess gets the frozen command overlay. Force Git's GIT_CONFIG_NOSYSTEM=1 after the filtered base. Preserve revision/tree, shell:false, bounded evidence and lifecycle semantics. Thread base explicitly through gitState(root,base), executeProcess({...,env:commandEnv}) and killTree(child,base); commandEnv=buildLocalVerifierEnvironment({parentEnv:base,env:copiedOverlay}). No caller overlay reaches Git/taskkill. Snapshot includes own string allowlisted values only; Windows uppercase/deduplicate before overlay, POSIX exact case, NODE_TEST_CONTEXT stripped after overlay. Preserve original before-command HEAD mismatch rejection and post-command clean-tree comparison with identical reason/exit/stream hash grammar. Focused real basename Node launch using controlled PATH and Backend/QA accepted-SHA regression prove platform variables and identity semantics remain; missing PATH is deliberately omitted, not synthesized.",
-    "S3 — Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery. E6 must import the verifier only after builtin wrappers are installed in a fresh child, avoiding the captured promisify(execFile) binding. E8 descriptor matrix rejects allowlisted accessor/nonstring and invalid overlay before effects; unknown parent values remain unread. Run actual child booleans, not environment dumps; native Windows evidence remains separate from the mandatory simulation.",
-    "S4 — Document exact inherited names, explicit factory overlay, no CLI forwarding and remaining home/network/filesystem trust in the two Living state files; run docs/export verification. Collect exact-candidate logs and criterion-specific evidence, then obtain independent Worker judgment under existing delivery controls."
+    "S1 \u2014 In local-command-verifier.js publish the frozen 28-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import. Native process.env is an allowed parent by identity despite its exotic prototype; injected maps/overlay remain plain or null-prototype. Descriptor-based selection reads only allowed parent values and rejects accessors before invocation, with copied immutable overlay.",
+    "S2 \u2014 Thread one filtered parent snapshot per verify into gitState, executeProcess and killTree. Only executeProcess gets the frozen command overlay. Force Git's GIT_CONFIG_NOSYSTEM=1 after the filtered base. Preserve revision/tree, shell:false, bounded evidence and lifecycle semantics. Thread base explicitly through gitState(root,base), executeProcess({...,env:commandEnv}) and killTree(child,base); commandEnv=buildLocalVerifierEnvironment({parentEnv:base,env:copiedOverlay}). No caller overlay reaches Git/taskkill. Snapshot includes own string allowlisted values only; Windows uppercase/deduplicate before overlay, POSIX exact case, NODE_TEST_CONTEXT stripped after overlay. Preserve original before-command HEAD mismatch rejection and post-command clean-tree comparison with identical reason/exit/stream hash grammar. Focused real basename Node launch using controlled PATH and Backend/QA accepted-SHA regression prove platform variables and identity semantics remain; missing PATH is deliberately omitted, not synthesized.",
+    "S3 \u2014 Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery. E6 must import the verifier only after builtin wrappers are installed in a fresh child, avoiding the captured promisify(execFile) binding. E8 descriptor matrix rejects allowlisted accessor/nonstring and invalid overlay before effects; unknown parent values remain unread. Run actual child booleans, not environment dumps; native Windows evidence remains separate from the mandatory simulation. Port executed descriptorReplay cases through the actual product exports: native process.env, nonallowlisted throwing getter never read, allowlisted/overlay getters rejected without invocation, basename Node through retained PATH, filtered before/after Git helpers and preserved revision/tree/timeout. Historical weaker prototype behavior is not the selected contract.",
+    "S4 \u2014 Document exact inherited names, explicit factory overlay, no CLI forwarding and remaining home/network/filesystem trust in the two Living state files; run docs/export verification. Collect exact-candidate logs and criterion-specific evidence, then obtain independent Worker judgment under existing delivery controls."
   ],
   "acceptanceCriteria": [
     {
@@ -187,51 +187,83 @@
     {
       "id": "env-boundary",
       "command": "node --test --test-name-pattern='^BB-130 (N1|E1) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N1. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
+      "negativeCases": "Execute distinct bound tests BB130-N1. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "ENV_BOUNDARY"
+      ]
     },
     {
       "id": "overlay",
       "command": "node --test --test-name-pattern='^BB-130 (E2|E3|N3) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N3. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
+      "negativeCases": "Execute distinct bound tests BB130-N3. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "OVERLAY"
+      ]
     },
     {
       "id": "test-channel",
       "command": "node --test --test-name-pattern='^BB-130 (N2|E4) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N2. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
+      "negativeCases": "Execute distinct bound tests BB130-N2. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "TEST_CHANNEL"
+      ]
     },
     {
       "id": "platform",
-      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "criterionIds": [
+        "PLATFORM"
+      ]
     },
     {
       "id": "integrity",
       "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js packages/agentic-system/test/bb096-real-backend-qa.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N5, BB130-N6. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
+      "negativeCases": "Execute distinct bound tests BB130-N5, BB130-N6. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "INTEGRITY"
+      ]
     },
     {
       "id": "internal-env",
       "command": "node --test --test-name-pattern='^BB-130 (N4|E6) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N4. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
+      "negativeCases": "Execute distinct bound tests BB130-N4. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "INTERNAL_ENV"
+      ]
     },
     {
       "id": "exports",
-      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "criterionIds": [
+        "EXPORTS_DOCS"
+      ]
     },
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js",
+      "criterionIds": []
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "INTEGRITY"
+      ]
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "criterionIds": [
+        "INTEGRITY"
+      ]
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "criterionIds": [
+        "EXPORTS_DOCS"
+      ]
     }
   ],
   "invariantCoverage": [
@@ -709,11 +741,12 @@
     ]
   },
   "researchPrototype": {
-    "classification": "REPLAYABLE_IN_MEMORY_PROTOTYPE",
-    "replayCommand": "node --input-type=module -e 'const fs=await import(\"node:fs\");const z=await import(\"node:zlib\");const p=JSON.parse(fs.readFileSync(\"docs/blackboard/artifacts/ready-implement-plan/BB-130.json\",\"utf8\"));await import(\"data:text/javascript;base64,\"+z.gunzipSync(Buffer.from(p.researchPrototype.scriptGzipBase64,\"base64\")).toString(\"base64\"))'",
-    "method": "Decompress/import the self-contained data-URL module. It substitutes source in memory, runs a disposable synthetic Git fixture and emits booleans without repository writes.",
+    "classification": "RESEARCH_SOURCE_COPY_NOT_PRODUCT",
+    "replayCommand": "Decode scriptGzipBase64 with gzip/base64 into an external scratch .mjs; run Node24 from the declared source baseline root. It creates only temporary fixtures and data-url source-copy modules, restores planted synthetic env and cleans its own directory.",
+    "sourceSha256": "f8c27c4ba582be642bf3501215049adc7807ebb73d9c32626c119f10a11b2379",
     "scriptEncoding": "gzip+base64",
-    "scriptGzipBase64": "H4sIAAAAAAACA61abXPbNhL+nl/B4ENNTmnG6euNPM6dIjOxrtbLSHLSjqPR0CRkIaZIlQBtKyr/++0CIAlasqK018lUErBYLPb1WcBsuUozYQWcU/iYZ+nSIkka0ZYaecVFxkJBTl8wRbix6CMN37GYjtdJaBXmknDB4mi2ytKQcm4uCTMaCHoR8MWTBdl6JVKTEgij3cznDY7Lu0jQ5cq1HjImKK5wrWz5dMUrkGXJOG0sFctVxLImadqg+JyyBNhRnsb3tEm4CsTCJMXfkxT3vxpdNknzLAbKF2GacGHxNM9COqJz68wiqyC8C24pfwX/SwQLj/maw2le8Sx8FadhEB+H6XIZJNHxPc3YnNHM+4wCKlZpxm5ZEsTAydSWXW3hWiQX838R57Sx+XgR/PDzL7CqtoZNuBwkjpevIhi0S+aOFzGQUNhkQR9rTkEcpw8xg29n1jUZticXxCUXg54PH1djfwQfl4P3/bYcGF/4l5fwOekNz7s4NfF7Q/Ub6dr99/jRmbUlFXzpTP4Y+pJu1NMfs+Fo8H7Uxp+dweVgpKd+P38/6wz677rvZ3p3OdLuXPjmwHl70jZ/j676k27PnylxcGQ8aU+qJXgC2O9d99LXxzofdT+U3/Vp28MhspUn7bQv65847/8+wYP/MYajjgaDiRS7Nx76Hfj2sdvHjaenL+Z5EgqWJtZNDhFziSb/oC3tJ/csS5MlOIa9WQUZfMIQqFuHlUeTe9eicmhTuNYqDsQ8BdevKcqhQpI41uaFZbG5Zb/EVX/9ZYn1iqZzyePlGbhjevOZQojjVDvLgrXHuPy0gcKBUViO/728HkhCD/YRKTJxrSSP46nHkjDOI8ptTXBLxbCkGcwlG8exxCJLH6yEPlgTGPezLM1sgkJkNEyzCD7+zFlGI/Q2y9K+nqOnabbKb23c0yAJgyRNWCjj4Y6urbM3hk7weA8s+fEHYv0bZz2RXq1WNOsEnNqO1cIxZAXUlq34IQ/Qjt4TfnG7MoPjcQh721E6LSVIYKsgZl9ohMFVimPDUimmUn4VObW26nWO9d131ku95SLgg4fEhqO71hMSbblKnmvYY6pOiXk6uSUOquy6XjZFv2iQo0hF88g47t4HcU6nxtFhTcZATGk+fWDpRqgh8BVUZ3UWckac7cFPJ2pUyy23UD6nxcVJOfpk0TPewhIgZpF0XRRvTbSGv8EQBpGUpD8492cTfzzBhDLBAN6lQylkqbqIxlRQpPK2ViNNRkWeJTh/+qKog53nN1wwkYMP36TR2rVuKBgBoiiYC5opFauq66V3kqTWiiJ1ILVX0WdxGiytZQ4Hp4/gWEoXem+5OqMQCSG1m/ugTCC/VTM6q2rK6Qtz1BDYiPkjVeM87xX8g8ilx4sgSyDxyPrFkog+Yrk6AlkVpfW99d/xoO8pm7P52m5UTVsXWruui89zdRxvkdG5U1WkNI4uaAwhbZzC4zEL61rmydWQiEhlColUzFTrENDtngUIekAPQ5VibYICfF1VlXCgi+0CukMx1bQDc+T0U4I0e4sEZLSxXG7LJbDiIMkw8bYAv3ie1ygs77uTsrD2B6qOtaxP5PUnYhUEbF8v21+6nGdYkdfA6OgwEQVbUoihHnetZfA4yMUqF2/XgnKrcMi+eVUfgegbVLHDI8qprxRpoDl4K13jrpJwESS3NJpkFKlFllOw3H4C91NiVYX/YDsrt4NA/EKTdnbL63I6B9ZfqH0NtgxgYuqckm+kR4FMegVUmuSbr7pKjXJaiGikOgsQ5p87yenXvaRliH74purQWZ4o1AUtBgZv2RjJfY90SQoEu6ejZykhschOQlEDxQ19z8S7IBSo+evpqWXuZeu+wEUDuOkKUxN3EPJsmmu9VQ7ofsMpYCbRegIs1DIZ7+Tt29c/niDIfuvPxn5n5EP5c7F9mQD437dwR9l0b5nop2PZy7QMYm9HJgDMAqnATaHBiYP11yUcfPBHl+0/CHpGWeMq3e5Wy6lVnB5VdeIGEF/MEjRq8BAwYakW7plSVPVSZb0p2YCWVymXAKPBhkD3FLQEfRSvPgf3AQ8zthKnuOkvP7mYxN/m8zn0cVgRa1dy6uxNFC2pK1uWpqLaRve7NramtupgMceSmxvQzjGITYMsXBwby6H0J0IKer3Lyk3Tt4fd2WTwm98nuyw7rRrJ4F5yRFjWC1a23sNbwneNvSWWNEqKxJzTWqxwQcM7LnPY6QtAcBL1qClwHzyvTDpvGtcMNoE5CCppX2sTPkQtqR4dwpsDytGuagQeWCCLMI3ABC3VNRdglIwtbYmmYFv7GmAn7k6O/yRTOapMUt08KKNIecicPYJvUk88Ah5zpVFVqi55BVFEmmRTY/Y4hMkcIKCXBEt6xteJWFDBcLSeosuAxfXcf+SVwSKVrYXExyU1hgWDdmx1y9ltcjYPYk6rYXmgZS2LlkMbehGAKZRMGb0/hhQtl1747fMGIaDsiOHNAVoUgplD6LVgdYEkhht42y6ICKg+4D76yjv3L9ly3G1yjRlvQI33KLLM0mlMvTi9tZ9gsTJ7Ws3kZMKl3elTpHc0OXhZHXpOlQ63FaHzH6ZNqBgAb9GAmLtaL1+a1HgJ4S7SJX0yjhcYz+X1hmg78nrhOEeGxdNkzm7R3OiiLUPBbhgHbGmMIMcyBIkrA0Rn6vqEEOVDOIZM3S0IAPAybZ5pYVgsjkbqlqBMiGU+17cCMvI7inmZAGwlquPJWzQwaOWsheHB0rXlXZri/0Zhcjlsq0GP58A4W3scNA+5HiNa9xivHU9GvxxzGgKrzhuYVMKr5KE6PMB50JrClKfczEWIBzVra1p607OzpUldGdxKAJlhvVJB3WQBxxf8bSoW49IyY7kn18jSEFs5IFq34Xctw+u2PKRFbiAF3VHIO5hlz7sjwweOoQuX7Sn4wDEklGOoXOB7KfTuhn3Le06FkmSF3WdYTPjKuAgXW1pqZVX9oxk3mAmWuQB+kZEHsqZLVZete/1FNgqVbbMtw0aUrnxpH0nplmlEGkjnBvW9jHYJ7mUsy28yeuW3Kl4lfbHtPqV7wsFyjjeQ4zExqdK7koTeswgKnXnPUpmoBRmeYeI+I99D6nZML6qgChQ6AeldO84QEQfEKMfYvQCB20k0ToIVX6SCDyoneuJcK2EAp79h5812ujXzT1E8G+oNremoRGmcZvTV5y7d/UnE6KN1eRsbdXma5hkB4C8DES4OcKpWVS/JCcG7GlCD/dOJU+wQuWRbmfpdu3tJ6oQAhq5IvmLqgIOhR/6H7rg76M963XGvPelckIbVS4foaZ7vAHDwTqyBb/PEc5j7u0Y1kj6pKwKk2F8dMj3Qmrj/HrXI6b0qwQ3Pfm0qAJLWF5qlPkyNEG4l/J06ZvPsurf8fxyfU9EFLJ0BgLNt5+wNdMKvT05OQA9u1cG2Xv98cqBW9JpKMd0+JOvO5dUY3zMaCiopD3EbfDwZXE2autIMtJ66gKaRAWf3dDs6MAXjddo/V9iRvimxq9dBxwtWK5rUD2INlA2wV92ofMJKfXSod5US7wu8kuQgDY58f9a7wlen8ydqzCjtaVb74+2OfmSowg0m3xZR1yfH8mXSVd33CKCWWYMRehEXFDte0dCc4Asax8TFhzlzGFtN4hrPYeYk2GwOKibu/mwsq9dMQPmageDYGTdydX2gB5ZE6QNikYPvibQOVFGQlZPoYqrV0E/P6WxCx2LWSfvCfzQwSuGWz0Mt/TRU7C7f6HdatsLd6Ge8HcpDyP10//oFcNsMf0vZhekqnC3zGLHMRyVeJ+DQs0AJ1uUJqnNIpStueQ9EG3v8FlVv1PFyfDWDs0pdY+mDH9hTmLIicCGFMooirECjqXQApfnjPqVLGUHlO/m7O+Spt9mppSHywxe/MU04E+yeiW1wIoHOUB67vsME8aBxtpvvj19BIVpApmA3jY4rCAXilYdKHxKtrufVcLCJDNELp3hmC62UNInX0PMp6t/omndLOQ2NGE+DeN+czq1rfHR1reupC41B+7z1UwFfCHw7+83/g7TII16kyBny+OkEoP3UKQ8lH/K4rGnfDvlAY9Xzn3kMfdGh/X1E0T40eivfuSQr08B1qq4EaF6WxjS5FQvrjXXiHERPYdu1Pcde8eVcI0j5gjuv+jH8OfeMC1E9r9NEI/MDVUd+u+IaZlN8ifjIxALqqlbQc6A6qZ328JjeBTGbdwIlW/VnDcTZ7i8Bb2LWUWQfgowFNzHl/RRgzD1NxFbleu6WJYwxyuYslJWvRUb+2G+POhcYYJMB/kXIrD+YzLq94aXf8/tQOQG3qupS3SJoIF0nmad/CuHWfxxj/jEMXlRi0c46QRzz1okL5gVdXKRcKLw/okGkuzV126wzrq+eA8s5pZLClVHyAxq3sOb4khir+83n39rljapjbeTTtHofx+f8PIkoMMAp/dj89Er11KKw89bwmXqols/UCmJlS3U1uYGikGcIy1RzCTKF6mshn4T/B6Oh0VgJJgAA"
+    "scriptGzipBase64": "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",
+    "boundary": "Linux native process.env, descriptor validation and per-verify Git/command threading are executed. Windows casing is simulated; native taskkill remains a separately bound Worker test. Historical 13-case probe remains recorded in researchEvidence.prototype."
   },
   "workerEvidenceContract": "Each criterion cites candidate SHA/tree, its declared run IDs and named subject-invoking test bodies. Synthetic child observations are booleans only; never substitute research/discovery evidence for Worker execution. Logs must identify every distinct negative title once, without skip/todo.",
   "negativeCaseTestDetails": [
@@ -726,61 +759,32 @@
   ],
   "validationLimitations": "Canonical materialization succeeds after source-complete baseline reconciliation. Prototype proves only the declared pure environment builder and delivered verifier seam; Worker must implement the exported helper/factory composition and execute focused child-process tests at the candidate. Trusted process execution is not OS confinement.",
   "researchEvidenceSummary": {
-    "classification": "EXECUTED_RESEARCH_PROTOTYPE_NOT_PRODUCT",
-    "prototype": {
-      "classification": "RESEARCH_PROTOTYPE_NOT_IMPLEMENTATION",
-      "node": "v24.20.0",
-      "platform": "linux",
-      "sourceRef": "packages/agentic-system/src/local-command-verifier.js",
-      "sourceSha256": "f626fae5ba916469518da47373de07fe54320ec180f67b3711f625f75efd8967",
-      "providerCalls": 0,
-      "actualHostSecretRead": false,
-      "nativeWindowsExecuted": false,
-      "checks": {
-        "baselineInheritsBothSyntheticSecrets": true,
-        "prototypeFiltersSecretsPreservesPathHomeAndSnapshotsOverlay": true,
-        "explicitSyntheticSecretOverlayIsAllowed": true,
-        "revisionMismatchFailsClosed": true,
-        "nonzeroExitRemainsFail": true,
-        "timeoutRemainsInconclusive": true,
-        "treeMutationFailsClosed": true,
-        "simulatedWindowsCasingAndOverlayPrecedence": true,
-        "simulatedPosixCaseSensitivity": true,
-        "onlyOwnParentKeysInherited": true,
-        "invalidOverlayRejectedBeforeVerify": true,
-        "gitChecksUseFilteredEnvWithoutCommandOverlay": true,
-        "missingParentVariablesNotInvented": true
-      }
-    },
-    "limits": [
-      "In-memory prototype only; no product source edit, Jev readiness or implementation acceptance.",
-      "Windows casing is simulated. Native Windows launch/taskkill, final per-verify snapshot and post-BB-120 suites remain Worker obligations.",
-      "HOME/config access and trusted command filesystem/network privileges remain; stdout is not guaranteed redacted."
-    ],
-    "freshReplay": {
-      "classification": "RESEARCH_PROTOTYPE_NOT_IMPLEMENTATION",
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_PRODUCT",
+    "descriptorReplay": {
+      "classification": "RESEARCH_SOURCE_COPY_NOT_PRODUCT",
       "node": "v24.19.0",
-      "platform": "linux",
       "sourceRef": "packages/agentic-system/src/local-command-verifier.js",
       "sourceSha256": "f626fae5ba916469518da47373de07fe54320ec180f67b3711f625f75efd8967",
+      "prototypeSha256": "1c6af0ce1526e2e147f0e846ee06890ad2c864283c49abce646c10388d95fd88",
+      "checks": {
+        "nativeProcessEnvAndBasenameNode": true,
+        "overlayCopiedChannelStripped": true,
+        "gitBeforeAfterFilteredSameSnapshot": true,
+        "unlistedParentGetterNeverRead": true,
+        "allowedParentGetterRejectedWithoutReading": true,
+        "overlayGetterRejectedAtFactory": true,
+        "injectedParentTypeAndDescriptorValidation": true,
+        "windowsCaseSimulation": true,
+        "posixExactCase": true,
+        "revisionMismatchPreserved": true,
+        "treeGuardPreserved": true,
+        "timeoutTerminationPreserved": true
+      },
       "providerCalls": 0,
       "actualHostSecretRead": false,
-      "nativeWindowsExecuted": false,
-      "checks": {
-        "baselineInheritsBothSyntheticSecrets": true,
-        "prototypeFiltersSecretsPreservesPathHomeAndSnapshotsOverlay": true,
-        "explicitSyntheticSecretOverlayIsAllowed": true,
-        "revisionMismatchFailsClosed": true,
-        "nonzeroExitRemainsFail": true,
-        "timeoutRemainsInconclusive": true,
-        "treeMutationFailsClosed": true,
-        "simulatedWindowsCasingAndOverlayPrecedence": true,
-        "simulatedPosixCaseSensitivity": true,
-        "onlyOwnParentKeysInherited": true,
-        "invalidOverlayRejectedBeforeVerify": true,
-        "gitChecksUseFilteredEnvWithoutCommandOverlay": true,
-        "missingParentVariablesNotInvented": true
-      }
-    }
+      "nativeWindowsExecuted": false
+    },
+    "historicalRef": "state.plan.researchEvidence.prototype",
+    "limits": "Synthetic secrets only; no credentials/provider calls/product edits. Native Windows/taskkill and complete Backend/QA regression remain Worker obligations. Prototype is not READY authority."
   }
 }
