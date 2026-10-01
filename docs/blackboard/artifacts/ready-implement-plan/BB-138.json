@@ -140,7 +140,6 @@
           "criterionId": "UNKNOWN_FAILS_CLOSED"
         }
       ],
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution.",
       "criterionIds": [
         "OPTIONS_FORWARDED",
         "UNKNOWN_FAILS_CLOSED"
@@ -149,23 +148,19 @@
     },
     {
       "id": "deliver-regression",
-      "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run verify:current-docs"
     },
     {
       "id": "repository",
-      "command": "npm test",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
@@ -173,25 +168,46 @@
       "invariant": "Every fresh and durable-resume Backend call receives the resolved permissionProfile and model.",
       "criterionIds": [
         "OPTIONS_FORWARDED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-138 P1 all fresh/resume Backend sites",
+      "requiredObservations": "Capture normalized invocation permissionProfile/model at both fresh closures and interrupted resume; manifest FULL_AUTO/model-manifest; CLI override WORKSPACE_EDIT/model-cli. Compare QA argv unchanged."
     },
     {
       "invariant": "Explicit programmatic options override manifest values; omission resolves to WORKSPACE_EDIT and model null.",
       "criterionIds": [
+        "OPTIONS_FORWARDED",
         "UNKNOWN_FAILS_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-138 P2 override precedence and N2 omitted defaults",
+      "requiredObservations": "Options > manifest > WORKSPACE_EDIT/null; captured request/argv distinguish each source. Map to both OPTIONS_FORWARDED and UNKNOWN_FAILS_CLOSED."
     },
     {
       "invariant": "Invalid typed permission/model values and unrecognized manifest, programmatic or CLI keys reject before tool probe, Backend dispatch or recovery writes.",
       "criterionIds": [
         "UNKNOWN_FAILS_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-138 N1/N3/N4 invalid values and keys",
+      "requiredObservations": "TypeError/usage64 before version probe, dispatcher or handle write; snapshot HEAD/refs/status/recovery bytes and zero counters."
     },
     {
       "invariant": "Explicit FULL_AUTO dispatches without an additional interactive confirmation; QA options are unchanged.",
       "criterionIds": [
         "OPTIONS_FORWARDED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-138 P1 FULL_AUTO without prompt",
+      "requiredObservations": "Close stdin; fake Backend still dispatched with FULL_AUTO and no extra confirmation; compare QA command argv before/after."
     }
   ],
   "negativeVerificationCases": [
@@ -438,7 +454,8 @@
         }
       ],
       "supportingPlanFields": [
-        "testContract"
+        "testContract",
+        "prototypeEvidence"
       ]
     },
     {
@@ -454,7 +471,9 @@
       ],
       "verificationIds": [
         "focused",
-        "docs"
+        "docs",
+        "deliver-regression",
+        "agent-tools-regression"
       ],
       "decisionIndexes": [
         4,
@@ -484,7 +503,9 @@
           "match": "\"deliverMentionsModel\": false"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "testContract"
+      ]
     }
   ],
   "testContract": {
@@ -536,5 +557,6 @@
     "method": "Actual scratch source-copy prototype executes delivered modules with deterministic fake agent and real Git; every assertion was executed. Exact generated source hash is retained. This is feasibility evidence and does not grant Worker authority or claim tracked product delivery.",
     "patch": "--- packages/agent-tools/src/deliver-slice.js\n+++ scratch/prototype-deliver.mjs\n@@ -7,10 +7,10 @@\n import { tmpdir } from \"node:os\";\n import { join, resolve } from \"node:path\";\n-import { AGENT_TOOLS, defineAgentTool } from \"./tool-adapters.js\";\n-import { resolveExecutable } from \"./process-runner.js\";\n-import { RecoveryError, disposeRecoverableRun, readAgentToolRunHandle } from \"./recovery.js\";\n-import { AgentTaskStatus, resumeSupervisedTask, runSupervisedTask } from \"./supervisor.js\";\n-import { createLocalCommandVerifier } from \"../../agentic-system/src/local-command-verifier.js\";\n-import { createLocalGitWorkspace } from \"../../agentic-system/src/local-git-workspace.js\";\n+import { AGENT_TOOLS, defineAgentTool } from \"/workspace/research-delivery/packages/agent-tools/src/tool-adapters.js\";\n+import { resolveExecutable } from \"/workspace/research-delivery/packages/agent-tools/src/process-runner.js\";\n+import { RecoveryError, disposeRecoverableRun, readAgentToolRunHandle } from \"/workspace/research-delivery/packages/agent-tools/src/recovery.js\";\n+import { AgentTaskStatus, resumeSupervisedTask, runSupervisedTask } from \"/workspace/research-delivery/packages/agent-tools/src/supervisor.js\";\n+import { createLocalCommandVerifier } from \"/workspace/research-delivery/packages/agentic-system/src/local-command-verifier.js\";\n+import { createLocalGitWorkspace } from \"/workspace/research-delivery/packages/agentic-system/src/local-git-workspace.js\";\n \n export const DELIVER_SLICE_VERSION = \"DELIVER_SLICE_V1\";\n@@ -81,4 +81,7 @@\n   const qaVerifications = checkVerifications(slice.qaVerifications, \"qaVerifications\");\n   const requiredFiles = checkRequiredFiles(slice.requiredFiles);\n+  const permissionProfile=slice.permissionProfile, model=slice.model;\n+  if(Object.hasOwn(slice,\"permissionProfile\")&&!['WORKSPACE_EDIT','FULL_AUTO'].includes(permissionProfile))invalid(\"permissionProfile\");\n+  if(Object.hasOwn(slice,\"model\")&&(typeof model!=='string'||!model.trim()))invalid(\"model\");\n   let recoveryDir = undefined;\n   if (slice.recoveryDir !== undefined) {\n@@ -102,4 +105,5 @@\n     prompt: slice.prompt,\n     tool: slice.tool,\n+    ...(permissionProfile===undefined?{}:{permissionProfile}),...(model===undefined?{}:{model}),\n     backendVerifications,\n     qaVerifications,\n@@ -279,4 +283,8 @@\n     onHandleWrite = null\n   } = options ?? {};\n+  const permissionProfile=Object.hasOwn(options,\"permissionProfile\")?options.permissionProfile:(slice.permissionProfile??'WORKSPACE_EDIT');\n+  const model=Object.hasOwn(options,\"model\")?options.model:(slice.model??null);\n+  if(!['WORKSPACE_EDIT','FULL_AUTO'].includes(permissionProfile))throw new TypeError('DELIVER_SLICE_V1 invalid: permissionProfile');\n+  if(Object.hasOwn(options,'model')&&(typeof model!=='string'||!model.trim()))throw new TypeError('DELIVER_SLICE_V1 invalid: model');\n   const recoveryDir = recoveryDirOption ?? slice.recoveryDir ?? null;\n   const maxAttempts = maxAttemptsOption ?? slice.maxAttempts ?? 3;\n@@ -297,5 +305,5 @@\n \n   const runBackendFresh = () => runSupervisedTask({\n-    tool: resolveSliceTool(slice.tool, command, toolOverride),\n+    tool: resolveSliceTool(slice.tool, command, toolOverride), model,permissionProfile,\n     task,\n     recoveryDir,\n@@ -359,5 +367,5 @@\n     }\n     const backend = await runSupervisedTask({\n-      tool, task, maxAttempts, timeoutMs, env, onHandleWrite, invocationObserver: null\n+      tool, task, model,permissionProfile,maxAttempts, timeoutMs, env, onHandleWrite, invocationObserver: null\n     });\n     return finishBackend(backend, { dispose: false });\n@@ -445,5 +453,5 @@\n   }\n   const resumed = await resumeSupervisedTask(existing, {\n-    tool, task, maxAttempts, timeoutMs, env, onHandleWrite, invocationObserver: null\n+    tool, task, model,permissionProfile,maxAttempts, timeoutMs, env, onHandleWrite, invocationObserver: null\n   });\n   return finishBackend(resumed, { dispose: true });\n@@ -478,4 +486,6 @@\n     recoveryDir,\n     env,\n+    ...(Object.hasOwn(options,'permissionProfile')?{permissionProfile:options.permissionProfile}:{}),\n+    ...(Object.hasOwn(options,'model')?{model:options.model}:{}),\n     ...(maxAttemptsRaw === undefined ? {} : { maxAttempts: Number(maxAttemptsRaw) }),\n     ...(timeoutMsRaw === undefined ? {} : { timeoutMs: Number(timeoutMsRaw) })\n",
     "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
