@@ -1,0 +1,32 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-138",
+  "outcome": "A local deliver slice can pin the same permission profile and model options that supervised `run` already accepts, so Backend execution uses the operator-declared run contract.",
+  "currentProblem": "run accepts --permission and --model and forwards them to runSupervisedTask. validateDeliverSlice and runDeliverSlice omit permissionProfile and model, so deliver always uses supervisor defaults.",
+  "scope": [
+    "agent-tools.operator.deliver-run-options"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered PermissionProfile and runSupervisedTask model/permission arguments. Do not add adapters or change the BB-128 tool-id whitelist.",
+    "Unknown permission values fail before spawn. Default remains WORKSPACE_EDIT when omitted.",
+    "No sandbox, SCM push, or live-value claim."
+  ],
+  "successCriteria": [
+    "A deliver manifest or CLI override can set permission and model; the Backend supervised run receives those values.",
+    "Unknown permission values, non-string models and extra unknown option types fail closed before any agent process starts. Omitted fields keep the delivered run defaults.",
+    "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/operator-cli-composition.md",
+    "docs/blackboard/evidence/BB-135/cli-composition-audit.mjs",
+    "packages/agent-tools/src/deliver-slice.js",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/tool-adapters.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/operator.md"
+  ]
+}

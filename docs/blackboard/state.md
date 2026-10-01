@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-134
+next-work-id: BB-145
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -41,8 +41,8 @@ NONE
 ## Schedulable tasks
 
 - BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
-- BB-079 [WORKER/EXECUTION] — Implement cache-stable async result context
-- BB-084 [WORKER/EXECUTION] — Implement grounded observation and context binding
+- BB-080 [WORKER/EXECUTION] — Integrate async steering, wakeup and recovery
+- BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
@@ -57,6 +57,16 @@ NONE
 - BB-131 [RESEARCH_SA/RESEARCH] — Prepare a reproducible repository preview for local feature delivery
 - BB-132 [RESEARCH_SA/RESEARCH] — Verify local web feature journeys through an independently pinned browser evaluator
 - BB-133 [RESEARCH_SA/RESEARCH] — Verify API compatibility and persisted state for local feature changes
+- BB-135 [RESEARCH_SA/RESEARCH] — Expose durable recovery on the operator run command
+- BB-136 [RESEARCH_SA/RESEARCH] — Wire observation traces through the local deliver slice
+- BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
+- BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
+- BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
+- BB-140 [RESEARCH_SA/RESEARCH] — Pin eval permission and timeout factors from the operator CLI
+- BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
+- BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
+- BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
+- BB-144 [RESEARCH_SA/RESEARCH] — Expose deliver CLI tool override
 
 ## Dependency graph
 
@@ -89,13 +99,13 @@ BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
-BB-079 [WORKER_SCHEDULABLE] <- BB-077, BB-078
-BB-080 [BLOCKED_BY BB-079] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-079 [DONE] <- BB-077, BB-078
+BB-080 [WORKER_SCHEDULABLE] <- BB-078, BB-079
+BB-081 [BLOCKED_BY BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
-BB-084 [WORKER_SCHEDULABLE] <- BB-058, BB-064
-BB-085 [BLOCKED_BY BB-084] <- BB-084
+BB-084 [DONE] <- BB-058, BB-064
+BB-085 [WORKER_SCHEDULABLE] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
 BB-088 [DONE] <- BB-087
@@ -133,6 +143,17 @@ BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
 BB-131 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130
 BB-132 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 BB-133 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
+BB-134 [DONE] <- BB-056
+BB-135 [RESEARCH_SCHEDULABLE] <- BB-101
+BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
+BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
+BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-140 [RESEARCH_SCHEDULABLE] <- BB-099
+BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
+BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
+BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
+BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
 ```
 
 ## Context semantics

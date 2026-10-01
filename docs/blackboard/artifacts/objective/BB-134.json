@@ -1,0 +1,29 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-134",
+  "outcome": "Trusted CI carries every executed verification log into its evaluation bundle, including verification runs not mapped to acceptance claims, so an exact passing worker candidate can materialize and receive independent Jev judgment without missing evidence.",
+  "currentProblem": "Real run 36805700271 collected passing BB-059 candidate70d23a86230306afe01367cdfac1bad00e37df1b but evaluation failed before API with ENOENT repository-verify.txt. Downloaded jev-input bundle contains seven claim-linked files and omits that verification log, although its run and logHash remain in the implementation result. collect builds refs from claims only; materialize validates every verification run.",
+  "scope": [
+    "outer-blackboard.ci-evidence-completeness"
+  ],
+  "constraints": [
+    "Preserve objectives and READY plans of existing worker tasks; this is a separate controller repair with its own readiness and delivery gates.",
+    "Do not relax evidence digest/currentness/schema/credential separation gates, alter provider requests, reroll retained findings, or fabricate receipts.",
+    "Keep collection credential-free and evaluation data-only; product source of existing worker tasks stays unchanged."
+  ],
+  "successCriteria": [
+    "Every verificationRuns.logRef and every claims.evidenceRefs body is retained exactly once with its existing bytes and bindings through collection, upload, download and evaluation.",
+    "A separated collect/evaluate fixture with an unclaimed passing verification run materializes successfully; missing/corrupt/unsafe evidence fails closed without provider calls.",
+    "Focused regression coverage and Living Docs describe the actual trusted bundle behavior; full repository checks and real independent gates complete delivery."
+  ],
+  "currentSourceRefs": [
+    "scripts/blackboard-jev-ci.mjs",
+    "scripts/blackboard-delivery.mjs",
+    "scripts/blackboard-jev.mjs",
+    "test/blackboard-jev.test.mjs",
+    "docs/blackboard/jev.md",
+    "docs/living/system/state.md"
+  ]
+}

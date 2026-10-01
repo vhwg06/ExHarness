@@ -1,0 +1,179 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-136",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-136.json",
+    "hash": "15bd8401ad2c10bd421dbbd009f44d1d39a12e7d18a2a9ad44976697675b6e88"
+  },
+  "scope": [
+    "agent-tools.operator.deliver-observation"
+  ],
+  "outOfScope": [
+    "A second review-bundle format (BB-129) or a change to acceptance authority.",
+    "Inventing Kiro/agy usage schemas or treating traces as product acceptance."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
+    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
+    "No sandbox, SCM push, or live-value claim."
+  ],
+  "invariants": [
+    "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
+    "Omitting a trace directory leaves deliver behavior unchanged.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Pass createSupervisedObservation into runDeliverSlice / resume instead of invocationObserver: null when a trace directory is set.",
+    "Reuse the delivered digest chain and report command. Do not write traces into the source repository or the candidate commit."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/process/operator-cli-composition.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/deliver-observation.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/deliver-observation.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/**",
+      "packages/agent-tools/test/**",
+      "docs/blackboard/process/operator-cli-composition.md",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/deliver-observation.test.js",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin the deliver --trace-dir / resume observer mapping and a fake-CLI fixture in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, wire observation only on the deliver Backend path and the focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "DELIVER_TRACES",
+      "statement": "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+      ]
+    },
+    {
+      "id": "NO_TRACE_UNCHANGED",
+      "statement": "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/deliver-observation.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
+      "criterionIds": [
+        "DELIVER_TRACES",
+        "NO_TRACE_UNCHANGED"
+      ]
+    },
+    {
+      "invariant": "Omitting a trace directory leaves deliver behavior unchanged.",
+      "criterionIds": [
+        "NO_TRACE_UNCHANGED"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "DELIVER_TRACES",
+        "NO_TRACE_UNCHANGED"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Deliver without trace-dir must not construct an observation writer",
+    "TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_136_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "NO_TRACE_UNCHANGED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N1 Deliver without trace-dir must not construct an observation writer",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NEG_136_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "NO_TRACE_UNCHANGED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N2 TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace",
+      "subjectSymbol": "runDeliverSlice"
+    }
+  ],
+  "researchGaps": [
+    "Ratify whether traces cover only Backend attempts or also QA command records, and how resume appends to an existing chain, before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "An operator can inspect a deliver slice with the same trace/report tools already used for run.",
+    "measurement": "Fake-CLI deliver fixture writes a verifiable chain; report exit 0 on intact traces and 1 on a broken chain.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-098 for observation; BB-129 for later bundle inclusion; BB-074 for end-to-end value"
+  }
+}

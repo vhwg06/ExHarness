@@ -1,0 +1,116 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-134-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-134.json",
+    "hash": "cf1d2289580e515f12c43d9f90af91b9d70b947a1710f7cad682c30485a7632d"
+  },
+  "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+  "baselineSha": "2221b48486c6452e79833006662a5a360c3c71be",
+  "candidateTree": "9c0fe2fd0ec4bf5a7717afe934ff4d92788c4660",
+  "verificationRuns": [
+    {
+      "id": "bundle-union",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-UNION \" test/blackboard-context-verification-bundle.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+      "logRef": "docs/blackboard/evidence/BB-134/bundle-union.txt",
+      "logHash": "77faa44a8b632cb5714060137792e2a2c34bd78f390b48ba68d8271e98e8b1a1"
+    },
+    {
+      "id": "bundle-separation",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-SEPARATION \" test/blackboard-context-verification-bundle.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+      "logRef": "docs/blackboard/evidence/BB-134/bundle-separation.txt",
+      "logHash": "7a83e3bdc880a36ee131a5c910fdb3427b6862eb3fe3be3620929781fd0d520a"
+    },
+    {
+      "id": "bundle-failclosed",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-FAILCLOSED \" test/blackboard-context-verification-bundle.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+      "logRef": "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+      "logHash": "5d326ec2646049a43b7247b4097a9d0424a628d5cdb2c7caf63e0e49b3006ac6"
+    },
+    {
+      "id": "blackboard-regression",
+      "command": "npm run verify:blackboard-context",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+      "logRef": "docs/blackboard/evidence/BB-134/blackboard-regression.txt",
+      "logHash": "a51618cc4b7b9df8a5dff39bcd7437724e01f73c625cfb1fc89e157080e27775"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "d8c1c5bbf3361dafa151fab85d4df743297d96f2",
+      "logRef": "docs/blackboard/evidence/BB-134/repository.txt",
+      "logHash": "247d015853a4ab91f65b25807fa60d59167b21ecabf742f1a84c95db9dcbed3f"
+    }
+  ],
+  "claims": [
+    {
+      "id": "COMPLETE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-134/bundle-union.txt",
+        "docs/blackboard/evidence/BB-134/blackboard-regression.txt"
+      ]
+    },
+    {
+      "id": "SEPARATION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-134/bundle-separation.txt",
+        "docs/blackboard/evidence/BB-134/blackboard-regression.txt"
+      ]
+    },
+    {
+      "id": "FAILCLOSED",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+        "docs/blackboard/evidence/BB-134/blackboard-regression.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-BUNDLE-missing",
+          "logRef": "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+          "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+          "bodyHash": "a48ec7646cc5d80d25f6b208082f806640a92cd35ceb0f6e87f5d8631f249c45"
+        },
+        {
+          "id": "NC-BUNDLE-digest",
+          "logRef": "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+          "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+          "bodyHash": "f24fa6b726a73a44d531476b9770ee2e4ccd0219bcf9a14578dfab5d51e23cde"
+        },
+        {
+          "id": "NC-BUNDLE-unsafe",
+          "logRef": "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+          "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+          "bodyHash": "00c57e4d5388985b66e922ac77bb7e18a98cb04316c2390885b5413d6da0e6ab"
+        },
+        {
+          "id": "NC-BUNDLE-empty",
+          "logRef": "docs/blackboard/evidence/BB-134/bundle-failclosed.txt",
+          "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+          "bodyHash": "04453a63956996bd55cd57eb3427911264644640b84d45ad352a66beee338971"
+        }
+      ]
+    },
+    {
+      "id": "DOCS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-134/blackboard-regression.txt",
+        "docs/blackboard/evidence/BB-134/repository.txt"
+      ]
+    }
+  ]
+}
