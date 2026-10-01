@@ -1,0 +1,31 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-135",
+  "outcome": "A local deliver slice can write the same digest-chained AGENT_TOOL_RUN_TRACE_V1 records as supervised run, so report can inspect the Backend attempts of that slice.",
+  "currentProblem": "createSupervisedObservation and run --trace-dir already append traces. runDeliverSlice and its resume path hardcode invocationObserver: null, so a deliver slice produces no trace file and report cannot describe it.",
+  "scope": [
+    "agent-tools.operator.deliver-observation"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
+    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
+    "No sandbox, SCM push, or live-value claim."
+  ],
+  "successCriteria": [
+    "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+    "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+    "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/operator-cli-composition.md",
+    "docs/blackboard/evidence/BB-134/cli-composition-audit.mjs",
+    "packages/agent-tools/src/deliver-slice.js",
+    "packages/agent-tools/src/observation.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "docs/living/system/agent-tools/observation.md",
+    "docs/living/system/agent-tools/operator.md"
+  ]
+}

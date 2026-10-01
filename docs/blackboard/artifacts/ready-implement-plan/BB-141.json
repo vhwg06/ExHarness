@@ -1,0 +1,181 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-141",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-141.json",
+    "hash": "960b8e13add6d48d7fc52cf9543cee49513cbd04afc9ef9bfa76ac4daca8b86f"
+  },
+  "scope": [
+    "agentic.backend-qa-execution.adapter-recovery"
+  ],
+  "outOfScope": [
+    "Implementing recover or resumeSupervisedTask on a durable Board factory; that remains BB-121.",
+    "Changing createBackendWorker, backend-worker.js, or operator run --recovery-dir owned by BB-134.",
+    "Sandbox, SCM push, MCP promote, or a second lineage format."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse the delivered BB-101 recovery handle. Forward recoveryDir only on execute persist. Do not implement recover or resumeSupervisedTask; BB-121 owns the durable Board factory recover path.",
+    "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path. Do not edit createBackendWorker or backend-worker.js.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
+  ],
+  "invariants": [
+    "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
+    "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Accept optional recoveryDir on runSupervisedBackendWork and forward it to runSupervisedTask.recoveryDir. Persist only; do not add a recover() method on the adapter.",
+    "Keep default adapter execute without recoveryDir on the unique mkdtemp worktree disposed in finally. BB-121 remains the factory that calls resumeSupervisedTask."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/recovery.js",
+      "docs/blackboard/evidence/BB-141/adapter-composition-audit.json",
+      "docs/blackboard/process/application-adapter-composition.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/test/bb141-adapter-recovery.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb141-adapter-recovery.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/recovery.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "docs/blackboard/process/application-adapter-composition.md",
+      "docs/blackboard/evidence/BB-141/adapter-composition-audit.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agentic-system/test/bb141-adapter-recovery.test.js",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agent-tools/**",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin recoveryDir persist-only forwarding and second-first-run fail-closed in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward only recoveryDir from runSupervisedBackendWork into runSupervisedTask and the focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "ADAPTER_RECOVERY_PERSISTED",
+      "statement": "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    },
+    {
+      "id": "ADAPTER_RECOVERY_FAIL_CLOSED",
+      "statement": "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/bb141-adapter-recovery.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_PERSISTED",
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A second first-run against a current recovery handle must fail before spawn",
+    "Omitted recoveryDir must dispose the temporary worktree"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_141_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "ADAPTER_RECOVERY_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/bb141-adapter-recovery.test.js",
+      "testTitle": "BB-141 N1 A second first-run against a current recovery handle must fail before spawn",
+      "subjectSymbol": "runSupervisedBackendWork"
+    },
+    {
+      "id": "NEG_141_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "ADAPTER_RECOVERY_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/bb141-adapter-recovery.test.js",
+      "testTitle": "BB-141 N2 Omitted recoveryDir must dispose the temporary worktree",
+      "subjectSymbol": "runSupervisedBackendWork"
+    }
+  ],
+  "researchGaps": [
+    "Ratify empty-string versus null recoveryDir fail-closed and whether the adapter must surface HANDLE_INVALID without calling resumeSupervisedTask, before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Application execute can persist the same crash handle the supervisor already writes for operator run.",
+    "measurement": "Fake-CLI adapter fixture writes handle.json under recoveryDir; omitted recoveryDir leaves no handle and disposes the worktree.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-100 for the adapter; BB-101 for recovery; BB-074 for end-to-end value"
+  }
+}

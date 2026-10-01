@@ -69,6 +69,8 @@ Worker dependencies of BB-100/101/102/103 are already DONE (BB-096, BB-097). Res
 - [BB-103](agent-tool-research/BB-103.md)
 - [BB-104](agent-tool-research/BB-104.md)
 
+A later operator CLI composition wave (BB-134..137) composes already-delivered recovery, traces, MCP, and run options onto the operator CLI. Remaining command factor parity (BB-138..140) is registered in [operator-cli-factor-parity.md](operator-cli-factor-parity.md). Those waves do not reopen BB-100..104.
+
 Primary sources for BB-103 (eligibility, not adoption):
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) (13.5k stars, MIT, spec 2026-07-28). Research must pin a release and compare a zero-dependency stdio implementation against using `@modelcontextprotocol/server` (agent-tools currently has no runtime npm dependencies).
 - MCP security practices remain the token-audience / confused-deputy / SSRF baseline already cited on the delivery roadmap. MCP is a transport, not product authority.

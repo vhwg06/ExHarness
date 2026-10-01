@@ -1,0 +1,180 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-136",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-136.json",
+    "hash": "85ece1d65accc97227f7da20031e9a79fa6f1bb043574661a945baa4a8a90179"
+  },
+  "scope": [
+    "agent-tools.operator.mcp-opt-in"
+  ],
+  "outOfScope": [
+    "Adding promote, accept, merge or credential MCP tools.",
+    "Writing user CLI configuration or changing adapter argv."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
+    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+  ],
+  "invariants": [
+    "Default run and deliver invocations never construct the MCP server.",
+    "MCP tools cannot promote, accept, merge or mint credentials.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Add an explicit opt-in flag on run and deliver that forwards mcpVerify: true into runSupervisedTask. Default false keeps current construction-free behavior.",
+    "Keep the delivered verify/status tool set and planted-promote rejection. Do not add an MCP SDK dependency."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "docs/blackboard/evidence/BB-134/cli-composition-audit.json",
+      "docs/blackboard/process/operator-cli-composition.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/operator-mcp-opt-in.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/operator-mcp-opt-in.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/**",
+      "packages/agent-tools/test/**",
+      "docs/blackboard/process/operator-cli-composition.md",
+      "docs/blackboard/evidence/BB-134/cli-composition-audit.json"
+    ],
+    "write": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/test/operator-mcp-opt-in.test.js",
+      "docs/living/system/agent-tools/mcp.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin the opt-in flag, default-off behavior and planted-promote rejection in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward mcpVerify only when opted in on run and deliver Backend.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "OPT_IN_STARTS",
+      "statement": "An explicit opt-in starts the delivered verify/status server for that run or deliver Backend stage and stops it before worktree disposal.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+      ]
+    },
+    {
+      "id": "DEFAULT_OFF_NO_PROMOTE",
+      "statement": "Default CLI invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/operator-mcp-opt-in.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Default run and deliver invocations never construct the MCP server.",
+      "criterionIds": [
+        "DEFAULT_OFF_NO_PROMOTE"
+      ]
+    },
+    {
+      "invariant": "MCP tools cannot promote, accept, merge or mint credentials.",
+      "criterionIds": [
+        "OPT_IN_STARTS",
+        "DEFAULT_OFF_NO_PROMOTE"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "OPT_IN_STARTS",
+        "DEFAULT_OFF_NO_PROMOTE"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Default run/deliver must not construct the MCP server",
+    "Planted promote tool names must be rejected"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_136_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "DEFAULT_OFF_NO_PROMOTE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/operator-mcp-opt-in.test.js",
+      "testTitle": "BB-136 N1 Default run/deliver must not construct the MCP server",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_136_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "DEFAULT_OFF_NO_PROMOTE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/operator-mcp-opt-in.test.js",
+      "testTitle": "BB-136 N2 Planted promote tool names must be rejected",
+      "subjectSymbol": "createExharnessMcpVerifyServer"
+    }
+  ],
+  "researchGaps": [
+    "Ratify the exact CLI flag name, whether deliver MCP binds only the Backend worktree, and stdio ownership versus the agent CLI stdin, before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/mcp.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "The delivered MCP verify/status server becomes reachable from the operator commands without changing default authority.",
+    "measurement": "Fake-CLI opt-in starts verify/status; default-off and planted-promote fixtures fail closed.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-103 for MCP semantics; BB-074 for end-to-end value"
+  }
+}

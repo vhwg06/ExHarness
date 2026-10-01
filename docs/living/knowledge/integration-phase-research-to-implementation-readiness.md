@@ -6,7 +6,7 @@ This file is the single current Integration roadmap. Update it in place. Git his
 
 ## Current checkpoint
 
-Delivered system boundaries:
+Delivered organization boundary in current source:
 
 ```text
 Integration A.1
@@ -28,6 +28,13 @@ Integration B
     -> runtime attestation / outcome
     -> domain completion decision
     -> authoritative publication
+
+Integration C — cross-domain obligations and selective semantic invalidation
+Integration D — domain-local activation and Frontend/Backend autonomy
+Integration E/F — exact deployment identity and Product QA
+Integration G — product completeness and closure currentness
+Integration H — adversarial recovery without central scheduling
+Integration I — read-only causal reconstruction
 ```
 
 The delivered Integration B boundary preserves:
@@ -40,24 +47,41 @@ The delivered Integration B boundary preserves:
 - canonical publication is fenced against the current organization claim and domain write-authority subject;
 - duplicate recovery converges on one logical publication.
 
-Current implementation input queue:
+Remaining Integration phase proof:
 
 ```text
-Integration C — cross-domain obligation + lineage/currentness
-Integration D — domain activation + parallel autonomy
-Integration E/F — exact deployment identity + Product QA acceptance
-Integration G — product completeness + closure currentness
-```
-
-These inputs are accepted semantic handoffs, not active work and not priority order by file position. `docs/blackboard/state.md` is the current delivery router.
-
-Remaining phase proof after C–G:
-
-```text
-H — adversarial recovery
-I — causal reconstruction / observe
 J — one real evidence-gated execution-strategy evolution loop
 ```
+
+`docs/blackboard/state.md` is the current delivery router. File position in this document is not priority order.
+
+## Product continuation tracks
+
+Product work beyond Integration J follows two tracks. The outer Blackboard still owns scheduling.
+
+```text
+Track 1 — research-gated add-on features
+  research evaluates that the feature can be delivered
+    -> current source seam
+    -> executed discriminating evidence
+    -> bounded write scope
+    -> named dependencies
+    -> independent acceptance
+    -> explicit non-goals
+    -> only then a worker plan
+
+Track 2 — delivered-surface review
+  review already-delivered capabilities
+    -> reproducible failure or waste on current source
+    -> exact seam
+    -> expected observable
+    -> independent quality / retained-behavior constraint
+    -> only then a repair
+```
+
+A survey, a desired-state sketch, or an unrun prototype is not a delivery evaluation. Features that fail Track 1 stay research.
+
+A delivered-surface change may start only when the issue is already clear. Optimizations additionally require a measured baseline, a predeclared target, and a keep-baseline exit. Do not optimize or repair from an unclear baseline, unclear target, or unmeasured hypothesis.
 
 ## Product entry model
 
@@ -508,14 +532,19 @@ Do not reconstruct prior research/review history to decide what is current.
 
 ## Delivery product continuation
 
-Integration is the organization contract foundation for the [delivery product roadmap](../../blackboard/process/delivery-product-roadmap.md). The continuation covers real agent and repository execution, independent live QA, supported installation, matched pilot value and release acceptance. Oracle reconciliation retains its own phase contract. These are planned capabilities, not delivered system truth. The canonical outer Blackboard owns scheduling and exact task dependencies.
+Integration is the organization contract foundation for the [delivery product roadmap](../../blackboard/process/delivery-product-roadmap.md). The continuation covers real agent and repository execution, independent live QA, supported installation, matched pilot value and release acceptance. Oracle reconciliation retains its own phase contract.
+
+Current source already contains local git/command verification, supervised CLI agents, observation, durable recovery, an opt-in Backend adapter, declared Oracle context, stdio MCP verification queries, Grok and OpenCode adapters, and one local operator Backend-then-QA slice. Those are current-system capabilities. They are not first-slice product-value evidence, not an installed supported product, and not a controlled end-to-end value claim.
+
+Near-term product continuation uses the two tracks above. Research-gated add-ons may compose already-delivered seams when research has evaluated that the feature can ship as a bounded change. Delivered-surface review repairs only clear, probe-backed defects on those seams. Unproven profiles (repository preview, independent browser journeys, retained API/data compatibility) stay research until a discriminating prototype evaluates delivery. Unclear efficiency hypotheses stay research until baseline, target, and independent quality controls exist.
+
+The accepted broader product path (real coding-agent runtime, sandbox, SCM/CI, first live slice, lifecycle, operations, distribution, pilot, and release) keeps its existing plans. Local fixture success does not close that path. The canonical outer Blackboard owns scheduling and exact task dependencies.
 
 ## Additive feedback research
 
-The new [feedback research task](../../blackboard/process/feedback-architecture-research.md) owns the requested extension: Evidence -> Observation -> Context -> Finding + Impact -> authorized Disposition -> Response -> fresh Outcome -> FeedbackResolution, followed by evidence-backed pattern/system proposals and independent improvement evaluation.
+The [feedback research task](../../blackboard/process/feedback-architecture-research.md) owns the requested extension: Evidence -> Observation -> Context -> Finding + Impact -> authorized Disposition -> Response -> fresh Outcome -> FeedbackResolution, followed by evidence-backed pattern/system proposals and independent improvement evaluation.
 
-This research is PLANNED / RESEARCH_SA / RESEARCH with a DRAFT plan. It builds on existing Observer, Oracle and HOW/benchmark contracts while preserving all previously accepted research scopes, plans and readiness. Exact execution dependencies remain canonical in the outer Blackboard; research may advance against planned contracts without treating them as delivered truth. Positive reinforcement, rejected/deferred/superseded responses and outcome uncertainty are explicit research requirements. Observer and evaluators remain without lifecycle/promotion authority. See the brief for evidence rules and readiness gates.
-
+This remains planned research. It builds on existing Observer, Oracle and HOW/benchmark contracts while preserving all previously accepted research scopes, plans and readiness. Exact execution dependencies remain canonical in the outer Blackboard; research may advance against planned contracts without treating them as delivered truth. Positive reinforcement, rejected/deferred/superseded responses and outcome uncertainty are explicit research requirements. Observer and evaluators remain without lifecycle/promotion authority. See the brief for evidence rules and readiness gates.
 
 ## Observed / Feedback / Self-Improve split
 
@@ -523,4 +552,4 @@ The feedback research is split into three one-way capability layers (see the [sp
 
 ## Agent-tool productization
 
-The new [agent-tool productization brief](../../blackboard/process/agent-tool-productization.md) registers research so supervised Codex, Kiro and agy can be composed into Backend work, recovered after process death, grounded through the Oracle facade, queried over stdio MCP, and operated as one local Backend-then-QA slice. These are planned RESEARCH_SA tasks, not delivered system truth. They do not reopen OpenHands domain runtime, sandbox isolation, the first-slice delivery proof, or Backend/QA Oracle adoption.
+Supervised CLI agents are now composed into Backend work, recovered after process death, grounded through the Oracle facade, queried over stdio MCP, and operated as one local Backend-then-QA slice. See current-system agent-tools and application capabilities. Remaining local-path work is research-gated: child and verifier environment constraints, truthful accounting, exact resume binding, operator tool parity, protected local acceptance, a portable review bundle, operator CLI composition of already-delivered supervisor APIs (durable recovery on run, observation traces on deliver, opt-in MCP verify/status, and permission/model on deliver), remaining operator command factor parity (deliver attempt/timeout limits, eval permission/timeout factors, and smoke model/permission/traces), Application adapter composition of already-delivered supervisor recovery and MCP, and a deliver CLI tool override that the slice API already accepts. Those items enter implementation only after research evaluates that each can be delivered on an existing seam. They do not reopen OpenHands domain runtime, sandbox isolation, the first-slice delivery proof, or Backend/QA Oracle adoption.

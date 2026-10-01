@@ -2,6 +2,7 @@
 
 Checked: 2026-09-30. Executed audit source baseline: `e9007f861fd95c678c0c4048bb3d82626855bda1`.
 Routing refreshed against `9c2c8db52e7fcf1534e4e75b4582c206a5549f38`; BB-093/108/099 are DONE and BB-107/120/121 are in Research. Experiment tooling delivery does not establish live comparative value.
+2026-10-01 delivery evaluation (see [research roadmap](research-roadmap.md)): BB-131/132/133 remain research. The named preview/browser/API gap is real; no discriminating prototype has run, so these are not delivery candidates yet. Repair clear delivered defects and ship add-ons that already pass the delivery evaluation first.
 User direction: discover useful capabilities with material delivery impact; defer optimization when the problem, target or measurement is unclear. This is Research, with three new DRAFT subjects and no implementation/readiness claim.
 
 ## Decision and useful milestone
@@ -52,7 +53,7 @@ All examples exceed the user's 1,000-star floor at lookup on 2026-09-30. Commit,
 | BB-132 / independent browser journeys | Protected create/list/update/validation criteria exercised against the preview, with criterion-bound behavior and trace evidence. | BB-054, BB-131, BB-127 | Correct request-tracker passes; inert submit, stale list, missing persistence, skipped assertions, evaluator drift and wrong preview never count as PASS. Browser setup failure stays distinct. |
 | BB-133 / API and retained data | A prior client contract and seeded old records remain valid after a declared change/migration/restart. | BB-054, BB-131, BB-127 | Reject breaking required fields/responses and deleted old records even if the candidate weakens its schema; retain a minimal request/data reproducer. Split scope if the prototype cannot remain bounded. |
 
-All are PLANNED RESEARCH_SA/RESEARCH with DRAFT plans, explicit research gaps, proposed file scope and future named negative tests. Those product/test files do not exist yet. Embedded subtasks are checklists. Allocation advances to BB-134. Neither external tools nor these profiles obtain acceptance authority; BB-054 and protected evaluator ownership remain binding.
+All are PLANNED RESEARCH_SA/RESEARCH with DRAFT plans, explicit research gaps, proposed file scope and future named negative tests. Those product/test files do not exist yet. Embedded subtasks are checklists. Later operator CLI composition occupies BB-134..137, remaining command factor parity occupies BB-138..140, and Application adapter composition occupies BB-141..143; allocation advances to BB-144. Neither external tools nor these profiles obtain acceptance authority; BB-054 and protected evaluator ownership remain binding.
 
 ## Additional high-impact discovery routed to existing owners
 

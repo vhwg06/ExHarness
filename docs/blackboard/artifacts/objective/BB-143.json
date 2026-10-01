@@ -1,0 +1,30 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-143",
+  "outcome": "An operator can override the local deliver slice tool from the CLI using the option `commandDeliver` already accepts.",
+  "currentProblem": "commandDeliver already reads options.tool and forwards it to runDeliverSlice. commandDeliverCli never forwards --tool, so deliver CLI always uses the manifest tool.",
+  "scope": [
+    "agent-tools.operator.deliver-tool"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered commandDeliver tool handling. Do not change the tool whitelist owned by BB-128 or permission/model ownership of BB-137.",
+    "Omitted --tool keeps the manifest tool. Unknown tools fail closed before any agent process starts.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
+  ],
+  "successCriteria": [
+    "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+    "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
+    "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/application-adapter-composition.md",
+    "docs/blackboard/evidence/BB-141/adapter-composition-audit.mjs",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/src/deliver-slice.js",
+    "docs/living/system/agent-tools/operator.md",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}
