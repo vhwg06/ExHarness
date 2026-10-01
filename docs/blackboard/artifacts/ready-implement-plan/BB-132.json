@@ -26,17 +26,17 @@
     "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
   ],
   "invariants": [
-    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
-    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
-    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
-    "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS.",
-    "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance."
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, EVIDENCE_RETENTION.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: USER_JOURNEY, FAILURE_CLASSIFICATION, QA_AUTHORITY.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, EVIDENCE_RETENTION.",
+    "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
+    "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION."
   ],
   "architectureDecisions": [
     "Pin external Playwright Test1.63.0/source1b025d7e20a026371cd5f98ba0cdce48892737c8 and Chromium1243/153.0.8010.12. Operator provisions; adapter never installs/substitutes versions.",
     "Injected createBrowserJourneyVerifier.verify uses one protected executable journey/criterion,worker1/retries0/deadlines. No exploratory/model acceptance.",
     "Require actual successful expect events in declared ASSERT steps. spec.ok,empty steps and exit0 cannot grant PASS.",
-    "Use normalized BB-127/131 projections below, failing closed if absent. Both dependencies are DRAFT: reconcile delivered contracts before READY/implementation.",
+    "Use the explicit normalized projections and adapter below; resolvePolicy/resolvePreview are injected plan-owned functions. Direct dependencies must be DONE before Worker. Research READY is evaluated against this resolved planned interface, not future API discovery.",
     "Preserve BB-054 snapshot/runtime/publication authority. Browser returns criterion facts only.",
     "Initial trusted Ubuntu24.04 x86_64/Node24/Chromium synthetic loopback profile; other hosts INCONCLUSIVE/UNSUPPORTED_HOST. No hostile-process confinement claim.",
     "Keep local receipts/reports/DOM-network traces,screens/source off. Assertion mismatch FAIL; setup/timeout/missing/drift/corrupt evidence INCONCLUSIVE. No universal redaction.",
@@ -93,7 +93,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After delivered dependencies/exact READY, validate BB-127/131 projections; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected runner.js with fixed argv and explicit bounded JSON protocol; reporter.js records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS.",
+    "S1 — After delivered dependencies/exact READY, validate BB-127/131 projections; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected runner.js with fixed argv and explicit bounded JSON protocol; reporter.js records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS. runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
     "S2 — Port embedded matrix into real Chromium fixtures. Each N1-N12 directly constructs createBrowserJourneyVerifier and invokes verify. Inject boundary faults separately; compose new adapter with existing QA/completion/publisher. browser-journey-verifier.test.js also injects the actual factory into createProductQaExecutionStrategy with independent runtimeObserver and protected AcceptanceSnapshot. Assert failed/unknown criterion cannot publish; successful criteria require all QA identities. Generic QA tests remain regressions only. Real browser happy path is mandatory and missing provision fails the focused command with explicit setup error, never skip.",
     "S3 — Retain exact clean-candidate criterion evidence; run declared focused/regression/docs checks and update Living docs. Independent Worker judgment/publication follow; fixtures alone are not delivery."
   ],
@@ -199,7 +199,7 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, EVIDENCE_RETENTION.",
       "criterionIds": [
         "IDENTITY_BINDING",
         "INDEPENDENT_EVIDENCE",
@@ -207,7 +207,7 @@
       ]
     },
     {
-      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: USER_JOURNEY, FAILURE_CLASSIFICATION, QA_AUTHORITY.",
       "criterionIds": [
         "USER_JOURNEY",
         "FAILURE_CLASSIFICATION",
@@ -215,14 +215,14 @@
       ]
     },
     {
-      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, EVIDENCE_RETENTION.",
       "criterionIds": [
         "OWNED_RESOURCES",
         "EVIDENCE_RETENTION"
       ]
     },
     {
-      "invariant": "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS.",
+      "invariant": "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
       "criterionIds": [
         "IDENTITY_BINDING",
         "INDEPENDENT_EVIDENCE",
@@ -231,7 +231,7 @@
       ]
     },
     {
-      "invariant": "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance.",
+      "invariant": "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
       "criterionIds": [
         "IDENTITY_BINDING",
         "INDEPENDENT_EVIDENCE",
@@ -438,7 +438,8 @@
     "classification": "INCONCLUSIVE for preflight/setup/host/timeout/transport/parse/coverage/drift/artifact/storage faults; action timeout reason ACTION_TIMEOUT. FAIL/ASSERTION_FAILED for observed protected expect mismatch with valid identities/setup. PASS requires exit0,full coverage,postchecks,retained evidence; malformed results never succeed.",
     "boundsAndCleanup": "workers1,retries0,expect5000ms,invoke30000ms(max120000),stdout/stderr64KiB each,JSON1MiB,trace25MiB; policy-pinned. Finally close contexts/owned child group(1s kill grace)/tempdir. Preview lifecycle caller-owned. Evidence dir0700/files0600; copy only realpath regular files within owned root after hashing; reject foreign/symlink/oversize.",
     "retention": "All outcomes trace DOM/network on,sources/screens/video off. Receipt/JSON/trace/bounded logs local7days or operator override; no auto upload. Synthetic unauthenticated fixtures only; auth/production needs separate contract. Submitted values may remain; no universal redaction.",
-    "projectionAdapter": "resolvePolicy is operator-injected and derives protected evaluator/fixture/criterion bytes from the QA snapshot, not from candidate config. resolvePreview adapts the actual BB-131 receipt: candidateSha/tree/profile/config/seed/runtime/evaluator/services and live owner handle. It supplies snapshot/environment/release/components from the independent QA request and rejects mismatch with runtimeObserver; BB-131 is not assumed to export those authority fields. Adapter logic lives in browser-journey-verifier.js; no nonexistent upstream API or source edit is required."
+    "projectionAdapter": "resolvePolicy is operator-injected and derives protected evaluator/fixture/criterion bytes from the QA snapshot, not from candidate config. resolvePreview adapts the actual BB-131 receipt: candidateSha/tree/profile/config/seed/runtime/evaluator/services and live owner handle. It supplies snapshot/environment/release/components from the independent QA request and rejects mismatch with runtimeObserver; BB-131 is not assumed to export those authority fields. Adapter logic lives in browser-journey-verifier.js; no nonexistent upstream API or source edit is required.",
+    "runnerProtocol": "runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup."
   },
   "researchEvidence": {
     "classification": "EXECUTED_ISOLATED_BROWSER_CALIBRATION_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
@@ -684,10 +685,7 @@
           "match": "criterionRefs: [...policy.criterionRefs]"
         }
       ],
-      "supportingPlanFields": [
-        "browserContract",
-        "profileSupport"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
@@ -718,10 +716,7 @@
           "match": "every pinned acceptance criterion must PASS"
         }
       ],
-      "supportingPlanFields": [
-        "browserContract",
-        "researchEvidence"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
@@ -754,11 +749,7 @@
           "match": "plannedExperiment"
         }
       ],
-      "supportingPlanFields": [
-        "dependencyReview",
-        "researchEvidence",
-        "prototypeReproduction"
-      ]
+      "supportingPlanFields": []
     }
   ]
 }
