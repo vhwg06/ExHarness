@@ -93,11 +93,11 @@ function runFor(protocol, side, metrics, overrides = {}) {
     strategyDigest: strategy.digest,
     workContractRef: protocol.workContract.ref,
     caseResults: [
-      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"] },
-      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"] },
-      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"] },
-      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"] },
-      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"] }
+      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"], policyCompliant: true, evidenceComplete: true, recoveryOk: true }
     ],
     ...overrides
   };
@@ -121,7 +121,7 @@ function jevReceiptFor(protocol, verdict = "PASS") {
       { questionId: "how-improvement", outcome: verdict },
       { questionId: "evidence-sufficiency", outcome: verdict }
     ],
-    evidenceRefs: ["evidence:causal-1"]
+    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"]
   };
 }
 import {
@@ -233,6 +233,22 @@ test("AC-4: INCONCLUSIVE evaluator output keeps the baseline current", async () 
   }
 });
 
+function freshReaders(protocol, overrides = {}) {
+  return {
+    resolveCurrentSemantic: async () => ({
+      workContractDigest: protocol.workContract.digest,
+      acceptanceDigests: protocol.acceptanceRefs.map((entry) => entry.digest)
+    }),
+    resolveCurrentEvaluator: async () => ({
+      policyDigest: protocol.evaluator.policyDigest,
+      modelSnapshot: protocol.evaluator.modelSnapshot
+    }),
+    resolveCurrentScenarioSet: async () => ({ digest: protocol.scenarioSet.digest }),
+    resolveCurrentEvidence: async () => ({ digest: protocol.evidenceSnapshot.digest }),
+    ...overrides
+  };
+}
+
 test("AC-6 negative: semantic subject drift makes the proposal non-actionable", async () => {
   const f = await currentnessFixture();
   try {
@@ -242,9 +258,11 @@ test("AC-6 negative: semantic subject drift makes the proposal non-actionable", 
         evaluation: f.evaluation,
         proposal: f.proposal,
         executionPolicyStore: f.policyStore,
-        resolveCurrentSemantic: async () => ({
-          workContractDigest: "sha256:" + "f".repeat(64),
-          acceptanceDigests: f.protocol.acceptanceRefs.map((entry) => entry.digest)
+        ...freshReaders(f.protocol, {
+          resolveCurrentSemantic: async () => ({
+            workContractDigest: "sha256:" + "f".repeat(64),
+            acceptanceDigests: f.protocol.acceptanceRefs.map((entry) => entry.digest)
+          })
         })
       }),
       /semantic subject changed/
@@ -268,9 +286,9 @@ test("AC-6 negative: evaluator policy drift makes the proposal non-actionable", 
         policyPublisher: f.policyPublisher,
         artifactRegistry: f.artifactRegistry,
         executionPolicyStore: f.policyStore,
-        currentness: {
+        currentness: freshReaders(f.protocol, {
           resolveCurrentEvaluator: async () => ({ policyDigest: "sha256:" + "e".repeat(64) })
-        }
+        })
       }),
       /evaluator policy changed/
     );
@@ -288,7 +306,9 @@ test("AC-6 negative: scenario-set drift makes the proposal non-actionable", asyn
         evaluation: f.evaluation,
         proposal: f.proposal,
         executionPolicyStore: f.policyStore,
-        resolveCurrentScenarioSet: async () => ({ digest: "sha256:" + "d".repeat(64) })
+        ...freshReaders(f.protocol, {
+          resolveCurrentScenarioSet: async () => ({ digest: "sha256:" + "d".repeat(64) })
+        })
       }),
       /scenario set changed/
     );
@@ -306,10 +326,76 @@ test("AC-6 negative: evidence snapshot drift makes the proposal non-actionable",
         evaluation: f.evaluation,
         proposal: f.proposal,
         executionPolicyStore: f.policyStore,
-        resolveCurrentEvidence: async () => ({ digest: "sha256:" + "c".repeat(64) })
+        ...freshReaders(f.protocol, {
+          resolveCurrentEvidence: async () => ({ digest: "sha256:" + "c".repeat(64) })
+        })
       }),
       /evidence snapshot changed/
     );
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+test("AC-6 negative: promotion with only a head check is refused without freshness proofs", async () => {
+  const f = await currentnessFixture();
+  try {
+    for (const omitted of ["resolveCurrentSemantic", "resolveCurrentEvaluator", "resolveCurrentScenarioSet", "resolveCurrentEvidence"]) {
+      const readers = freshReaders(f.protocol);
+      delete readers[omitted];
+      await assert.rejects(
+        publishHowEvolutionPromotion({
+          protocol: f.protocol,
+          evaluation: f.evaluation,
+          proposal: f.proposal,
+          publisher: { identity: "promotion-authority" },
+          policyPublisher: f.policyPublisher,
+          artifactRegistry: f.artifactRegistry,
+          executionPolicyStore: f.policyStore,
+          currentness: readers
+        }),
+        /promotion requires a .* freshness proof/
+      );
+    }
+    await assert.rejects(
+      publishHowEvolutionPromotion({
+        protocol: f.protocol,
+        evaluation: f.evaluation,
+        proposal: f.proposal,
+        publisher: { identity: "promotion-authority" },
+        policyPublisher: f.policyPublisher,
+        artifactRegistry: f.artifactRegistry,
+        executionPolicyStore: f.policyStore
+      }),
+      /promotion requires a .* freshness proof/
+    );
+    const head = await f.policyStore.current(f.key);
+    assert.equal(head.value.generation, 1);
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+test("AC-6 negative: evidence racing after evaluation fails before head mutation", async () => {
+  const f = await currentnessFixture();
+  try {
+    await assert.rejects(
+      publishHowEvolutionPromotion({
+        protocol: f.protocol,
+        evaluation: f.evaluation,
+        proposal: f.proposal,
+        publisher: { identity: "promotion-authority" },
+        policyPublisher: f.policyPublisher,
+        artifactRegistry: f.artifactRegistry,
+        executionPolicyStore: f.policyStore,
+        currentness: freshReaders(f.protocol, {
+          resolveCurrentEvidence: async () => ({ digest: "sha256:" + "b".repeat(64) })
+        })
+      }),
+      /evidence snapshot changed/
+    );
+    const head = await f.policyStore.current(f.key);
+    assert.equal(head.value.generation, 1);
   } finally {
     await rm(f.dir, { recursive: true, force: true });
   }
@@ -334,7 +420,8 @@ test("AC-6 negative: policy head racing after evaluation fails before head mutat
         publisher: { identity: "promotion-authority" },
         policyPublisher: f.policyPublisher,
         artifactRegistry: f.artifactRegistry,
-        executionPolicyStore: f.policyStore
+        executionPolicyStore: f.policyStore,
+        currentness: freshReaders(f.protocol)
       }),
       /head changed since evaluation/
     );

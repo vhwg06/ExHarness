@@ -1,8 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   createDomainExecutionArtifactRegistry,
@@ -93,11 +95,11 @@ function runFor(protocol, side, metrics, overrides = {}) {
     strategyDigest: strategy.digest,
     workContractRef: protocol.workContract.ref,
     caseResults: [
-      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"] },
-      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"] },
-      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"] },
-      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"] },
-      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"] }
+      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"], policyCompliant: true, evidenceComplete: true, recoveryOk: true }
     ],
     ...overrides
   };
@@ -121,13 +123,15 @@ function jevReceiptFor(protocol, verdict = "PASS") {
       { questionId: "how-improvement", outcome: verdict },
       { questionId: "evidence-sufficiency", outcome: verdict }
     ],
-    evidenceRefs: ["evidence:causal-1"]
+    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"]
   };
 }
 import {
   HOW_EVOLUTION_ROLLBACK_KIND,
   createHowEvolutionPromotionProposal,
+  createJsonHowEvolutionArtifactStore,
   defineHowEvolutionEvaluationProtocol,
+  defineHowEvolutionEvaluationRun,
   evaluateHowEvolution,
   publishHowEvolutionPromotion,
   publishHowEvolutionRollback,
@@ -192,39 +196,65 @@ async function rollbackFixture() {
   return { dir, artifactRegistry, policyStore, policyPublisher, protocol: pinned, key, baselineRef, candidateRef };
 }
 
+function freshReaders(protocol) {
+  return {
+    resolveCurrentSemantic: async () => ({
+      workContractDigest: protocol.workContract.digest,
+      acceptanceDigests: protocol.acceptanceRefs.map((entry) => entry.digest)
+    }),
+    resolveCurrentEvaluator: async () => ({
+      policyDigest: protocol.evaluator.policyDigest,
+      modelSnapshot: protocol.evaluator.modelSnapshot
+    }),
+    resolveCurrentScenarioSet: async () => ({ digest: protocol.scenarioSet.digest }),
+    resolveCurrentEvidence: async () => ({ digest: protocol.evidenceSnapshot.digest })
+  };
+}
+
+async function promoteFixture(f) {
+  const evaluation = evaluateHowEvolution({
+    protocol: f.protocol,
+    baselineRun: runFor(f.protocol, "BASELINE", {}),
+    candidateRun: runFor(f.protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }),
+    jevReceipt: jevReceiptFor(f.protocol, "PASS")
+  });
+  const proposal = createHowEvolutionPromotionProposal({ protocol: f.protocol, evaluation });
+  const promotion = await publishHowEvolutionPromotion({
+    protocol: f.protocol,
+    evaluation,
+    proposal,
+    publisher: { identity: "rollback-authority" },
+    policyPublisher: f.policyPublisher,
+    artifactRegistry: f.artifactRegistry,
+    executionPolicyStore: f.policyStore,
+    currentness: freshReaders(f.protocol)
+  });
+  return { evaluation, proposal, promotion };
+}
+
+function rollbackArgs(f, promotion, evaluation, overrides = {}) {
+  return {
+    protocol: f.protocol,
+    targetStrategyRef: f.baselineRef,
+    targetStrategyDigest: `sha256:${f.baselineRef.slice(f.baselineRef.lastIndexOf(":") + 1)}`,
+    reversedPromotion: promotion.decision,
+    reversedEvaluation: evaluation,
+    reasonEvidenceRefs: ["evidence:rollback-reason-1"],
+    publisher: { identity: "rollback-authority" },
+    policyPublisher: f.policyPublisher,
+    artifactRegistry: f.artifactRegistry,
+    executionPolicyStore: f.policyStore,
+    ...overrides
+  };
+}
+
 test("AC-7: rollback publishes a successor generation to the exact prior accepted baseline", async () => {
   const f = await rollbackFixture();
   try {
-    const evaluation = evaluateHowEvolution({
-      protocol: f.protocol,
-      baselineRun: runFor(f.protocol, "BASELINE", {}),
-      candidateRun: runFor(f.protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }),
-      jevReceipt: jevReceiptFor(f.protocol, "PASS")
-    });
-    const proposal = createHowEvolutionPromotionProposal({ protocol: f.protocol, evaluation });
-    const promotion = await publishHowEvolutionPromotion({
-      protocol: f.protocol,
-      evaluation,
-      proposal,
-      publisher: { identity: "rollback-authority" },
-      policyPublisher: f.policyPublisher,
-      artifactRegistry: f.artifactRegistry,
-      executionPolicyStore: f.policyStore
-    });
+    const { evaluation, proposal, promotion } = await promoteFixture(f);
     assert.equal(promotion.published.policy.generation, 2);
 
-    const rollback = await publishHowEvolutionRollback({
-      protocol: f.protocol,
-      targetStrategyRef: f.baselineRef,
-      targetStrategyDigest: `sha256:${f.baselineRef.slice(f.baselineRef.lastIndexOf(":") + 1)}`,
-      reversedPromotion: promotion.decision,
-      reversedEvaluationDigest: evaluation.protocolDigest,
-      reasonEvidenceRefs: ["evidence:rollback-reason-1"],
-      publisher: { identity: "rollback-authority" },
-      policyPublisher: f.policyPublisher,
-      artifactRegistry: f.artifactRegistry,
-      executionPolicyStore: f.policyStore
-    });
+    const rollback = await publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation));
     assert.equal(rollback.decision.kind, HOW_EVOLUTION_ROLLBACK_KIND);
     assert.equal(rollback.decision.targetStrategyRef, f.baselineRef);
     assert.equal(rollback.decision.reasonKind, "ROLLBACK");
@@ -265,34 +295,12 @@ test("AC-7: rollback publishes a successor generation to the exact prior accepte
 test("AC-7 negative: rollback to a non-accepted strategy is rejected", async () => {
   const f = await rollbackFixture();
   try {
-    const evaluation = evaluateHowEvolution({
-      protocol: f.protocol,
-      baselineRun: runFor(f.protocol, "BASELINE", {}),
-      candidateRun: runFor(f.protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }),
-      jevReceipt: jevReceiptFor(f.protocol, "PASS")
-    });
-    const proposal = createHowEvolutionPromotionProposal({ protocol: f.protocol, evaluation });
-    const promotion = await publishHowEvolutionPromotion({
-      protocol: f.protocol,
-      evaluation,
-      proposal,
-      publisher: { identity: "rollback-authority" },
-      policyPublisher: f.policyPublisher,
-      artifactRegistry: f.artifactRegistry,
-      executionPolicyStore: f.policyStore
-    });
+    const { evaluation, promotion } = await promoteFixture(f);
     await assert.rejects(
-      publishHowEvolutionRollback({
-        protocol: f.protocol,
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation, {
         targetStrategyRef: f.candidateRef,
-        targetStrategyDigest: f.candidateRef.slice(f.candidateRef.lastIndexOf(":") + 1),
-        reversedPromotion: promotion.decision,
-        reasonEvidenceRefs: ["evidence:rollback-reason-1"],
-        publisher: { identity: "rollback-authority" },
-        policyPublisher: f.policyPublisher,
-        artifactRegistry: f.artifactRegistry,
-        executionPolicyStore: f.policyStore
-      }),
+        targetStrategyDigest: `sha256:${f.candidateRef.slice(f.candidateRef.lastIndexOf(":") + 1)}`
+      })),
       /rollback target must equal the exact accepted baseline/
     );
     const head = await f.policyStore.current(f.key);
@@ -305,10 +313,122 @@ test("AC-7 negative: rollback to a non-accepted strategy is rejected", async () 
 test("AC-7 negative: rollback never rewrites prior history", async () => {
   const f = await rollbackFixture();
   try {
+    const { evaluation, promotion } = await promoteFixture(f);
+    const before = await f.artifactRegistry.resolveExecutionPolicy(promotion.published.policyRef);
+    await publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation));
+    const after = await f.artifactRegistry.resolveExecutionPolicy(promotion.published.policyRef);
+    assert.deepEqual(after, before);
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+test("AC-7 negative: forged reversed promotion lineage is rejected", async () => {
+  const f = await rollbackFixture();
+  try {
+    const { evaluation, promotion } = await promoteFixture(f);
+    const forged = { ...promotion.decision, authority: "candidate-builder" };
+    await assert.rejects(
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation, { reversedPromotion: forged })),
+      /reversed promotion authority mismatch/
+    );
+    const mismatched = { ...promotion.decision, evaluationDigest: "sha256:" + "0".repeat(64) };
+    await assert.rejects(
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation, { reversedPromotion: mismatched })),
+      /does not bind the reversed evaluation/
+    );
+    const head = await f.policyStore.current(f.key);
+    assert.equal(head.value.generation, 2);
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+test("AC-7 negative: rollback against a moved current head is refused", async () => {
+  const f = await rollbackFixture();
+  try {
+    const { evaluation, promotion } = await promoteFixture(f);
+    // An independent newer generation lands after the reversed promotion.
+    await f.policyPublisher.publish({
+      publisher: { identity: "rollback-authority" },
+      policy: {
+        policyId: f.key, generation: 3, domain: f.protocol.domain, workloadType: f.protocol.workloadType,
+        compatibleWorkContractVersions: [1], strategyRef: f.baselineRef
+      }
+    });
+    await assert.rejects(
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation)),
+      /current head does not match the reversed promotion head/
+    );
+    const head = await f.policyStore.current(f.key);
+    assert.equal(head.value.generation, 3);
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+test("AC-7 negative: candidate producer and evaluator cannot roll back", async () => {
+  const f = await rollbackFixture();
+  try {
+    const { evaluation, promotion } = await promoteFixture(f);
+    await assert.rejects(
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation, { publisher: { identity: "candidate-builder" } })),
+      /protocol promotion authority/
+    );
+    await assert.rejects(
+      publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation, { publisher: { identity: "independent-evaluator" } })),
+      /protocol promotion authority|evaluator cannot roll back/
+    );
+    const head = await f.policyStore.current(f.key);
+    assert.equal(head.value.generation, 2);
+  } finally {
+    await rm(f.dir, { recursive: true, force: true });
+  }
+});
+
+const FRESH_CHILD_SCRIPT = [
+  "const { readFileSync } = await import('node:fs');",
+  "const manifest = JSON.parse(readFileSync(process.argv[1], 'utf8'));",
+  "const howEvolution = await import(manifest.modules.howEvolution);",
+  "const domainStore = await import(manifest.modules.domainExecutionStore);",
+  "const immutableModule = await import(manifest.modules.organizationArtifactStore);",
+  "const core = await import(manifest.modules.coreIndex);",
+  "const check = (condition, message) => { if (!condition) throw new Error('child reconstruction failed: ' + message); };",
+  "const howStore = howEvolution.createJsonHowEvolutionArtifactStore({ path: manifest.paths.howStore });",
+  "const immutable = immutableModule.createJsonImmutableArtifactStore({ path: manifest.paths.immutable });",
+  "const artifactRegistry = domainStore.createDomainExecutionArtifactRegistry({ store: immutable });",
+  "const policyStore = domainStore.createJsonDomainExecutionPolicyStore({ path: manifest.paths.policy });",
+  "const protocol = await howStore.resolve(manifest.refs.protocolRef);",
+  "check(core.digestValue(protocol) === manifest.expected.protocolDigest, 'protocol digest');",
+  "const baselineRun = await howStore.resolve(manifest.refs.baselineRunRef);",
+  "const candidateRun = await howStore.resolve(manifest.refs.candidateRunRef);",
+  "const jevReceipt = await howStore.resolve(manifest.refs.jevReceiptRef);",
+  "const evaluation = await howStore.resolve(manifest.refs.evaluationRef);",
+  "check(core.digestValue(baselineRun) === evaluation.baselineRunDigest, 'baseline run digest');",
+  "check(core.digestValue(candidateRun) === evaluation.candidateRunDigest, 'candidate run digest');",
+  "check(core.digestValue(jevReceipt) === evaluation.jevReceiptDigest, 'jev receipt digest');",
+  "const proposal = await howStore.resolve(manifest.refs.proposalRef);",
+  "check(proposal.evaluationDigest === core.digestValue(evaluation), 'proposal evaluation binding');",
+  "const promotion = await howStore.resolve(manifest.refs.promotionRef);",
+  "check(promotion.evaluationDigest === core.digestValue(evaluation), 'promotion evaluation binding');",
+  "const rollback = await howStore.resolve(manifest.refs.rollbackRef);",
+  "check(rollback.reversedPromotionDigest === core.digestValue(promotion), 'rollback promotion binding');",
+  "check(rollback.reversedEvaluationDigest === core.digestValue(evaluation), 'rollback evaluation binding');",
+  "const provenance = await howEvolution.resolveHowEvolutionProvenance({ artifactStore: howStore, artifactRegistry, executionPolicyStore: policyStore, policySubjectKey: manifest.subjectKey, protocolRef: manifest.refs.protocolRef, evaluationRef: manifest.refs.evaluationRef, proposalRef: manifest.refs.proposalRef, decisionRef: manifest.refs.rollbackRef });",
+  "check(provenance.headPolicy.strategyRef === manifest.expected.baselineStrategyRef, 'head strategy');",
+  "check(provenance.headStrategy.strategyId === 'how.baseline', 'head strategy id');",
+  "process.stdout.write(JSON.stringify({ protocolDigest: core.digestValue(protocol), evaluationDigest: core.digestValue(evaluation), proposalDigest: core.digestValue(proposal), promotionDigest: core.digestValue(promotion), rollbackDigest: core.digestValue(rollback), headGeneration: provenance.policyHead.value.generation, headStrategyId: provenance.headStrategy.strategyId }));"
+].join("\n");
+
+test("AC-8: a fresh Node process reconstructs the durable ref+digest chain including promoted/rollback policy", async () => {
+  const f = await rollbackFixture();
+  try {
+    const baselineRun = defineHowEvolutionEvaluationRun(runFor(f.protocol, "BASELINE", {}), f.protocol);
+    const candidateRun = defineHowEvolutionEvaluationRun(runFor(f.protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }), f.protocol);
     const evaluation = evaluateHowEvolution({
       protocol: f.protocol,
-      baselineRun: runFor(f.protocol, "BASELINE", {}),
-      candidateRun: runFor(f.protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }),
+      baselineRun,
+      candidateRun,
       jevReceipt: jevReceiptFor(f.protocol, "PASS")
     });
     const proposal = createHowEvolutionPromotionProposal({ protocol: f.protocol, evaluation });
@@ -319,22 +439,59 @@ test("AC-7 negative: rollback never rewrites prior history", async () => {
       publisher: { identity: "rollback-authority" },
       policyPublisher: f.policyPublisher,
       artifactRegistry: f.artifactRegistry,
-      executionPolicyStore: f.policyStore
+      executionPolicyStore: f.policyStore,
+      currentness: freshReaders(f.protocol)
     });
-    const before = await f.artifactRegistry.resolveExecutionPolicy(promotion.published.policyRef);
-    await publishHowEvolutionRollback({
-      protocol: f.protocol,
-      targetStrategyRef: f.baselineRef,
-      targetStrategyDigest: `sha256:${f.baselineRef.slice(f.baselineRef.lastIndexOf(":") + 1)}`,
-      reversedPromotion: promotion.decision,
-      reasonEvidenceRefs: ["evidence:rollback-reason-1"],
-      publisher: { identity: "rollback-authority" },
-      policyPublisher: f.policyPublisher,
-      artifactRegistry: f.artifactRegistry,
-      executionPolicyStore: f.policyStore
-    });
-    const after = await f.artifactRegistry.resolveExecutionPolicy(promotion.published.policyRef);
-    assert.deepEqual(after, before);
+    const rollback = await publishHowEvolutionRollback(rollbackArgs(f, promotion, evaluation));
+
+    const howStorePath = join(f.dir, "how-artifacts");
+    const howStore = createJsonHowEvolutionArtifactStore({ path: howStorePath });
+    const refs = {
+      protocolRef: await howStore.put("protocol", f.protocol),
+      baselineRunRef: await howStore.put("evaluation-run", baselineRun),
+      candidateRunRef: await howStore.put("evaluation-run", candidateRun),
+      jevReceiptRef: await howStore.put("jev-receipt", jevReceiptFor(f.protocol, "PASS")),
+      evaluationRef: await howStore.put("evaluation-result", evaluation),
+      proposalRef: await howStore.put("promotion-proposal", proposal),
+      promotionRef: await howStore.put("promotion-decision", promotion.decision),
+      rollbackRef: await howStore.put("rollback-decision", rollback.decision)
+    };
+    const testDir = dirname(fileURLToPath(import.meta.url));
+    const srcDir = join(testDir, "..", "src");
+    const manifest = {
+      modules: {
+        howEvolution: pathToFileURL(join(srcDir, "how-evolution.js")).href,
+        domainExecutionStore: pathToFileURL(join(srcDir, "domain-execution-store.js")).href,
+        organizationArtifactStore: pathToFileURL(join(srcDir, "organization-artifact-store.js")).href,
+        coreIndex: pathToFileURL(join(testDir, "..", "..", "core-harness", "src", "index.js")).href
+      },
+      paths: {
+        howStore: howStorePath,
+        immutable: join(f.dir, "artifacts.json"),
+        policy: join(f.dir, "policy-heads.json")
+      },
+      subjectKey: f.key,
+      refs,
+      expected: {
+        protocolDigest: digestValue(f.protocol),
+        baselineStrategyRef: f.baselineRef
+      }
+    };
+    const manifestPath = join(f.dir, "fresh-provenance-manifest.json");
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    const stdout = execFileSync(
+      process.execPath,
+      ["--input-type=module", "-e", FRESH_CHILD_SCRIPT, manifestPath],
+      { timeout: 60000, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
+    );
+    const reconstructed = JSON.parse(stdout);
+    assert.equal(reconstructed.protocolDigest, digestValue(f.protocol));
+    assert.equal(reconstructed.evaluationDigest, digestValue(evaluation));
+    assert.equal(reconstructed.proposalDigest, digestValue(proposal));
+    assert.equal(reconstructed.promotionDigest, digestValue(promotion.decision));
+    assert.equal(reconstructed.rollbackDigest, digestValue(rollback.decision));
+    assert.equal(reconstructed.headGeneration, 3);
+    assert.equal(reconstructed.headStrategyId, "how.baseline");
   } finally {
     await rm(f.dir, { recursive: true, force: true });
   }

@@ -91,11 +91,11 @@ function runFor(protocol, side, metrics, overrides = {}) {
     strategyDigest: strategy.digest,
     workContractRef: protocol.workContract.ref,
     caseResults: [
-      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"] },
-      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"] },
-      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"] },
-      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"] },
-      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"] }
+      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"], policyCompliant: true, evidenceComplete: true, recoveryOk: true }
     ],
     ...overrides
   };
@@ -119,32 +119,61 @@ function jevReceiptFor(protocol, verdict = "PASS") {
       { questionId: "how-improvement", outcome: verdict },
       { questionId: "evidence-sufficiency", outcome: verdict }
     ],
-    evidenceRefs: ["evidence:causal-1"]
+    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"]
+  };
+}
+
+function evidenceRecord(ref, body, overrides = {}) {
+  return {
+    ref,
+    digest: digestValue(body),
+    body,
+    producerIdentity: "causal-observer",
+    environmentDigest: `sha256:${"1".repeat(64)}`,
+    ...overrides
   };
 }
 
 function evidence() {
   return {
-    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"],
-    evidenceDigests: ["evidence:causal-1", "evidence:runtime-1"],
-    producerIdentity: "causal-observer",
-    environmentDigest: `sha256:${"0".repeat(64)}`
+    records: [
+      evidenceRecord("evidence:causal-1", "causal finding: retry budget is the bounded HOW axis"),
+      evidenceRecord("evidence:runtime-1", "runtime attestation: both paired runs completed on pinned cases")
+    ]
   };
 }
 
-function passTransport(expectedModel = HOW_EVOLUTION_JEV_MODEL_SNAPSHOT) {
-  return async ({ request }) => ({
-    model: expectedModel,
-    policyRef: request.semanticPolicyRef,
-    policyDigest: request.semanticPolicyDigest,
-    responseId: "jev-response-1",
-    outcomes: [...HOW_EVOLUTION_JEV_QUESTION_IDS].map((questionId) => ({ questionId, outcome: "PASS" }))
-  });
+function systemOneResponse(choices = null, model = HOW_EVOLUTION_JEV_MODEL_SNAPSHOT) {
+  const resolved = choices ?? {
+    "semantic-preservation": "PASS",
+    "how-improvement": "PASS",
+    "evidence-sufficiency": "PASS"
+  };
+  const answers = {};
+  for (const [questionId, choice] of Object.entries(resolved)) {
+    const probabilities = { PASS: 0.1, FAIL: 0.1, INCONCLUSIVE: 0.1 };
+    probabilities[choice] = 0.8;
+    answers[questionId] = { type: "choice", choice, confidence: 0.8, probabilities };
+  }
+  return { model, answers, usage: { input_tokens: 120, output_tokens: 12 } };
+}
+
+const TRUST_OK = {
+  verifyEvaluatorAuthority: async () => true,
+  verifyEvidenceAuthority: async () => true
+};
+
+function passTransport(model = HOW_EVOLUTION_JEV_MODEL_SNAPSHOT) {
+  return async () => systemOneResponse(null, model);
+}
+
+function evaluatorWith(transport, trust = TRUST_OK) {
+  return createHowEvolutionJevEvaluator({ transport, ...trust });
 }
 
 test("AC-2: Jev receipt pins exact input/output/policy/evidence/freshness identity", async () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const evaluator = createHowEvolutionJevEvaluator({ transport: passTransport() });
+  const evaluator = evaluatorWith(passTransport());
   const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
   assert.equal(receipt.kind, "HOW_EVOLUTION_JEV_RECEIPT");
   assert.equal(receipt.adapterIdentity, HOW_EVOLUTION_JEV_ADAPTER_IDENTITY);
@@ -158,69 +187,145 @@ test("AC-2: Jev receipt pins exact input/output/policy/evidence/freshness identi
   assert.deepEqual(receipt.questionIds, [...HOW_EVOLUTION_JEV_QUESTION_IDS]);
   assert.equal(typeof receipt.requestHash, "string");
   assert.equal(typeof receipt.responseHash, "string");
-  assert.equal(typeof receipt.responseId, "string");
+  assert.equal(receipt.responseModel, HOW_EVOLUTION_JEV_MODEL_SNAPSHOT);
+  assert.deepEqual(receipt.usage, { inputTokens: 120, outputTokens: 12 });
   assert.equal(receipt.semanticVerdict, "PASS");
   assert.deepEqual(receipt.evidenceRefs, ["evidence:causal-1", "evidence:runtime-1"]);
 });
 
+test("AC-2: mock-fetch endpoint integration uses the exact SystemOne {model,state,questions} schema", async () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  const seen = {};
+  const fetchImpl = async (url, options) => {
+    seen.url = url;
+    seen.payload = JSON.parse(options.body);
+    seen.auth = options.headers.Authorization;
+    return { ok: true, async json() { return systemOneResponse(); } };
+  };
+  const evaluator = createHowEvolutionJevEvaluator({ fetchImpl, ...TRUST_OK });
+  process.env.TYPESAFE_API_KEY = "test-key-not-real";
+  let receipt;
+  try {
+    receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
+  } finally {
+    delete process.env.TYPESAFE_API_KEY;
+  }
+  assert.equal(seen.url, "https://api.typesafe.ai/v1/systemone");
+  assert.equal(seen.auth, "Bearer test-key-not-real");
+  assert.equal(seen.payload.model, HOW_EVOLUTION_JEV_MODEL_SNAPSHOT);
+  assert.ok(seen.payload.state && typeof seen.payload.state === "object");
+  assert.ok(Array.isArray(seen.payload.questions) && seen.payload.questions.length === 3);
+  assert.deepEqual(seen.payload.questions.map((entry) => entry.id).sort(), [...HOW_EVOLUTION_JEV_QUESTION_IDS].sort());
+  // The evaluator receives exact bounded hash-bound evidence bodies, not opaque refs.
+  assert.equal(seen.payload.state.subject.protocolDigest, digestValue(protocol));
+  assert.equal(seen.payload.state.subject.workContractRef, protocol.workContract.ref);
+  assert.deepEqual(seen.payload.state.scenarioSet.trigger, ["trigger-1"]);
+  assert.deepEqual(seen.payload.state.metricPolicy.criticalCaseIds, ["regression-critical"]);
+  assert.equal(seen.payload.state.evidence.length, 2);
+  for (const record of seen.payload.state.evidence) {
+    assert.ok(typeof record.body === "string" && record.body.length > 0);
+    assert.ok(/^sha256:[0-9a-f]{64}$/.test(record.digest));
+    assert.equal(typeof record.producerIdentity, "string");
+  }
+  assert.equal(receipt.semanticVerdict, "PASS");
+  assert.equal(receipt.responseModel, HOW_EVOLUTION_JEV_MODEL_SNAPSHOT);
+});
+
 test("AC-2 negative: transport error fails closed to INCONCLUSIVE/KEEP_BASELINE", async () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const evaluator = createHowEvolutionJevEvaluator({
-    transport: async () => { throw new Error("network down"); }
-  });
+  const evaluator = evaluatorWith(async () => { throw new Error("network down"); });
   const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
   assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
   assert.ok(receipt.failureReason === "TRANSPORT_ERROR");
 });
 
-test("AC-2 negative: malformed response fails closed, never coerced to PASS", async () => {
+test("AC-2 negative: malformed typed Choice response fails closed, never coerced to PASS", async () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const evaluator = createHowEvolutionJevEvaluator({
-    transport: async () => ({ model: HOW_EVOLUTION_JEV_MODEL_SNAPSHOT, responseId: "r1", outcomes: [] })
-  });
+  const badProbabilities = systemOneResponse();
+  badProbabilities.answers["semantic-preservation"].probabilities = { PASS: 0.5, FAIL: 0.5, INCONCLUSIVE: 0.5 };
+  const evaluator = evaluatorWith(async () => badProbabilities);
   const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
   assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
+  assert.equal(receipt.failureReason, "MALFORMED_RESPONSE");
 });
 
-test("AC-2 negative: unexpected model/policy fails closed", async () => {
+test("AC-2 negative: unexpected model fails closed", async () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const wrongModel = createHowEvolutionJevEvaluator({ transport: passTransport("other-model-9") });
-  const receipt = await wrongModel.evaluate({ protocol, evidence: evidence() });
+  const evaluator = evaluatorWith(passTransport("other-model-9"));
+  const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
   assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
-
-  const wrongPolicy = createHowEvolutionJevEvaluator({
-    transport: async ({ request }) => ({
-      model: HOW_EVOLUTION_JEV_MODEL_SNAPSHOT,
-      policyRef: "policy:someone-else",
-      policyDigest: request.semanticPolicyDigest,
-      responseId: "jev-response-2",
-      outcomes: [...HOW_EVOLUTION_JEV_QUESTION_IDS].map((questionId) => ({ questionId, outcome: "PASS" }))
-    })
-  });
-  const receipt2 = await wrongPolicy.evaluate({ protocol, evidence: evidence() });
-  assert.equal(receipt2.semanticVerdict, "INCONCLUSIVE");
 });
 
 test("AC-2 negative: missing atomic outcome fails closed", async () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const evaluator = createHowEvolutionJevEvaluator({
-    transport: async ({ request }) => ({
-      model: HOW_EVOLUTION_JEV_MODEL_SNAPSHOT,
-      policyRef: request.semanticPolicyRef,
-      policyDigest: request.semanticPolicyDigest,
-      responseId: "jev-response-3",
-      outcomes: [
-        { questionId: "semantic-preservation", outcome: "PASS" },
-        { questionId: "how-improvement", outcome: "PASS" }
-      ]
-    })
-  });
+  const partial = systemOneResponse();
+  delete partial.answers["evidence-sufficiency"];
+  const evaluator = evaluatorWith(async () => partial);
   const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
   assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
 });
 
+test("AC-2 negative: missing authority verifiers fail closed without contacting the model", async () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  let calls = 0;
+  const evaluator = createHowEvolutionJevEvaluator({
+    transport: async () => { calls += 1; return systemOneResponse(); }
+  });
+  const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
+  assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
+  assert.equal(receipt.failureReason, "AUTHORITY_VERIFIER_MISSING");
+  assert.equal(calls, 0);
+});
+
+test("AC-2 negative: false evaluator authority fails closed", async () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  const evaluator = createHowEvolutionJevEvaluator({
+    transport: passTransport(),
+    verifyEvaluatorAuthority: async () => false,
+    verifyEvidenceAuthority: async () => true
+  });
+  const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
+  assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
+  assert.equal(receipt.failureReason, "AUTHORITY_FAILURE");
+});
+
+test("AC-2 negative: false evidence authority fails closed", async () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  const evaluator = createHowEvolutionJevEvaluator({
+    transport: passTransport(),
+    verifyEvaluatorAuthority: async () => true,
+    verifyEvidenceAuthority: async () => false
+  });
+  const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
+  assert.equal(receipt.semanticVerdict, "INCONCLUSIVE");
+  assert.equal(receipt.failureReason, "AUTHORITY_FAILURE");
+});
+
+test("AC-2 negative: fabricated evidence identities are INCONCLUSIVE, never invented", async () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  const noProducer = evidence();
+  delete noProducer.records[0].producerIdentity;
+  const receipt1 = await evaluatorWith(passTransport()).evaluate({ protocol, evidence: noProducer });
+  assert.equal(receipt1.semanticVerdict, "INCONCLUSIVE");
+
+  const noEnvironment = evidence();
+  delete noEnvironment.records[1].environmentDigest;
+  const receipt2 = await evaluatorWith(passTransport()).evaluate({ protocol, evidence: noEnvironment });
+  assert.equal(receipt2.semanticVerdict, "INCONCLUSIVE");
+
+  const tampered = evidence();
+  tampered.records[0].body = "rewritten evidence with the old digest";
+  const receipt3 = await evaluatorWith(passTransport()).evaluate({ protocol, evidence: tampered });
+  assert.equal(receipt3.semanticVerdict, "INCONCLUSIVE");
+
+  const incomplete = { records: [evidence().records[0]] };
+  const receipt4 = await evaluatorWith(passTransport()).evaluate({ protocol, evidence: incomplete });
+  assert.equal(receipt4.semanticVerdict, "INCONCLUSIVE");
+  assert.equal(receipt4.failureReason, "EVIDENCE_INCOMPLETE");
+});
+
 test("AC-2/AC-3 negative: adapter is evaluate-only with no product/policy mutation capability", () => {
-  const evaluator = createHowEvolutionJevEvaluator({ transport: passTransport() });
+  const evaluator = evaluatorWith(passTransport());
   assert.equal(typeof evaluator.evaluate, "function");
   for (const forbidden of ["publish", "promote", "rollback", "mutatePolicy", "mutateProduct", "adopt", "writePolicy", "publishPolicy"]) {
     assert.equal(evaluator[forbidden], undefined, `adapter must not expose ${forbidden}`);
@@ -232,7 +337,7 @@ test("AC-2 secret boundary: TYPESAFE_API_KEY is never persisted or returned", as
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
   process.env.TYPESAFE_API_KEY = "secret-test-key";
   try {
-    const evaluator = createHowEvolutionJevEvaluator({ transport: passTransport() });
+    const evaluator = evaluatorWith(passTransport());
     const receipt = await evaluator.evaluate({ protocol, evidence: evidence() });
     const serialized = JSON.stringify(receipt);
     assert.ok(!serialized.includes("secret-test-key"));

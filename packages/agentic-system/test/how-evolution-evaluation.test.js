@@ -94,11 +94,11 @@ export function runFor(protocol, side, metrics, overrides = {}) {
     strategyDigest: strategy.digest,
     workContractRef: protocol.workContract.ref,
     caseResults: [
-      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"] },
-      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"] },
-      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"] },
-      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"] },
-      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"] }
+      { caseId: "trigger-1", status: "PASS", primaryMetric: metrics.trigger ?? 0.8, evidenceRefs: ["evidence:trigger-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-critical", status: "PASS", primaryMetric: metrics.critical ?? 0.9, evidenceRefs: ["evidence:critical-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "regression-recovery", status: "PASS", primaryMetric: metrics.recovery ?? 0.7, evidenceRefs: ["evidence:recovery-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-1", status: "PASS", primaryMetric: metrics.holdout1 ?? 0.8, evidenceRefs: ["evidence:holdout-1"], policyCompliant: true, evidenceComplete: true, recoveryOk: true },
+      { caseId: "holdout-2", status: "PASS", primaryMetric: metrics.holdout2 ?? 0.8, evidenceRefs: ["evidence:holdout-2"], policyCompliant: true, evidenceComplete: true, recoveryOk: true }
     ],
     ...overrides
   };
@@ -122,7 +122,7 @@ export function jevReceiptFor(protocol, verdict = "PASS") {
       { questionId: "how-improvement", outcome: verdict },
       { questionId: "evidence-sufficiency", outcome: verdict }
     ],
-    evidenceRefs: ["evidence:causal-1"]
+    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"]
   };
 }
 
@@ -210,24 +210,155 @@ test("AC-4 negative: aggregate gain cannot hide a new critical-case failure", ()
 
 test("AC-4 negative: missing case measurement is INCONCLUSIVE, never coerced to PASS", () => {
   const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
-  const strict = defineHowEvolutionEvaluationProtocol({
-    ...passingProtocol(),
-    replay: { repeatCount: 3, seedPolicy: "fixed-seed", deterministic: false }
-  });
-  const baseline = runFor(strict, "BASELINE", {});
-  const candidate = runFor(strict, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 });
+  const baseline = runFor(protocol, "BASELINE", {});
+  const candidate = runFor(protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 });
   const holdout = candidate.caseResults.find((entry) => entry.caseId === "holdout-1");
   delete holdout.primaryMetric;
   const result = evaluateHowEvolution({
-    protocol: strict,
+    protocol,
     baselineRun: baseline,
     candidateRun: candidate,
-    jevReceipt: jevReceiptFor(strict, "PASS")
+    jevReceipt: jevReceiptFor(protocol, "PASS")
   });
   assert.equal(result.verdict, HowEvolutionVerdict.INCONCLUSIVE);
   assert.equal(result.disposition, HowEvolutionDisposition.KEEP_BASELINE);
-  void baseline;
-  void protocol;
+  assert.ok(result.reasons.some((reason) => reason.includes("missing-measurement")));
+});
+
+test("AC-4 negative: unknown hard-gate observations stay INCONCLUSIVE, never a pass", () => {
+  for (const field of ["policyCompliant", "evidenceComplete", "recoveryOk"]) {
+    const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+    const baseline = runFor(protocol, "BASELINE", {});
+    const candidate = runFor(protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 });
+    for (const entry of candidate.caseResults) delete entry[field];
+    const result = evaluateHowEvolution({
+      protocol,
+      baselineRun: baseline,
+      candidateRun: candidate,
+      jevReceipt: jevReceiptFor(protocol, "PASS")
+    });
+    assert.equal(result.verdict, HowEvolutionVerdict.INCONCLUSIVE, `missing ${field} must be INCONCLUSIVE`);
+    assert.equal(result.disposition, HowEvolutionDisposition.KEEP_BASELINE);
+  }
+});
+
+test("AC-4: predeclared operational regression constraints are enforced", () => {
+  const constrained = defineHowEvolutionEvaluationProtocol({
+    ...passingProtocol(),
+    metricPolicy: {
+      ref: "metric-policy:how-eval",
+      digest: digestValue({ metric: "how-eval-metric" }),
+      minEffect: 0.05,
+      primaryMetric: "primary-score",
+      criticalCaseIds: ["regression-critical"],
+      recoveryCaseIds: ["regression-recovery"],
+      maxCostRegression: 1.0,
+      maxTokenRegression: 100,
+      maxLatencyRegressionMs: 500
+    }
+  });
+  const withOperational = (run, cost, tokens, latencyMs) => {
+    for (const entry of run.caseResults) {
+      entry.cost = cost;
+      entry.tokens = tokens;
+      entry.latencyMs = latencyMs;
+    }
+    return run;
+  };
+  // Unknown observations while constraints are declared are INCONCLUSIVE.
+  const unknown = evaluateHowEvolution({
+    protocol: constrained,
+    baselineRun: withOperational(runFor(constrained, "BASELINE", {}), 5, 1000, 200),
+    candidateRun: runFor(constrained, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }),
+    jevReceipt: jevReceiptFor(constrained, "PASS")
+  });
+  assert.equal(unknown.verdict, HowEvolutionVerdict.INCONCLUSIVE);
+  // A breach beyond the declared maximum is FAIL.
+  const breached = evaluateHowEvolution({
+    protocol: constrained,
+    baselineRun: withOperational(runFor(constrained, "BASELINE", {}), 5, 1000, 200),
+    candidateRun: withOperational(runFor(constrained, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }), 9, 1000, 200),
+    jevReceipt: jevReceiptFor(constrained, "PASS")
+  });
+  assert.equal(breached.verdict, HowEvolutionVerdict.FAIL);
+  assert.ok(breached.reasons.some((reason) => reason.includes("cost-regression")));
+  // Observations within budget keep the PASS.
+  const within = evaluateHowEvolution({
+    protocol: constrained,
+    baselineRun: withOperational(runFor(constrained, "BASELINE", {}), 5, 1000, 200),
+    candidateRun: withOperational(runFor(constrained, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 }), 5.5, 1050, 300),
+    jevReceipt: jevReceiptFor(constrained, "PASS")
+  });
+  assert.equal(within.verdict, HowEvolutionVerdict.PASS);
+});
+
+test("AC-1/AC-4: stochastic protocols enforce actual paired repeat membership", () => {
+  const stochastic = defineHowEvolutionEvaluationProtocol({
+    ...passingProtocol(),
+    replay: { repeatCount: 3, seedPolicy: "fixed-seed", deterministic: false }
+  });
+  const withRepeats = (run) => {
+    for (const entry of run.caseResults) {
+      const mean = entry.primaryMetric;
+      entry.repeats = [mean - 0.02, mean, mean + 0.02];
+    }
+    return run;
+  };
+  const sampled = evaluateHowEvolution({
+    protocol: stochastic,
+    baselineRun: withRepeats(runFor(stochastic, "BASELINE", {})),
+    candidateRun: withRepeats(runFor(stochastic, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 })),
+    jevReceipt: jevReceiptFor(stochastic, "PASS")
+  });
+  assert.equal(sampled.verdict, HowEvolutionVerdict.PASS);
+
+  // Declaring repeats is not enough: runs without actual samples are rejected.
+  assert.throws(
+    () => defineHowEvolutionEvaluationRun(runFor(stochastic, "BASELINE", {}), stochastic),
+    /must contain exactly 3 finite paired samples/
+  );
+  const short = withRepeats(runFor(stochastic, "BASELINE", {}));
+  short.caseResults[0].repeats = [0.8, 0.81];
+  assert.throws(
+    () => defineHowEvolutionEvaluationRun(short, stochastic),
+    /must contain exactly 3 finite paired samples/
+  );
+  const drifted = withRepeats(runFor(stochastic, "BASELINE", {}));
+  drifted.caseResults[0].primaryMetric = 0.1;
+  assert.throws(
+    () => defineHowEvolutionEvaluationRun(drifted, stochastic),
+    /must equal the mean of its paired repeats/
+  );
+});
+
+test("AC-2/AC-4 negative: an invented PASS receipt cannot promote", () => {
+  const protocol = defineHowEvolutionEvaluationProtocol(passingProtocol());
+  const baseline = runFor(protocol, "BASELINE", {});
+  const candidate = runFor(protocol, "CANDIDATE", { holdout1: 0.9, holdout2: 0.9 });
+  const evaluateWith = (receipt) => evaluateHowEvolution({ protocol, baselineRun: baseline, candidateRun: candidate, jevReceipt: receipt });
+
+  const wrongModel = jevReceiptFor(protocol, "PASS");
+  wrongModel.modelSnapshot = "invented-model-9";
+  assert.throws(() => evaluateWith(wrongModel), /model snapshot mismatch/);
+
+  const missingModel = jevReceiptFor(protocol, "PASS");
+  delete missingModel.modelSnapshot;
+  assert.throws(() => evaluateWith(missingModel), /model snapshot mismatch/);
+
+  const incomplete = jevReceiptFor(protocol, "PASS");
+  incomplete.questionOutcomes = incomplete.questionOutcomes.slice(0, 2);
+  assert.throws(() => evaluateWith(incomplete), /complete pinned semantic question set/);
+
+  const invented = jevReceiptFor(protocol, "PASS");
+  invented.questionOutcomes = [
+    ...invented.questionOutcomes,
+    { questionId: "invented-bonus", outcome: "PASS" }
+  ];
+  assert.throws(() => evaluateWith(invented), /complete pinned semantic question set/);
+
+  const wrongEvidence = jevReceiptFor(protocol, "PASS");
+  wrongEvidence.evidenceRefs = ["evidence:elsewhere"];
+  assert.throws(() => evaluateWith(wrongEvidence), /evidence identity must equal the pinned evidence snapshot/);
 });
 
 test("finding is evidence-only and grants no candidate/evaluation/promotion authority", () => {
@@ -244,7 +375,7 @@ test("finding is evidence-only and grants no candidate/evaluation/promotion auth
     baselineStrategyRef: "execution-strategy-descriptor:1",
     howAxis: "retry-budget",
     findingProducer: "causal-observer",
-    evidenceRefs: ["evidence:causal-1"]
+    evidenceRefs: ["evidence:causal-1", "evidence:runtime-1"]
   });
   assert.equal(finding.grants.candidateAuthority, false);
   assert.equal(finding.grants.promotionAuthority, false);
