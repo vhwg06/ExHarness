@@ -7,8 +7,8 @@
 // worktree copies. Anything else (missing file, stale snapshot, exhausted
 // budget) throws AgentTaskContextError before the worktree exists.
 import { spawnSync } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { assertSafeWorkspacePath } from "../../agentic-system/src/index.js";
 import {
   DurabilityFailure,
@@ -179,12 +179,22 @@ export async function resolveAgentTaskContext(task, { repositoryReader = null, m
   return Object.freeze({ used: true, items, promptPrefix: buildGroundedPromptPrefix(items), requirement, resolution, failures: Object.freeze([...failures]) });
 }
 
+function gitPath(cwd, args) {
+  const result = spawnSync("git", args, {
+    cwd,
+    shell: false,
+    encoding: "utf8",
+    env: { ...process.env, GIT_CONFIG_NOSYSTEM: "1" }
+  });
+  if (result.status !== 0) throw new Error(`git ${args[0]} failed: ${String(result.stderr ?? "").trim().slice(-300)}`);
+  return result.stdout.trim();
+}
+
 /**
  * Projects resolved grounded context into a worktree: full file bytes at
- * `.exharness/context/<path>` plus a worktree-local `.exharness/.gitignore`
- * containing `*` so the copies never dirty `git status` and never enter the
- * candidate commit. The source repository is never written; no git metadata
- * path is opened for writing. Resolutions with `used: false` project nothing.
+ * `.exharness/context/<path>` plus a `.exharness/` line in the worktree's
+ * `info/exclude` so the copies never enter the candidate. The source
+ * repository is never written. Resolutions with `used: false` project nothing.
  */
 export async function projectAgentTaskContext(resolved, { worktreeRoot } = {}) {
   if (typeof worktreeRoot !== "string" || worktreeRoot.length === 0) throw new TypeError("projectAgentTaskContext requires worktreeRoot");
@@ -199,8 +209,17 @@ export async function projectAgentTaskContext(resolved, { worktreeRoot } = {}) {
     await writeFile(target, typeof item.content === "string" ? item.content : JSON.stringify(item.content));
     written.push(`.exharness/context/${item.path}`);
   }
-  const gitignorePath = join(worktreeRoot, ".exharness", ".gitignore");
-  await mkdir(dirname(gitignorePath), { recursive: true });
-  await writeFile(gitignorePath, "*\n");
+  const excludeRef = gitPath(worktreeRoot, ["rev-parse", "--git-path", "info/exclude"]);
+  const excludePath = resolve(worktreeRoot, excludeRef);
+  await mkdir(dirname(excludePath), { recursive: true });
+  let current = "";
+  try {
+    current = await readFile(excludePath, "utf8");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  if (!current.split("\n").some((line) => line.trim() === ".exharness/")) {
+    await appendFile(excludePath, `${current.endsWith("\n") || current.length === 0 ? "" : "\n"}.exharness/\n`);
+  }
   return Object.freeze({ projected: written.length, files: Object.freeze([...written]) });
 }

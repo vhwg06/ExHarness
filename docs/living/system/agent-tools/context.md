@@ -17,7 +17,7 @@ Resolution runs inside `runSupervisedTask` after `validateAgentTask` and before 
 Consumable items are projected twice:
 
 - the strategy prompt becomes `<prefix>\n\n<task prompt>`, where the prefix begins exactly with `ExHarness grounded context:` followed by one block per file (`path:`, `sourceRef:`, then an excerpt of at most 4000 characters, with a trailing `[truncated]` marker when the content is longer);
-- after the worktree exists, the full bytes of each file are written to `.exharness/context/<path>` and a worktree-local `.exharness/.gitignore` containing `*` is written, so the copies never dirty `git status` and never enter the candidate commit. The exclusion is worktree-local and the source repository is never written.
+- after the worktree exists, the full bytes of each file are written to `.exharness/context/<path>` and `.exharness/` is appended to the worktree `info/exclude`, so the copies never dirty `git status` and never enter the candidate commit. The source repository is never written.
 
 The original task prompt object is not mutated.
 

@@ -103,10 +103,10 @@ function firstGrokJson(stdout) {
 
 /**
  * Grok `--output-format json` object. Token fields are observed integers from usage (zero is
- * observed); totalCostUsd is the observed finite total_cost_usd number >= 0, else null (never
- * coerced or zero-filled). Anything absent stays null with GROK_USAGE_NOT_REPORTED (or
- * GROK_JSON_TRUNCATED for a truncated stream); nothing is estimated. Codex/Kiro/agy usage
- * objects keep their six fields; only grok carries totalCostUsd.
+ * observed); totalCostUsd is the observed finite Number(total_cost_usd). Anything absent stays
+ * null with GROK_USAGE_NOT_REPORTED (or GROK_JSON_TRUNCATED for a truncated stream); nothing
+ * is estimated. Codex/Kiro/agy usage objects keep their six fields; only grok carries
+ * totalCostUsd.
  */
 export function parseGrokJson(stdout, { truncated = false } = {}) {
   const found = firstGrokJson(stdout);
@@ -123,8 +123,7 @@ export function parseGrokJson(stdout, { truncated = false } = {}) {
       }
     };
   }
-  const rawCost = value.total_cost_usd;
-  const observedCost = typeof rawCost === "number" && Number.isFinite(rawCost) && rawCost >= 0 ? rawCost : null;
+  const cost = Number(value.total_cost_usd);
   const invalidJson = found.invalid === true || String(stdout ?? "").trim() !== String(found.text).trim();
   return {
     toolEvents: {
@@ -139,7 +138,7 @@ export function parseGrokJson(stdout, { truncated = false } = {}) {
       reasoningOutputTokens: isCount(usage.reasoning_tokens) ? usage.reasoning_tokens : null,
       source: "grok.output.json",
       unavailableReason: null,
-      totalCostUsd: observedCost
+      totalCostUsd: Number.isFinite(cost) ? cost : null
     }
   };
 }
