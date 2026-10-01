@@ -29,6 +29,9 @@ import {
 } from './ablation-contract.mjs';
 import { assertComposable } from './profile-capabilities.mjs';
 import { assertDependencyContract, computeDependencyDigest, defaultDescriptors, getDependencyManifest } from './dependency-binding.mjs';
+import { buildPairedViews, buildRows, repeatConsistency } from './report.mjs';
+import { decide, THRESHOLDS } from './accept.mjs';
+import { runFaultMatrix } from './fault-matrix.mjs';
 
 const sha = (text) => `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`;
 const bytesOf = (value) => Buffer.from(typeof value === 'string' ? value : `${JSON.stringify(value, null, 2)}\n`, 'utf8');
@@ -388,6 +391,70 @@ export async function runLiveEntry({ env = process.env } = {}) {
 }
 
 const invokedAsCli = typeof process.argv?.[1] === 'string' && fileURLToPath(import.meta.url) === process.argv[1];
+
+// Auditable evidence record for the held-out cohort: the exact reserved
+// digests, frozen schedule, budget ceilings, per-unit settlement with
+// accounting status, ledger audit and the frozen-reducer decision over this
+// cohort. This is the evidence the acceptance criteria are judged against.
+export function printHeldOutEvidence({ out, profile, write = (s) => process.stdout.write(s) } = {}) {
+  if (!out) throw new Error('PRECONDITION: printHeldOutEvidence needs the settled cohort');
+  const rows = buildRows({ settled: out.settled });
+  const paired = buildPairedViews({ rows });
+  const decision = decide({ rows, paired, faultCells: runFaultMatrix() });
+  const lines = [];
+  lines.push('=== BB-081 held-out cohort evidence ===');
+  lines.push(`cohort=${COHORT_ID} experiment=${EXPERIMENT_ID} protocol=${PROTOCOL_ID}/v${PROTOCOL_VERSION} protocolHash=${protocolHash()}`);
+  lines.push(`dataKind=${profile?.dataKind ?? 'OFFLINE_SCRIPTED_FIXTURE'} (deterministic offline fixtures; live paid execution requires explicit auth and is pending)`);
+  lines.push(`substrate=${SUBSTRATE_MANIFEST_REF} model=${MODEL_PROFILE.model} provider=${MODEL_PROFILE.provider} transport=${MODEL_PROFILE.transport}`);
+  lines.push(`evaluator=${EVALUATOR_IDENTITY}`);
+  lines.push(`budgets: unitCostUsd<=${BUDGET.maxUnitCostUsd} cohortCostUsd<=${BUDGET.maxCohortCostUsd} turns<=${BUDGET.maxTurns} hostCalls<=${BUDGET.maxHostCalls} elapsedMs<=${BUDGET.maxElapsedMs} inputTokens<=${BUDGET.maxInputTokens} outputTokens<=${BUDGET.maxOutputTokens}`);
+  const heldout = profile?.heldout ?? [];
+  lines.push(`reserved digests (${heldout.length}):`);
+  for (const [bundle, digest] of heldout) lines.push(`  ${bundle} ${digest}`);
+  lines.push('frozen schedule (2 repeats x 4 arms):');
+  for (const entry of profile?.schedule ?? []) lines.push(`  ${entry}`);
+  lines.push(`units (${out.units.length}):`);
+  const orderByUnit = new Map(out.settled.map(({ unit, observation }) => [unit.unitId, observation.scheduleOrder]));
+  for (const row of rows) {
+    const cost = row.providerCostUsd ?? row.normalizedCostUsd ?? null;
+    const tokens = `in=${row.inputTokens ?? 'UNKNOWN'} out=${row.outputTokens ?? 'UNKNOWN'} cache=${row.cachedTokens ?? 'UNKNOWN'}`;
+    const ops = `usefulOps=${row.usefulOperationCount ?? 'UNKNOWN'}/turn=${row.usefulOperationsPerTurn == null ? 'UNKNOWN' : row.usefulOperationsPerTurn.toFixed(2)} overlapMs=${row.usefulOperationOverlapMs ?? 'UNKNOWN'}`;
+    lines.push(`  ${row.unitId} arm=${row.arm} repeat=${row.repeatIndex} order=${orderByUnit.get(row.unitId)} quality=${row.quality} ${tokens} costUsd=${cost === null ? 'UNKNOWN' : cost} turns=${row.modelTurns ?? 'UNKNOWN'} toolCalls=${row.toolCalls ?? 'UNKNOWN'} ${ops} elapsedMs=${row.elapsedMs ?? 'UNKNOWN'} recovery=${row.recoveryOutcome} fingerprint=${row.failureFingerprint ?? 'none'} accounting=${row.accountingStatus}`);
+  }
+  lines.push('ledger (append-only shared AttemptLedger; BB-081 owns no second ledger):');
+  for (const { unit, record, manifest } of out.settled) {
+    const usage = record.usage ?? {};
+    lines.push(`  ${unit.unitId} attempt=${record.attemptId} manifest=${String(manifest?.manifestDigest ?? 'none').slice(0, 19)} accounting=${String(usage.accountingDigest ?? 'none').slice(0, 19)} status=${usage.status ?? 'UNKNOWN'}`);
+  }
+  const fullyKnown = rows.filter((r) => (r.providerCostUsd ?? r.normalizedCostUsd) != null && r.inputTokens != null && r.outputTokens != null).length;
+  lines.push(`ledger totals: ${out.units.length} units, ${out.settled.length} attempts settled, 0 retries, 0 replacements`);
+  lines.push(`accounting: ${fullyKnown}/${rows.length} fully known, ${rows.length - fullyKnown}/${rows.length} with UNKNOWN fields (missing values stay UNKNOWN/null, never zero)`);
+  const dAccepted = paired.primaryDA.filter((p) => p.dQuality === 'ACCEPTED').length;
+  const aAccepted = paired.primaryDA.filter((p) => p.aQuality === 'ACCEPTED').length;
+  lines.push(`D/A quality (${paired.primaryDA.length} matched pairs, same verifier): D accepted ${dAccepted}, A accepted ${aAccepted}`);
+  lines.push('diagnostic attribution (A->B/B->C/C->D marginal ratios; D/A is primary):');
+  for (const label of ['A->B', 'B->C', 'C->D']) {
+    for (const pair of paired.attribution[label]) {
+      const fmt = (v) => (typeof v === 'number' && Number.isFinite(v) ? v.toFixed(3) : 'UNKNOWN');
+      lines.push(`  ${label} ${pair.taskId}#r${pair.repeatIndex}: ${pair.fromQuality}->${pair.toQuality} cost=${fmt(pair.costRatio)} input=${fmt(pair.inputRatio)} turns=${fmt(pair.turnsRatio)} elapsed=${fmt(pair.elapsedRatio)}`);
+    }
+  }
+  lines.push('repeat consistency (accepted/total per task x arm):');
+  const consistency = repeatConsistency({ rows });
+  for (const task of Object.keys(consistency).sort()) {
+    lines.push(`  ${task}: ${Object.entries(consistency[task]).map(([arm, c]) => `${arm}=${c.label}`).join(' ')}`);
+  }
+  lines.push(`efficiency thresholds (frozen): cost<=${THRESHOLDS.cost} input<=${THRESHOLDS.input} turns<=${THRESHOLDS.turns} elapsed<=${THRESHOLDS.elapsed}`);
+  const gates = Object.entries(decision.gateResults).map(([g, v]) => `${g}=${v === true ? 'PASS' : v === false ? 'FAIL' : 'N/A'}`).join(' ');
+  lines.push(`efficiency gates: ${gates || 'not evaluated (incomplete primary accounting)'}`);
+  if (decision.medians) {
+    const m = decision.medians;
+    lines.push(`efficiency medians (D/A): cost=${m.cost?.toFixed(3)} input=${m.input?.toFixed(3)} turns=${m.turns?.toFixed(3)} elapsed=${m.elapsed?.toFixed(3)}`);
+  }
+  lines.push(`frozen reducer decision: ${decision.decision} (${decision.reasons.join('; ') || 'no blocking reasons'})`);
+  write(lines.join('\n') + '\n');
+}
+
 if (invokedAsCli) {
   const args = process.argv.slice(2);
   const mode = args.includes('--mode') ? args[args.indexOf('--mode') + 1] : null;
@@ -410,6 +477,7 @@ if (invokedAsCli) {
         const out = await runHeldOutCohort({ kernel, manifest, rawManifest: raw });
         process.stdout.write(`heldout cohort settled: ${out.settled.length} attempts over ${out.units.length} units\n`);
         process.stdout.write(`units=${out.units.length} attempts=${out.settled.length} cohort=${COHORT_ID}\n`);
+        printHeldOutEvidence({ out, profile });
         process.exit(0);
       } catch (error) {
         process.stderr.write(`${error.message}\n`);

@@ -68,6 +68,16 @@ Both arms really execute the shared strategy against a benchmark-owned offline s
 
 The committed report (`manifests/report.example.json`, `manifests/comparison.json`) is an offline scripted fixture proving the pipeline — kernel registration, shared-ledger settling of 36 paired attempts plus one retry, 37/37 PASS on reopened evidence — and NOT a measurement: no quality, cost or latency claim follows from it, provider cost/token/cache stay null/UNKNOWN, and the six-task cohort supports no significance claim. The live synchronous baseline on the frozen route has not been executed yet; it is pending an authorized paid run (`run.mjs --live` refuses without credentials and substrate). The four-task held-out set is reserved and never executes here; async scheduling, cache-stable context and steering/recovery capabilities are out of scope, as is any promotion decision. A versioned comparison manifest, held-out manifest and preregistered quality/safety/economics/context/interaction/latency gate are frozen for the future held-out decision before any async result exists.
 
+## Held-out harness profile acceptance
+
+`packages/core-harness/src/execution-profile.js` gates which execution profiles the held-out harness benchmark may publish. `CORE_SYNC` is the default and only supported profile (`SUPPORTED_BASE`); `CORE_ASYNC_FIRST_V1` publishes only after a frozen-reducer `PROMOTE_ASYNC` decision with exact evidence binding; arms `B`/`C` stay diagnostic (`DIAGNOSTIC_ARMS`).
+
+Evidence binding (`createEvidenceBinding`) covers the decision, the ablation/fault protocol (`benchmarks/harness_efficiency/bb081/faults.mjs`, the v1 `accept.mjs` gate contract), the evaluated source tree, prior dependency delivery digests (BB-077/BB-078/BB-079/BB-080) and the provider/model profile. Later mutation invalidates the claim: `assertEvidenceFresh` throws `STALE` on drift, and `assertProfilePublishable` throws unless the profile's decision is `PROMOTE_ASYNC` with the exact binding.
+
+Actual decision: the deterministic offline fixture cohort (`BB081-HELD-OUT-V1`) settled 32/32 units, but the fixtures by construction include UNKNOWN primary accounting and offline fixtures never become promotion evidence, so the frozen reducer yields `INCONCLUSIVE` — the live paid cohort has not been executed. Therefore `CORE_ASYNC_FIRST_V1` is NOT published, B/C remain diagnostic, and only `CORE_SYNC` is the supported profile. Rollback stays `CORE_SYNC` via `rollbackToSync()` at a new/quiescent session boundary after async operations/effects are terminal or reconciled.
+
+Limitation: profiles are benchmark-publication gating only; they do not change Core runtime execution semantics — `createAgentRuntime` defaults and the `AgentRuntime` path are unchanged.
+
 ## Current authority boundary
 
 ```text
