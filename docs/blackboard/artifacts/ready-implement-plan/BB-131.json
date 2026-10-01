@@ -172,24 +172,93 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/local-preview.test.js"
+      "command": "node --test packages/agent-tools/test/local-preview.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-131 N1 Wrong candidate or health identity rejected",
+          "subject": "startLocalPreview",
+          "criterionId": "PREVIEW_IDENTITY"
+        },
+        {
+          "title": "BB-131 N2 Foreign occupied port preserved",
+          "subject": "startLocalPreview",
+          "criterionId": "RESOURCE_LIFECYCLE"
+        },
+        {
+          "title": "BB-131 N3 Readiness timeout cleans owned services",
+          "subject": "startLocalPreview",
+          "criterionId": "RESOURCE_LIFECYCLE"
+        },
+        {
+          "title": "BB-131 N4 Missing service cleans partial start",
+          "subject": "startLocalPreview",
+          "criterionId": "RESOURCE_LIFECYCLE"
+        },
+        {
+          "title": "BB-131 N5 Interrupt or controller death preserves foreign server",
+          "subject": "startLocalPreview",
+          "criterionId": "RESOURCE_LIFECYCLE"
+        },
+        {
+          "title": "BB-131 N6 Config runtime evaluator drift rejects readiness",
+          "subject": "startLocalPreview",
+          "criterionId": "PREVIEW_IDENTITY"
+        },
+        {
+          "title": "BB-131 N7 Wrong seed or stale generation rejects reset",
+          "subject": "startLocalPreview",
+          "criterionId": "SEEDED_RESET"
+        },
+        {
+          "title": "BB-131 N8 Unsupported profile or runtime executes no hooks",
+          "subject": "startLocalPreview",
+          "criterionId": "PROFILE_ENV"
+        },
+        {
+          "title": "BB-131 N9 Parent secret and test channel excluded",
+          "subject": "startLocalPreview",
+          "criterionId": "PROFILE_ENV"
+        },
+        {
+          "title": "BB-131 N10 Cleanup timeout stays unresolved",
+          "subject": "startLocalPreview",
+          "criterionId": "RECEIPT_FAILURES"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "composition",
       "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
-      "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only."
+      "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only.",
+      "negativeCases": [
+        {
+          "title": "BB-131 N11 Preview cannot override failed QA",
+          "subject": "runSliceQa",
+          "criterionId": "QA_COMPOSITION"
+        },
+        {
+          "title": "BB-131 N12 Failed setup or stale receipt blocks acceptance",
+          "subject": "runSliceQa",
+          "criterionId": "QA_COMPOSITION"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -426,7 +495,7 @@
     "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
     "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
     "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
-    "wireProtocol": "Service launch uses child_process.fork(runtime.execPath, tracked entry,args,{cwd:workspaceRoot,env,minimal,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference."
+    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference."
   },
   "researchBrief": {
     "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
@@ -619,7 +688,9 @@
           "match": "export async function createLocalGitWorkspace"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "localPreviewContract"
+      ]
     },
     {
       "objectiveCriterion": "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
@@ -682,7 +753,92 @@
           "match": "\"experimentStatus\""
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
-  ]
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "executedResult": {
+      "node": "v24.20.0",
+      "platform": "linux",
+      "arch": "x64",
+      "dockerUnavailable": true,
+      "manifestDropsPreview": true,
+      "results": [
+        {
+          "name": "static-web fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 244,
+          "services": 1,
+          "candidateSha": "511bd6910a7ea77b88b6b2c4256e25c0c9d697a9",
+          "candidateTree": "af7646657ffd7b69c47f76756a37099895debd52",
+          "interventions": 0
+        },
+        {
+          "name": "json-api fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 201,
+          "services": 1,
+          "candidateSha": "86220545023b343e50548535592233ead4388b51",
+          "candidateTree": "7a4cea34e309b093f614c6dd042e26aa718d8bba",
+          "interventions": 0
+        },
+        {
+          "name": "web-service fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 281,
+          "services": 2,
+          "candidateSha": "1f5c0b23376fd33039b51836d7180a0ab236e8b8",
+          "candidateTree": "bd79a3063723108b0aa1f24e0e861236d2fb6d7d",
+          "interventions": 0
+        },
+        {
+          "name": "wrong candidate response",
+          "status": "PASS"
+        },
+        {
+          "name": "readiness timeout",
+          "status": "PASS"
+        },
+        {
+          "name": "interrupted start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "missing runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "missing service and partial start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "config drift",
+          "status": "PASS"
+        },
+        {
+          "name": "foreign occupied port survives",
+          "status": "PASS"
+        },
+        {
+          "name": "controller SIGKILL reaps owned group and preserves foreign server",
+          "status": "PASS"
+        },
+        {
+          "name": "container descriptor rejected without running hooks",
+          "status": "PASS"
+        }
+      ],
+      "limits": [
+        "Scratch prototype, not delivered implementation",
+        "Crash test covers controller death with live supervisor; simultaneous supervisor death/host crash needs external reaper",
+        "No container live/setup comparison or third-party stack trial",
+        "Fixture generation/authoring is excluded from setupMs and interventions; no human-effort claim"
+      ]
+    }
+  }
 }
