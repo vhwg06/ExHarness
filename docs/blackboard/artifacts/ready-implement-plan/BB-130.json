@@ -97,7 +97,7 @@
   "implementationSlices": [
     "S1 — In local-command-verifier.js publish the frozen 28-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import.",
     "S2 — Thread one filtered parent snapshot per verify into gitState, executeProcess and killTree. Only executeProcess gets the frozen command overlay. Force Git's GIT_CONFIG_NOSYSTEM=1 after the filtered base. Preserve revision/tree, shell:false, bounded evidence and lifecycle semantics. Thread base explicitly through gitState(root,base), executeProcess({...,env:commandEnv}) and killTree(child,base); commandEnv=buildLocalVerifierEnvironment({parentEnv:base,env:copiedOverlay}). No caller overlay reaches Git/taskkill. Snapshot includes own string allowlisted values only; Windows uppercase/deduplicate before overlay, POSIX exact case, NODE_TEST_CONTEXT stripped after overlay. Preserve original before-command HEAD mismatch rejection and post-command clean-tree comparison with identical reason/exit/stream hash grammar. Focused real basename Node launch using controlled PATH and Backend/QA accepted-SHA regression prove platform variables and identity semantics remain; missing PATH is deliberately omitted, not synthesized.",
-    "S3 — Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery.",
+    "S3 — Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery. E6 must import the verifier only after builtin wrappers are installed in a fresh child, avoiding the captured promisify(execFile) binding. E8 descriptor matrix rejects allowlisted accessor/nonstring and invalid overlay before effects; unknown parent values remain unread. Run actual child booleans, not environment dumps; native Windows evidence remains separate from the mandatory simulation.",
     "S4 — Document exact inherited names, explicit factory overlay, no CLI forwarding and remaining home/network/filesystem trust in the two Living state files; run docs/export verification. Collect exact-candidate logs and criterion-specific evidence, then obtain independent Worker judgment under existing delivery controls."
   ],
   "acceptanceCriteria": [
@@ -187,62 +187,51 @@
     {
       "id": "env-boundary",
       "command": "node --test --test-name-pattern='^BB-130 (N1|E1) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N1. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests BB130-N1. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "overlay",
       "command": "node --test --test-name-pattern='^BB-130 (E2|E3|N3) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N3. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests BB130-N3. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "test-channel",
       "command": "node --test --test-name-pattern='^BB-130 (N2|E4) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N2. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests BB130-N2. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "platform",
-      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js"
     },
     {
       "id": "integrity",
       "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js packages/agentic-system/test/bb096-real-backend-qa.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N5, BB130-N6. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests BB130-N5, BB130-N6. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "internal-env",
       "command": "node --test --test-name-pattern='^BB-130 (N4|E6) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": "Execute distinct bound tests BB130-N4. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "negativeCases": "Execute distinct bound tests BB130-N4. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings."
     },
     {
       "id": "exports",
-      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js"
     },
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agent-tools"
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run test:agentic"
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs",
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "command": "npm run verify:current-docs"
     }
   ],
   "invariantCoverage": [
@@ -461,11 +450,15 @@
     },
     {
       "title": "BB-130 E6 internal process environments exclude secrets and command grants",
-      "assertions": "Native-backed execFile/spawn injection (syncBuiltinESMExports; finally restore) records helper env presence only. Assert Git excludes secrets/overlay/channel and forces GIT_CONFIG_NOSYSTEM=1. Isolated --experimental-vm-modules controlled process facade simulates win32 timeout/taskkill options; BB-096 proves real POSIX termination."
+      "assertions": "Use an isolated child harness: install native-backed execFile/spawn wrappers and syncBuiltinESMExports BEFORE dynamically importing local-command-verifier.js, so its module-level promisify captures the wrapper. Then invoke actual factory/verify on real Git; record only helper env booleans, assert filtered Git and absent overlay/test channel. Restore builtins in finally. Separate vm.SyntheticModule win32 process/child facade exercises taskkill argument/options via actual copied module; label simulated Windows, not native launch evidence."
     },
     {
       "title": "BB-130 E7 frozen list and builder are exported through package index",
       "assertions": "Index/module share frozen exact list/builder; invoke builder and factory, audit declared writes and absence of ambient env spreading/defaults in this module."
+    },
+    {
+      "title": "BB-130 E8 descriptor validation cannot execute accessors",
+      "assertions": "Invoke builder on own enumerable accessor/non-string allowlisted parent descriptors and invalid overlays. Reject TypeError without calling getter; do not inspect non-allowlisted parent values. Plain/null-prototype string parent maps are positive controls."
     }
   ],
   "dependencyResolution": {
