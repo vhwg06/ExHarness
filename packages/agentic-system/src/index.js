@@ -333,3 +333,72 @@ export {
   classifyGrounding,
   contextBindingIdFor
 } from "./observation-context-binding.js";
+export {
+  FEEDBACK_EPISODE_KIND,
+  FEEDBACK_EPISODE_VERSION,
+  FEEDBACK_RESPONSE_KIND,
+  FEEDBACK_RESPONSE_VERSION,
+  FEEDBACK_OUTCOME_POLICY_KIND,
+  FEEDBACK_OUTCOME_POLICY_VERSION,
+  FEEDBACK_OUTCOME_KIND,
+  FEEDBACK_OUTCOME_VERSION,
+  FEEDBACK_RESOLUTION_KIND,
+  FEEDBACK_RESOLUTION_VERSION,
+  FEEDBACK_DISPOSITIONS,
+  FEEDBACK_OUTCOMES,
+  FEEDBACK_RESOLUTIONS,
+  FEEDBACK_IMPACT_BASES,
+  FEEDBACK_PRODUCER_KINDS,
+  FEEDBACK_POLICY_DIRECTIONS,
+  FEEDBACK_REVISIT_KINDS,
+  defineFeedbackEpisode,
+  episodeIdFor,
+  defineFeedbackOutcomePolicy,
+  outcomePolicyDigestFor,
+  defineFeedbackResponse,
+  defineFeedbackOutcome,
+  defineFeedbackResolution
+} from "./feedback-lifecycle-contracts.js";
+export { classifyFeedbackOutcome } from "./feedback-outcome.js";
+export {
+  createFeedbackLifecycleController,
+  createJsonFeedbackEpisodeHeadStore,
+  feedbackEpisodeHeadKeyFor
+} from "./feedback-lifecycle-controller.js";
+export {
+  FEEDBACK_OBSERVATION_KIND,
+  FEEDBACK_OBSERVATION_VERSION,
+  FEEDBACK_CONTEXT_BINDING_KIND,
+  FEEDBACK_CONTEXT_BINDING_VERSION,
+  HOW_IMPROVEMENT_PROPOSAL_KIND,
+  HOW_IMPROVEMENT_PROPOSAL_VERSION,
+  FeedbackDisposition,
+  FeedbackOutcomeValue,
+  FeedbackBindingStatus,
+  FEEDBACK_UNRESOLVED_REASONS,
+  FEEDBACK_PROPOSAL_STATUS,
+  defineSourceIdentity,
+  defineApplicationPrincipal,
+  defineFeedbackObservation,
+  feedbackObservationIdFor,
+  defineFeedbackContextBinding,
+  feedbackContextBindingIdFor,
+  feedbackEpisodeIdFor,
+  feedbackResponseIdFor,
+  feedbackOutcomeIdFor,
+  defineHowImprovementProposal,
+  howImprovementProposalIdFor
+} from "./feedback-contracts.js";
+export {
+  FEEDBACK_CONTROLLER_JOURNAL_TYPES,
+  createFeedbackController
+} from "./feedback-controller.js";
+export {
+  createFeedbackProjector,
+  createCrossEpisodeProjector
+} from "./feedback-projection.js";
+export { createImprovementHandoff } from "./feedback-improvement.js";
+export {
+  FEEDBACK_DEPENDENCY_MANIFEST_VERSION,
+  resolveFeedbackDependencies
+} from "./feedback-dependencies.js";

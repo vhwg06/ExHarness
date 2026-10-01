@@ -35,7 +35,8 @@
     "D3 (resolved): The worker implements the preview-snapshot and protected-evaluator adapters as plan-owned local shims with the exact interfaces declared in S1: a shim owns the candidate checkout, dataset copy, service handles and restart, migrates and restarts the same owned database without reseeding between releases, and cleans up only handles/paths with a matching ownership token. If BB-131/127 reach DONE before Worker starts, the worker rebinds to their delivered contracts instead; otherwise the plan-owned shims stand. No design decision remains open.",
     "D4: Do not adopt Schemathesis/Testcontainers. Inspected pinned source/tests support optional future adapters; Node avoids Python/container prerequisites. No external runtime or comparative cost/value claim.",
     "D5: Expose a callable factory via Product QA injection; no deliver manifest/CLI extension. Generic command checks remain usable. BB-071/074 own change/value and BB-129 owns handoff.",
-    "D6: Keep DRAFT; only fresh independent Jev SATISFIED grants readiness. Calibration establishes prototype feasibility, not product implementation, dependency delivery or value."
+    "D6: Keep DRAFT; only fresh independent Jev SATISFIED grants readiness. Calibration establishes prototype feasibility, not product implementation, dependency delivery or value.",
+    "D7 — Map each fault to exact verdict/reason and effect boundary in testContract. Focused tests directly exercise the new factory and Product QA injection; generic QA tests cannot stand in for adapter evidence. Retain deterministic single-request/single-seed-row reproducers for observed compatibility failures and bounded setup diagnostics for inconclusive failures."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -159,7 +160,7 @@
     {
       "id": "qa-authority",
       "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
-      "negativeCases": "qa-authority must reject acceptance when evaluator digest changes, assertions are deleted, or preview identity is missing/wrong."
+      "negativeCases": "Existing Product QA regressions establish runtime/snapshot/release authority. Adapter-specific evaluator/assertion/preview corruption is exercised by focused api-state-verifier.test.js through actual createApiStateVerifier injection, not claimed as coverage by generic Product QA tests."
     },
     {
       "id": "agent-tools-regression",
@@ -578,7 +579,7 @@
     "protectedInputs": "BB-127 pins external evaluator/client/business assertions outside candidate write scope; resolve by snapshot/policy. Candidate schema is diagnostic only. Rehash inputs/preview before effects, after migration/restart and before final evidence. Digest drift/missing identity fails closed. Trusted local commands are unsandboxed.",
     "fixture": "Version 1 tasks(id INTEGER PRIMARY KEY,title/status required TEXT), seed id1/legacy/open. Migration adds priority INTEGER NOT NULL DEFAULT 0, version 2. Assert old row/priority0; prior client creates id2; new client id3/priority2 updates title, rejects missing title and persists after restart. Seed digest binds inputs, not unchanged whole DB bytes.",
     "budgets": "Default maximum 20 requests, 1000ms per HTTP request, 2000ms startup/readiness/migration/stop, 30000ms total run, 8192 bytes each response/diagnostic, 65536 bytes total evidence. Finite request sequence and fixed seed, no randomized generation. Abort/kill only owned children, close connections before reset, return INCONCLUSIVE on exhaustion with mandatory observations absent. Retain content-addressed sanitized evidence before cleanup.",
-    "result": "evidenceStore.put(envelope) returns immutable evidenceRef. API_STATE_CRITERION_EVIDENCE/version 1 binds criterionRef/verdict/reason, candidateSha/tree/config, snapshot/environment/release, preview/evaluator/priorClient/businessAssertions/seed/migration refs+hashes, schema versions, executedAssertionIds, phase/request/expected/actual or bounded raw diagnostics and cleanup. Store/cleanup failure prevents PASS. Return {verdict,evidenceRefs}; any caching requires all immutable identities and ownership, never prior-candidate results.",
+    "result": "evidenceStore.put(envelope) returns immutable evidenceRef. API_STATE_CRITERION_EVIDENCE/version 1 binds criterionRef/verdict/reason, candidateSha/tree/config, snapshot/environment/release, preview/evaluator/priorClient/businessAssertions/seed/migration refs+hashes, schema versions, executedAssertionIds, phase/request/expected/actual or bounded raw diagnostics and cleanup. Store/cleanup failure prevents PASS. Return {verdict,evidenceRefs}; any caching requires all immutable identities and ownership, never prior-candidate results. For failure, retain the fixed-fixture single-request/single-row reduced reproducer specified in testContract, before owned cleanup; unrelated data is excluded. This is deterministic fixture reduction, not a generic minimization algorithm.",
     "composition": "Direct module import supplies criterionVerifier to createProductQaExecutionStrategy. The adapter has evidenceStore access only, no QualityAcceptance publisher. Product QA runtimeObserver independently checks release identity; local preview identity alone is insufficient. No manifest field or automatic CLI invocation is added in BB-133.",
     "testEvidence": "All focused Worker tests invoke createApiStateVerifier; embedded prototype is calibration only, not implementation evidence."
   },
@@ -677,10 +678,8 @@
         }
       ],
       "supportingPlanFields": [
-        "valueHypothesis",
-        "dependencyResolution",
-        "implementationSlices",
-        "verificationPlan"
+        "profileContract",
+        "testContract"
       ]
     },
     {
@@ -742,5 +741,10 @@
     "tooling": "Eight pinned source/test files inspected. Built-in Node selected; non-selected Python/container tools not adopted or cost-benchmarked.",
     "experiment": "13 cases: correct PASS; ten violations FAIL; setup/malformed output INCONCLUSIVE. Weakened candidate schema passes its own check but fails prior oracle. Replay, hashes and reproducers embedded.",
     "readiness": "DRAFT, no Jev verdict. Empty gaps records resolved choices. Source-complete baseline rebinding, dependency DONE and fresh exact READY still required. Historical discovery.json is unchanged."
+  },
+  "testContract": {
+    "matrix": "For each N1-N13 construct the actual factory, call verify with pinned external profile and use fresh owned SQLite/store/service fixtures. N1 deleted rows, N2 weakened candidate schema, N3 required-input addition, N4 response removal, N5 corruption, N6 restart reset => FAIL with observed first differing assertion. N7 digest drift/N8 missing/no-op mandatory assertions/N9 identity missing => INCONCLUSIVE before effects or acceptance; N10 migration/setup and N11 timeout/parse => INCONCLUSIVE with bounded diagnostics. N12 foreign resources survive; N13 unknown/skipped criteria cannot PASS. Positive control must execute every mandatory old/new/migration/restart assertion and PASS.",
+    "reproducer": "For an observed HTTP/assertion mismatch retain exactly the failing finite request method/path/body, expected/actual status/body projection and the single seed row involved, plus candidate/config/evaluator/preview/store/schema identities. This deterministic reduction of the fixed fixture is the minimized reproducer; unrelated requests/rows are excluded. Setup failures retain minimal setup diagnostics, not an invented HTTP mismatch. Retain before cleanup, within profile budgets.",
+    "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases."
   }
 }
