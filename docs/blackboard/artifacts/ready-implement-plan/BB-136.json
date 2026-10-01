@@ -6,61 +6,60 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-136.json",
-    "hash": "85ece1d65accc97227f7da20031e9a79fa6f1bb043574661a945baa4a8a90179"
+    "hash": "15bd8401ad2c10bd421dbbd009f44d1d39a12e7d18a2a9ad44976697675b6e88"
   },
   "scope": [
-    "agent-tools.operator.mcp-opt-in"
+    "agent-tools.operator.deliver-observation"
   ],
   "outOfScope": [
-    "Adding promote, accept, merge or credential MCP tools.",
-    "Writing user CLI configuration or changing adapter argv."
+    "A second review-bundle format (BB-129) or a change to acceptance authority.",
+    "Inventing Kiro/agy usage schemas or treating traces as product acceptance."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
-    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
+    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
+    "No sandbox, SCM push, or live-value claim."
   ],
   "invariants": [
-    "Default run and deliver invocations never construct the MCP server.",
-    "MCP tools cannot promote, accept, merge or mint credentials.",
+    "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
+    "Omitting a trace directory leaves deliver behavior unchanged.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Add an explicit opt-in flag on run and deliver that forwards mcpVerify: true into runSupervisedTask. Default false keeps current construction-free behavior.",
-    "Keep the delivered verify/status tool set and planted-promote rejection. Do not add an MCP SDK dependency."
+    "Pass createSupervisedObservation into runDeliverSlice / resume instead of invocationObserver: null when a trace directory is set.",
+    "Reuse the delivered digest chain and report command. Do not write traces into the source repository or the candidate commit."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agent-tools/src/mcp-server.js",
-      "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/observation.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "docs/blackboard/evidence/BB-134/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
       "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/operator-mcp-opt-in.test.js"
+      "packages/agent-tools/test/deliver-observation.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/operator-mcp-opt-in.test.js"
+      "packages/agent-tools/test/deliver-observation.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/src/mcp-server.js",
-      "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/observation.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-134/cli-composition-audit.json"
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
     ],
     "write": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/test/operator-mcp-opt-in.test.js",
-      "docs/living/system/agent-tools/mcp.md",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/deliver-observation.test.js",
+      "docs/living/system/agent-tools/observation.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
@@ -72,14 +71,14 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin the opt-in flag, default-off behavior and planted-promote rejection in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward mcpVerify only when opted in on run and deliver Backend.",
+    "S1 — Pin the deliver --trace-dir / resume observer mapping and a fake-CLI fixture in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, wire observation only on the deliver Backend path and the focused positive/negative fixtures.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "OPT_IN_STARTS",
-      "statement": "An explicit opt-in starts the delivered verify/status server for that run or deliver Backend stage and stops it before worktree disposal.",
+      "id": "DELIVER_TRACES",
+      "statement": "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
       "verificationIds": [
         "focused"
       ],
@@ -88,8 +87,8 @@
       ]
     },
     {
-      "id": "DEFAULT_OFF_NO_PROMOTE",
-      "statement": "Default CLI invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+      "id": "NO_TRACE_UNCHANGED",
+      "statement": "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
       "verificationIds": [
         "focused"
       ],
@@ -101,7 +100,7 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/operator-mcp-opt-in.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-observation.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -114,67 +113,67 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Default run and deliver invocations never construct the MCP server.",
+      "invariant": "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
       "criterionIds": [
-        "DEFAULT_OFF_NO_PROMOTE"
+        "DELIVER_TRACES",
+        "NO_TRACE_UNCHANGED"
       ]
     },
     {
-      "invariant": "MCP tools cannot promote, accept, merge or mint credentials.",
+      "invariant": "Omitting a trace directory leaves deliver behavior unchanged.",
       "criterionIds": [
-        "OPT_IN_STARTS",
-        "DEFAULT_OFF_NO_PROMOTE"
+        "NO_TRACE_UNCHANGED"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "OPT_IN_STARTS",
-        "DEFAULT_OFF_NO_PROMOTE"
+        "DELIVER_TRACES",
+        "NO_TRACE_UNCHANGED"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Default run/deliver must not construct the MCP server",
-    "Planted promote tool names must be rejected"
+    "Deliver without trace-dir must not construct an observation writer",
+    "TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_136_1",
       "negativeCaseIndex": 0,
-      "criterionId": "DEFAULT_OFF_NO_PROMOTE",
+      "criterionId": "NO_TRACE_UNCHANGED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/operator-mcp-opt-in.test.js",
-      "testTitle": "BB-136 N1 Default run/deliver must not construct the MCP server",
-      "subjectSymbol": "runSupervisedTask"
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N1 Deliver without trace-dir must not construct an observation writer",
+      "subjectSymbol": "runDeliverSlice"
     },
     {
       "id": "NEG_136_2",
       "negativeCaseIndex": 1,
-      "criterionId": "DEFAULT_OFF_NO_PROMOTE",
+      "criterionId": "NO_TRACE_UNCHANGED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/operator-mcp-opt-in.test.js",
-      "testTitle": "BB-136 N2 Planted promote tool names must be rejected",
-      "subjectSymbol": "createExharnessMcpVerifyServer"
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N2 TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace",
+      "subjectSymbol": "runDeliverSlice"
     }
   ],
   "researchGaps": [
-    "Ratify the exact CLI flag name, whether deliver MCP binds only the Backend worktree, and stdio ownership versus the agent CLI stdin, before Jev.",
+    "Ratify whether traces cover only Backend attempts or also QA command records, and how resume appends to an existing chain, before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/mcp.md",
+      "docs/living/system/agent-tools/observation.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "The delivered MCP verify/status server becomes reachable from the operator commands without changing default authority.",
-    "measurement": "Fake-CLI opt-in starts verify/status; default-off and planted-promote fixtures fail closed.",
+    "expectedValue": "An operator can inspect a deliver slice with the same trace/report tools already used for run.",
+    "measurement": "Fake-CLI deliver fixture writes a verifiable chain; report exit 0 on intact traces and 1 on a broken chain.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-103 for MCP semantics; BB-074 for end-to-end value"
+    "valueOwner": "BB-098 for observation; BB-129 for later bundle inclusion; BB-074 for end-to-end value"
   }
 }

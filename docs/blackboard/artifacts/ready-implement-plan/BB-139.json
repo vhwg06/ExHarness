@@ -6,60 +6,58 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-139.json",
-    "hash": "fcb632c999375599507a8813bb3bf1d66cd53dfe18a4a1caa605a884fead5108"
+    "hash": "bb19ff773506bf9617df8161966f44bd697656c6e4391fbac977f2297a2ab64f"
   },
   "scope": [
-    "agent-tools.operator.eval-factors"
+    "agent-tools.operator.deliver-limits"
   ],
   "outOfScope": [
-    "Changing the suite, arms, decision rule, or claim boundary owned by BB-099.",
-    "Exposing factor K as a separate CLI flag in this task, live evaluation, or a productivity claim."
+    "Changing permission/model ownership of BB-138 or the tool whitelist of BB-128.",
+    "Sandbox, SCM push, MCP promote, or a second limit schema."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered DEFAULT_FACTORS, assertMatchedFactors and runAgentToolsEval. Do not change the suite, arms, decision rule, or claim boundary owned by BB-099.",
-    "Unknown permission values and non-positive timeouts fail closed before registration. Omitted flags keep DEFAULT_FACTORS.",
-    "No sandbox, SCM push, live evaluation, or productivity claim."
+    "Reuse delivered commandDeliver and runDeliverSlice option handling. Do not change permission/model ownership of BB-138 or the tool whitelist of BB-128.",
+    "Omitted CLI flags keep the manifest value, then the delivered 3/600000 defaults. Invalid integers fail closed before any agent process starts.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
   ],
   "invariants": [
-    "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
-    "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
+    "CLI --max-attempts and --timeout-ms override the manifest the same way --recovery-dir already does.",
+    "Omitted flags keep delivered manifest-or-default limits; invalid integers never spawn an agent process.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Add --permission and --timeout-ms to EVAL_FLAGS and pass them through runAgentToolsEval factors. Keep K at DEFAULT_FACTORS.K unless a later task owns it.",
-    "Validate permission against PermissionProfile and timeout as a positive integer before registration. Do not rewrite reduceAttempts or the claim boundary."
+    "Forward --max-attempts and --timeout-ms from commandDeliverCli into commandDeliver, which already maps them onto runDeliverSlice.",
+    "Keep validation in commandDeliver / runDeliverSlice. Do not invent a second default when the manifest already supplies the field."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/experiment/index.js",
-      "packages/agent-tools/src/experiment/arms.js",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
       "docs/blackboard/process/operator-cli-factor-parity.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/eval-cli-factors.test.js"
+      "packages/agent-tools/test/deliver-cli-limits.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/eval-cli-factors.test.js"
+      "packages/agent-tools/test/deliver-cli-limits.test.js"
     ]
   },
   "sourceScope": {
     "read": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/experiment/index.js",
-      "packages/agent-tools/src/experiment/arms.js",
+      "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json"
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/experiment/index.js",
-      "packages/agent-tools/test/eval-cli-factors.test.js",
-      "docs/living/system/agent-tools/evaluation.md",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/test/deliver-cli-limits.test.js",
+      "docs/living/system/agent-tools/operator.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
@@ -71,14 +69,14 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin flag names, DEFAULT_FACTORS overlay and fail-closed permission/timeout parsing in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --permission and --timeout-ms on eval and the focused positive/negative fixtures.",
+    "S1 — Pin CLI versus manifest precedence and fail-closed integer parsing in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward only --max-attempts and --timeout-ms on deliver and the focused positive/negative fixtures.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "FACTORS_PINNED",
-      "statement": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
+      "id": "LIMITS_FORWARDED",
+      "statement": "exharness-agent deliver --max-attempts and --timeout-ms reach the Backend supervised run; CLI values override the manifest the same way --recovery-dir already does.",
       "verificationIds": [
         "focused"
       ],
@@ -87,8 +85,8 @@
       ]
     },
     {
-      "id": "UNKNOWN_FACTORS_FAIL_CLOSED",
-      "statement": "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
+      "id": "INVALID_LIMITS_FAIL_CLOSED",
+      "statement": "Omitted flags keep manifest or default limits. Non-positive or non-integer values fail as usage errors before spawn.",
       "verificationIds": [
         "focused"
       ],
@@ -100,7 +98,7 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/eval-cli-factors.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-cli-limits.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -113,66 +111,66 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
+      "invariant": "CLI --max-attempts and --timeout-ms override the manifest the same way --recovery-dir already does.",
       "criterionIds": [
-        "FACTORS_PINNED"
+        "LIMITS_FORWARDED"
       ]
     },
     {
-      "invariant": "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
+      "invariant": "Omitted flags keep delivered manifest-or-default limits; invalid integers never spawn an agent process.",
       "criterionIds": [
-        "UNKNOWN_FACTORS_FAIL_CLOSED"
+        "INVALID_LIMITS_FAIL_CLOSED"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "FACTORS_PINNED",
-        "UNKNOWN_FACTORS_FAIL_CLOSED"
+        "LIMITS_FORWARDED",
+        "INVALID_LIMITS_FAIL_CLOSED"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Unknown --permission must fail before registration",
-    "Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS"
+    "Non-positive or non-integer --max-attempts must fail before spawn",
+    "Omitted --max-attempts and --timeout-ms must keep manifest or default limits"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_139_1",
       "negativeCaseIndex": 0,
-      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
+      "criterionId": "INVALID_LIMITS_FAIL_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
-      "testTitle": "BB-139 N1 Unknown --permission must fail before registration",
-      "subjectSymbol": "runAgentToolsEval"
+      "testRef": "packages/agent-tools/test/deliver-cli-limits.test.js",
+      "testTitle": "BB-139 N1 Non-positive or non-integer --max-attempts must fail before spawn",
+      "subjectSymbol": "commandDeliver"
     },
     {
       "id": "NEG_139_2",
       "negativeCaseIndex": 1,
-      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
+      "criterionId": "INVALID_LIMITS_FAIL_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
-      "testTitle": "BB-139 N2 Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS",
-      "subjectSymbol": "runAgentToolsEval"
+      "testRef": "packages/agent-tools/test/deliver-cli-limits.test.js",
+      "testTitle": "BB-139 N2 Omitted --max-attempts and --timeout-ms must keep manifest or default limits",
+      "subjectSymbol": "commandDeliver"
     }
   ],
   "researchGaps": [
-    "Ratify whether factor K stays default 3 because it interacts with --max-invocations, and the exact CLI flag names, before Jev.",
+    "Ratify CLI versus manifest precedence for both flags together and whether USAGE must list them before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/evaluation.md",
+      "docs/living/system/agent-tools/operator.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Eval can pin the permission and timeout factors the protocol already records, instead of silently defaulting.",
-    "measurement": "Fake-CLI eval fixture registers FULL_AUTO and a shorter timeout on every arm; unknown permission fails before registration.",
+    "expectedValue": "Deliver CLI can pin Backend attempt and timeout limits that the slice API already honors.",
+    "measurement": "Fake-CLI deliver fixture forwards --max-attempts 1; invalid integers fail before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for evaluation semantics; BB-074 for end-to-end value"
+    "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
   }
 }

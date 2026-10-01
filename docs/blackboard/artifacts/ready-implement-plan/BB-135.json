@@ -6,60 +6,60 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-135.json",
-    "hash": "cce98272b09014a5d778b376edbe5d742db2443ab4e06d846942c068ee48d2df"
+    "hash": "0bc128a4617fb870039d5d297c5062d6af293428a1069065d503262a557f5bc6"
   },
   "scope": [
-    "agent-tools.operator.deliver-observation"
+    "agent-tools.operator.run-recovery"
   ],
   "outOfScope": [
-    "A second review-bundle format (BB-129) or a change to acceptance authority.",
-    "Inventing Kiro/agy usage schemas or treating traces as product acceptance."
+    "Changing delivered recovery handle schema or resume contract owned by BB-101/BB-125.",
+    "Sandbox, SCM push, MCP promote, or a second lineage format."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
-    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
-    "No sandbox, SCM push, or live-value claim."
+    "Reuse the delivered BB-101 recovery handle, resumeSupervisedTask and disposeRecoverableRun. Do not invent a second lineage or change default run disposal when recoveryDir is omitted.",
+    "BB-125 owns resume task/config binding. This task may consume that contract when present and must not rewrite it.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
   ],
   "invariants": [
-    "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
-    "Omitting a trace directory leaves deliver behavior unchanged.",
+    "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
+    "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Pass createSupervisedObservation into runDeliverSlice / resume instead of invocationObserver: null when a trace directory is set.",
-    "Reuse the delivered digest chain and report command. Do not write traces into the source repository or the candidate commit."
+    "Forward --recovery-dir from exharness-agent run into runSupervisedTask.recoveryDir. Resume uses resumeSupervisedTask when handle.json is RUNNING.",
+    "Keep default run without recoveryDir on the unique mkdtemp worktree disposed in finally. Do not change deliver's existing --recovery-dir path except by shared helper extraction if research selects it."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/observation.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "docs/blackboard/evidence/BB-134/cli-composition-audit.json",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/recovery.js",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
       "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/deliver-observation.test.js"
+      "packages/agent-tools/test/run-cli-recovery.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/deliver-observation.test.js"
+      "packages/agent-tools/test/run-cli-recovery.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/observation.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-134/cli-composition-audit.json"
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
     ],
     "write": [
-      "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/test/deliver-observation.test.js",
-      "docs/living/system/agent-tools/observation.md",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/test/run-cli-recovery.test.js",
+      "docs/living/system/agent-tools/recovery.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
@@ -71,14 +71,14 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin the deliver --trace-dir / resume observer mapping and a fake-CLI fixture in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, wire observation only on the deliver Backend path and the focused positive/negative fixtures.",
+    "S1 — Pin the run CLI recovery flag/resume mapping and execute a crash/resume fixture in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, wire only --recovery-dir on run and the focused positive/negative fixtures.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "DELIVER_TRACES",
-      "statement": "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+      "id": "RUN_RECOVERS",
+      "statement": "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
       "verificationIds": [
         "focused"
       ],
@@ -87,8 +87,8 @@
       ]
     },
     {
-      "id": "NO_TRACE_UNCHANGED",
-      "statement": "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+      "id": "FAIL_CLOSED_LINEAGE",
+      "statement": "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
       "verificationIds": [
         "focused"
       ],
@@ -100,7 +100,7 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/deliver-observation.test.js"
+      "command": "node --test packages/agent-tools/test/run-cli-recovery.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -113,67 +113,67 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
+      "invariant": "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
       "criterionIds": [
-        "DELIVER_TRACES",
-        "NO_TRACE_UNCHANGED"
+        "RUN_RECOVERS",
+        "FAIL_CLOSED_LINEAGE"
       ]
     },
     {
-      "invariant": "Omitting a trace directory leaves deliver behavior unchanged.",
+      "invariant": "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
       "criterionIds": [
-        "NO_TRACE_UNCHANGED"
+        "FAIL_CLOSED_LINEAGE"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "DELIVER_TRACES",
-        "NO_TRACE_UNCHANGED"
+        "RUN_RECOVERS",
+        "FAIL_CLOSED_LINEAGE"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Deliver without trace-dir must not construct an observation writer",
-    "TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace"
+    "Second first-run against a current handle must fail closed",
+    "Run without recoveryDir must still dispose the temporary worktree"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_135_1",
       "negativeCaseIndex": 0,
-      "criterionId": "NO_TRACE_UNCHANGED",
+      "criterionId": "FAIL_CLOSED_LINEAGE",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
-      "testTitle": "BB-135 N1 Deliver without trace-dir must not construct an observation writer",
-      "subjectSymbol": "runDeliverSlice"
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N1 Second first-run against a current handle must fail closed",
+      "subjectSymbol": "runSupervisedTask"
     },
     {
       "id": "NEG_135_2",
       "negativeCaseIndex": 1,
-      "criterionId": "NO_TRACE_UNCHANGED",
+      "criterionId": "FAIL_CLOSED_LINEAGE",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
-      "testTitle": "BB-135 N2 TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace",
-      "subjectSymbol": "runDeliverSlice"
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N2 Run without recoveryDir must still dispose the temporary worktree",
+      "subjectSymbol": "runSupervisedTask"
     }
   ],
   "researchGaps": [
-    "Ratify whether traces cover only Backend attempts or also QA command records, and how resume appends to an existing chain, before Jev.",
+    "Ratify exact CLI flag versus resume-from-handle detection, crash-injection fixture, and interaction with BB-125 contract binding before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/recovery.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "An operator can inspect a deliver slice with the same trace/report tools already used for run.",
-    "measurement": "Fake-CLI deliver fixture writes a verifiable chain; report exit 0 on intact traces and 1 on a broken chain.",
+    "expectedValue": "The primary operator run path can survive process death using the recovery API that already exists.",
+    "measurement": "Crash/resume fixture on fake CLI; source repository unchanged; no second lineage.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-098 for observation; BB-129 for later bundle inclusion; BB-074 for end-to-end value"
+    "valueOwner": "BB-101 for recovery semantics; BB-074 for end-to-end delivery value"
   }
 }

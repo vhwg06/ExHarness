@@ -24,7 +24,7 @@ The current [research roadmap](research-roadmap.md) is the delivery-feasibility 
 
 ## Operating tracks
 
-1. **Research-gated add-on features.** Research may send a feature to implementation only after it evaluates that the feature can be delivered: current seam, executed discriminating evidence, bounded write scope, named dependencies, independent acceptance, and explicit non-goals. BB-121, BB-127, BB-128, BB-129 and BB-134..143 currently pass that evaluation as bounded local add-ons. BB-131/132/133 fail it until a prototype runs. BB-126 fails it as an unclear optimization.
+1. **Research-gated add-on features.** Research may send a feature to implementation only after it evaluates that the feature can be delivered: current seam, executed discriminating evidence, bounded write scope, named dependencies, independent acceptance, and explicit non-goals. BB-121, BB-127, BB-128, BB-129 and BB-135..143 currently pass that evaluation as bounded local add-ons. BB-131/132/133 fail it until a prototype runs. BB-126 fails it as an unclear optimization.
 
 2. **Delivered-surface review.** Repair only issues that are already clear on current main. BB-107, BB-120, BB-123, BB-124, BB-125 and BB-130 are probe-backed defects. Do not open planner/Core/Jev speed work, live-value claims, or retry-policy defaults from an unmeasured hypothesis.
 
@@ -105,7 +105,7 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 
 ## Research lane contract
 
-Each newly registered discovery task BB-124..140 has an OBJECTIVE, a DRAFT plan, context routing and a discovery brief. The operator CLI composition wave BB-134..137 is registered in [operator-cli-composition.md](operator-cli-composition.md). Remaining command factor parity BB-138..140 is registered in [operator-cli-factor-parity.md](operator-cli-factor-parity.md). Existing researched tasks retain their READY plans. Start Research with an explicit ID; BB-065 and Oracle foundation 060..064 are already DONE.
+Each newly registered discovery task BB-124..140 has an OBJECTIVE, a DRAFT plan, context routing and a discovery brief. The operator CLI composition wave BB-135..137 is registered in [operator-cli-composition.md](operator-cli-composition.md). Remaining command factor parity BB-139..140 is registered in [operator-cli-factor-parity.md](operator-cli-factor-parity.md). Existing researched tasks retain their READY plans. Start Research with an explicit ID; BB-065 and Oracle foundation 060..064 are already DONE.
 
 The accepted research for BB-077 and BB-081 replaced the earlier narrow sync-vs-async premise with a neutral comparison protocol; both are now WORKER plans in the graph. Their plans own a neutral fixed-factor protocol and held-out component ablation/fault robustness. BB-077 and BB-078 are delivered; BB-079 is WORKER_SCHEDULABLE; BB-080 waits on BB-079. They are not reopened research. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
 

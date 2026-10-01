@@ -1,0 +1,176 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-144",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-144.json",
+    "hash": "900afd5aa4a55beb5f35e4f14d509e98c6b22de66a1465cb41746444f3f819a0"
+  },
+  "scope": [
+    "agent-tools.operator.deliver-tool"
+  ],
+  "outOfScope": [
+    "Changing the deliver tool-id whitelist owned by BB-128.",
+    "Changing permission/model ownership of BB-138 or limits ownership of BB-139.",
+    "Sandbox, SCM push, MCP promote, or a second tool schema."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered commandDeliver tool handling. Do not change the tool whitelist owned by BB-128 or permission/model ownership of BB-138.",
+    "Omitted --tool keeps the manifest tool. Unknown tools fail closed before any agent process starts.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
+  ],
+  "invariants": [
+    "CLI --tool overrides the manifest the same way --recovery-dir already does.",
+    "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Forward --tool from commandDeliverCli into commandDeliver, which already maps it onto runDeliverSlice.",
+    "Keep whitelist validation in commandDeliver / validateDeliverSlice. Do not invent a second tool list; BB-128 owns expanding the allowed set."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/blackboard/process/application-adapter-composition.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/deliver-cli-tool.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/deliver-cli-tool.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/**",
+      "packages/agent-tools/test/**",
+      "docs/blackboard/process/application-adapter-composition.md",
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+    ],
+    "write": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/deliver-cli-tool.test.js",
+      "docs/living/system/agent-tools/operator.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin CLI versus manifest tool precedence and unknown-tool fail-closed in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward only --tool on deliver and the focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "DELIVER_TOOL_FORWARDED",
+      "statement": "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    },
+    {
+      "id": "DELIVER_TOOL_FAIL_CLOSED",
+      "statement": "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/deliver-cli-tool.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "CLI --tool overrides the manifest the same way --recovery-dir already does.",
+      "criterionIds": [
+        "DELIVER_TOOL_FORWARDED"
+      ]
+    },
+    {
+      "invariant": "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
+      "criterionIds": [
+        "DELIVER_TOOL_FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "DELIVER_TOOL_FORWARDED",
+        "DELIVER_TOOL_FAIL_CLOSED"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Unknown --tool on deliver must fail before spawn",
+    "Omitted --tool must keep the manifest tool"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_144_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "DELIVER_TOOL_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-cli-tool.test.js",
+      "testTitle": "BB-144 N1 Unknown --tool on deliver must fail before spawn",
+      "subjectSymbol": "commandDeliver"
+    },
+    {
+      "id": "NEG_144_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "DELIVER_TOOL_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-cli-tool.test.js",
+      "testTitle": "BB-144 N2 Omitted --tool must keep the manifest tool",
+      "subjectSymbol": "commandDeliver"
+    }
+  ],
+  "researchGaps": [
+    "Ratify USAGE listing --tool and whether an empty --tool string is a usage error before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/operator.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Deliver CLI can pin the Backend tool that the slice API already honors.",
+    "measurement": "Fake-CLI deliver fixture forwards --tool kiro over a codex manifest; unknown --tool fails before spawn.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
+  }
+}

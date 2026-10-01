@@ -6,59 +6,63 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-138.json",
-    "hash": "3523528c2371ba268b29cecba65c38e83494a43b3db31e4922bfd3a48e83425d"
+    "hash": "6990c4fe1a6db3e2b11e4796c671502cddc9c2efc6ef49ee580cc891bf637556"
   },
   "scope": [
-    "agent-tools.operator.deliver-limits"
+    "agent-tools.operator.deliver-run-options"
   ],
   "outOfScope": [
-    "Changing permission/model ownership of BB-137 or the tool whitelist of BB-128.",
-    "Sandbox, SCM push, MCP promote, or a second limit schema."
+    "Changing the deliver tool-id whitelist owned by BB-128.",
+    "Adding adapters, sandbox flags, or a new permission profile enum."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered commandDeliver and runDeliverSlice option handling. Do not change permission/model ownership of BB-137 or the tool whitelist of BB-128.",
-    "Omitted CLI flags keep the manifest value, then the delivered 3/600000 defaults. Invalid integers fail closed before any agent process starts.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "Reuse delivered PermissionProfile and runSupervisedTask model/permission arguments. Do not add adapters or change the BB-128 tool-id whitelist.",
+    "Unknown permission values fail before spawn. Default remains WORKSPACE_EDIT when omitted.",
+    "No sandbox, SCM push, or live-value claim."
   ],
   "invariants": [
-    "CLI --max-attempts and --timeout-ms override the manifest the same way --recovery-dir already does.",
-    "Omitted flags keep delivered manifest-or-default limits; invalid integers never spawn an agent process.",
+    "Unknown permission values never spawn an agent process.",
+    "Omitting permission and model keeps the delivered run defaults.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Forward --max-attempts and --timeout-ms from commandDeliverCli into commandDeliver, which already maps them onto runDeliverSlice.",
-    "Keep validation in commandDeliver / runDeliverSlice. Do not invent a second default when the manifest already supplies the field."
+    "Accept optional permission and model on the deliver manifest and as CLI overrides, then forward them to runSupervisedTask. Extra unknown fields remain ignored except these two declared options.",
+    "Validate permission against PermissionProfile before any process starts. CLI override wins over the manifest the same way --recovery-dir already wins over slice.recoveryDir."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/deliver-slice.js",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json",
-      "docs/blackboard/process/operator-cli-factor-parity.md"
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/deliver-cli-limits.test.js"
+      "packages/agent-tools/test/deliver-run-options.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/deliver-cli-limits.test.js"
+      "packages/agent-tools/test/deliver-run-options.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
-      "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json"
+      "docs/blackboard/process/operator-cli-composition.md",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
     ],
     "write": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/test/deliver-cli-limits.test.js",
-      "docs/living/system/agent-tools/operator.md",
-      "docs/living/system/agent-tools/state.md"
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/deliver-run-options.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -69,36 +73,36 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin CLI versus manifest precedence and fail-closed integer parsing in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --max-attempts and --timeout-ms on deliver and the focused positive/negative fixtures.",
+    "S1 — Pin manifest fields, CLI overrides and fail-closed unknown permission in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward permission/model into runSupervisedTask on the deliver Backend path.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "LIMITS_FORWARDED",
-      "statement": "exharness-agent deliver --max-attempts and --timeout-ms reach the Backend supervised run; CLI values override the manifest the same way --recovery-dir already does.",
+      "id": "OPTIONS_FORWARDED",
+      "statement": "A deliver manifest or CLI override can set permission and model; the Backend supervised run receives those values.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
       ]
     },
     {
-      "id": "INVALID_LIMITS_FAIL_CLOSED",
-      "statement": "Omitted flags keep manifest or default limits. Non-positive or non-integer values fail as usage errors before spawn.",
+      "id": "UNKNOWN_FAILS_CLOSED",
+      "statement": "Unknown permission values, non-string models and extra unknown option types fail closed before any agent process starts. Omitted fields keep the delivered run defaults.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/deliver-cli-limits.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-run-options.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -111,65 +115,66 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "CLI --max-attempts and --timeout-ms override the manifest the same way --recovery-dir already does.",
+      "invariant": "Unknown permission values never spawn an agent process.",
       "criterionIds": [
-        "LIMITS_FORWARDED"
+        "UNKNOWN_FAILS_CLOSED"
       ]
     },
     {
-      "invariant": "Omitted flags keep delivered manifest-or-default limits; invalid integers never spawn an agent process.",
+      "invariant": "Omitting permission and model keeps the delivered run defaults.",
       "criterionIds": [
-        "INVALID_LIMITS_FAIL_CLOSED"
+        "OPTIONS_FORWARDED",
+        "UNKNOWN_FAILS_CLOSED"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "LIMITS_FORWARDED",
-        "INVALID_LIMITS_FAIL_CLOSED"
+        "OPTIONS_FORWARDED",
+        "UNKNOWN_FAILS_CLOSED"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Non-positive or non-integer --max-attempts must fail before spawn",
-    "Omitted --max-attempts and --timeout-ms must keep manifest or default limits"
+    "Unknown permission must fail before spawn",
+    "Omitted permission and model must keep run defaults"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_138_1",
       "negativeCaseIndex": 0,
-      "criterionId": "INVALID_LIMITS_FAIL_CLOSED",
+      "criterionId": "UNKNOWN_FAILS_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-cli-limits.test.js",
-      "testTitle": "BB-138 N1 Non-positive or non-integer --max-attempts must fail before spawn",
-      "subjectSymbol": "commandDeliver"
+      "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
+      "testTitle": "BB-138 N1 Unknown permission must fail before spawn",
+      "subjectSymbol": "validateDeliverSlice"
     },
     {
       "id": "NEG_138_2",
       "negativeCaseIndex": 1,
-      "criterionId": "INVALID_LIMITS_FAIL_CLOSED",
+      "criterionId": "UNKNOWN_FAILS_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-cli-limits.test.js",
-      "testTitle": "BB-138 N2 Omitted --max-attempts and --timeout-ms must keep manifest or default limits",
-      "subjectSymbol": "commandDeliver"
+      "testRef": "packages/agent-tools/test/deliver-run-options.test.js",
+      "testTitle": "BB-138 N2 Omitted permission and model must keep run defaults",
+      "subjectSymbol": "validateDeliverSlice"
     }
   ],
   "researchGaps": [
-    "Ratify CLI versus manifest precedence for both flags together and whether USAGE must list them before Jev.",
+    "Ratify CLI versus manifest precedence for model/permission and whether FULL_AUTO on deliver needs an extra operator confirmation, before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/operator.md",
-      "docs/living/system/agent-tools/state.md"
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Deliver CLI can pin Backend attempt and timeout limits that the slice API already honors.",
-    "measurement": "Fake-CLI deliver fixture forwards --max-attempts 1; invalid integers fail before spawn.",
+    "expectedValue": "Deliver uses the same run contract the operator can already declare on run, instead of silently defaulting.",
+    "measurement": "Fake-CLI deliver fixture forwards FULL_AUTO and a model string; unknown permission fails before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
   }

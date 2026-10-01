@@ -3,29 +3,29 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-142",
-  "outcome": "An Application caller can opt into the delivered stdio MCP verify/status server on `runSupervisedBackendWork` without changing default adapter behavior or granting promote/accept tools.",
-  "currentProblem": "createExharnessMcpVerifyServer and runSupervisedTask.mcpVerify already exist. runSupervisedBackendWork already calls runSupervisedTask. The adapter never accepts or forwards mcpVerify, so the delivered MCP server is unreachable from the Application path.",
+  "outcome": "An Application caller can persist a durable recovery handle through `runSupervisedBackendWork` by passing the delivered supervisor `recoveryDir`, so a crash of Application execute keeps the same worktree, session and candidate identity.",
+  "currentProblem": "runSupervisedTask already persists a recoverable run when recoveryDir is set. runSupervisedBackendWork already calls runSupervisedTask and already forwards model, attempts, timeout, permission and traces. The adapter never accepts or forwards recoveryDir, so Application execute still disposes the worktree after a crash.",
   "scope": [
-    "agentic.backend-qa-execution.adapter-mcp"
+    "agentic.backend-qa-execution.adapter-recovery"
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
-    "Do not edit createBackendWorker or backend-worker.js. Operator CLI MCP opt-in stays BB-136.",
-    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+    "Reuse the delivered BB-101 recovery handle. Forward recoveryDir only on execute persist. Do not implement recover or resumeSupervisedTask; BB-121 owns the durable Board factory recover path.",
+    "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path. Do not edit createBackendWorker or backend-worker.js.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
   ],
   "successCriteria": [
-    "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
-    "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+    "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+    "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage. recover/resume stays the BB-121 factory owner.",
     "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
   ],
   "currentSourceRefs": [
     "docs/blackboard/process/application-adapter-composition.md",
-    "docs/blackboard/evidence/BB-141/adapter-composition-audit.mjs",
+    "docs/blackboard/evidence/BB-142/adapter-composition-audit.mjs",
     "packages/agentic-system/src/supervised-backend.js",
-    "packages/agent-tools/src/mcp-server.js",
     "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/recovery.js",
     "docs/living/system/agentic-application/state.md",
-    "docs/living/system/agent-tools/mcp.md"
+    "docs/living/system/agent-tools/recovery.md"
   ]
 }

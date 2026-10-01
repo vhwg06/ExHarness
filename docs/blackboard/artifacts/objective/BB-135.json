@@ -3,29 +3,29 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-135",
-  "outcome": "A local deliver slice can write the same digest-chained AGENT_TOOL_RUN_TRACE_V1 records as supervised run, so report can inspect the Backend attempts of that slice.",
-  "currentProblem": "createSupervisedObservation and run --trace-dir already append traces. runDeliverSlice and its resume path hardcode invocationObserver: null, so a deliver slice produces no trace file and report cannot describe it.",
+  "outcome": "An operator can start and resume one supervised `exharness-agent run` through a durable recovery directory, reusing the delivered worktree, tool session, Core session and candidate identity after process death.",
+  "currentProblem": "runSupervisedTask already persists a recoverable run when recoveryDir is set, and deliver already exposes --recovery-dir. The operator run command never passes recoveryDir, so a crash of the primary CLI path still disposes the worktree.",
   "scope": [
-    "agent-tools.operator.deliver-observation"
+    "agent-tools.operator.run-recovery"
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
-    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
-    "No sandbox, SCM push, or live-value claim."
+    "Reuse the delivered BB-101 recovery handle, resumeSupervisedTask and disposeRecoverableRun. Do not invent a second lineage or change default run disposal when recoveryDir is omitted.",
+    "BB-125 owns resume task/config binding. This task may consume that contract when present and must not rewrite it.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
   ],
   "successCriteria": [
-    "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
-    "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+    "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
+    "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
     "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
   ],
   "currentSourceRefs": [
     "docs/blackboard/process/operator-cli-composition.md",
-    "docs/blackboard/evidence/BB-134/cli-composition-audit.mjs",
-    "packages/agent-tools/src/deliver-slice.js",
-    "packages/agent-tools/src/observation.js",
+    "docs/blackboard/evidence/BB-135/cli-composition-audit.mjs",
     "packages/agent-tools/bin/exharness-agent.mjs",
-    "docs/living/system/agent-tools/observation.md",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/recovery.js",
+    "docs/living/system/agent-tools/recovery.md",
     "docs/living/system/agent-tools/operator.md"
   ]
 }

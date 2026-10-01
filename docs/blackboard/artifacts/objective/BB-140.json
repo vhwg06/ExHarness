@@ -3,29 +3,29 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-140",
-  "outcome": "An operator can pin smoke model, permission and trace-dir options that `run` already forwards into runSupervisedTask.",
-  "currentProblem": "commandSmoke already calls runSupervisedTask and accepts --timeout-ms. It never forwards model, permission or trace-dir, so live smoke cannot pin those run options or write traces.",
+  "outcome": "An operator can pin eval permission and timeout factors that DEFAULT_FACTORS and runAgentToolsEval already accept, without changing the suite, arms, or claim boundary.",
+  "currentProblem": "DEFAULT_FACTORS already includes permissionProfile and timeoutMs, and runAgentToolsEval already accepts a factors overlay. commandEval EVAL_FLAGS omit both, so every eval run is silently WORKSPACE_EDIT / 600000.",
   "scope": [
-    "agent-tools.operator.smoke-options"
+    "agent-tools.operator.eval-factors"
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Do not change SKIPPED reasons for missing tools or pre-edit failures.",
-    "Unknown permission values fail closed before spawn. --arm requires --trace-dir. Omitted flags keep current smoke defaults.",
-    "No sandbox, SCM push, durable recovery on the ephemeral smoke repo, or live-value claim."
+    "Reuse delivered DEFAULT_FACTORS, assertMatchedFactors and runAgentToolsEval. Do not change the suite, arms, decision rule, or claim boundary owned by BB-099.",
+    "Unknown permission values and non-positive timeouts fail closed before registration. Omitted flags keep DEFAULT_FACTORS.",
+    "No sandbox, SCM push, live evaluation, or productivity claim."
   ],
   "successCriteria": [
-    "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
-    "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+    "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
+    "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
     "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
   ],
   "currentSourceRefs": [
     "docs/blackboard/process/operator-cli-factor-parity.md",
-    "docs/blackboard/evidence/BB-138/cli-factor-audit.mjs",
+    "docs/blackboard/evidence/BB-139/cli-factor-audit.mjs",
     "packages/agent-tools/bin/exharness-agent.mjs",
-    "packages/agent-tools/src/supervisor.js",
-    "packages/agent-tools/src/observation.js",
-    "docs/living/system/agent-tools/state.md",
-    "docs/living/system/agent-tools/observation.md"
+    "packages/agent-tools/src/experiment/index.js",
+    "packages/agent-tools/src/experiment/arms.js",
+    "docs/living/system/agent-tools/evaluation.md",
+    "docs/living/system/agent-tools/state.md"
   ]
 }

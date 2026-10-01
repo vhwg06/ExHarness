@@ -3,29 +3,29 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-136",
-  "outcome": "An operator can opt into the delivered stdio MCP verify/status server on `run` and `deliver` without changing default behavior or granting promote/accept tools.",
-  "currentProblem": "createExharnessMcpVerifyServer and runSupervisedTask.mcpVerify already exist. The operator CLI never forwards mcpVerify, so the delivered MCP server is unreachable from run and deliver.",
+  "outcome": "A local deliver slice can write the same digest-chained AGENT_TOOL_RUN_TRACE_V1 records as supervised run, so report can inspect the Backend attempts of that slice.",
+  "currentProblem": "createSupervisedObservation and run --trace-dir already append traces. runDeliverSlice and its resume path hardcode invocationObserver: null, so a deliver slice produces no trace file and report cannot describe it.",
   "scope": [
-    "agent-tools.operator.mcp-opt-in"
+    "agent-tools.operator.deliver-observation"
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
-    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
+    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
+    "No sandbox, SCM push, or live-value claim."
   ],
   "successCriteria": [
-    "An explicit opt-in starts the delivered verify/status server for that run or deliver Backend stage and stops it before worktree disposal.",
-    "Default CLI invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+    "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+    "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
     "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
   ],
   "currentSourceRefs": [
     "docs/blackboard/process/operator-cli-composition.md",
-    "docs/blackboard/evidence/BB-134/cli-composition-audit.mjs",
-    "packages/agent-tools/src/mcp-server.js",
-    "packages/agent-tools/src/supervisor.js",
+    "docs/blackboard/evidence/BB-135/cli-composition-audit.mjs",
     "packages/agent-tools/src/deliver-slice.js",
+    "packages/agent-tools/src/observation.js",
     "packages/agent-tools/bin/exharness-agent.mjs",
-    "docs/living/system/agent-tools/mcp.md",
+    "docs/living/system/agent-tools/observation.md",
     "docs/living/system/agent-tools/operator.md"
   ]
 }

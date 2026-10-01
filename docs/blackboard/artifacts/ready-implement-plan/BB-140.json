@@ -6,60 +6,61 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-140.json",
-    "hash": "392ae4cf503fa30ab75d455c38884b29066f8e3d0922c86bce0f1594d81c9259"
+    "hash": "b3dd3af2ede361a4adc136ed8d821230a398ee407efed08e79670554c987dd8c"
   },
   "scope": [
-    "agent-tools.operator.smoke-options"
+    "agent-tools.operator.eval-factors"
   ],
   "outOfScope": [
-    "Durable recovery on the ephemeral smoke repository.",
-    "Changing SKIPPED reasons for missing tools or pre-edit failures."
+    "Changing the suite, arms, decision rule, or claim boundary owned by BB-099.",
+    "Exposing factor K as a separate CLI flag in this task, live evaluation, or a productivity claim."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Do not change SKIPPED reasons for missing tools or pre-edit failures.",
-    "Unknown permission values fail closed before spawn. --arm requires --trace-dir. Omitted flags keep current smoke defaults.",
-    "No sandbox, SCM push, durable recovery on the ephemeral smoke repo, or live-value claim."
+    "Reuse delivered DEFAULT_FACTORS, assertMatchedFactors and runAgentToolsEval. Do not change the suite, arms, decision rule, or claim boundary owned by BB-099.",
+    "Unknown permission values and non-positive timeouts fail closed before registration. Omitted flags keep DEFAULT_FACTORS.",
+    "No sandbox, SCM push, live evaluation, or productivity claim."
   ],
   "invariants": [
-    "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
-    "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+    "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
+    "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Forward --model, --permission and --trace-dir from commandSmoke into runSupervisedTask, reusing run's observation construction when a trace directory is set.",
-    "Keep the ephemeral smoke repository and SKIPPED reasons. Do not add --recovery-dir on smoke."
+    "Add --permission and --timeout-ms to EVAL_FLAGS and pass them through runAgentToolsEval factors. Keep K at DEFAULT_FACTORS.K unless a later task owns it.",
+    "Validate permission against PermissionProfile and timeout as a positive integer before registration. Do not rewrite reduceAttempts or the claim boundary."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/observation.js",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json",
+      "packages/agent-tools/src/experiment/index.js",
+      "packages/agent-tools/src/experiment/arms.js",
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
       "docs/blackboard/process/operator-cli-factor-parity.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/smoke-cli-options.test.js"
+      "packages/agent-tools/test/eval-cli-factors.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/smoke-cli-options.test.js"
+      "packages/agent-tools/test/eval-cli-factors.test.js"
     ]
   },
   "sourceScope": {
     "read": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/experiment/index.js",
+      "packages/agent-tools/src/experiment/arms.js",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-138/cli-factor-audit.json"
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/test/smoke-cli-options.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "packages/agent-tools/src/experiment/index.js",
+      "packages/agent-tools/test/eval-cli-factors.test.js",
+      "docs/living/system/agent-tools/evaluation.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -70,14 +71,14 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin smoke flag mapping and --arm-requires-trace-dir in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --model, --permission and --trace-dir on smoke and the focused positive/negative fixtures.",
+    "S1 — Pin flag names, DEFAULT_FACTORS overlay and fail-closed permission/timeout parsing in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward only --permission and --timeout-ms on eval and the focused positive/negative fixtures.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "SMOKE_OPTIONS_FORWARDED",
-      "statement": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+      "id": "FACTORS_PINNED",
+      "statement": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
       "verificationIds": [
         "focused"
       ],
@@ -86,8 +87,8 @@
       ]
     },
     {
-      "id": "SMOKE_FAIL_CLOSED",
-      "statement": "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "id": "UNKNOWN_FACTORS_FAIL_CLOSED",
+      "statement": "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
       "verificationIds": [
         "focused"
       ],
@@ -99,7 +100,7 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/smoke-cli-options.test.js"
+      "command": "node --test packages/agent-tools/test/eval-cli-factors.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -112,66 +113,66 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
+      "invariant": "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
       "criterionIds": [
-        "SMOKE_OPTIONS_FORWARDED"
+        "FACTORS_PINNED"
       ]
     },
     {
-      "invariant": "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "invariant": "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
       "criterionIds": [
-        "SMOKE_FAIL_CLOSED"
+        "UNKNOWN_FACTORS_FAIL_CLOSED"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "SMOKE_OPTIONS_FORWARDED",
-        "SMOKE_FAIL_CLOSED"
+        "FACTORS_PINNED",
+        "UNKNOWN_FACTORS_FAIL_CLOSED"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Unknown --permission on smoke must fail before spawn",
-    "Omitted smoke model, permission and trace-dir must keep current defaults"
+    "Unknown --permission must fail before registration",
+    "Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_140_1",
       "negativeCaseIndex": 0,
-      "criterionId": "SMOKE_FAIL_CLOSED",
+      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/smoke-cli-options.test.js",
-      "testTitle": "BB-140 N1 Unknown --permission on smoke must fail before spawn",
-      "subjectSymbol": "runSupervisedTask"
+      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
+      "testTitle": "BB-140 N1 Unknown --permission must fail before registration",
+      "subjectSymbol": "runAgentToolsEval"
     },
     {
       "id": "NEG_140_2",
       "negativeCaseIndex": 1,
-      "criterionId": "SMOKE_FAIL_CLOSED",
+      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/smoke-cli-options.test.js",
-      "testTitle": "BB-140 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
-      "subjectSymbol": "runSupervisedTask"
+      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
+      "testTitle": "BB-140 N2 Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS",
+      "subjectSymbol": "runAgentToolsEval"
     }
   ],
   "researchGaps": [
-    "Ratify --arm requiring --trace-dir on smoke and whether smoke traces use arm label SMOKE, before Jev.",
+    "Ratify whether factor K stays default 3 because it interacts with --max-invocations, and the exact CLI flag names, before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "docs/living/system/agent-tools/evaluation.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Live smoke can pin the same run contract the operator already declares on run, including traces.",
-    "measurement": "Fake-CLI smoke fixture forwards FULL_AUTO, a model string and a trace directory; unknown permission fails before spawn.",
+    "expectedValue": "Eval can pin the permission and timeout factors the protocol already records, instead of silently defaulting.",
+    "measurement": "Fake-CLI eval fixture registers FULL_AUTO and a shorter timeout on every arm; unknown permission fails before registration.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-097 for smoke; BB-074 for end-to-end value"
+    "valueOwner": "BB-099 for evaluation semantics; BB-074 for end-to-end value"
   }
 }

@@ -6,77 +6,82 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-143.json",
-    "hash": "6d75811579d75d3229c72d9dc299ae85d06b7e8914fa4a222abc2cc4a2a80c26"
+    "hash": "db6caf5a7632efe2101e738eb2c6939666e439c79cc4251fdbdd2f33cbadf34d"
   },
   "scope": [
-    "agent-tools.operator.deliver-tool"
+    "agentic.backend-qa-execution.adapter-mcp"
   ],
   "outOfScope": [
-    "Changing the deliver tool-id whitelist owned by BB-128.",
-    "Changing permission/model ownership of BB-137 or limits ownership of BB-138.",
-    "Sandbox, SCM push, MCP promote, or a second tool schema."
+    "Adding promote, accept, merge or credential MCP tools.",
+    "Writing user CLI configuration or changing adapter argv.",
+    "Operator CLI MCP opt-in owned by BB-137."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered commandDeliver tool handling. Do not change the tool whitelist owned by BB-128 or permission/model ownership of BB-137.",
-    "Omitted --tool keeps the manifest tool. Unknown tools fail closed before any agent process starts.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
+    "Do not edit createBackendWorker or backend-worker.js. Operator CLI MCP opt-in stays BB-137.",
+    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
   ],
   "invariants": [
-    "CLI --tool overrides the manifest the same way --recovery-dir already does.",
-    "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
+    "Default adapter invocations never construct the MCP server.",
+    "MCP tools cannot promote, accept, merge or mint credentials.",
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Forward --tool from commandDeliverCli into commandDeliver, which already maps it onto runDeliverSlice.",
-    "Keep whitelist validation in commandDeliver / validateDeliverSlice. Do not invent a second tool list; BB-128 owns expanding the allowed set."
+    "Accept optional mcpVerify on runSupervisedBackendWork and forward it to runSupervisedTask.mcpVerify. Default false/omitted keeps current construction-free behavior.",
+    "Keep the delivered verify/status tool set and planted-promote rejection. Do not add an MCP SDK dependency."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/deliver-slice.js",
-      "docs/blackboard/evidence/BB-141/adapter-composition-audit.json",
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
       "docs/blackboard/process/application-adapter-composition.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/deliver-cli-tool.test.js"
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/deliver-cli-tool.test.js"
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/**",
-      "packages/agent-tools/test/**",
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
       "docs/blackboard/process/application-adapter-composition.md",
-      "docs/blackboard/evidence/BB-141/adapter-composition-audit.json"
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
     ],
     "write": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/test/deliver-cli-tool.test.js",
-      "docs/living/system/agent-tools/operator.md",
-      "docs/living/system/agent-tools/state.md"
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
       "packages/oracle/**",
+      "packages/agent-tools/**",
+      "packages/agentic-system/src/backend-worker.js",
       "packages/benchmark/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin CLI versus manifest tool precedence and unknown-tool fail-closed in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --tool on deliver and the focused positive/negative fixtures.",
+    "S1 — Pin the adapter mcpVerify opt-in, default-off behavior and planted-promote rejection in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward mcpVerify only when opted in on runSupervisedBackendWork.",
     "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "DELIVER_TOOL_FORWARDED",
-      "statement": "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+      "id": "ADAPTER_MCP_OPT_IN",
+      "statement": "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
       "verificationIds": [
         "focused"
       ],
@@ -85,8 +90,8 @@
       ]
     },
     {
-      "id": "DELIVER_TOOL_FAIL_CLOSED",
-      "statement": "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
+      "id": "ADAPTER_MCP_DEFAULT_OFF",
+      "statement": "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
       "verificationIds": [
         "focused"
       ],
@@ -98,11 +103,11 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/deliver-cli-tool.test.js"
+      "command": "node --test packages/agentic-system/test/bb143-adapter-mcp.test.js"
     },
     {
-      "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
     },
     {
       "id": "docs",
@@ -111,66 +116,66 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "CLI --tool overrides the manifest the same way --recovery-dir already does.",
+      "invariant": "Default adapter invocations never construct the MCP server.",
       "criterionIds": [
-        "DELIVER_TOOL_FORWARDED"
+        "ADAPTER_MCP_DEFAULT_OFF"
       ]
     },
     {
-      "invariant": "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
+      "invariant": "MCP tools cannot promote, accept, merge or mint credentials.",
       "criterionIds": [
-        "DELIVER_TOOL_FAIL_CLOSED"
+        "ADAPTER_MCP_DEFAULT_OFF"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "DELIVER_TOOL_FORWARDED",
-        "DELIVER_TOOL_FAIL_CLOSED"
+        "ADAPTER_MCP_OPT_IN",
+        "ADAPTER_MCP_DEFAULT_OFF"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Unknown --tool on deliver must fail before spawn",
-    "Omitted --tool must keep the manifest tool"
+    "Default runSupervisedBackendWork must not construct the MCP server",
+    "Planted promote tool names must be rejected"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_143_1",
       "negativeCaseIndex": 0,
-      "criterionId": "DELIVER_TOOL_FAIL_CLOSED",
+      "criterionId": "ADAPTER_MCP_DEFAULT_OFF",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-cli-tool.test.js",
-      "testTitle": "BB-143 N1 Unknown --tool on deliver must fail before spawn",
-      "subjectSymbol": "commandDeliver"
+      "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "testTitle": "BB-143 N1 Default runSupervisedBackendWork must not construct the MCP server",
+      "subjectSymbol": "runSupervisedBackendWork"
     },
     {
       "id": "NEG_143_2",
       "negativeCaseIndex": 1,
-      "criterionId": "DELIVER_TOOL_FAIL_CLOSED",
+      "criterionId": "ADAPTER_MCP_DEFAULT_OFF",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/deliver-cli-tool.test.js",
-      "testTitle": "BB-143 N2 Omitted --tool must keep the manifest tool",
-      "subjectSymbol": "commandDeliver"
+      "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "testTitle": "BB-143 N2 Planted promote tool names must be rejected",
+      "subjectSymbol": "runSupervisedBackendWork"
     }
   ],
   "researchGaps": [
-    "Ratify USAGE listing --tool and whether an empty --tool string is a usage error before Jev.",
+    "Ratify whether mcpVerify true versus { stdin, stdout } is the Application contract, and whether Living Application docs name the opt-in field, before Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/operator.md",
-      "docs/living/system/agent-tools/state.md"
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Deliver CLI can pin the Backend tool that the slice API already honors.",
-    "measurement": "Fake-CLI deliver fixture forwards --tool kiro over a codex manifest; unknown --tool fails before spawn.",
+    "expectedValue": "Application execute can opt into the same verify/status MCP transport the supervisor already starts for operator run.",
+    "measurement": "Fake-CLI adapter fixture with mcpVerify true exposes verify/status and rejects a planted promote tool; default construct count stays zero.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
+    "valueOwner": "BB-100 for the adapter; BB-103 for MCP; BB-074 for end-to-end value"
   }
 }
