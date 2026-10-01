@@ -127,3 +127,13 @@ depend on Python or GEPA availability; the adapter degrades to
   bridge; only the independent HOW authority can evaluate and promote.
 - The controller and projectors are in-memory; durable stores are not
   provided by this feedback capability.
+
+## Verification note
+
+Time-budget containment for runaway execution is verified: when a cell
+exceeds its `maxDurationMs` budget mid-execution, the abort path issues
+SIGKILL to the in-flight process tree (`forcedProcessKills >= 1`) and the
+run is contained with `CODEACT_TIME_BUDGET_EXCEEDED`. The verification
+scenarios use budgets that comfortably exceed session-open cost so the
+budget expires while a cell is in flight, deterministically exercising
+the containment path.
