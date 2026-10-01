@@ -95,9 +95,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions.",
+    "S1 — local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions. Return pin includes verified raw manifest hash, frozen file/runtime pins, protected base tuples and stable snapshot paths. Pin before agent dispatch; executor is pinned absolute Node with evaluator first and candidate root last. runLocalAcceptance composes createLocalCommandVerifier at exact candidate revision with unchanged-tree guard; original/snapshot/runtime pre/post hash drift or protected tuple drift prevents PASS. Operator assertions must independently reject broken sum under no-op QA and protected-test deletion, then accept genuine sum fix. Explicit trusted-local boundary excludes malicious same-uid write-and-restore.",
     "S2 — deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only. Persist deliver-owned sidecar and stable snapshot location before first dispatch. Existing handle always requires matching sidecar; validate before ACCEPTED replay too. Every fresh or resumed QA run executes the pinned evaluator again. Sidecar validation failure leaves all recovery bytes untouched; terminal cleanup runs only after final evaluation.",
-    "S3 — local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment."
+    "S3 — local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment. Positive/negative oracle: external evaluator asserts sum(2,3)==5 and sum(-2,4)==2. Broken subtraction and assertion-free candidate test must fail independently even with ordinary QA exit0; deleting the separate pinned protected file fails tuple gate. Genuine addition preserves the protected tuple and passes. Focused checks run on fresh candidate checkout and re-run after complete-handle replay, preserving source refs/status."
   ],
   "acceptanceCriteria": [
     {
@@ -667,7 +667,8 @@
         2,
         4,
         5,
-        9
+        9,
+        10
       ],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-127/discovery.json",
@@ -721,9 +722,7 @@
           "match": "\"classification\": \"EXECUTED_LOCAL_PROBE\""
         }
       ],
-      "supportingPlanFields": [
-        "researchEvidenceSummary"
-      ]
+      "supportingPlanFields": []
     }
   ],
   "readinessBlockers": [],
