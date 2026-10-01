@@ -31,9 +31,9 @@
     "D2 — CI collect seam: replace the claim-only enumeration in scripts/blackboard-jev-ci.mjs collect with bundleRefs/buildBundle. The uploaded bundle keeps the exact {result, files} shape with files in bundleRefs order and byte-identical bodies. No new bundle fields, no provider key in the collect job, and no change to any worker verification mapping.",
     "D3 — CI evaluate seam only: evaluate restores files through installBundle, then writes bundle.result to the evidence ref and calls materialize, so a missing log fails fail-closed before any provider call. scripts/blackboard-delivery.mjs is explicitly unchanged (outside write scope); its importEvaluationEvidence union enumeration is the frozen compatibility reference the new helper must match byte-for-byte. BB-059/079/084 mappings are preserved and never edited.",
     "D4 — Fail-closed rules: a missing entry for a union ref, a body whose hash differs from its bound run.logHash, a ref outside docs/blackboard/evidence/<WORK_ID>/ or with an unsafe basename, or an empty body for a non-empty bound hash all throw before any provider call and before writing partial evidence. Duplicate refs are deduped to one file; order is normalized to bundleRefs sort so bytes and digests are deterministic.",
-    "D5 — Separation regression fixtures: new test/blackboard-verification-bundle.test.mjs synthetically reproduces the BB-059 CI36805700271 shape (eight verificationRuns including one passing run referenced by no claim, seven claim-linked files, one retained observation log; no local bundle path dependency) through separated build/install/materialize steps. The positive path calls installBundle then materialize and asserts the WORKER input contains every union run; each invalid bundle asserts installBundle throws before materialize and before any fetch call (mock fetch counts zero calls). No test asserts source text and no test self-issues acceptance.",
-    "D6 — Wiring and binding policy: the new test file is the only expectedTest; no package.json standing-script or workflow edit is required, so existing worker plans keep their mappings. negativeCaseBindings are mandatory (BB-134 is above the jev-policy.json negativeCaseBindingsFromWorkId BB-100 threshold) with one distinct BUNDLE-FAILCLOSED test title per negativeVerificationCases index invoking installBundle or buildBundle with a real assertion.",
-    "D7 — Delivery and rollback boundary: worker writes are limited to scripts/blackboard-jev-ci.mjs, scripts/blackboard-verification-bundle.mjs, test/blackboard-verification-bundle.test.mjs and docs/living/system/state.md. Graph, state, contexts, objectives, readiness, receipts and CI workflows are untouched; rollback reverts only those four paths. Readiness judges that the worker can implement this coverage later: producer evidence, independent judgment, merge-tree verification and receipt all happen after this controller repair is delivered, never as pre-existing worker output. Safe bootstrap: the current trusted controller judges this plan because every verification command is claim-mapped and offline-checkable; only the accepted merged controller will ever evaluate BB-059, whose orphan run exposed the defect."
+    "D5 — Separation regression fixtures: new test/blackboard-context-verification-bundle.test.mjs synthetically reproduces the BB-059 CI36805700271 shape (eight verificationRuns including one passing run referenced by no claim, seven claim-linked files, one retained observation log; no local bundle path dependency) through separated build/install/materialize steps. The positive path calls installBundle then materialize and asserts the WORKER input contains every union run; each invalid bundle asserts installBundle throws before materialize and before any fetch call (mock fetch counts zero calls). No test asserts source text and no test self-issues acceptance.",
+    "D6 — Wiring and binding policy: the new test file is the only expectedTest; no package.json standing-script or workflow edit is required, so existing worker plans keep their mappings. The file is named test/blackboard-context-verification-bundle.test.mjs precisely so the actual standing glob test/blackboard-context-*.test.mjs discovers it: the fixed prefix test/blackboard-context- plus the fixed suffix .test.mjs both match character-for-character, so npm run test:blackboard-context (hence verify:blackboard-context and npm run verify) executes it with no broader write authority. negativeCaseBindings are mandatory (BB-134 is above the jev-policy.json negativeCaseBindingsFromWorkId BB-100 threshold) with one distinct BUNDLE-FAILCLOSED test title per negativeVerificationCases index invoking installBundle or buildBundle with a real assertion.",
+    "D7 — Delivery and rollback boundary: worker writes are limited to scripts/blackboard-jev-ci.mjs, scripts/blackboard-verification-bundle.mjs, test/blackboard-context-verification-bundle.test.mjs and docs/living/system/state.md. Graph, state, contexts, objectives, readiness, receipts and CI workflows are untouched; rollback reverts only those four paths. Readiness judges implementable future coverage: this repair's producer evidence, independent Worker judgment, merge-tree verification and receipt all happen AFTER readiness to complete delivery, never as pre-existing worker output. Safe bootstrap: the current trusted controller judges this plan because every verification command is claim-mapped and offline-checkable; BB-059 is retried only AFTER the accepted merged controller exists."
   ],
   "sourceScope": {
     "read": [
@@ -49,7 +49,7 @@
     "write": [
       "scripts/blackboard-jev-ci.mjs",
       "scripts/blackboard-verification-bundle.mjs",
-      "test/blackboard-verification-bundle.test.mjs",
+      "test/blackboard-context-verification-bundle.test.mjs",
       "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
@@ -71,10 +71,10 @@
     ],
     "expectedNew": [
       "scripts/blackboard-verification-bundle.mjs",
-      "test/blackboard-verification-bundle.test.mjs"
+      "test/blackboard-context-verification-bundle.test.mjs"
     ],
     "expectedTests": [
-      "test/blackboard-verification-bundle.test.mjs"
+      "test/blackboard-context-verification-bundle.test.mjs"
     ]
   },
   "implementationSlices": [
@@ -132,15 +132,15 @@
   "verificationPlan": [
     {
       "id": "bundle-union",
-      "command": "node --test --test-name-pattern=\"^BUNDLE-UNION \" test/blackboard-verification-bundle.test.mjs"
+      "command": "node --test --test-name-pattern=\"^BUNDLE-UNION \" test/blackboard-context-verification-bundle.test.mjs"
     },
     {
       "id": "bundle-separation",
-      "command": "node --test --test-name-pattern=\"^BUNDLE-SEPARATION \" test/blackboard-verification-bundle.test.mjs"
+      "command": "node --test --test-name-pattern=\"^BUNDLE-SEPARATION \" test/blackboard-context-verification-bundle.test.mjs"
     },
     {
       "id": "bundle-failclosed",
-      "command": "node --test --test-name-pattern=\"^BUNDLE-FAILCLOSED \" test/blackboard-verification-bundle.test.mjs"
+      "command": "node --test --test-name-pattern=\"^BUNDLE-FAILCLOSED \" test/blackboard-context-verification-bundle.test.mjs"
     },
     {
       "id": "blackboard-regression",
@@ -185,7 +185,7 @@
       "negativeCaseIndex": 0,
       "criterionId": "FAILCLOSED",
       "verificationId": "bundle-failclosed",
-      "testRef": "test/blackboard-verification-bundle.test.mjs",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
       "testTitle": "BUNDLE-FAILCLOSED missing union log fails closed without provider call",
       "subjectSymbol": "installBundle"
     },
@@ -194,7 +194,7 @@
       "negativeCaseIndex": 1,
       "criterionId": "FAILCLOSED",
       "verificationId": "bundle-failclosed",
-      "testRef": "test/blackboard-verification-bundle.test.mjs",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
       "testTitle": "BUNDLE-FAILCLOSED corrupt digest fails closed without provider call",
       "subjectSymbol": "installBundle"
     },
@@ -203,7 +203,7 @@
       "negativeCaseIndex": 2,
       "criterionId": "FAILCLOSED",
       "verificationId": "bundle-failclosed",
-      "testRef": "test/blackboard-verification-bundle.test.mjs",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
       "testTitle": "BUNDLE-FAILCLOSED unsafe ref fails closed without provider call",
       "subjectSymbol": "installBundle"
     },
@@ -212,7 +212,7 @@
       "negativeCaseIndex": 3,
       "criterionId": "FAILCLOSED",
       "verificationId": "bundle-failclosed",
-      "testRef": "test/blackboard-verification-bundle.test.mjs",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
       "testTitle": "BUNDLE-FAILCLOSED empty body fails closed without provider call",
       "subjectSymbol": "buildBundle"
     }
@@ -259,7 +259,7 @@
       "CI union wiring",
       "Living state note"
     ],
-    "rollback": "Revert scripts/blackboard-jev-ci.mjs, delete scripts/blackboard-verification-bundle.mjs and test/blackboard-verification-bundle.test.mjs, revert docs/living/system/state.md."
+    "rollback": "Revert scripts/blackboard-jev-ci.mjs, delete scripts/blackboard-verification-bundle.mjs and test/blackboard-context-verification-bundle.test.mjs, revert docs/living/system/state.md."
   },
   "laneContracts": [
     {
