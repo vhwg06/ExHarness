@@ -485,8 +485,8 @@ const BATCH_SEVERITY = ['PLAN_INPUT_CONTRADICTION', 'IMPLEMENTATION_DEFECT', 'IN
 // plan verification run, a compact hash-bound excerpt of every evidence log,
 // the plan's criterion -> verification mapping, and hash-bound excerpts of the
 // candidate's changed lines in its non-doc sources.
-export const LIVING_EXCERPT_STRATEGIES = Object.freeze({ SCOPED: 'LIVING_SCOPED_SECTIONS_V1', CHANGED: 'LIVING_CHANGED_SECTIONS_V2', DELIVERY: 'LIVING_DELIVERY_EVIDENCE_V3' });
-export const CURRENT_LIVING_EXCERPT_STRATEGY = LIVING_EXCERPT_STRATEGIES.DELIVERY;
+export const LIVING_EXCERPT_STRATEGIES = Object.freeze({ SCOPED: 'LIVING_SCOPED_SECTIONS_V1', CHANGED: 'LIVING_CHANGED_SECTIONS_V2', DELIVERY: 'LIVING_DELIVERY_EVIDENCE_V3', COHESIVE: 'LIVING_DELIVERY_EVIDENCE_V4' });
+export const CURRENT_LIVING_EXCERPT_STRATEGY = LIVING_EXCERPT_STRATEGIES.COHESIVE;
 const LIVING_EVIDENCE_LOG_BYTES = 3072;
 const LIVING_CHANGE_FILE_BYTES = 3072;
 const LIVING_CHANGE_TOTAL_BYTES = 18432;
@@ -497,6 +497,17 @@ const CHANGE_EXCERPT_STRATEGY = 'CANDIDATE_CHANGE_EXCERPT_V1';
 const OUTLINE_LINE = /^(?:export\b|(?:async\s+)?function\b|class\b|(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=|\s*\/\/|\s*\/\*|\s+\*|#{1,6}\s|\s*(?:test|it|describe)\(|\s*"[A-Za-z][\w:-]*"\s*:)/;
 const FAILURE_LINE = /\bfail\(|\bthrow\b/;
 export const LIVING_DELIVERY_LIMITS = Object.freeze({ evidenceLogBytes: LIVING_EVIDENCE_LOG_BYTES, changeFileBytes: LIVING_CHANGE_FILE_BYTES, changeTotalBytes: LIVING_CHANGE_TOTAL_BYTES });
+// LIVING_DELIVERY_EVIDENCE_V4 keeps every evidence log in one Living Docs part
+// before any split: the changed-source excerpt budget is lowered progressively
+// (full, half, quarter of LIVING_CHANGE_TOTAL_BYTES, never below
+// LIVING_CHANGE_MIN_BYTES per file), then evidence logs use the smaller compact
+// excerpt below. Only a base that still cannot fit is split, with Living
+// Docs-only part instructions and aggregation.
+export const LIVING_COHESIVE_CHANGE_BUDGETS = Object.freeze([LIVING_CHANGE_TOTAL_BYTES, LIVING_CHANGE_TOTAL_BYTES / 2, LIVING_CHANGE_TOTAL_BYTES / 4]);
+const LIVING_COMPACT_LOG_BYTES = 1536;
+const LIVING_COMPACT_EXCERPT_STRATEGY = 'EVIDENCE_LOG_COMPACT_EXCERPT_V1';
+const LIVING_COMPACT_MAX_PASSING = 400;
+export const LIVING_COHESIVE_LIMITS = Object.freeze({ changeBudgets: LIVING_COHESIVE_CHANGE_BUDGETS, compactLogBytes: LIVING_COMPACT_LOG_BYTES, minChangeFileBytes: LIVING_CHANGE_MIN_BYTES });
 const LIVING_OMITTED_MARKER = '...[unchanged Living Doc sections omitted; the full document is bound by hash]...';
 /**
  * Candidate-side changed line ranges ([first, last], 1-based) of each Living
@@ -807,6 +818,81 @@ export function excerptEvidenceLog(file, run = null, maxBytes = WORKER_EVIDENCE_
   check(payloadBytes(excerpt) <= maxBytes, `evidence excerpt exceeds budget: ${file.ref}`);
   return excerpt;
 }
+/**
+ * Smaller deterministic compact excerpt of one verification/evidence log for
+ * the Living Docs cohesive stages. Unlike EVIDENCE_LOG_EXCERPT_V1 (head/tail
+ * context), the summary also carries the passing test names/titles in file
+ * order, because the tests the docs cite are the proof of the doc claims. The
+ * envelope always keeps command, exit status, aggregated test counts and
+ * failing test names; the body keeps head/tail lines with whatever budget the
+ * summary leaves. `hash` and `bytes` identify the exact full log body.
+ */
+export function excerptCompactEvidenceLog(file, run = null, maxBytes = LIVING_COMPACT_LOG_BYTES) {
+  check(file && typeof file.ref === 'string' && typeof file.body === 'string', 'evidence excerpt requires a log body');
+  const lines = file.body.split('\n');
+  const totals = {}, failing = [], passing = [], scripts = [];
+  const seenPassing = new Set();
+  let logExitCode = null, passingCapped = false;
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    const count = line.match(/^\s*(?:#|ℹ)\s+(tests|suites|pass|fail|cancelled|skipped|todo)\s+(\d+)$/);
+    if (count) { totals[count[1]] = (totals[count[1]] ?? 0) + Number(count[2]); continue; }
+    const failed = line.match(/^\s*not ok \d+ - (.+)$/) ?? line.match(/^\s*✖ (.+)$/);
+    if (failed && !/^failing tests:?$/i.test(failed[1].trim())) {
+      const name = clipLine(failed[1].trim());
+      if (!failing.includes(name) && failing.length < WORKER_EXCERPT_MAX_FAILING) failing.push(name);
+      continue;
+    }
+    if (!passingCapped) {
+      const passed = line.match(/^\s*ok \d+ - (.+)$/) ?? line.match(/^\s*✔ (.+)$/);
+      if (passed) {
+        const name = clipLine(passed[1].trim());
+        if (name && !seenPassing.has(name)) {
+          seenPassing.add(name);
+          if (passing.length < LIVING_COMPACT_MAX_PASSING) passing.push(name);
+          else passingCapped = true;
+        }
+      }
+    }
+    const script = line.match(/^> \S+@\S+ (\S+)$/);
+    if (script && !scripts.includes(script[1]) && scripts.length < WORKER_EXCERPT_MAX_SCRIPTS) scripts.push(script[1]);
+    const exit = line.match(/^exitCode=(-?\d+|null)$/);
+    if (exit) logExitCode = exit[1] === 'null' ? null : Number(exit[1]);
+  }
+  const summary = { totals, failing, failingTruncated: failing.length >= WORKER_EXCERPT_MAX_FAILING, passing, passingTotal: seenPassing.size, passingTruncated: passingCapped, scripts, logExitCode };
+  const envelope = {
+    ref: file.ref, hash: file.hash, bytes: Buffer.byteLength(file.body), lines: lines.length,
+    excerpted: true, excerptStrategy: LIVING_COMPACT_EXCERPT_STRATEGY,
+    command: run?.command ?? null, exitCode: run?.exitCode ?? null,
+    summary, omittedLines: 0, body: ''
+  };
+  const marker = '...[bounded evidence excerpt; omitted lines are bound by hash]...';
+  // Shrink the name lists, passing first, until the envelope leaves body budget.
+  while (payloadBytes(envelope) + jsonLineBytes(marker) + 32 > maxBytes && summary.passing.length) {
+    summary.passing.pop(); summary.passingTruncated = true;
+  }
+  while (payloadBytes(envelope) + jsonLineBytes(marker) + 32 > maxBytes && summary.failing.length) {
+    summary.failing.pop(); summary.failingTruncated = true;
+  }
+  const budget = maxBytes - payloadBytes(envelope) - jsonLineBytes(marker) - 32;
+  check(budget > 0, `evidence excerpt summary exceeds budget: ${file.ref}`);
+  const head = [], tail = [];
+  let used = 0, first = 0, last = lines.length - 1;
+  while (first <= last) {
+    const line = clipLine(lines[first]);
+    if (used + jsonLineBytes(line) > Math.floor(budget / 2)) break;
+    head.push(line); used += jsonLineBytes(line); first++;
+  }
+  while (last >= first) {
+    const line = clipLine(lines[last]);
+    if (used + jsonLineBytes(line) > budget) break;
+    tail.unshift(line); used += jsonLineBytes(line); last--;
+  }
+  const omittedLines = Math.max(0, last - first + 1);
+  const excerpt = { ...envelope, omittedLines, body: [...head, ...(omittedLines ? [marker] : []), ...tail].join('\n') };
+  check(payloadBytes(excerpt) <= maxBytes, `evidence excerpt exceeds budget: ${file.ref}`);
+  return excerpt;
+}
 function livingStrategyOf(options) {
   const strategy = options?.livingExcerptStrategy ?? CURRENT_LIVING_EXCERPT_STRATEGY;
   check(Object.values(LIVING_EXCERPT_STRATEGIES).includes(strategy), 'unknown Living Doc excerpt strategy');
@@ -829,6 +915,7 @@ function workerQuestionBase(fullPayload, id, options = {}) {
   check(!negative || criterion, `worker negative case criterion missing: ${id}`);
   const livingDocsQuestion = id === state.plan.livingDocs.questionId;
   if (livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.DELIVERY) return livingDeliveryBase(fullPayload, id, options);
+  if (livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.COHESIVE) return livingCohesiveBase(fullPayload, id, options, LIVING_CHANGE_TOTAL_BYTES, LIVING_EVIDENCE_LOG_BYTES);
   if (!negative) check(Boolean(claim) === Boolean(criterion), `worker criterion/evidence mismatch: ${id}`);
   const evidenceRefs = new Set(negative ? [negativeRun.logRef] : claim?.evidenceRefs ?? []);
   const checkIds = new Set(negative ? [binding.verificationId] : criterion?.verificationIds ?? []);
@@ -999,6 +1086,67 @@ function livingDeliveryBase(fullPayload, id, options) {
   };
   return { model: fullPayload.model, state: { objective: state.objective, plan, evidence: state.evidence, sources, verification: state.verification, evidenceFiles, livingEvidence }, questions: { [id]: fullPayload.questions[id] } };
 }
+/**
+ * Living Docs question under LIVING_DELIVERY_EVIDENCE_V4: the same delivery
+ * evidence as V3, with a parametrized changed-source excerpt budget and
+ * evidence-log budget. The first stage (full change budget, V3 log excerpts)
+ * is V3-identical except the strategy label; later stages lower the change
+ * budget and then use the smaller compact log excerpt so that ALL evidence
+ * logs stay in ONE part. Deterministic: implementation sources before tests,
+ * each group in ref order, same per-file floor as V3.
+ */
+function livingCohesiveBase(fullPayload, id, options, changeTotalBytes, logBytes) {
+  const state = fullPayload.state;
+  check(!state.evidence.some(entry => entry.id === id), `worker criterion/evidence mismatch: ${id}`);
+  check(Number.isInteger(changeTotalBytes) && changeTotalBytes >= LIVING_CHANGE_MIN_BYTES, 'cohesive change budget missing');
+  check(Number.isInteger(logBytes) && logBytes > 0, 'cohesive log budget missing');
+  const runsByLog = new Map(state.verification.map(run => [run.logRef, run]));
+  const compact = logBytes < LIVING_EVIDENCE_LOG_BYTES;
+  const evidenceFiles = state.evidenceFiles.map(file => {
+    if (typeof file.body !== 'string' || payloadBytes(file) <= logBytes) return file;
+    return compact
+      ? excerptCompactEvidenceLog(file, runsByLog.get(file.ref) ?? null, logBytes)
+      : excerptEvidenceLog(file, runsByLog.get(file.ref) ?? null, logBytes);
+  });
+  const changes = options.candidateChanges;
+  check(changes && typeof changes === 'object', 'candidate change map missing');
+  // Implementation sources first, then tests; each group in ref order.
+  const changedRefs = Object.keys(changes).filter(ref => typeof changes[ref].body === 'string')
+    .sort((a, b) => Number(isTestRef(a)) - Number(isTestRef(b)) || a.localeCompare(b));
+  const excerpts = new Map();
+  let remaining = changeTotalBytes;
+  for (const ref of changedRefs) {
+    if (remaining < LIVING_CHANGE_MIN_BYTES) break;
+    const source = state.sources.find(entry => entry.ref === ref);
+    check(source, `candidate change outside materialized sources: ${ref}`);
+    const excerpt = candidateChangeExcerpt(source, changes[ref], Math.min(LIVING_CHANGE_FILE_BYTES, remaining));
+    excerpts.set(ref, excerpt); remaining -= payloadBytes(excerpt);
+  }
+  const stub = source => ({ ref: source.ref, hash: source.hash, bytes: source.bytes ?? Buffer.byteLength(source.body ?? ''), omitted: true, deleted: source.deleted });
+  const sources = state.sources.map(source => {
+    if (source.ref.startsWith('docs/living/')) return typeof source.body === 'string' ? changedLivingExcerpt(source, options.livingChanges?.[source.ref], state.plan.scope) : source;
+    if (excerpts.has(source.ref)) return excerpts.get(source.ref);
+    return source.body == null ? source : stub(source);
+  });
+  const plan = {
+    kind: state.plan.kind,
+    artifactType: state.plan.artifactType,
+    artifactId: state.plan.artifactId,
+    objective: state.plan.objective,
+    scope: state.plan.scope,
+    sourceSeams: state.plan.sourceSeams,
+    livingDocs: state.plan.livingDocs,
+    acceptanceCriteria: state.plan.acceptanceCriteria.map(({ id: criterionId, statement, verificationIds }) => ({ id: criterionId, statement, verificationIds })),
+    verificationPlan: state.plan.verificationPlan
+  };
+  const livingEvidence = {
+    strategy: LIVING_EXCERPT_STRATEGIES.COHESIVE,
+    changeBudget: changeTotalBytes,
+    logBytes,
+    instructions: 'Living Docs are sent as their preamble plus every section the candidate changed. Every evidence log is sent in this part: logs above the log budget are hash-bound excerpts (command, exit status, test totals, failing names, passing test names or titles, head and tail). Changed non-doc sources are hash-bound excerpts of the candidate\'s changed lines within the change budget. Anything omitted is bound by hash in the full evaluation state.'
+  };
+  return { model: fullPayload.model, state: { objective: state.objective, plan, evidence: state.evidence, sources, verification: state.verification, evidenceFiles, livingEvidence }, questions: { [id]: fullPayload.questions[id] } };
+}
 const withFiles = (base, evidenceFiles, batch) => ({ ...base, state: { ...base.state, evidenceFiles, ...(batch ? { batch } : {}) } });
 const evidenceStub = (file, part) => ({ ref: file.ref, hash: file.hash, bytes: file.bytes ?? Buffer.byteLength(file.body ?? ''), omitted: true, judgedInPart: part });
 function batchDescriptor(id, part, parts, refs) {
@@ -1006,6 +1154,85 @@ function batchDescriptor(id, part, parts, refs) {
     questionId: id, part, parts, evidenceRefs: refs,
     instructions: `Evidence for ${id} is split into ${parts} bounded parts. This part contains the evidence files listed in evidenceRefs; other files are identified by hash and judged in their own part. The question is SATISFIED only if every part is SATISFIED.`
   };
+}
+function livingBatchDescriptor(id, part, parts, refs) {
+  return {
+    questionId: id, part, parts, evidenceRefs: refs,
+    instructions: `Evidence for ${id} is split into ${parts} bounded parts. This part contains the evidence files listed in evidenceRefs; other files are identified by hash and judged in their own part. Judge whether the evidence in this part proves or contradicts the doc claims; do not answer SATISFIED when anything in this part contradicts the docs (a contradiction is IMPLEMENTATION_DEFECT); answer INSUFFICIENT_EVIDENCE if this part's evidence is unrelated to the claims.`
+  };
+}
+const isCohesiveLiving = (fullPayload, id, options) =>
+  fullPayload?.state?.plan?.livingDocs?.questionId === id && livingStrategyOf(options) === LIVING_EXCERPT_STRATEGIES.COHESIVE;
+const cohesiveCompactedRefs = base => base.state.evidenceFiles
+  .filter(file => file.excerptStrategy === LIVING_COMPACT_EXCERPT_STRATEGY).map(file => file.ref);
+/**
+ * Bounded batches for the Living Docs question under
+ * LIVING_DELIVERY_EVIDENCE_V4. Deterministic compaction stages keep ALL
+ * evidence in ONE part: the V3-identical base first, then progressively
+ * lower changed-source excerpt budgets, then the smaller compact evidence-log
+ * excerpt. The first base that fits is sent whole. Only a base that still
+ * cannot fit is split, with Living Docs-only part instructions.
+ */
+function cohesiveLivingBatches(fullPayload, id, options, first) {
+  if (payloadBytes(first) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: first }];
+  let previous = first;
+  const stages = [
+    { change: LIVING_COHESIVE_CHANGE_BUDGETS[1], logBytes: LIVING_EVIDENCE_LOG_BYTES },
+    { change: LIVING_COHESIVE_CHANGE_BUDGETS[2], logBytes: LIVING_EVIDENCE_LOG_BYTES },
+    { change: LIVING_COHESIVE_CHANGE_BUDGETS[2], logBytes: LIVING_COMPACT_LOG_BYTES }
+  ];
+  for (const stage of stages) {
+    const base = livingCohesiveBase(fullPayload, id, options, stage.change, stage.logBytes);
+    if (payloadBytes(base) <= WORKER_BATCH_MAX_BYTES) {
+      const compacted = stage.logBytes < LIVING_EVIDENCE_LOG_BYTES ? cohesiveCompactedRefs(base) : [];
+      return compacted.length ? [{ id, payload: base, excerpted: compacted }] : [{ id, payload: base }];
+    }
+    previous = base;
+  }
+  return splitCohesiveEvidence(previous, id, cohesiveCompactedRefs(previous));
+}
+/** Most-compact V4 base: the split candidate when no cohesive stage fits. */
+function cohesiveSplitBase(fullPayload, id, options) {
+  return livingCohesiveBase(fullPayload, id, options, LIVING_COHESIVE_CHANGE_BUDGETS.at(-1), LIVING_COMPACT_LOG_BYTES);
+}
+/**
+ * Split a cohesive Living Docs base across bounded parts. Same deterministic
+ * ref-order packing as criterion splits; every part keeps every hash, and
+ * each part carries the Living Docs-only instructions (a part holding only
+ * unrelated logs answers INSUFFICIENT_EVIDENCE instead of failing the whole
+ * question; any contradiction fails it — see aggregateBatchAnswers).
+ */
+function splitCohesiveEvidence(base, id, compacted = []) {
+  const files = base.state.evidenceFiles;
+  // Measure with worst-case descriptors so the final payloads (with exact part
+  // numbers) cannot grow past the limit.
+  const worst = 9999;
+  const measure = assigned => withFiles(base,
+    files.map(file => assigned.has(file.ref) ? file : evidenceStub(file, worst)),
+    livingBatchDescriptor(id, worst, worst, [...assigned]));
+  const chunks = [];
+  let current = new Set();
+  for (const file of files) {
+    const next = new Set([...current, file.ref]);
+    if (payloadBytes(measure(next)) <= WORKER_BATCH_MAX_BYTES) { current = next; continue; }
+    check(current.size > 0, `worker batch exceeds bounded input: ${id}`);
+    chunks.push(current);
+    current = new Set([file.ref]);
+    check(payloadBytes(measure(current)) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
+  }
+  if (current.size) chunks.push(current);
+  check(chunks.length > 1, `worker batch exceeds bounded input: ${id}`);
+  const partOf = new Map(chunks.flatMap((chunk, index) => [...chunk].map(ref => [ref, index + 1])));
+  return chunks.map((chunk, index) => {
+    const payload = withFiles(base,
+      files.map(file => chunk.has(file.ref) ? file : evidenceStub(file, partOf.get(file.ref))),
+      livingBatchDescriptor(id, index + 1, chunks.length, [...chunk]));
+    check(payloadBytes(payload) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
+    const batch = { id, payload, part: index + 1, parts: chunks.length };
+    const inPart = compacted.filter(ref => chunk.has(ref));
+    if (inPart.length) batch.excerpted = inPart;
+    return batch;
+  });
 }
 /**
  * Bounded batches for one worker question, in deterministic order:
@@ -1016,11 +1243,22 @@ function batchDescriptor(id, part, parts, refs) {
  */
 export function workerQuestionBatches(fullPayload, id, options = {}) {
   const base = workerQuestionBase(fullPayload, id, options);
-  try { return boundedQuestionBatches(base, id, options); }
+  const cohesive = isCohesiveLiving(fullPayload, id, options);
+  const run = input => cohesive ? cohesiveLivingBatches(fullPayload, id, options, input) : boundedQuestionBatches(input, id, options);
+  try { return run(base); }
   catch (error) {
     // OMITTED_SOURCE_INDEX_V1: only a question that no earlier stage can represent is retried
     // with its hash-stub sources summarized by directory; every other batch keeps its identity.
     if (!String(error?.message).endsWith(`worker batch exceeds bounded input: ${id}`)) throw error;
+    if (cohesive) {
+      const compact = cohesiveSplitBase(fullPayload, id, options);
+      const indexed = withOmittedSourceIndex(compact);
+      if (indexed === null) throw error;
+      const batches = payloadBytes(indexed) <= WORKER_BATCH_MAX_BYTES
+        ? [{ id, payload: indexed, excerpted: cohesiveCompactedRefs(indexed) }]
+        : splitCohesiveEvidence(indexed, id, cohesiveCompactedRefs(indexed));
+      return batches.map(batch => ({ ...batch, sourceIndex: OMITTED_SOURCE_INDEX_STRATEGY }));
+    }
     const indexed = withOmittedSourceIndex(base);
     if (indexed === null) throw error;
     return boundedQuestionBatches(indexed, id, options).map(batch => ({ ...batch, sourceIndex: OMITTED_SOURCE_INDEX_STRATEGY }));
@@ -1182,14 +1420,37 @@ export function workerBatchStrategy(manifest) {
  * Conservative aggregation of one question's part answers: SATISFIED only
  * when every part is SATISFIED (then the least confident part is kept);
  * otherwise the most severe non-SATISFIED part answer, earliest part first.
+ * The Living Docs question under LIVING_DELIVERY_EVIDENCE_V4 opts into
+ * aggregateLivingBatchAnswers instead (see below); every other question keeps
+ * this rule byte-for-byte.
  */
-export function aggregateBatchAnswers(answers) {
+export function aggregateBatchAnswers(answers, options = {}) {
   check(Array.isArray(answers) && answers.length > 0, 'batch aggregation requires answers');
   if (answers.length === 1) return answers[0];
+  if (options?.livingDocs) return aggregateLivingBatchAnswers(answers);
   const unsatisfied = answers.filter(answer => answer.choice !== 'SATISFIED');
   if (!unsatisfied.length) return answers.reduce((least, answer) => answer.confidence < least.confidence ? answer : least);
   const rank = choice => { const index = BATCH_SEVERITY.indexOf(choice); return index < 0 ? BATCH_SEVERITY.length : index; };
   return unsatisfied.reduce((worst, answer) => rank(answer.choice) < rank(worst.choice) ? answer : worst);
+}
+/**
+ * Aggregation for a split Living Docs question under
+ * LIVING_DELIVERY_EVIDENCE_V4 only. Split parts differ only in which evidence
+ * logs they carry, so a part holding unrelated logs answers
+ * INSUFFICIENT_EVIDENCE without evidence against the docs. Any contradiction
+ * (IMPLEMENTATION_DEFECT, or the more severe PLAN_INPUT_CONTRADICTION) in any
+ * part fails the question; otherwise one SATISFIED part suffices and the
+ * least confident SATISFIED part is kept; all-INSUFFICIENT_EVIDENCE stays
+ * INSUFFICIENT_EVIDENCE. A real doc defect still fails: the contradicting
+ * part is never outvoted by unrelated parts.
+ */
+function aggregateLivingBatchAnswers(answers) {
+  const rank = choice => { const index = BATCH_SEVERITY.indexOf(choice); return index < 0 ? BATCH_SEVERITY.length : index; };
+  const contradictions = answers.filter(answer => answer.choice !== 'SATISFIED' && answer.choice !== 'INSUFFICIENT_EVIDENCE');
+  if (contradictions.length) return contradictions.reduce((worst, answer) => rank(answer.choice) < rank(worst.choice) ? answer : worst);
+  const satisfied = answers.filter(answer => answer.choice === 'SATISFIED');
+  if (satisfied.length) return satisfied.reduce((least, answer) => answer.confidence < least.confidence ? answer : least);
+  return answers.reduce((least, answer) => answer.confidence < least.confidence ? answer : least);
 }
 async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, apiKey, bypassCache, options }) {
   const batches = workerBatches(fullPayload, options);
@@ -1217,7 +1478,13 @@ async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, a
     inputTokens += response.usage.input_tokens;
     outputTokens += response.usage.output_tokens;
   }
-  const answers = Object.fromEntries(Object.entries(partAnswers).map(([id, parts]) => [id, aggregateBatchAnswers(parts)]));
+  const answers = Object.fromEntries(Object.entries(partAnswers).map(([id, parts]) => {
+    // A split Living Docs question under LIVING_DELIVERY_EVIDENCE_V4 aggregates
+    // per-part: unrelated parts answer INSUFFICIENT_EVIDENCE without failing
+    // the question, while any contradiction fails it. Ordinary criteria keep
+    // all-parts-must-pass. The predicate matches batching by construction.
+    return [id, aggregateBatchAnswers(parts, isCohesiveLiving(fullPayload, id, options) ? { livingDocs: true } : {})];
+  }));
   const partChoices = Object.fromEntries(Object.entries(partAnswers).filter(([, parts]) => parts.length > 1).map(([id, parts]) => [id, parts.map(answer => answer.choice)]));
   return {
     response: validateResponse({ model: fullPayload.model, answers, usage: { input_tokens: inputTokens, output_tokens: outputTokens } }, fullPayload),

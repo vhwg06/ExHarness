@@ -1,0 +1,27 @@
+{
+  "id": "feat-prefix",
+  "category": "feature",
+  "prompt": "Add and export addPrefix(prefix, value) in strings.mjs. It returns prefix + value, and returns value unchanged when it already starts with prefix. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}
