@@ -1,3 +1,4 @@
+// Delivery rebuild 2026-10-01: re-validated on current main.
 import { createHash, randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { promises as nodeFs } from "node:fs";
