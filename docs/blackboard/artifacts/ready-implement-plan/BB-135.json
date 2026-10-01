@@ -12,31 +12,93 @@
     "agent-tools.operator.run-recovery"
   ],
   "outOfScope": [
-    "Changing delivered recovery handle schema or resume contract owned by BB-101/BB-125.",
-    "Sandbox, SCM push, MCP promote, or a second lineage format."
+    "Recovery handle schema, Core, supervisor and adapter algorithms.",
+    "BB-125 task/config digest binding, tool version pinning and requiredFiles resume semantics.",
+    "deliver, smoke, eval, MCP, Application recovery and trace formats.",
+    "Concurrent-writer locks, crash before first durable ACT handle, automatic terminal cleanup or new cleanup command.",
+    "Sandbox, SCM, MCP promote, first-slice/product-value or live tool claims."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
     "Reuse the delivered BB-101 recovery handle, resumeSupervisedTask and disposeRecoverableRun. Do not invent a second lineage or change default run disposal when recoveryDir is omitted.",
     "BB-125 owns resume task/config binding. This task may consume that contract when present and must not rewrite it.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "No sandbox, SCM push, MCP promote, or live-value claim.",
+    "Worker writes only CLI, one CLI test and two Living docs. Recovery APIs are read-only.",
+    "Research publishes only this DRAFT plan; no readinessRef, judgment or implementation result.",
+    "Preserve objective binding and graph baseline; resolve source anchors from that baseline.",
+    "CLI tests use real bin subprocesses, deterministic fake agents and temporary repos; zero provider calls."
   ],
   "invariants": [
-    "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
-    "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "One recovery handle is one semantic lineage; first-run never turns itself into resume and resume never falls back to a new run.",
+    "Omitting recovery flags preserves disposal in finally; opting in retains the delivered directory until disposeRecoverableRun(handle).",
+    "The operator preserves source HEAD, branches and working file contents; candidate commits belong to the detached worktree.",
+    "Resume inherits the recorded retry budget when no explicit override is supplied and preserves existing observation forwarding.",
+    "No recovery invocation starts an agent on invalid flags or invalid handle identity."
   ],
   "architectureDecisions": [
-    "Forward --recovery-dir from exharness-agent run into runSupervisedTask.recoveryDir. Resume uses resumeSupervisedTask when handle.json is RUNNING.",
-    "Keep default run without recoveryDir on the unique mkdtemp worktree disposed in finally. Do not change deliver's existing --recovery-dir path except by shared helper extraction if research selects it."
+    "D1: Use run --tool <id> --task <task.json> --recovery-dir <dir> for a first durable run and run --tool <id> --task <task.json> --resume-dir <dir> for explicit resume. Both are value-taking options compatible with parseOptions. They are mutually exclusive; repeating the first command against a handle remains HANDLE_CURRENT. No auto-resume based on file existence.",
+    "D2: In commandRun validate mode/path and all existing run factors first. Nonempty paths must contain non-whitespace characters; resolve them to absolute paths. Missing values already throw UsageError via parseOptions. Check both-mode conflict before task/handle I/O. Keep existing tool/task requirements and the general parser behavior for unrelated flags.",
+    "D3: Resume reads through readAgentToolRunHandle, verifies with verifyAgentToolRunHandle, and performs an operator preflight before executable resolution or observation construction: resolved handle.recoveryDir equals selected directory; validated task id/resolved repositoryRoot/baseRevision match the handle; requested tool id matches handle.toolId; status is RUNNING. Use exported RecoveryError with HANDLE_INVALID, TOOL_MISMATCH and HANDLE_COMPLETE. Never treat a read/verification error as permission to start.",
+    "D4: First-run calls runSupervisedTask with recoveryDir (null when omitted). Resume calls resumeSupervisedTask(handle, options) with the original task and resolved tool. Reuse the API checks for on-disk digest/currentness, source drift, missing worktree, session recovery and completed status; never construct a worktree/session, copy a handle or call harness.start in the CLI.",
+    "D5: Build one shared options tuple within commandRun for task/tool/model/timeoutMs/permissionProfile and the delivered observation hooks. Default first-run maxAttempts stays 3; omitted resume maxAttempts is null so the API uses handle.maxAttempts; supplied positive values are passed as the existing API permits. Preserve model null, timeout 600000, permission WORKSPACE_EDIT, arm validation, result finalization, printed JSON and 0/1/2 ACCEPTED/EXHAUSTED/TOOL_UNAVAILABLE exits.",
+    "D6: Durable start/resume retains the recovery directory on success and error exactly as the delivered API does. Do not call disposeRecoverableRun automatically in commandRun; document the existing API for explicit caller disposal and use it for test cleanup. A terminal handle is inspectable and an explicit later resume fails HANDLE_COMPLETE. Default nonrecoverable run keeps its current finally cleanup.",
+    "D7: UsageError retains exit 64 and usage text. RecoveryError follows the existing uncaught-error path: nonzero exit with its code in stderr, no result claiming ACCEPTED, no deletion/retry/fallback. Keep missing-tool TOOL_UNAVAILABLE exit 2 behavior after preflight. This task does not prescribe a new JSON error envelope or change other subcommands.",
+    "D8: The test file defines runCli as a subprocess harness around process.execPath and the absolute bin path with shell:false; it is not a mock or new exported product function. Each bound negative test calls runCli directly and asserts subject behavior. Use --command with an absolute generated .mjs wrapper around the existing fake-agent.mjs to record version probes as well as agent invocations; resolveExecutable already supports such scripts.",
+    "D9: Test actual CLI process death with a first verifier gate: it writes a readiness marker only after ACT_COMPLETED handle persistence, then waits on a test-owned release file with a bounded deadline. The parent test waits for the marker plus a verified RUNNING handle, kills the CLI process, releases/reaps the detached gate verifier, then invokes --resume-dir in a fresh CLI process. A second verifier is the failing sum test and fake PARTIAL_THEN_FIX exercises the same tool session on attempt 2. Do not expose a product crash flag or edit the delivered crash-supervised fixture.",
+    "D10: The CLI checks only delivered identity/path/tool/status and delegates resume semantics. Current BB-101 does not cryptographically bind prompt, verifications, model, permission or timeout; docs must state that callers resupply the original task/config. BB-125 owns stronger binding. If its delivered API changes before Worker start, recheck compatibility and return contradictions to research rather than implementing its contract here.",
+    "D11: Independent readiness and Worker evidence bind exact objective/plan/candidate hashes. Current research evidence is source inspection plus delivered API regression only; new CLI tests and feature acceptance are future Worker outputs."
   ],
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/**",
+      "packages/agent-tools/test/**",
+      "docs/blackboard/artifacts/objective/BB-135.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+      "docs/blackboard/process/operator-cli-composition.md",
+      "docs/blackboard/evidence/BB-135/**",
+      "docs/blackboard/jev-policy.json",
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-negative-case-binding.mjs",
+      "scripts/blackboard-jev.mjs",
+      "docs/living/system/agent-tools/recovery.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "write": [
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/run-cli-recovery.test.js",
+      "docs/living/system/agent-tools/recovery.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "forbiddenWrite": [
+      "packages/agent-tools/src/**",
+      "packages/agent-tools/test/fixtures/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**",
+      "package.json"
+    ]
+  },
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/test/recovery.test.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "packages/agent-tools/test/fixtures/crash-supervised.mjs",
+      "docs/blackboard/process/operator-cli-composition.md",
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.mjs",
       "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
-      "docs/blackboard/process/operator-cli-composition.md"
+      "docs/living/system/agent-tools/recovery.md",
+      "docs/living/system/agent-tools/operator.md"
     ],
     "expectedNew": [
       "packages/agent-tools/test/run-cli-recovery.test.js"
@@ -45,62 +107,144 @@
       "packages/agent-tools/test/run-cli-recovery.test.js"
     ]
   },
-  "sourceScope": {
-    "read": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/recovery.js",
-      "packages/agent-tools/src/**",
-      "packages/agent-tools/test/**",
-      "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
-    ],
-    "write": [
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/test/run-cli-recovery.test.js",
-      "docs/living/system/agent-tools/recovery.md",
-      "docs/living/system/agent-tools/operator.md"
-    ],
-    "forbiddenWrite": [
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "packages/benchmark/**",
-      "docs/blackboard/**",
-      ".github/**"
-    ]
-  },
   "implementationSlices": [
-    "S1 — Pin the run CLI recovery flag/resume mapping and execute a crash/resume fixture in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, wire only --recovery-dir on run and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — CLI composition [RUN_PERSISTS,RUN_RECOVERS,RUN_OPTIONS,CLI_USAGE,FAIL_CLOSED_LINEAGE]: change only exharness-agent.mjs imports/header/USAGE/commandRun; implement D1-D7 preflight, dispatch and option forwarding. Keep recovery APIs read-only.",
+    "S2 — Discriminating operator fixtures [RUN_PERSISTS,RUN_RECOVERS,DEFAULT_DISPOSAL,FAIL_CLOSED_LINEAGE,RUN_OPTIONS,CLI_USAGE,SOURCE_UNCHANGED]: add run-cli-recovery.test.js implementing D8-D9, the exact P1-P4/N1-N14 titles and assertions below, bounded process cleanup and source snapshots. All fixtures generated at runtime live outside the repo and are removed in finally.",
+    "S3 — Living contract and evidence [OPERATOR_DOCS]: update only operator.md and recovery.md with start/resume examples, terminal retention/disposal, expected exits/refusals and delivered limits; implement P5; execute all verificationPlan checks and submit candidate-bound evidence for independent Worker judgment."
   ],
   "acceptanceCriteria": [
     {
-      "id": "RUN_RECOVERS",
-      "statement": "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
+      "id": "RUN_PERSISTS",
+      "statement": "A first operator run with --recovery-dir passes that directory to runSupervisedTask and persists the delivered handle, worktree, logs and Core session after completion or process death.",
       "verificationIds": [
-        "focused"
+        "cli"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "BB-135 P1 recovery directory persists an accepted run: subprocess exit 0, acceptedSha equals handle.candidateSha, valid digest, one registered worktree and a loadable recorded Core session; BB-135 P2 kills the actual operator process and reads a RUNNING handle."
+      ]
+    },
+    {
+      "id": "RUN_RECOVERS",
+      "statement": "An explicit operator run with --resume-dir resumes the recorded attempt in the same worktree and Core session, retaining the recorded tool session and candidate history.",
+      "verificationIds": [
+        "cli",
+        "recovery-api"
+      ],
+      "evidenceRequired": [
+        "BB-135 P2 operator crash resumes the same attempt: before/after handles, Core session snapshots and fake-agent argv/cwd records prove unchanged task/worktree/Core identity, preserved pre-crash candidate ancestry, no replay of completed ACT, original attempt indexes, feedback-driven tool resume and acceptedSha equal to the terminal handle candidate."
+      ]
+    },
+    {
+      "id": "DEFAULT_DISPOSAL",
+      "statement": "Operator run without either recovery flag still removes its temporary worktree after ACCEPTED, EXHAUSTED or an exception.",
+      "verificationIds": [
+        "cli",
+        "recovery-api"
+      ],
+      "evidenceRequired": [
+        "BB-135 N1 default run disposes its temporary worktree: parameterized success, exhausted and invalid-base checkout cases, test-local TMPDIR entries and git worktree list show no remaining scratch worktree; use a fixture launch wrapper to record actual cwd."
       ]
     },
     {
       "id": "FAIL_CLOSED_LINEAGE",
-      "statement": "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
+      "statement": "A second first-run, a mismatched resume identity/tool, a completed handle, an invalid handle or a failed delivered recovery check refuses without starting another agent invocation or lineage.",
       "verificationIds": [
-        "focused"
+        "cli",
+        "recovery-api"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "Exact BB-135 N2 through N10 titles bound below must pass in the cli log; snapshot recovery bytes, session filenames, worktree registrations and fake-agent invocation/version-probe records before and after each refusal. Expect nonzero exit and the named RecoveryError code, with no fallback run."
+      ]
+    },
+    {
+      "id": "RUN_OPTIONS",
+      "statement": "Both start and resume forward existing model, permission, timeout and observation options, while an omitted resume max-attempts uses the recorded handle budget.",
+      "verificationIds": [
+        "cli"
+      ],
+      "evidenceRequired": [
+        "BB-135 P3 resume retains budget and run options: begin a crashed run with maxAttempts=4, resume without --max-attempts, verify terminal handle still records 4; nondefault model/permission appear in fake-agent argv, timeout terminates a hanging fake agent, trace records from start/resume validate through report; explicit positive max-attempts is forwarded using the delivered API contract."
+      ]
+    },
+    {
+      "id": "CLI_USAGE",
+      "statement": "Recovery flags with missing or empty values, both modes together, or invalid existing numeric/permission/arm options return usage exit 64 before launching an agent.",
+      "verificationIds": [
+        "cli"
+      ],
+      "evidenceRequired": [
+        "BB-135 N11 through N14 parameterized CLI calls assert exit 64, usage text with both recovery forms, no version probe or agent invocation, no worktree/session creation, and an untouched existing recovery directory."
+      ]
+    },
+    {
+      "id": "SOURCE_UNCHANGED",
+      "statement": "Start, interrupted run, resume and refused invocations preserve the source repository HEAD, symbolic branch, branch refs and tracked/untracked working files.",
+      "verificationIds": [
+        "cli",
+        "recovery-api"
+      ],
+      "evidenceRequired": [
+        "Every P1/P2/N1-N10 scenario takes content-inclusive source snapshots before/after; BB-135 P4 source repository is unchanged includes a planted unrelated dirty tracked file and untracked file, snapshots git HEAD/symbolic-ref/refs and bytes, and separately counts the one permitted durable worktree registration."
+      ]
+    },
+    {
+      "id": "OPERATOR_DOCS",
+      "statement": "Living operator and recovery docs describe the exact start/resume flags, retained recovery directory, explicit disposal API, refusals, output/exit contract and delivered task identity limitations.",
+      "verificationIds": [
+        "cli",
+        "docs",
+        "agent-tools-regression"
+      ],
+      "evidenceRequired": [
+        "BB-135 P5 operator docs match the run recovery contract checks examples against the CLI modes; verify:current-docs passes; docs contain no new research status or Blackboard ids and keep the existing deliver lifecycle accurate."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "One recovery handle is one semantic lineage; first-run never turns itself into resume and resume never falls back to a new run.",
+      "criterionIds": [
+        "RUN_PERSISTS",
+        "RUN_RECOVERS",
+        "FAIL_CLOSED_LINEAGE"
+      ]
+    },
+    {
+      "invariant": "Omitting recovery flags preserves disposal in finally; opting in retains the delivered directory until disposeRecoverableRun(handle).",
+      "criterionIds": [
+        "DEFAULT_DISPOSAL",
+        "RUN_PERSISTS",
+        "OPERATOR_DOCS"
+      ]
+    },
+    {
+      "invariant": "The operator preserves source HEAD, branches and working file contents; candidate commits belong to the detached worktree.",
+      "criterionIds": [
+        "SOURCE_UNCHANGED"
+      ]
+    },
+    {
+      "invariant": "Resume inherits the recorded retry budget when no explicit override is supplied and preserves existing observation forwarding.",
+      "criterionIds": [
+        "RUN_OPTIONS"
+      ]
+    },
+    {
+      "invariant": "No recovery invocation starts an agent on invalid flags or invalid handle identity.",
+      "criterionIds": [
+        "CLI_USAGE",
+        "FAIL_CLOSED_LINEAGE"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "focused",
+      "id": "cli",
       "command": "node --test packages/agent-tools/test/run-cli-recovery.test.js"
+    },
+    {
+      "id": "recovery-api",
+      "command": "node --test packages/agent-tools/test/recovery.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -111,69 +255,414 @@
       "command": "npm run verify:current-docs"
     }
   ],
-  "invariantCoverage": [
-    {
-      "invariant": "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
-      "criterionIds": [
-        "RUN_RECOVERS",
-        "FAIL_CLOSED_LINEAGE"
-      ]
-    },
-    {
-      "invariant": "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
-      "criterionIds": [
-        "FAIL_CLOSED_LINEAGE"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "RUN_RECOVERS",
-        "FAIL_CLOSED_LINEAGE"
-      ]
-    }
-  ],
   "negativeVerificationCases": [
-    "Second first-run against a current handle must fail closed",
-    "Run without recoveryDir must still dispose the temporary worktree"
+    "Without recovery flags, ACCEPTED, EXHAUSTED and exception paths must leave no temporary worktree.",
+    "--recovery-dir on a directory with a RUNNING handle must return HANDLE_CURRENT, not automatically resume.",
+    "--resume-dir with a changed task id, resolved repositoryRoot or baseRevision must return HANDLE_INVALID.",
+    "--resume-dir with ACCEPTED, EXHAUSTED or TOOL_UNAVAILABLE must return HANDLE_COMPLETE and retain the terminal handle.",
+    "--resume-dir with no handle, malformed JSON or invalid handle shape must return HANDLE_INVALID; never reinterpret it as a first run.",
+    "--resume-dir with a changed body and old digest must return DIGEST_MISMATCH.",
+    "A valid RUNNING handle whose worktree was removed must return MISSING_WORKTREE, without creating a replacement.",
+    "A source commit after crash must produce SOURCE_HEAD_DRIFT; compare snapshots to the deliberately drifted state, not the original baseline.",
+    "A tool id different from handle.toolId must return TOOL_MISMATCH before any version probe or agent invocation.",
+    "A valid digest with handle.recoveryDir different from the selected --resume-dir must return HANDLE_INVALID without following the other directory.",
+    "Supplying --recovery-dir and --resume-dir together must return usage exit 64 before reading or changing either run.",
+    "Missing or empty recovery path values must return usage exit 64; quoted empty and whitespace-only values are invalid.",
+    "Non-positive/non-integer --max-attempts or --timeout-ms, and invalid --permission, must return usage exit 64 before first-run or resume.",
+    "--arm without --trace-dir must return usage exit 64 on start and resume without launching a process."
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_135_1",
       "negativeCaseIndex": 0,
-      "criterionId": "FAIL_CLOSED_LINEAGE",
-      "verificationId": "focused",
+      "criterionId": "DEFAULT_DISPOSAL",
+      "verificationId": "cli",
       "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
-      "testTitle": "BB-135 N1 Second first-run against a current handle must fail closed",
-      "subjectSymbol": "runSupervisedTask"
+      "testTitle": "BB-135 N1 default run disposes its temporary worktree",
+      "subjectSymbol": "runCli"
     },
     {
       "id": "NEG_135_2",
       "negativeCaseIndex": 1,
       "criterionId": "FAIL_CLOSED_LINEAGE",
-      "verificationId": "focused",
+      "verificationId": "cli",
       "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
-      "testTitle": "BB-135 N2 Run without recoveryDir must still dispose the temporary worktree",
-      "subjectSymbol": "runSupervisedTask"
+      "testTitle": "BB-135 N2 second first-run rejects a current handle",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N3 mismatched task refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N4 completed handle refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N5 missing or malformed handle refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N6 corrupted digest refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N7 missing worktree refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_8",
+      "negativeCaseIndex": 7,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N8 source HEAD drift refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_9",
+      "negativeCaseIndex": 8,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N9 tool mismatch refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_10",
+      "negativeCaseIndex": 9,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N10 handle directory mismatch refuses resume",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_11",
+      "negativeCaseIndex": 10,
+      "criterionId": "CLI_USAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N11 recovery modes are mutually exclusive",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_12",
+      "negativeCaseIndex": 11,
+      "criterionId": "CLI_USAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N12 recovery paths require values",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_13",
+      "negativeCaseIndex": 12,
+      "criterionId": "CLI_USAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N13 invalid run factors fail before recovery",
+      "subjectSymbol": "runCli"
+    },
+    {
+      "id": "NEG_135_14",
+      "negativeCaseIndex": 13,
+      "criterionId": "CLI_USAGE",
+      "verificationId": "cli",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N14 arm requires a trace directory on recovery modes",
+      "subjectSymbol": "runCli"
     }
   ],
   "researchGaps": [
-    "Ratify exact CLI flag versus resume-from-handle detection, crash-injection fixture, and interaction with BB-125 contract binding before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+    "Upstream baseline binding prevents independent readiness: graph contract researchBaselineSha 4291a4a7900ea3c943a2533581c6abc210b1145f lacks the registered operator-cli-composition.md and BB-135 cli-composition-audit.mjs/.json. Jev materialization requires every objective/currentSourceRef and requiredExisting ref at that SHA. Canonical owner must authorize a baseline containing those refs before readiness; this plan-only research preserves graph/objective bindings and remains DRAFT."
   ],
   "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "finding": "SOURCE_INSPECTION at the registered baseline: runCliPassesRecoveryDir=false, supervisorAcceptsRecoveryDir=true. This is motivation, not crash/resume execution evidence."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "SOURCE_INSPECTION on origin/main 2eaafe9d909b2a2de06668d69662189a26da8c20: commandRun never forwards recoveryDir; parser flags take values; main maps only UsageError to exit 64."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: first-run refuses HANDLE_CURRENT; resume maxAttempts defaults to null and checks task identity/completed status. APIs retain the directory; no supervisor edit needed."
+    },
+    {
+      "ref": "packages/agent-tools/test/recovery.test.js",
+      "finding": "EXECUTED_RESEARCH_REGRESSION on base 2eaafe9d909b2a2de06668d69662189a26da8c20: recovery-api command exited 0, 11 passed, 0 failed/skipped, including API crash/resume and default disposal/refusal tests. New CLI tests remain unexecuted."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-101"
+    ],
+    "workerStart": "Confirm BB-101 remains DONE, objective hash and graph baseline match this plan, imports and APIs remain compatible, and only declared Worker paths change. BB-125 is separate RESEARCH_SA work, not a READY dependency. Re-run recovery-api before coding; do not consume another researcher branch as delivered truth.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "AGENT_TOOL_RUN_HANDLE_V1",
+        "runSupervisedTask recoveryDir",
+        "resumeSupervisedTask",
+        "readAgentToolRunHandle",
+        "verifyAgentToolRunHandle",
+        "RecoveryError",
+        "disposeRecoverableRun",
+        "resolveExecutable absolute .mjs launch",
+        "run trace observation hooks"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "operator run --recovery-dir",
+        "operator run --resume-dir",
+        "operator preflight",
+        "run-cli-recovery.test.js"
+      ]
+    },
+    "contradiction": "Upstream baseline lacks three registered research source refs; see researchGaps. CLI/API design is compatible at inspected origin/main. Independent readiness stays blocked until canonical baseline repair, outside this plan-only write scope."
+  },
+  "deliveryContract": {
+    "precondition": "BB-101 DONE and this exact plan independently READY after a SATISFIED Jev readiness judgment. This publication remains DRAFT.",
+    "completion": "All checks pass on the exact candidate with named bin-invoking evidence, reconciled Living docs, independent Worker judgment and exact evaluated merge identity.",
+    "forbidden": "No product implementation in RESEARCH_SA, no READY self-issue, no recovery schema/supervisor edit, no other task artifact rewrite, no automatic retry or terminal-handle adoption, no live-value claim."
+  },
+  "ciContract": {
+    "checks": [
+      "cli",
+      "recovery-api",
+      "agent-tools-regression",
+      "docs"
+    ],
+    "evidenceRouting": "Bind command/exit/log ref+hash to the candidate. Criterion claims cite exact CLI titles and verificationIds; negatives must pass their distinct test and invoke runCli directly. Skips, comments and API-only fixtures do not prove operator behavior.",
+    "liveJev": "Independent Jev evaluates exact objective/plan at readiness and exact candidate evidence at Worker judgment; schema or materialization success is not SATISFIED."
+  },
+  "migrationContract": {
+    "preserve": [
+      "AGENT_TOOL_RUN_HANDLE_V1 bytes/schema and recovery API semantics",
+      "normal run options, JSON result and 0/1/2 status exits",
+      "default unique temporary worktree disposal",
+      "deliver terminal disposal and other subcommands"
+    ],
+    "add": [
+      "run recovery/resume options and read-only preflight",
+      "one focused CLI test file",
+      "Living operator/recovery usage"
+    ],
+    "rollback": "Revert only the CLI, new CLI test file and two Living doc changes. Retained recovery directories remain governed by the existing disposal API; rollback must not delete user recovery data."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "Canonical objective, DONE BB-101, audit, delivered API regression",
+      "output": "DRAFT READY_IMPLEMENT_PLAN for independent readiness review",
+      "binding": "Exact objective ref/hash plus canonical graph researchBaselineSha",
+      "convergence": "Canonical baseline gap resolved, then independent SATISFIED Jev readiness",
+      "forbidden": [
+        "Product source or Living doc mutation",
+        "Changing graph/objective/policy/terminal artifacts",
+        "Fabricated CLI execution, readiness, acceptance or delivery claims"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "Exact independently READY BB-135 plan and DONE BB-101",
+      "output": "Candidate and independently judged implementation evidence",
+      "binding": "Exact plan hash, candidate SHA/tree, command/log hashes and Jev evaluation",
+      "convergence": "All criterion, negative, scope and Living claims SATISFIED; exact evaluated merge",
+      "forbidden": [
+        "Redefining recovery or stronger BB-125 binding",
+        "Writing outside sourceScope.write",
+        "Automatic new lineage after refusal"
+      ]
+    }
+  ],
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/recovery.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs describe implemented operator run start/resume, retained handle/worktree lifecycle, explicit disposeRecoverableRun cleanup, errors and task/config limitations while preserving deliver semantics; no research status or Blackboard ids."
   },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
+      "criterionIds": [
+        "RUN_PERSISTS",
+        "RUN_RECOVERS",
+        "RUN_OPTIONS",
+        "SOURCE_UNCHANGED"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "cli",
+        "recovery-api"
+      ],
+      "decisionIndexes": [
+        0,
+        3,
+        4,
+        8
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/supervisor.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "async function commandRun(options)"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function resumeSupervisedTask("
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "skipFirstAct: !resumeAtCompletion"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence",
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
+      "criterionIds": [
+        "DEFAULT_DISPOSAL",
+        "FAIL_CLOSED_LINEAGE",
+        "CLI_USAGE"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "cli",
+        "recovery-api"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/recovery.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "a current handle already exists"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "resume task identity does not match the handle"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "handle is already ${handle.status}"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export async function disposeRecoverableRun(handle)"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases",
+        "negativeCaseBindings",
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "RUN_PERSISTS",
+        "RUN_RECOVERS",
+        "DEFAULT_DISPOSAL",
+        "FAIL_CLOSED_LINEAGE",
+        "RUN_OPTIONS",
+        "CLI_USAGE",
+        "SOURCE_UNCHANGED",
+        "OPERATOR_DOCS"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "cli",
+        "recovery-api",
+        "agent-tools-regression",
+        "docs"
+      ],
+      "decisionIndexes": [
+        7,
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-composition.md",
+        "docs/living/system/agent-tools/recovery.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-composition.md",
+          "match": "Research still has to ratify exact flags"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/recovery.md",
+          "match": "The original task (prompt plus verifications) is supplied again"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "ciContract",
+        "laneContracts",
+        "livingDocs"
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "The primary operator run path can survive process death using the recovery API that already exists.",
-    "measurement": "Crash/resume fixture on fake CLI; source repository unchanged; no second lineage.",
+    "expectedValue": "An operator can opt into the delivered durable API from the primary run command and explicitly resume the same semantic attempt after process death.",
+    "measurement": "Fake-CLI crash/resume, refusals, unchanged source snapshots and one lineage.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-101 for recovery semantics; BB-074 for end-to-end delivery value"
+    "valueOwner": "BB-101 owns recovery semantics; broader product value is outside this operator composition."
   }
 }
