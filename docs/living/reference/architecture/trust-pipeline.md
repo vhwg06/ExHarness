@@ -286,3 +286,4 @@ The kernel does not:
 - automatically resolve contradictory semantic evidence.
 
 Attestation increases trust only when the evidence producer, evidence environment, evaluator, attestation issuer, attestation environment, provenance, upstream trust lineage and policy are independently trustworthy enough for the consuming boundary.
+<!-- Delivery rebuild 2026-10-01: re-validated on current main. -->
