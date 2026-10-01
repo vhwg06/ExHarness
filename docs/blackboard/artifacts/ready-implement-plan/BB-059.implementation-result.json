@@ -1,0 +1,142 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-059-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+    "hash": "c59cee7955ec810085251ec132164bcc897b28df8454963251aebd92220da2e1"
+  },
+  "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+  "baselineSha": "d58730596e397463250973fd157dd9c1849e01ca",
+  "candidateTree": "d5304b8fcabefdf57086d33d67c84e76d483b327",
+  "verificationRuns": [
+    {
+      "id": "how-evolution-evaluation",
+      "command": "node --test packages/agentic-system/test/how-evolution-evaluation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-evaluation.txt",
+      "logHash": "d9cc5baf9541207040239d1bc621faac3d675d91b4c1a37067c346dc2bce7a90"
+    },
+    {
+      "id": "how-evolution-jev-adapter",
+      "command": "node --test packages/agentic-system/test/how-evolution-jev-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-jev-adapter.txt",
+      "logHash": "1f0b243554a200892345ae00422ab238f77a5a6e1b208c89828dadc7d41c4e30"
+    },
+    {
+      "id": "how-evolution-promotion",
+      "command": "node --test packages/agentic-system/test/how-evolution-promotion.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-promotion.txt",
+      "logHash": "77c624958152be2a9482213413dd3de19638114234deb5d431c292430c470ad1"
+    },
+    {
+      "id": "how-evolution-currentness",
+      "command": "node --test packages/agentic-system/test/how-evolution-currentness.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-currentness.txt",
+      "logHash": "32ece8849532bb60ae3e8cb628263eafba32dfaf7176213105984d7563e90d72"
+    },
+    {
+      "id": "how-evolution-attempt-pinning",
+      "command": "node --test packages/agentic-system/test/how-evolution-attempt-pinning.test.js packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-attempt-pinning.txt",
+      "logHash": "693b7edc6d877cb48d1ad52fb5adcbd4d0d7dd533db040ea900543f44f18390a"
+    },
+    {
+      "id": "how-evolution-rollback",
+      "command": "node --test packages/agentic-system/test/how-evolution-rollback.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/how-evolution-rollback.txt",
+      "logHash": "98aff098c4c139af54ded922df22d645b7f1fafeeef745cac0cf3964b0b405b8"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/agentic-regression.txt",
+      "logHash": "dd2186a16c2a64f3de27d06ca066e69872d340022d4c79369882bde773c62317"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "859c58a91a5b1eb730d31e95efa10c1d2389e7ea",
+      "logRef": "docs/blackboard/evidence/BB-059/repository-verify.txt",
+      "logHash": "cf188282ecce109354ee41fb5a8e3ae95f8eed559e2325f9a9dd1c82fd921ee1"
+    }
+  ],
+  "claims": [
+    {
+      "id": "AC-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-evaluation.txt",
+        "docs/blackboard/evidence/BB-059/how-evolution-jev-adapter.txt"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-jev-adapter.txt"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-evaluation.txt",
+        "docs/blackboard/evidence/BB-059/how-evolution-promotion.txt"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-evaluation.txt",
+        "docs/blackboard/evidence/BB-059/how-evolution-currentness.txt"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-promotion.txt",
+        "docs/blackboard/evidence/BB-059/how-evolution-attempt-pinning.txt"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-currentness.txt"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-rollback.txt"
+      ]
+    },
+    {
+      "id": "AC-8",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-059/how-evolution-evaluation.txt",
+        "docs/blackboard/evidence/BB-059/agentic-regression.txt"
+      ]
+    }
+  ]
+}
