@@ -21,7 +21,7 @@
   ],
   "constraints": [
     "Product edit is packages/oracle/src/retrieval-planner.js reserve() plus tests and Living docs named in sourceScope.write.",
-    "Tests in packages/oracle/test/retrieval-planner.test.js titled RP1, RP2, RP3 and RP4 followed by a space. Each negativeCaseBinding testTitle is a new test in that file (absent on main) whose body invokes createRetrievalPlanner(...) with a non-vacuous assertion; RP3 then asserts Living docs omit the 8192-byte cap.",
+    "Tests in packages/oracle/test/retrieval-planner.test.js titled RP1, RP2, RP3 and RP4 followed by a space.",
     "Fail closed: never truncate candidate content to fit a reservation.",
     "GRAPH_EXPANDED_V1 must not be starved: the base REPOSITORY plan must leave unreserved provider calls, items and bytes whenever the requirement budget has headroom, so pinned planning-strategies tests keep passing; planning-strategies.js and its tests are read-only.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
@@ -35,15 +35,14 @@
     "A REPOSITORY base plan with budget headroom leaves unreserved provider calls, items and bytes so GRAPH_EXPANDED_V1 still EXPANDs; with no unreserved budget the expansion still SKIPs BUDGET_EXHAUSTED."
   ],
   "architectureDecisions": [
-    "D1 — Edit only packages/oracle/src/retrieval-planner.js reserve(). execute() budget checks stay on reservedBudget (raw.length>reservedBudget.items and bytes>reservedBudget.materializedBytes). Do not change execute() catch mapping. GRAPH_EXPANDED_V1 runWork and its Math.min(8192, free.materializedBytes) items:1 expansion stay in planning-strategies.js (read-only).",
-    "D2 — Drop Math.min(8192, remainingBytes) with no replacement constant. reserve() takes explicit {items, bytes}, guards with reserved.providerCalls>=remaining.maxProviderCalls || reserved.items+items>remaining.maxItems || bytes<1, then reserved.providerCalls+=1; reserved.items+=items; reserved.materializedBytes+=bytes and records reservedBudget:{providerCalls:1,items,materializedBytes:bytes}. Magnitudes: R_BYTES=remaining.maxMaterializedBytes-reserved.materializedBytes; R_CALLS=remaining.maxProviderCalls-reserved.providerCalls (current slot plus unused GRAPH slot); R_ITEMS=remaining.maxItems-reserved.items; R_EXACT=count of itemRefs from this evidence's current itemRef through later evidences that have itemRefs (later REPOSITORY/GRAPH/EXTERNAL without itemRefs are not in R_EXACT). READ_EXACT: items=1, bytes=Math.max(1, Math.floor(R_BYTES/Math.max(1,R_EXACT))) so a single remaining itemRef receives all remaining bytes. LOOKUP_SYMBOL, SEARCH_LEXICAL and STRUCTURAL_MAP: items=1, bytes=Math.max(1, Math.floor(R_BYTES/Math.max(1,R_CALLS))) so both REPOSITORY operations still reserve and one call-share of bytes remains for GRAPH_EXPANDED_V1 when the budget has headroom. TRAVERSE_GRAPH/FETCH_EXTERNAL: items=Math.max(1,R_ITEMS), bytes=R_BYTES. The superseded per-evidence-ops split (LOOKUP rem/2 + SEARCH rem: 10000+10000 of 20000, free 0) is revoked.",
-    "D3 — Tests in retrieval-planner.test.js; titles match negativeCaseBindings exactly; every RP1–RP4 body invokes createRetrievalPlanner (the bound subjectSymbol). RP1 fails on current main (BUDGET_EXHAUSTED) then passes COMPLETE through execute+createOracleContextResolver with reservedBudget.materializedBytes>8192 covering execute need 9358. RP2 covers oversize fail-closed, both lexical ops reserving at maxItems>=2, and execute() failure shape {evidenceId,providerId,reason,detail}. RP3 body calls createRetrievalPlanner({catalog}).plan(a REPOSITORY requirement) then asserts docs/living/system/oracle/workflow.md and context-graph.md omit the 8192-byte per-item cap and contain no Blackboard ids. RP4 asserts LOOKUP/SEARCH 6666/6667 free 1/1/6667 EXPANDED 2 candidates via createRetrievalPlanner as base plus createGraphExpandedRetrievalPlanner; tight 2/2/20000 SKIPs; fails under superseded split (free 0) and current main (8192/8192 free 3616).",
-    "D4 — Keep execute() catch mapping: ProviderFailure.reason plus detail=error.message (ProviderFailure constructor sets message from detail). Do not add code. Probe mappingKeys are evidenceId,providerId,reason,detail.",
-    "D5 — test/oracle-context-graph-boundary.test.mjs CG3 COMPLETE currently asserts itemRefs ['src/a.js'] truncated:true because TRAVERSE_GRAPH reservedBudget.items=1. After D2 TRAVERSE_GRAPH receives remaining maxItems (4) and remaining bytes (20000); assert itemRefs ['src/a.js','src/c.js'] and truncated false. The CG3 64-byte budget stays BUDGET_EXHAUSTED (one path ~814 bytes). Rewrite oracle-context-adoption.test.js comments from min(8192)/BUDGET=3*8192 to remaining-budget reservation; numeric 24576 still suffices under remaining-refs sharing.",
-    "D6 — Living docs: workflow.md and context-graph.md describe remaining-budget reservation with GRAPH headroom, not a 8192-byte per-item cap. Replace workflow.md 'reserves min(8192, remaining) per declared item' / 'exceeds 8,192 bytes is BUDGET_EXHAUSTED under any budget' and context-graph.md 'reserves one item and up to 8,192 materialized bytes per TRAVERSE_GRAPH work'. No Blackboard ids. planner.md unchanged (not in write scope).",
-    "D7 — Evidence: planner-reservation-probe-result.json (9000-byte file, reserved 8192/1, facade UNSATISFIED BUDGET_EXHAUSTED, execute need 9358) plus plan-defect-probe-result.json (delivered 8192+8192=16384 free 3616 EXPANDED 2 candidates; superseded split 10000+10000 free 0 SKIPPED; corrected 6666+6667=13333 free 6667 EXPANDED). Re-run on origin/main 8bbbddb6 reproduced both.",
-    "D8 — Architecture export list in packages/oracle/src/index.js unchanged: createRetrievalPlanner stays the default export; planning-strategies.js is not re-exported.",
-    "D9 — Negative-case bindings: seven NEW tests, one distinct title per index, all invoking createRetrievalPlanner in retrieval-planner.test.js. Titles are planned coverage; absence on main is not a defect. rp2-oversize and rp4-graph each share one verification command whose log contains each distinct title. Map: NC-RP-fit→RP1/rp1-fit (createRetrievalPlanner then execute and createOracleContextResolver); NC-RP-truncate→RP2/rp2-oversize; NC-RP-lexical→RP2/rp2-oversize; NC-RP-shape→RP2/rp2-oversize; NC-RP-docs→RP3/rp3-docs (createRetrievalPlanner({catalog}).plan(...) then read workflow.md and context-graph.md); NC-RP-graph→RP4/rp4-graph (createRetrievalPlanner as base plus createGraphExpandedRetrievalPlanner); NC-RP-tight→RP4/rp4-graph."
+    "D1 \u2014 Edit only packages/oracle/src/retrieval-planner.js reserve(). execute() budget checks stay on reservedBudget (raw.length>reservedBudget.items and bytes>reservedBudget.materializedBytes). Do not change execute() catch mapping. GRAPH_EXPANDED_V1 runWork and its Math.min(8192, free.materializedBytes) items:1 expansion stay in planning-strategies.js (read-only).",
+    "D2 \u2014 Drop Math.min(8192, remainingBytes) with no replacement constant. reserve() takes explicit {items, bytes}, guards with reserved.providerCalls>=remaining.maxProviderCalls || reserved.items+items>remaining.maxItems || bytes<1, then reserved.providerCalls+=1; reserved.items+=items; reserved.materializedBytes+=bytes and records reservedBudget:{providerCalls:1,items,materializedBytes:bytes}. Magnitudes: R_BYTES=remaining.maxMaterializedBytes-reserved.materializedBytes; R_CALLS=remaining.maxProviderCalls-reserved.providerCalls (current slot plus unused GRAPH slot); R_ITEMS=remaining.maxItems-reserved.items; R_EXACT=count of itemRefs from this evidence's current itemRef through later evidences that have itemRefs (later REPOSITORY/GRAPH/EXTERNAL without itemRefs are not in R_EXACT). READ_EXACT: items=1, bytes=Math.max(1, Math.floor(R_BYTES/Math.max(1,R_EXACT))) so a single remaining itemRef receives all remaining bytes. LOOKUP_SYMBOL, SEARCH_LEXICAL and STRUCTURAL_MAP: items=1, bytes=Math.max(1, Math.floor(R_BYTES/Math.max(1,R_CALLS))) so both REPOSITORY operations still reserve and one call-share of bytes remains for GRAPH_EXPANDED_V1 when the budget has headroom. TRAVERSE_GRAPH/FETCH_EXTERNAL: items=Math.max(1,R_ITEMS), bytes=R_BYTES. The superseded per-evidence-ops split (LOOKUP rem/2 + SEARCH rem: 10000+10000 of 20000, free 0) is revoked.",
+    "D3 \u2014 RP1 in retrieval-planner.test.js: 9000-byte EXACT file, budget maxMaterializedBytes 40000, snapshot authority present, execute+createOracleContextResolver COMPLETE with one candidate and reservedBudget.materializedBytes>8192 (covers execute() need 9358). This test fails on current main (BUDGET_EXHAUSTED). RP2: 9000-byte file with maxMaterializedBytes 100 stays UNSATISFIED BUDGET_EXHAUSTED and content is not truncated; LOOKUP_SYMBOL and SEARCH_LEXICAL both reserve when maxItems>=2; execute() failures stay {evidenceId,providerId,reason,detail}. RP3: the test body calls createRetrievalPlanner({catalog}).plan(a REPOSITORY requirement) then asserts docs/living/system/oracle/workflow.md and context-graph.md omit the 8192-byte per-item cap and contain no Blackboard ids. RP4: REPOSITORY requirement budget 3/3/20000 plans LOOKUP_SYMBOL and SEARCH_LEXICAL with items 1/1 and bytes 6666/6667, leaving free 1/1/6667; createRetrievalPlanner as base plus createGraphExpandedRetrievalPlanner yields EXPANDED and 2 candidates; tight budget 2/2/20000 leaves zero free so expansion SKIPs BUDGET_EXHAUSTED. RP4 fails under the superseded D2 split (free bytes 0) and on current main (bytes 8192/8192, free 3616 \u2014 RP4 asserts the corrected 6666/6667 shares). Bound titles match negativeCaseBindings; each bound body invokes createRetrievalPlanner.",
+    "D4 \u2014 Keep execute() catch mapping: ProviderFailure.reason plus detail=error.message (ProviderFailure constructor sets message from detail). Do not add code. Probe mappingKeys are evidenceId,providerId,reason,detail.",
+    "D5 \u2014 test/oracle-context-graph-boundary.test.mjs CG3 COMPLETE currently asserts itemRefs ['src/a.js'] truncated:true because TRAVERSE_GRAPH reservedBudget.items=1. After D2 TRAVERSE_GRAPH receives remaining maxItems (4) and remaining bytes (20000); assert itemRefs ['src/a.js','src/c.js'] and truncated false. The CG3 64-byte budget stays BUDGET_EXHAUSTED (one path ~814 bytes). Rewrite oracle-context-adoption.test.js comments from min(8192)/BUDGET=3*8192 to remaining-budget reservation; numeric 24576 still suffices under remaining-refs sharing.",
+    "D6 \u2014 Living docs: workflow.md and context-graph.md describe remaining-budget reservation with GRAPH headroom, not a 8192-byte per-item cap. Replace workflow.md 'reserves min(8192, remaining) per declared item' / 'exceeds 8,192 bytes is BUDGET_EXHAUSTED under any budget' and context-graph.md 'reserves one item and up to 8,192 materialized bytes per TRAVERSE_GRAPH work'. No Blackboard ids. planner.md unchanged (not in write scope).",
+    "D7 \u2014 Evidence: planner-reservation-probe-result.json (9000-byte file, reserved 8192/1, facade UNSATISFIED BUDGET_EXHAUSTED, execute need 9358) plus plan-defect-probe-result.json (delivered 8192+8192=16384 free 3616 EXPANDED 2 candidates; superseded split 10000+10000 free 0 SKIPPED; corrected 6666+6667=13333 free 6667 EXPANDED). Re-run on origin/main 8bbbddb6 reproduced both.",
+    "D8 \u2014 Architecture export list in packages/oracle/src/index.js unchanged: createRetrievalPlanner stays the default export; planning-strategies.js is not re-exported."
   ],
   "sourceScope": {
     "read": [
@@ -90,10 +89,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Reservation [RP1] [NC-RP-fit]: implement corrected D2; add the RP1 testTitle that calls createRetrievalPlanner then execute and createOracleContextResolver; fails on current main then passes.",
-    "S2 — Fail-closed oversize [RP2] [NC-RP-truncate, NC-RP-lexical, NC-RP-shape]: three RP2 tests in retrieval-planner.test.js each invoking createRetrievalPlanner, plus graph-boundary CG3 item-count update (D5).",
-    "S3 — Docs [RP3] [NC-RP-docs]: D6 Living docs plus the RP3 testTitle that calls createRetrievalPlanner({catalog}).plan(...) then asserts workflow.md and context-graph.md omit the 8192-byte per-item cap.",
-    "S4 — Graph headroom [RP4] [NC-RP-graph, NC-RP-tight]: corrected D2 REPOSITORY shares leave GRAPH expansion valid; both RP4 testTitles call createRetrievalPlanner as base plus createGraphExpandedRetrievalPlanner; fails under superseded split then passes; pinned planning-strategies tests stay green."
+    "S1 \u2014 Reservation [RP1]: implement corrected D2; RP1 fails on current main then passes.",
+    "S2 \u2014 Fail-closed oversize [RP2]: RP2 plus graph-boundary CG3 item-count update (D5).",
+    "S3 \u2014 Docs [RP3]: D6 Living docs plus the RP3 test that calls createRetrievalPlanner({catalog}).plan(...) then asserts workflow.md and context-graph.md omit the 8192-byte per-item cap.",
+    "S4 \u2014 Graph headroom [RP4]: corrected D2 REPOSITORY byte shares leave GRAPH expansion valid; RP4 fails under the superseded split then passes, and pinned planning-strategies tests stay green."
   ],
   "acceptanceCriteria": [
     {
@@ -264,7 +263,7 @@
     },
     {
       "ref": "packages/oracle/test/retrieval-planner.test.js",
-      "finding": "DELIVERED_TRUTH: no RP1–RP4 tests yet; existing tests do not pin reservedBudget.materializedBytes. After D2, two itemRefs under 4/4/20000 get 10000 then 10000. RESEARCH_REVISION r2: bindings were structurally valid but CI Jev returned IMPLEMENTATION_DEFECT on the same stateHash as a SATISFIED DRAFT eval. Strengthened: each NC-* title names createRetrievalPlanner and the fail-closed fact; S3/RP3 invokes createRetrievalPlanner then asserts Living docs; D9 maps all seven binding ids. Status remains DRAFT."
+      "finding": "DELIVERED_TRUTH: no RP1\u2013RP4 tests yet; existing tests do not pin reservedBudget.materializedBytes. After D2, two itemRefs under 4/4/20000 get 10000 then 10000. tooSmall remainingBudget maxItems:1 still abandons the evidence."
     }
   ],
   "dependencyResolution": {
@@ -527,8 +526,7 @@
       ],
       "decisionIndexes": [
         2,
-        6,
-        8
+        6
       ],
       "sourceRefs": [
         "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md",
@@ -556,13 +554,11 @@
     }
   ],
   "negativeVerificationCases": [
-    "createRetrievalPlanner reserving 8192 so a 9000-byte EXACT file under 40000 is BUDGET_EXHAUSTED fails RP1.",
-    "createRetrievalPlanner truncating a 9000-byte file to fit a 100-byte budget fails RP2.",
-    "createRetrievalPlanner LOOKUP_SYMBOL reserving all remaining items so SEARCH_LEXICAL is unreserved at maxItems 2 fails RP2.",
-    "createRetrievalPlanner execute() failures gaining a code field or dropping detail fail RP2.",
-    "Living docs that still state a 8192-byte per-item cap fail RP3 (RP3 test invokes createRetrievalPlanner then asserts the docs).",
-    "createRetrievalPlanner REPOSITORY base plan consuming all remaining bytes so GRAPH_EXPANDED_V1 SKIPs despite headroom fails RP4.",
-    "createRetrievalPlanner tight REPOSITORY budget (maxItems 2, maxProviderCalls 2) that still EXPANDs instead of SKIP BUDGET_EXHAUSTED fails RP4."
+    "A 9000-byte file under 40000 bytes remaining that is still BUDGET_EXHAUSTED from an 8192 reservation fails RP1.",
+    "Truncating a 9000-byte file to fit a 100-byte budget fails RP2.",
+    "LOOKUP_SYMBOL reserving all remaining items so SEARCH_LEXICAL is unreserved when maxItems is 2 fails RP2.",
+    "execute() failure objects gaining a code field or dropping detail fail RP2.",
+    "Living docs that still state a 8192-byte per-item cap fail RP3."
   ],
   "negativeCaseBindings": [
     {
@@ -571,7 +567,7 @@
       "criterionId": "RP1",
       "verificationId": "rp1-fit",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP1 createRetrievalPlanner 9000-byte under 40000 is COMPLETE reservedBudget>8192",
+      "testTitle": "RP1 9000-byte file under 40000 budget is COMPLETE",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -580,7 +576,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 createRetrievalPlanner oversize 9000-byte is BUDGET_EXHAUSTED without truncation",
+      "testTitle": "RP2 oversize file is BUDGET_EXHAUSTED without truncation",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -589,7 +585,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 createRetrievalPlanner LOOKUP_SYMBOL and SEARCH_LEXICAL both reserve at maxItems 2",
+      "testTitle": "RP2 LOOKUP_SYMBOL and SEARCH_LEXICAL both reserve",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -598,7 +594,7 @@
       "criterionId": "RP2",
       "verificationId": "rp2-oversize",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP2 createRetrievalPlanner execute failures keep reason and detail without code",
+      "testTitle": "RP2 execute failures keep reason and detail only",
       "subjectSymbol": "createRetrievalPlanner"
     },
     {
@@ -607,25 +603,7 @@
       "criterionId": "RP3",
       "verificationId": "rp3-docs",
       "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP3 createRetrievalPlanner Living docs omit the 8192-byte per-item cap",
-      "subjectSymbol": "createRetrievalPlanner"
-    },
-    {
-      "id": "NC-RP-graph",
-      "negativeCaseIndex": 5,
-      "criterionId": "RP4",
-      "verificationId": "rp4-graph",
-      "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP4 createRetrievalPlanner REPOSITORY shares 6666/6667 leaving GRAPH expansion bytes",
-      "subjectSymbol": "createRetrievalPlanner"
-    },
-    {
-      "id": "NC-RP-tight",
-      "negativeCaseIndex": 6,
-      "criterionId": "RP4",
-      "verificationId": "rp4-graph",
-      "testRef": "packages/oracle/test/retrieval-planner.test.js",
-      "testTitle": "RP4 createRetrievalPlanner tight 2/2 budget still skips GRAPH expansion",
+      "testTitle": "RP3 Living docs omit the 8192-byte per-item cap",
       "subjectSymbol": "createRetrievalPlanner"
     }
   ]
