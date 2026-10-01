@@ -17,25 +17,29 @@
     "Sandbox, SCM push, MCP promote, or a second tool schema."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered commandDeliver tool handling. Do not change the tool whitelist owned by BB-128 or permission/model ownership of BB-138.",
-    "Omitted --tool keeps the manifest tool. Unknown tools fail closed before any agent process starts.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "Product edits are packages/agent-tools/bin/exharness-agent.mjs and src/deliver-slice.js plus the named test and Living docs in sourceScope.write.",
+    "Reuse delivered commandDeliver tool handling. A string options.tool is a tool-id override of the manifest; an object options.tool stays the existing adapter override used by tests. Do not expand SLICE_TOOLS; BB-128 owns that.",
+    "Omitted --tool keeps the manifest tool. Empty --tool is UsageError. Unknown tool ids fail as usage errors before spawn.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "CLI --tool overrides the manifest the same way --recovery-dir already does.",
-    "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+    "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn."
   ],
   "architectureDecisions": [
-    "Forward --tool from commandDeliverCli into commandDeliver, which already maps it onto runDeliverSlice.",
-    "Keep whitelist validation in commandDeliver / validateDeliverSlice. Do not invent a second tool list; BB-128 owns expanding the allowed set."
+    "D1 — CLI --tool on deliver. USAGE adds [--tool <codex|kiro|agy>]. commandDeliverCli maps tool: options.tool ?? null into commandDeliver, same shape as recoveryDir. Empty string is UsageError in commandDeliverCli before commandDeliver. DELIVERED_TRUTH: deliverCliPassesTool false, commandDeliverAcceptsTool true, deliverUsageListsTool false.",
+    "D2 — String tool id overrides the manifest. commandDeliver today passes options.tool through as runDeliverSlice's adapter override (object with buildInvocation). A CLI string would be ignored by resolveSliceTool. Ratified mapping: if options.tool is a non-empty string, commandDeliver overlays raw.tool = options.tool before runDeliverSlice and does not pass that string as the adapter override. Object tool values stay the existing adapter override. CLI-wins like recoveryDir. validateDeliverSlice still requires SLICE_TOOLS (codex|kiro|agy); unknown ids TypeError mapped by commandDeliverCli to UsageError before spawn. grok/opencode stay rejected until BB-128.",
+    "D3 — Do not change SLICE_TOOLS or permission/model/limits. Do not write tool-adapters.js or supervisor.js.",
+    "D4 — Tests in packages/agent-tools/test/deliver-cli-tool.test.js. P1: spawn BIN deliver --tool kiro --command fake with a codex manifest; Backend uses kiro (CLI-wins) and ACCEPTED. P2: commandDeliver({ tool: \"kiro\" }) overlays the manifest. N1: BIN deliver --tool nope and --tool grok exit 2 UsageError before spawn; empty --tool UsageError. N2: omitted --tool keeps the manifest tool. deliver-slice.test.js adapter-object override stays green. Hermetic fake CLI.",
+    "D5 — Living docs. operator.md deliver USAGE gains [--tool <codex|kiro|agy>], CLI-wins, omitted keeps manifest, unknown/empty fail before spawn. state.md operator deliver sentence names --tool. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: commandDeliverCli never forwards tool; commandDeliver reads options.tool ?? null; USAGE has no --tool."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/deliver-slice.js",
       "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/blackboard/evidence/BB-144/discovery.json",
       "docs/blackboard/process/application-adapter-composition.md"
     ],
     "expectedNew": [
@@ -52,46 +56,55 @@
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/application-adapter-composition.md",
-      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/blackboard/evidence/BB-144/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/test/deliver-cli-tool.test.js",
       "docs/living/system/agent-tools/operator.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/supervisor.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin CLI versus manifest tool precedence and unknown-tool fail-closed in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --tool on deliver and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — CLI --tool overlay [DELIVER_TOOL_FORWARDED]: implement D1–D3. commandDeliverCli forwards --tool; string tool overlays slice.tool; object tool stays adapter override.",
+    "S2 — Fail-closed fixtures [DELIVER_TOOL_FAIL_CLOSED]: implement D4. N1 unknown/empty --tool UsageError before spawn; N2 omitted keeps manifest. deliver-slice.test.js stays green.",
+    "S3 — Living docs [DELIVER_TOOL_FORWARDED]: implement D5. operator.md and state.md name --tool, CLI-wins, omitted manifest, fail-before-spawn. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "DELIVER_TOOL_FORWARDED",
       "statement": "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "P1 BIN deliver --tool kiro overrides a codex manifest; P2 commandDeliver string tool overlays slice.tool."
       ]
     },
     {
       "id": "DELIVER_TOOL_FAIL_CLOSED",
       "statement": "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "BB-144 N1 unknown/empty --tool UsageError before spawn; N2 omitted keeps the manifest tool."
       ]
     }
   ],
@@ -101,31 +114,32 @@
       "command": "node --test packages/agent-tools/test/deliver-cli-tool.test.js"
     },
     {
+      "id": "deliver-regression",
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+    },
+    {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "CLI --tool overrides the manifest the same way --recovery-dir already does.",
+      "invariant": "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
       "criterionIds": [
         "DELIVER_TOOL_FORWARDED"
       ]
     },
     {
-      "invariant": "Omitted --tool keeps the delivered manifest tool; unknown tool ids never spawn an agent process.",
+      "invariant": "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
       "criterionIds": [
-        "DELIVER_TOOL_FAIL_CLOSED"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "DELIVER_TOOL_FORWARDED",
         "DELIVER_TOOL_FAIL_CLOSED"
       ]
     }
@@ -154,23 +168,237 @@
       "subjectSymbol": "commandDeliver"
     }
   ],
-  "researchGaps": [
-    "Ratify USAGE listing --tool and whether an empty --tool string is a usage error before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/operator.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that deliver accepts --tool, that the CLI value overrides the manifest the same way --recovery-dir does, that omitted --tool keeps the manifest tool, and that unknown or empty tool ids fail before spawn. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-144/discovery.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: deliverCliPassesTool false, commandDeliverAcceptsTool true, deliverUsageListsTool false."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandDeliverCli maps only slice/command/recovery-dir. USAGE deliver line has no --tool. Empty --slice is already UsageError."
+    },
+    {
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "finding": "DELIVERED_TRUTH: commandDeliver reads const tool = options.tool ?? null and passes it as runDeliverSlice adapter override. resolveSliceTool treats only objects with buildInvocation as overrides; a string id would be ignored. validateDeliverSlice requires SLICE_TOOLS codex|kiro|agy."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-104"
+    ],
+    "workerStart": "Confirm commandDeliverCli still omits --tool, commandDeliver still reads options.tool, and validateDeliverSlice still requires SLICE_TOOLS. BB-104 DONE. Do not wait on BB-128 whitelist expansion.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "commandDeliver options.tool adapter override",
+        "resolveSliceTool object-only override",
+        "SLICE_TOOLS codex|kiro|agy",
+        "recovery-dir CLI-wins"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "deliver --tool string overlays slice.tool",
+        "object tool stays adapter override",
+        "unknown/empty fail-before-spawn"
+      ]
+    },
+    "contradiction": "None. A string CLI --tool cannot reuse the adapter-override slot; commandDeliver must overlay slice.tool for strings and keep object tool as the test adapter override. BB-128 still owns expanding SLICE_TOOLS."
+  },
+  "deliveryContract": {
+    "precondition": "BB-104 DONE.",
+    "completion": "focused + deliver-slice.test.js + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No SLICE_TOOLS expansion, no tool-adapters.js/supervisor.js edits, no permission/model/limits change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "deliver-regression",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "object tool adapter override",
+      "SLICE_TOOLS whitelist",
+      "recovery-dir CLI-wins",
+      "deliver-slice.test.js"
+    ],
+    "add": [
+      "deliver CLI --tool",
+      "string tool overlays slice.tool",
+      "deliver-cli-tool tests"
+    ],
+    "rollback": "Remove --tool from commandDeliverCli and deliver USAGE; revert string overlay in commandDeliver; delete deliver-cli-tool.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-144 objective + discovery.json + delivered commandDeliver/resolveSliceTool",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-104",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "SLICE_TOOLS expansion, adapter/supervisor edits."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Deliver CLI can pin the Backend tool that the slice API already honors.",
-    "measurement": "Fake-CLI deliver fixture forwards --tool kiro over a codex manifest; unknown --tool fails before spawn.",
+    "expectedValue": "Deliver CLI can pin the slice tool the same way it already pins recovery-dir.",
+    "measurement": "Fake-CLI deliver fixture --tool kiro overrides a codex manifest; unknown ids fail before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-104 for the slice; BB-074 for end-to-end value"
-  }
+    "valueOwner": "BB-104 for the slice; BB-128 for whitelist expansion"
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+      "criterionIds": [
+        "DELIVER_TOOL_FORWARDED"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/deliver-slice.js",
+        "docs/blackboard/evidence/BB-144/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-144/discovery.json",
+          "match": "\"deliverCliPassesTool\": false"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-144/discovery.json",
+          "match": "\"commandDeliverAcceptsTool\": true"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "if (!options.slice) throw new UsageError(\"deliver requires --slice\");"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "const tool = options.tool ?? null;"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
+      "criterionIds": [
+        "DELIVER_TOOL_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-144/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-144/discovery.json",
+          "match": "\"deliverUsageListsTool\": false"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "recoveryDir: options[\"recovery-dir\"] ?? null"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "const tool = options.tool ?? null;"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "DELIVER_TOOL_FORWARDED",
+        "DELIVER_TOOL_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/application-adapter-composition.md",
+        "docs/living/system/agent-tools/operator.md",
+        "docs/living/system/agent-tools/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/application-adapter-composition.md",
+          "match": "| BB-144 | `exharness-agent deliver --tool` overrides"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/operator.md",
+          "match": "`exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]`"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "## Operator deliver slice"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
