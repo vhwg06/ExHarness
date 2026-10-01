@@ -409,7 +409,7 @@
   ],
   "testContract": {
     "forwarding": "Launch actual BIN smoke with a capture launcher that records argv and then executes delivered fake FIX_FIRST. Assert --model x and Codex --sandbox danger-full-access for FULL_AUTO; omission has no model arg and workspace-write sandbox. A smoke PASS alone is insufficient.",
-    "trace": "With --trace-dir, read every JSONL record using delivered readTraces/verify trace facilities and invoke BIN report on that exact directory. Assert valid digest chain, SMOKE arm, tool identity, task identity, invocation counts and per-invocation permission/model launch facts. Corrupt one digest in a copied trace and assert report rejects it. Explicit --arm label overrides SMOKE only when trace-dir present.",
+    "trace": "With --trace-dir call readTraces/verifyTraceFile on traces.jsonl and actual BIN report <dir>. Compare argvRedacted sandbox/model facts with actual fake argv; trace contains argvRedacted, not standalone permissionProfile/model fields. Require SMOKE/default or explicit arm, tool/task identities and exact invocation count. Copy then corrupt one digest and require BIN report exit1. Existing report gives descriptive evidence only.",
     "failClosed": "Unknown permission or --arm without --trace-dir exits64 before capture marker. Separate missing-tool and TOOL_FAILED_BEFORE_EDIT fixtures assert existing SKIPPED reasons and exit semantics. Omitted model/permission/traces must preserve defaults without creating a trace directory."
   },
   "researchSeamProbe": {
