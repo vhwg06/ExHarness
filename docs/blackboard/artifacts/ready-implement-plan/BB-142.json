@@ -323,7 +323,7 @@
       ],
       "supportingPlanFields": [
         "testContract",
-        "researchObservedResult"
+        "prototypeEvidence"
       ]
     },
     {
@@ -406,7 +406,7 @@
     }
   ],
   "testContract": {
-    "persist": "Direct actual runSupervisedBackendWork with BB-100 order/context, fake FIX_FIRST and owned recoveryDir. During declared typecheck verifier, read exact external recoveryDir/handle.json and require phase ACT_COMPLETED/status RUNNING. invocationObserver runs before that write and is used only to capture cwd. After return read/verify terminal handle and compare candidateSha with returned evidence. Snapshot source HEAD/for-each-ref/status before and after; require equality and retained worktree matches handle. Cleanup only the matching owned handle. Future Worker requirements, not claimed future execution.",
+    "persist": "In actual adapter test a typecheck verifier appends external handle phase/status observations. First observation must be ACT_COMPLETED/RUNNING; independent adapter re-grounding invokes the same verifier again after terminal ACCEPTED, so that later observation must allow ACCEPTED. invocationObserver only captures cwd. Require post-return verified handle/candidateSha/retained worktree and unchanged source HEAD/refs/status. Use literal owned handle/log paths in verifier argv; no new adapter onHandleWrite API. Second first-run must reject HANDLE_CURRENT with exact handle bytes/dispatch count unchanged.",
     "secondRun": "After first execute leaves a current handle, snapshot handle bytes/source refs/worktree status and dispatch count. A second direct runSupervisedBackendWork using that recoveryDir rejects RecoveryError HANDLE_CURRENT before a new fake dispatch or worktree; count and bytes remain unchanged. Dispose the matching handle only in test cleanup.",
     "omitted": "Register invocationObserver to retain the fake invocation cwd; invoke runSupervisedBackendWork with recoveryDir omitted and check cwd removed after completion. No handle artifact in source; compare source HEAD/refs/status. Empty/non-string directory rejects before fake dispatch. Adapter adds only first-execute forwarding; Board-owned recover/resume contract is unchanged.",
     "persistencePhase": "Handle is required at ACT_COMPLETED verification and after execute return; never inside first invocationObserver. A verifier receives the owned absolute handle path as literal argv and asserts existence/identity before its normal checks; adapter need not add onHandleWrite forwarding."
@@ -490,5 +490,34 @@
       "EXHARNESS_SUPERVISED"
     ],
     "limits": "Direct delivered mapBackendOrderToAgentTask/runSupervisedTask/eval/observation seams. Does not execute the future deliver manifest, CLI eval/smoke or Application recovery forwarding; Worker focused tests must call those public subjects."
+  },
+  "prototypeEvidence": {
+    "result": {
+      "classification": "EXECUTED_RESEARCH_ADAPTER_SOURCE_COPY_NOT_PRODUCT_DELIVERY",
+      "runtime": "v24.19.0",
+      "sourceSha256": "36f67524d4a6334c7f1b45957cfa2fe222f663bc7be0c28454a9c71a55dc96ad",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "terminalHandle": "ACCEPTED",
+      "retainedWorktree": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleUnchanged": true,
+      "omittedRun": "APPLIED",
+      "omittedWorktreeRemoved": true,
+      "sourceUnchanged": true,
+      "limits": "Only optional recoveryDir forwarding added in scratch copy; imports delivered supervisor, contracts and verification. No Board resume implementation or product source edit."
+    },
+    "method": "Research-only copy adds just recoveryDir parameter/forwarding; actual delivered supervisor and independent re-grounding execute, with no tracked product changes.",
+    "replay": "/workspace/research-plans/adapter-prototype-check.mjs"
   }
 }
