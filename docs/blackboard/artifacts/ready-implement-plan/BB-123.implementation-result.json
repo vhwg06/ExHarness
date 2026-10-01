@@ -1,0 +1,150 @@
+{
+  "artifactId": "BB-123-evidence",
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "baselineSha": "c79e5fc6d50d6fda0ffd43b42631864391dd9037",
+  "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+  "candidateTree": "543793503b3edadc24021c13e54fba7772b07768",
+  "claims": [
+    {
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-123/fu1-cost.txt"
+      ],
+      "id": "FU1",
+      "summary": "parseGrokJson reports totalCostUsd only for finite number >= 0; null/''/boolean/numeric-string/NaN/Infinity/negative all yield null",
+      "negativeCases": [
+        {
+          "id": "NC-FU-null",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu1-cost.txt",
+          "bodyHash": "c56f4b1b7ad5b558abc5e1abc223753d7b05bc35cddc347998b5aba094789014"
+        },
+        {
+          "id": "NC-FU-empty",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu1-cost.txt",
+          "bodyHash": "b704c56742a8ddba7a904a9cfcb6d2446253c782c34d9ed7da5b8dd7dc671fb4"
+        },
+        {
+          "id": "NC-FU-bool",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu1-cost.txt",
+          "bodyHash": "9c2ff9c6dbc6a4f7f5b24fe3d1683c4596c94ef8e4349b94cd61c80931e87c7c"
+        },
+        {
+          "id": "NC-FU-string",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu1-cost.txt",
+          "bodyHash": "cfed656a2eed5f578aac210754f7cde6e76e5e7e631942cb0336e4a49e1f1e02"
+        }
+      ]
+    },
+    {
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-123/fu2-context.txt"
+      ],
+      "id": "FU2",
+      "summary": "projectAgentTaskContext writes worktree-local .exharness/.gitignore; source info/exclude byte-identical; copies excluded from candidate commit",
+      "negativeCases": [
+        {
+          "id": "NC-FU-exclude",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu2-context.txt",
+          "bodyHash": "abf8f879b6e262681a8e4cbc3c1098df03893965ff1a722dd955f1224713fbb2"
+        },
+        {
+          "id": "NC-FU-candidate",
+          "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+          "logRef": "docs/blackboard/evidence/BB-123/fu2-context.txt",
+          "bodyHash": "dda25920325b1fbb6a86f20427f32b69b4e85b3d50ae49866bc73736e64c9413"
+        }
+      ]
+    },
+    {
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-123/fu3-docs.txt",
+        "docs/blackboard/evidence/BB-123/fu3-scope.txt",
+        "docs/blackboard/evidence/BB-123/fu3-docs-content.txt"
+      ],
+      "id": "FU3",
+      "summary": "FU3 SATISFIED. Part 1 (living docs): docs/living/system/agent-tools/observation.md line 57 states 'totalCostUsd is observed only for a finite total_cost_usd number >= 0, else null, never zero-filled'; docs/living/system/agent-tools/context.md line 20 states the worktree-local .exharness/.gitignore exclusion; neither file contains any BB-NNN identifier (verified by FU3 test, 2/2 pass). Part 2 (write scope): candidate 42e54e9b changes exactly the 5 plan sourceScope.write paths, no more, no less (verified in fu3-scope.txt: Match=True). auditPaths unit test confirms agentic-system/ and blackboard/ writes are rejected."
+    }
+  ],
+  "kind": "BLACKBOARD_ARTIFACT",
+  "plan": {
+    "hash": "dc64dbad03e0ac314586577cd0ca305c63810a71d322139e64ac84c8099366b4",
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json"
+  },
+  "verificationRuns": [
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "node --test --test-name-pattern=\"^FU1 \" packages/agent-tools/test/followup-correctness.test.js",
+      "exitCode": 0,
+      "id": "fu1-cost",
+      "status": "PASSED",
+      "summary": "6/6 FU1 cost-guard tests pass",
+      "logRef": "docs/blackboard/evidence/BB-123/fu1-cost.txt",
+      "logHash": "1a25e6e7ae0cb804b335eef7e3b14f12bfd6f44d580b5b87770cfdca9c6a09c2"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "node --test --test-name-pattern=\"^FU2 \" packages/agent-tools/test/followup-correctness.test.js",
+      "exitCode": 0,
+      "id": "fu2-context",
+      "status": "PASSED",
+      "summary": "2/2 FU2 worktree-local exclusion tests pass",
+      "logRef": "docs/blackboard/evidence/BB-123/fu2-context.txt",
+      "logHash": "7b568ef09736c83f3d6cba525fcf80624d8e34e3fca1bae869aa19c6373931f5"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "node --test --test-name-pattern=\"^FU3 \" packages/agent-tools/test/followup-correctness.test.js",
+      "exitCode": 0,
+      "id": "fu3-docs",
+      "status": "PASSED",
+      "summary": "2/2 FU3 docs/scope tests pass",
+      "logRef": "docs/blackboard/evidence/BB-123/fu3-docs.txt",
+      "logHash": "3144a7453854524dc5d5cfc06f2b1a6ca40d86394f400d9740050ac138712496"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "node --test packages/agent-tools/test/followup-correctness.test.js",
+      "exitCode": 0,
+      "id": "followup",
+      "status": "PASSED",
+      "summary": "10/10 followup-correctness tests pass",
+      "logRef": "docs/blackboard/evidence/BB-123/followup.txt",
+      "logHash": "be18e3529fec5a87089d3c319c3f4f89e982c83078390d42334cdff39619e67b"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "npm run test:agent-tools",
+      "exitCode": 0,
+      "id": "agent-tools",
+      "status": "PASSED",
+      "summary": "153/153 agent-tools tests pass in 153s (under 300s collector timeout)",
+      "logRef": "docs/blackboard/evidence/BB-123/agent-tools.txt",
+      "logHash": "269eacd79458dd072db70b1791e61bc4228128139dc2e95f5eead367f7134168"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "npm run verify:current-docs",
+      "exitCode": 0,
+      "id": "docs",
+      "status": "PASSED",
+      "summary": "current-docs verification ok",
+      "logRef": "docs/blackboard/evidence/BB-123/docs.txt",
+      "logHash": "36a85e1686381faf2eccb7c4e40e350d2aa22c3a29bfd90057f1a2356b667cc8"
+    },
+    {
+      "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
+      "command": "npm test",
+      "exitCode": 0,
+      "id": "repository",
+      "status": "PASSED",
+      "summary": "1470/1470 tests pass (core 444, agentic 719, oracle 154, agent-tools 153), 0 fail",
+      "logRef": "docs/blackboard/evidence/BB-123/repository.txt",
+      "logHash": "ae93872ba9e64b549ae0fe4de7275e045d7dc00daea98b292715b281ab008349"
+    }
+  ],
+  "version": 1
+}
