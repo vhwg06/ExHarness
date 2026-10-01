@@ -1,0 +1,127 @@
+TAP version 13
+# Subtest: STEERING: user input while model active fences generation and schedules one replacement without waiting
+ok 1 - STEERING: user input while model active fences generation and schedules one replacement without waiting
+  ---
+  duration_ms: 9.023775
+  type: 'test'
+  ...
+# Subtest: STALE_MODEL: fenced non-abortable model response cannot dispatch
+ok 2 - STALE_MODEL: fenced non-abortable model response cannot dispatch
+  ---
+  duration_ms: 2.760435
+  type: 'test'
+  ...
+# Subtest: COALESCE: concurrent and duplicate transitions coalesce to one wake
+ok 3 - COALESCE: concurrent and duplicate transitions coalesce to one wake
+  ---
+  duration_ms: 6.595221
+  type: 'test'
+  ...
+# Subtest: COALESCE: max burst bound creates one wake at the limit
+ok 4 - COALESCE: max burst bound creates one wake at the limit
+  ---
+  duration_ms: 1.457407
+  type: 'test'
+  ...
+# Subtest: STEERING bypasses completion grace and idle windows
+ok 5 - STEERING bypasses completion grace and idle windows
+  ---
+  duration_ms: 1.407113
+  type: 'test'
+  ...
+# Subtest: steering does not cancel detached operations
+ok 6 - steering does not cancel detached operations
+  ---
+  duration_ms: 2.98202
+  type: 'test'
+  ...
+# Subtest: STOP: fence persists, blocks dispatch, and aborts the model generation
+ok 7 - STOP: fence persists, blocks dispatch, and aborts the model generation
+  ---
+  duration_ms: 3.774092
+  type: 'test'
+  ...
+# Subtest: STOP cannot label an unresolved effect cancelled without BB-078 truth
+ok 8 - STOP cannot label an unresolved effect cancelled without BB-078 truth
+  ---
+  duration_ms: 3.846708
+  type: 'test'
+  ...
+# Subtest: NO_HEARTBEAT: liveness inspection creates no model turn without semantic work
+ok 9 - NO_HEARTBEAT: liveness inspection creates no model turn without semantic work
+  ---
+  duration_ms: 1.829513
+  type: 'test'
+  ...
+# Subtest: DEPENDENCY: exact DONE BB-077/078/079 contracts required
+ok 10 - DEPENDENCY: exact DONE BB-077/078/079 contracts required
+  ---
+  duration_ms: 1.162364
+  type: 'test'
+  ...
+# Subtest: PLAN_INPUT_CONTRADICTION fixtures carry task identity
+ok 11 - PLAN_INPUT_CONTRADICTION fixtures carry task identity
+  ---
+  duration_ms: 0.312846
+  type: 'test'
+  ...
+# Subtest: INV-1: coordinator state cannot confirm effects or accept products
+ok 12 - INV-1: coordinator state cannot confirm effects or accept products
+  ---
+  duration_ms: 0.195285
+  type: 'test'
+  ...
+# Subtest: INV-2: conflicting transitionId reuse and missing effect identity fail closed
+ok 13 - INV-2: conflicting transitionId reuse and missing effect identity fail closed
+  ---
+  duration_ms: 1.390281
+  type: 'test'
+  ...
+# Subtest: INV-3: probe metrics are DEV-only with no promotion verdict
+ok 14 - INV-3: probe metrics are DEV-only with no promotion verdict
+  ---
+  duration_ms: 0.517829
+  type: 'test'
+  ...
+# Subtest: generationCancellation normalizes to FENCE_ONLY and preserves ABORT_SIGNAL
+ok 15 - generationCancellation normalizes to FENCE_ONLY and preserves ABORT_SIGNAL
+  ---
+  duration_ms: 0.350876
+  type: 'test'
+  ...
+# Subtest: model routing preserves generationCancellation exactly
+ok 16 - model routing preserves generationCancellation exactly
+  ---
+  duration_ms: 0.922075
+  type: 'test'
+  ...
+# Subtest: AgentRuntime forwards AbortSignal and strategy passes it for ABORT_SIGNAL routes
+ok 17 - AgentRuntime forwards AbortSignal and strategy passes it for ABORT_SIGNAL routes
+  ---
+  duration_ms: 7.248533
+  type: 'test'
+  ...
+# Subtest: ABORT_SIGNAL strategy fences an aborted turn before action dispatch
+ok 18 - ABORT_SIGNAL strategy fences an aborted turn before action dispatch
+  ---
+  duration_ms: 0.637382
+  type: 'test'
+  ...
+# Subtest: legacy adapters default both async capabilities safely
+ok 19 - legacy adapters default both async capabilities safely
+  ---
+  duration_ms: 0.175878
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 153.782257
+
+
+exitCode=0

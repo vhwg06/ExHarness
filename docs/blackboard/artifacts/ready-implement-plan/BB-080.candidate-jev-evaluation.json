@@ -1,0 +1,249 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-080-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-080",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-080.json",
+      "hash": "86289fcabd754f2c770199f3a4249687e36c09dd16bcd354e90fcb538ece9f9b"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-080.json",
+      "hash": "ac4fbd090b83442adcb2ade8a324a9fe0aa7fed323d18e9639e61a45e4488f78"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-080.implementation-result.json",
+      "hash": "421204cd1971f3f4b575cf4bec08e26237241ceb7beb2b9f917863132b1c2fc5"
+    },
+    "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+    "candidateTree": "f2f533237195deff76c70be0384630afe692d322",
+    "baselineSha": "5237548fd58c034806e38f20f21b75e8a6df2dc8"
+  },
+  "stateHash": "1b75f694fde3decf68d5f081eb9de223f18a1bdccc4753c095f7ebfa3e57a656",
+  "specHash": "a8e195e3afd5798e2bd47b642bface7e4e8505ddb73ae6edb6442a89c11659cc",
+  "cacheKey": "4612c8aae9e038ff435cf46a12ecf8b8286e4d9536f34f4686afe75f5580b1aa",
+  "model": "jev-1.13.0",
+  "answers": {
+    "STEERING": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.7,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.22,
+        "SATISFIED": 0.78,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "STALE_MODEL": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.86,
+      "probabilities": {
+        "SATISFIED": 0.9,
+        "INSUFFICIENT_EVIDENCE": 0.1,
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "COALESCE": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.71,
+      "probabilities": {
+        "SATISFIED": 0.78,
+        "INSUFFICIENT_EVIDENCE": 0.19,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "STOP": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.96,
+        "INSUFFICIENT_EVIDENCE": 0.04,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "RECOVERY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.83,
+      "probabilities": {
+        "SATISFIED": 0.87,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.12,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "NO_HEARTBEAT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.84,
+      "probabilities": {
+        "SATISFIED": 0.88,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.12,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "DEPENDENCY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.84,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.12,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.88
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "SATISFIED": 0.98
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.87,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.9,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.1
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.99
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.36,
+      "probabilities": {
+        "SATISFIED": 0.52,
+        "INSUFFICIENT_EVIDENCE": 0.21,
+        "IMPLEMENTATION_DEFECT": 0.23,
+        "PLAN_INPUT_CONTRADICTION": 0.04
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 170974,
+    "output_tokens": 782
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 11,
+    "latencyMs": 2801.746201,
+    "payloadBytes": 296181,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_SOURCE_INDEX_V3",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V4",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "STEERING",
+          "payloadHash": "7c1486978f2140ec70a17021d4c6cb543f40822ad1a73ba3ccd6650f55908ef3",
+          "payloadBytes": 45519,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "STALE_MODEL",
+          "payloadHash": "5740ece56d04b58b68de9b6a712c4d700ee4bc605f3b916f47632cbc44cd6ebb",
+          "payloadBytes": 50917,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-080/core-regression.txt"
+          ],
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "COALESCE",
+          "payloadHash": "3fbc7c9d291629e43b89de0041d01d1be951b1bd0d3a7d21fa9f99612cd24ece",
+          "payloadBytes": 45308,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "STOP",
+          "payloadHash": "eac09e0686a969524dc9b205f7167f7c1a535e9d69d7717419ae42f78517a15a",
+          "payloadBytes": 54789,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-080/core-regression.txt"
+          ],
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "RECOVERY",
+          "payloadHash": "9fb193e625c7dc40d32014a66f8e8f2de103a0a5e5e3c87d1d4e14e165543cc3",
+          "payloadBytes": 59793
+        },
+        {
+          "id": "NO_HEARTBEAT",
+          "payloadHash": "d2a16dc78e142b1b8acb37bafe280818e136cb91143a0a8a4fefc24adc89b2e3",
+          "payloadBytes": 45095,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "DEPENDENCY",
+          "payloadHash": "ee9c0ab82e6382ef167985810b189fafd681667cbed9cc37787ee2f64e570963",
+          "payloadBytes": 56068
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "5b26f50e3750fb229323d33bad60fdd5e33d155c0d629a9a839512195578ea5b",
+          "payloadBytes": 51747,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-080/core-regression.txt"
+          ],
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "fbe7ac12d0f0f9d708f92809d2ea2fc2b66bd956b2daee25b221ab44330454af",
+          "payloadBytes": 50407,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-080/core-regression.txt"
+          ],
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "a53e337e3242b9dd503cf539f863e7896484aaa1bc8820b39bf3e7c4c57043de",
+          "payloadBytes": 59455
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "b2e70299607429c7860e01eb899cc6f80790cadda513c960f3268e5da9746a3b",
+          "payloadBytes": 59622
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
