@@ -33,14 +33,14 @@
     "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks. Acceptance coverage: ENV_BOUNDARY, OVERLAY, INTERNAL_ENV, TEST_CHANNEL."
   ],
   "architectureDecisions": [
-    "D1 \u2014 Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
+    "D1 \u2014 Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use deliveryContract.environment's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
     "D2 \u2014 Produce a fresh null-prototype map from own enumerable string-valued allowlisted parent keys, lexically sorted. Windows uppercases before membership/deduplication; first inherited variant wins. POSIX matches exact case. Apply own operator entries last; Windows normalizes them and later case variants win. Remove NODE_TEST_CONTEXT after merging (all Windows case variants). Omit missing names; never synthesize PATH/HOME or read credential/config files. Parent validation explicitly accepts parentEnv===process.env as the native exotic environment record; other injected maps are plain/null-prototype. Do not apply the operator-overlay plain-object test to native process.env. Inspect selected descriptors safely; never read non-allowlisted values or invoke accessors.",
     "D3 \u2014 Add factory env={}; require a plain or null-prototype record. Reject null, arrays, non-plain objects, empty/'='/NUL keys, non-string values and NUL values with TypeError before verify/spawn. Validate even stripped NODE_TEST_CONTEXT entries. Copy/freeze own entries at construction. Explicit non-allowlisted grants and empty strings are valid; no coercion, null deletion or vendor auth inference.",
     "D4 \u2014 Sample one filtered parent base per verify. Thread it into before/after gitState and win32 killTree/taskkill; force Git GIT_CONFIG_NOSYSTEM=1 last. Only executeProcess gets the frozen command overlay, built from that same base. Eliminate ambient process.env spreads and implicit child env defaults in this module. Command GIT_DIR/GIT_CONFIG_COUNT grants cannot redirect verifier identity checks or termination helpers.",
     "D5 \u2014 Preserve shell:false, detached/platform behavior, windowsHide, ignored stdin, bounded capture, stream digests, summary limit and reason/result schemas. Revision mismatch rejects before command launch; exit-zero PASS, nonzero/spawn-error FAIL, timeout INCONCLUSIVE and tree-mutation FAIL precedence remain. requireUnchangedTree=true default and explicit false compatibility remain. Add no env dumps/values to records; existing trusted-command stdout capture is not a redaction guarantee.",
     "D6 \u2014 Real host child/fixture tests plus injected POSIX/win32 maps cover casing, duplicate PATH variants, overlay precedence, missing names and own properties. Native Windows smoke is conditional and separately labelled; simulation cannot prove launch/kill. HOME/XDG/USERPROFILE/APPDATA preserve config compatibility and allow filesystem credential access.",
     "D7 \u2014 Overlay is the local verifier factory API only. Existing Backend/QA, supervisor, deliver, MCP and re-grounding callers inherit restricted defaults automatically. Their agent env options are not verifier grants. Do not add CLI/task-schema forwarding here; callers constructing verifiers can supply env. Missing auth/proxy/build config requires a separately authorized grant, never restored ambient inheritance.",
-    "D8 \u2014 Use exact distinct literal negativeCaseBindings/testContract titles. Each negative test directly invokes its bound subject and asserts behavior, without skip/todo, env dumps or helper-only subject calls. Isolate or serialize synthetic planted variables and restore in finally; never inspect actual credentials.",
+    "D8 \u2014 Use exact distinct literal negativeCaseBindings/deliveryContract.tests titles. Each negative test directly invokes its bound subject and asserts behavior, without skip/todo, env dumps or helper-only subject calls. Isolate or serialize synthetic planted variables and restore in finally; never inspect actual credentials.",
     "D9 \u2014 Living docs document list/exports, command-only grants, precedence, channel stripping, casing and helper isolation, retaining trusted-command limits. BB-120 policy is delivered only when DONE. No Blackboard ids/research/value claims. Logs route by criterion/run to exact candidate and independent Jev.",
     "D10 \u2014 Graph and plan researchBaselineSha are both 5386e2adee15a3175a5b6635b63a54f6e24128cb. Objective sources and source anchors materialize successfully at this baseline. Keep historical prototype source pins as historical evidence; no product implementation or upstream DONE claims are added."
   ],
@@ -97,7 +97,7 @@
   "implementationSlices": [
     "S1 \u2014 In local-command-verifier.js publish the frozen 28-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import. Native process.env is an allowed parent by identity despite its exotic prototype; injected maps/overlay remain plain or null-prototype. Descriptor-based selection reads only allowed parent values and rejects accessors before invocation, with copied immutable overlay.",
     "S2 \u2014 Thread one filtered parent snapshot per verify into gitState, executeProcess and killTree. Only executeProcess gets the frozen command overlay. Force Git's GIT_CONFIG_NOSYSTEM=1 after the filtered base. Preserve revision/tree, shell:false, bounded evidence and lifecycle semantics. Thread base explicitly through gitState(root,base), executeProcess({...,env:commandEnv}) and killTree(child,base); commandEnv=buildLocalVerifierEnvironment({parentEnv:base,env:copiedOverlay}). No caller overlay reaches Git/taskkill. Snapshot includes own string allowlisted values only; Windows uppercase/deduplicate before overlay, POSIX exact case, NODE_TEST_CONTEXT stripped after overlay. Preserve original before-command HEAD mismatch rejection and post-command clean-tree comparison with identical reason/exit/stream hash grammar. Focused real basename Node launch using controlled PATH and Backend/QA accepted-SHA regression prove platform variables and identity semantics remain; missing PATH is deliberately omitted, not synthesized.",
-    "S3 \u2014 Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery. E6 must import the verifier only after builtin wrappers are installed in a fresh child, avoiding the captured promisify(execFile) binding. E8 descriptor matrix rejects allowlisted accessor/nonstring and invalid overlay before effects; unknown parent values remain unread. Run actual child booleans, not environment dumps; native Windows evidence remains separate from the mandatory simulation. Port executed descriptorReplay cases through the actual product exports: native process.env, nonallowlisted throwing getter never read, allowlisted/overlay getters rejected without invocation, basename Node through retained PATH, filtered before/after Git helpers and preserved revision/tree/timeout. Historical weaker prototype behavior is not the selected contract.",
+    "S3 \u2014 Add local-verifier-environment.test.js with distinct tests defined in deliveryContract.tests/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery. E6 must import the verifier only after builtin wrappers are installed in a fresh child, avoiding the captured promisify(execFile) binding. E8 descriptor matrix rejects allowlisted accessor/nonstring and invalid overlay before effects; unknown parent values remain unread. Run actual child booleans, not environment dumps; native Windows evidence remains separate from the mandatory simulation. Port executed descriptorReplay cases through the actual product exports: native process.env, nonallowlisted throwing getter never read, allowlisted/overlay getters rejected without invocation, basename Node through retained PATH, filtered before/after Git helpers and preserved revision/tree/timeout. Historical weaker prototype behavior is not the selected contract.",
     "S4 \u2014 Document exact inherited names, explicit factory overlay, no CLI forwarding and remaining home/network/filesystem trust in the two Living state files; run docs/export verification. Collect exact-candidate logs and criterion-specific evidence, then obtain independent Worker judgment under existing delivery controls."
   ],
   "acceptanceCriteria": [
@@ -109,7 +109,7 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Candidate-bound env-boundary/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion ENV_BOUNDARY.",
+        "Candidate-bound env-boundary/agent-tools-regression logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion ENV_BOUNDARY.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -120,7 +120,7 @@
         "overlay"
       ],
       "evidenceRequired": [
-        "Candidate-bound overlay logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion OVERLAY.",
+        "Candidate-bound overlay logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion OVERLAY.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -131,7 +131,7 @@
         "test-channel"
       ],
       "evidenceRequired": [
-        "Candidate-bound test-channel logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion TEST_CHANNEL.",
+        "Candidate-bound test-channel logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion TEST_CHANNEL.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -142,7 +142,7 @@
         "platform"
       ],
       "evidenceRequired": [
-        "Candidate-bound platform logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion PLATFORM.",
+        "Candidate-bound platform logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion PLATFORM.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -155,7 +155,7 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Candidate-bound integrity/agentic-regression/agent-tools-regression logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTEGRITY.",
+        "Candidate-bound integrity/agentic-regression/agent-tools-regression logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion INTEGRITY.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -166,7 +166,7 @@
         "internal-env"
       ],
       "evidenceRequired": [
-        "Candidate-bound internal-env logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion INTERNAL_ENV.",
+        "Candidate-bound internal-env logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion INTERNAL_ENV.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     },
@@ -178,7 +178,7 @@
         "docs"
       ],
       "evidenceRequired": [
-        "Candidate-bound exports/docs logs (logRef/hash/exitCode) and the exact testContract test bodies; criterion EXPORTS_DOCS.",
+        "Candidate-bound exports/docs logs (logRef/hash/exitCode) and the exact deliveryContract.tests test bodies; criterion EXPORTS_DOCS.",
         "Focused tests directly call createLocalCommandVerifier.verify on real scratch Git candidates and record child boolean assertions, before-command marker, candidate revision/stream digests and owned child shutdown; platform builder tests inject literal parent maps separately."
       ]
     }
@@ -394,105 +394,6 @@
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe the implemented verifier allowlist, explicit command-only env overlay, test-channel stripping, platform rules and restricted internal helper env, while retaining the trusted-command/home-config limits. No research status, Blackboard ids or benchmark claims."
   },
-  "environmentContract": {
-    "inheritedNames": [
-      "PATH",
-      "HOME",
-      "USER",
-      "LOGNAME",
-      "SHELL",
-      "TMPDIR",
-      "TEMP",
-      "TMP",
-      "LANG",
-      "LC_ALL",
-      "LC_CTYPE",
-      "TERM",
-      "TERM_PROGRAM",
-      "COLORTERM",
-      "XDG_CONFIG_HOME",
-      "XDG_CACHE_HOME",
-      "XDG_DATA_HOME",
-      "XDG_RUNTIME_DIR",
-      "XDG_STATE_HOME",
-      "USERPROFILE",
-      "HOMEDRIVE",
-      "HOMEPATH",
-      "APPDATA",
-      "LOCALAPPDATA",
-      "PATHEXT",
-      "SYSTEMROOT",
-      "COMSPEC",
-      "WINDIR"
-    ],
-    "allowlistExport": "LOCAL_VERIFIER_INHERITED_ENV",
-    "builderExport": "buildLocalVerifierEnvironment",
-    "factoryOption": "createLocalCommandVerifier({ ..., env = {} })",
-    "precedence": "allowlisted parent < validated copied command overlay < NODE_TEST_CONTEXT removal",
-    "parentSampling": "Once per verify; command overlay copied at factory construction.",
-    "platformCases": "win32 canonicalizes all emitted keys to uppercase and deduplicates case-insensitively. POSIX preserves exact casing.",
-    "compatibilityLimit": "Non-allowlisted config/auth/proxy values need an explicit factory env grant; no CLI forwarding.",
-    "validation": "Operator env and injected parent maps require Object.prototype or null prototype. Actual process.env is an explicitly allowed exotic parent record by identity; Node does not give it Object.prototype. Enumerate parent own names, select allowlisted key names first, then inspect those own descriptors without reading any non-allowlisted values. Reject selected accessors/non-string data values; never invoke getters. Overlay descriptors must all be own data strings, valid key/value without NUL/= or empty key; freeze copied null-prototype map. Win32 fold/deduplicate first, overlay last, strip NODE_TEST_CONTEXT after merge.",
-    "processCoverage": "The primary verification child gets allowlisted base+explicit copied overlay. Git HEAD/tree/status integrity helpers and process-group cleanup get only filtered base, with Git forced GIT_CONFIG_NOSYSTEM=1. taskkill gets filtered base without command overlay. No process launched by this verifier receives raw process.env."
-  },
-  "testContract": [
-    {
-      "title": "BB-130 N1 parent-only synthetic secrets are absent",
-      "assertions": "Plant both synthetic secret names in isolated parent; assert child booleans false and PASS, baseline true."
-    },
-    {
-      "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
-      "assertions": "Parent and overlay marker valid strings; assert absent in real child/nested node:test."
-    },
-    {
-      "title": "BB-130 N3 malformed overlay is rejected before verification",
-      "assertions": "Direct factory throws TypeError for null/array/non-plain, non-string own value, empty/'='/NUL key, NUL value. Empty strings/null-prototype are controls."
-    },
-    {
-      "title": "BB-130 N4 command overlay cannot redirect Git identity checks",
-      "assertions": "Grant synthetic nonexistent GIT_DIR/GIT_CONFIG_COUNT only to command; child sees grants, actual Git helpers do not; correct revision PASSes."
-    },
-    {
-      "title": "BB-130 N5 revision mismatch fails before command side effects",
-      "assertions": "Wrong 40-hex candidate: FAIL/REVISION_MISMATCH, actual revision and empty-stream digest; absent command sentinel."
-    },
-    {
-      "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL",
-      "assertions": "Exit-zero append to fixture.txt: FAIL/TREE_MUTATED with before-revision evidence."
-    },
-    {
-      "title": "BB-130 E1 secret explicitly granted through env is available",
-      "assertions": "Explicitly grant one synthetic secret, assert visible; another ungranted token stays absent."
-    },
-    {
-      "title": "BB-130 E2 arbitrary overlay and inherited override work",
-      "assertions": "Non-allowlisted BB130_OVERLAY and synthetic HOME override reach child; inherited PATH retained."
-    },
-    {
-      "title": "BB-130 E3 caller mutation cannot change the copied overlay",
-      "assertions": "Mutate caller's env after factory construction; child sees copied value. Include empty-string positive control."
-    },
-    {
-      "title": "BB-130 E4 Windows test channel aliases are stripped",
-      "assertions": "Pure win32 parent/overlay maps with mixed-case NODE_TEST_CONTEXT produce no case-equivalent marker."
-    },
-    {
-      "title": "BB-130 E5 platform variables casing and missing keys",
-      "assertions": "Injected POSIX/win32 maps: Path/SystemRoot/ComSpec, PATH/Path dedupe, overlay path, USERPROFILE/APPDATA/TEMP, HOME/XDG, unknown names, missing keys and prototype PATH. Real verifier launches Node basename using controlled PATH; boolean PATH/HOME and literal argv assertions."
-    },
-    {
-      "title": "BB-130 E6 internal process environments exclude secrets and command grants",
-      "assertions": "Use an isolated child harness: install native-backed execFile/spawn wrappers and syncBuiltinESMExports BEFORE dynamically importing local-command-verifier.js, so its module-level promisify captures the wrapper. Then invoke actual factory/verify on real Git; record only helper env booleans, assert filtered Git and absent overlay/test channel. Restore builtins in finally. Separate vm.SyntheticModule win32 process/child facade exercises taskkill argument/options via actual copied module; label simulated Windows, not native launch evidence."
-    },
-    {
-      "title": "BB-130 E7 frozen list and builder are exported through package index",
-      "assertions": "Index/module share frozen exact list/builder; invoke builder and factory, audit declared writes and absence of ambient env spreading/defaults in this module."
-    },
-    {
-      "title": "BB-130 E8 descriptor validation cannot execute accessors",
-      "assertions": "Invoke builder on own enumerable accessor/non-string allowlisted parent descriptors and invalid overlays. Reject TypeError without calling getter; do not inspect non-allowlisted parent values. Plain/null-prototype string parent maps are positive controls. Positive real process.env parent must build and launch correctly even though Object.getPrototypeOf(process.env)!==Object.prototype; invalid non-plain injected maps reject."
-    }
-  ],
   "dependencyResolution": {
     "direct": [
       {
@@ -547,9 +448,105 @@
     }
   ],
   "deliveryContract": {
-    "readiness": "Independent Jev evaluates the exact plan; these prototype facts grant no READY authority.",
-    "workerEvidence": "Criterion logs and negative bindings belong to the exact candidate SHA/tree and plan hash.",
-    "publication": "Every Worker claim SATISFIED; exact evaluated candidate merge tree in main under existing delivery gates."
+    "environment": {
+      "inheritedNames": [
+        "PATH",
+        "HOME",
+        "USER",
+        "LOGNAME",
+        "SHELL",
+        "TMPDIR",
+        "TEMP",
+        "TMP",
+        "LANG",
+        "LC_ALL",
+        "LC_CTYPE",
+        "TERM",
+        "TERM_PROGRAM",
+        "COLORTERM",
+        "XDG_CONFIG_HOME",
+        "XDG_CACHE_HOME",
+        "XDG_DATA_HOME",
+        "XDG_RUNTIME_DIR",
+        "XDG_STATE_HOME",
+        "USERPROFILE",
+        "HOMEDRIVE",
+        "HOMEPATH",
+        "APPDATA",
+        "LOCALAPPDATA",
+        "PATHEXT",
+        "SYSTEMROOT",
+        "COMSPEC",
+        "WINDIR"
+      ],
+      "allowlistExport": "LOCAL_VERIFIER_INHERITED_ENV",
+      "builderExport": "buildLocalVerifierEnvironment",
+      "factoryOption": "createLocalCommandVerifier({ ..., env = {} })",
+      "precedence": "allowlisted parent < validated copied command overlay < NODE_TEST_CONTEXT removal",
+      "parentSampling": "Once per verify; command overlay copied at factory construction.",
+      "platformCases": "win32 canonicalizes all emitted keys to uppercase and deduplicates case-insensitively. POSIX preserves exact casing.",
+      "compatibilityLimit": "Non-allowlisted config/auth/proxy values need an explicit factory env grant; no CLI forwarding.",
+      "validation": "Operator env and injected parent maps require Object.prototype or null prototype. Actual process.env is an explicitly allowed exotic parent record by identity; Node does not give it Object.prototype. Enumerate parent own names, select allowlisted key names first, then inspect those own descriptors without reading any non-allowlisted values. Reject selected accessors/non-string data values; never invoke getters. Overlay descriptors must all be own data strings, valid key/value without NUL/= or empty key; freeze copied null-prototype map. Win32 fold/deduplicate first, overlay last, strip NODE_TEST_CONTEXT after merge.",
+      "processCoverage": "The primary verification child gets allowlisted base+explicit copied overlay. Git HEAD/tree/status integrity helpers and process-group cleanup get only filtered base, with Git forced GIT_CONFIG_NOSYSTEM=1. taskkill gets filtered base without command overlay. No process launched by this verifier receives raw process.env."
+    },
+    "tests": [
+      {
+        "title": "BB-130 N1 parent-only synthetic secrets are absent",
+        "assertions": "Plant both synthetic secret names in isolated parent; assert child booleans false and PASS, baseline true."
+      },
+      {
+        "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
+        "assertions": "Parent and overlay marker valid strings; assert absent in real child/nested node:test."
+      },
+      {
+        "title": "BB-130 N3 malformed overlay is rejected before verification",
+        "assertions": "Direct factory throws TypeError for null/array/non-plain, non-string own value, empty/'='/NUL key, NUL value. Empty strings/null-prototype are controls."
+      },
+      {
+        "title": "BB-130 N4 command overlay cannot redirect Git identity checks",
+        "assertions": "Grant synthetic nonexistent GIT_DIR/GIT_CONFIG_COUNT only to command; child sees grants, actual Git helpers do not; correct revision PASSes."
+      },
+      {
+        "title": "BB-130 N5 revision mismatch fails before command side effects",
+        "assertions": "Wrong 40-hex candidate: FAIL/REVISION_MISMATCH, actual revision and empty-stream digest; absent command sentinel."
+      },
+      {
+        "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL",
+        "assertions": "Exit-zero append to fixture.txt: FAIL/TREE_MUTATED with before-revision evidence."
+      },
+      {
+        "title": "BB-130 E1 secret explicitly granted through env is available",
+        "assertions": "Explicitly grant one synthetic secret, assert visible; another ungranted token stays absent."
+      },
+      {
+        "title": "BB-130 E2 arbitrary overlay and inherited override work",
+        "assertions": "Non-allowlisted BB130_OVERLAY and synthetic HOME override reach child; inherited PATH retained."
+      },
+      {
+        "title": "BB-130 E3 caller mutation cannot change the copied overlay",
+        "assertions": "Mutate caller's env after factory construction; child sees copied value. Include empty-string positive control."
+      },
+      {
+        "title": "BB-130 E4 Windows test channel aliases are stripped",
+        "assertions": "Pure win32 parent/overlay maps with mixed-case NODE_TEST_CONTEXT produce no case-equivalent marker."
+      },
+      {
+        "title": "BB-130 E5 platform variables casing and missing keys",
+        "assertions": "Injected POSIX/win32 maps: Path/SystemRoot/ComSpec, PATH/Path dedupe, overlay path, USERPROFILE/APPDATA/TEMP, HOME/XDG, unknown names, missing keys and prototype PATH. Real verifier launches Node basename using controlled PATH; boolean PATH/HOME and literal argv assertions."
+      },
+      {
+        "title": "BB-130 E6 internal process environments exclude secrets and command grants",
+        "assertions": "Use an isolated child harness: install native-backed execFile/spawn wrappers and syncBuiltinESMExports BEFORE dynamically importing local-command-verifier.js, so its module-level promisify captures the wrapper. Then invoke actual factory/verify on real Git; record only helper env booleans, assert filtered Git and absent overlay/test channel. Restore builtins in finally. Separate vm.SyntheticModule win32 process/child facade exercises taskkill argument/options via actual copied module; label simulated Windows, not native launch evidence."
+      },
+      {
+        "title": "BB-130 E7 frozen list and builder are exported through package index",
+        "assertions": "Index/module share frozen exact list/builder; invoke builder and factory, audit declared writes and absence of ambient env spreading/defaults in this module."
+      },
+      {
+        "title": "BB-130 E8 descriptor validation cannot execute accessors",
+        "assertions": "Invoke builder on own enumerable accessor/non-string allowlisted parent descriptors and invalid overlays. Reject TypeError without calling getter; do not inspect non-allowlisted parent values. Plain/null-prototype string parent maps are positive controls. Positive real process.env parent must build and launch correctly even though Object.getPrototypeOf(process.env)!==Object.prototype; invalid non-plain injected maps reject."
+      }
+    ]
   },
   "objectiveCoverage": [
     {
@@ -589,7 +586,6 @@
         }
       ],
       "supportingPlanFields": [
-        "environmentContract",
         "researchEvidenceSummary"
       ]
     },
@@ -630,11 +626,7 @@
           "match": "test(\"RB4 QA ACCEPTs on the accepted sha with both QA records PASS at that revision\""
         }
       ],
-      "supportingPlanFields": [
-        "researchEvidenceSummary",
-        "environmentContract",
-        "testContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
@@ -672,9 +664,7 @@
           "match": "} from \"./local-command-verifier.js\";"
         }
       ],
-      "supportingPlanFields": [
-        "researchEvidenceSummary"
-      ]
+      "supportingPlanFields": []
     }
   ],
   "researchEvidence": {
@@ -786,5 +776,6 @@
     },
     "historicalRef": "state.plan.researchEvidence.prototype",
     "limits": "Synthetic secrets only; no credentials/provider calls/product edits. Native Windows/taskkill and complete Backend/QA regression remain Worker obligations. Prototype is not READY authority."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
