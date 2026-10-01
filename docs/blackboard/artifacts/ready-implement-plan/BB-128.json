@@ -79,7 +79,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 Pin AGENT_TOOL_ADAPTER_V1 and execute the discriminating prototype: the no-spawn probeDeliverCapability probe against all five delivered AGENT_TOOLS entries (codex, kiro, agy, grok, opencode) using the exact deliver request shape; record per-adapter probe outcomes (argv built for resume:null and resume:{sessionRef}, parseResult tuple shape) as research evidence that grok|opencode satisfy the headless/edit/resume contract and that a probe failure is rejected pre-spawn.",
+    "S1 \u2014 Contract pinned (AGENT_TOOL_ADAPTER_V1) and discriminating prototype EXECUTED in research: the no-spawn probeDeliverCapability probe ran against all five delivered AGENT_TOOLS entries with the exact deliver request shape (resume null and resume {sessionRef}); per-adapter argv and result-tuple outcomes are recorded in researchEvidence and show grok|opencode satisfy the same headless/edit/resume contract as codex|kiro|agy. Worker implements probeDeliverCapability in deliver-slice.js per the recorded outcomes and replaces the SLICE_TOOLS whitelist; validateDeliverSlice accepts exactly the ids whose probe succeeds.",
     "S2 \u2014 After fresh READY, implement only the declared seam and focused positive/negative fixtures: P1 grok manifest accepted by validateDeliverSlice, P2 opencode manifest accepted, N1 unknown tool rejected pre-spawn, N2 missing binary resolves to TOOL_UNAVAILABLE/NOT_INSTALLED, N3 tool-mismatched resume throws TOOL_MISMATCH before spawn.",
     "S3 \u2014 Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
@@ -199,6 +199,10 @@
   "researchEvidence": [
     {
       "ref": "packages/agent-tools/src/tool-adapters.js",
+      "finding": "EXECUTED no-spawn probe 2026-10-01 (local node, zero provider calls, zero spawns): called buildInvocation on every AGENT_TOOLS entry with the exact deliver request shape {prompt, resume, model:null, permissionProfile:'WORKSPACE_EDIT', logFile, promptFile, cwd, timeoutMs:1} for resume:null and resume:{sessionRef:'probe-session'}, then parseResult({exitCode:0, stdout:''}). All five adapters built argv without throwing and returned the {claimedSuccess, finalMessage, sessionRef} tuple. Argv per adapter \u2014 codex fresh: `codex exec --json --skip-git-repo-check --sandbox workspace-write -` (prompt on stdin), resume: `codex exec resume probe-session --json -`; kiro fresh: `kiro-cli chat --no-interactive --trust-tools=fs_read,fs_write probe`, resume adds `--resume`; agy fresh: `agy --print probe --mode accept-edits --print-timeout 1s --log-file probe.log`, resume adds `--continue`; grok fresh: `grok --output-format json --model grok-4.6 --cwd probe-cwd --permission-mode acceptEdits --disable-web-search --no-subagents --no-auto-update --prompt-file probe.prompt`, resume adds `--resume probe-session`; opencode fresh: `opencode run --format json --dir probe-cwd -- probe`, resume adds `--session probe-session`. parseResult tuples: all {claimedSuccess:true, finalMessage:null, sessionRef:null}. Conclusion: grok and opencode satisfy the same headless/edit/resume contract as the three deliver-admitted tools; the only deliver exclusion is the SLICE_TOOLS id whitelist. The deliver Backend path (runSupervisedTask) is tool-agnostic beyond this contract: the supervisor supplies logFile, promptFile, cwd and timeoutMs to every invocation, which are exactly the extra fields agy (logFile/timeoutMs) and grok (promptFile) require."
+    },
+    {
+      "ref": "packages/agent-tools/src/tool-adapters.js",
       "finding": "DELIVERED_TRUTH: AGENT_TOOLS is frozen {codex, kiro, agy, grok, opencode} under AGENT_TOOL_ADAPTER_V1. Every adapter passes assertInvocationRequest: non-empty prompt, resume null|{sessionRef}, model null|string, permissionProfile in WORKSPACE_EDIT|FULL_AUTO. grokTool builds --output-format json --model <model|grok-4.6> [--cwd] [--always-approve | --permission-mode acceptEdits] [--resume <sessionRef> | --continue] --prompt-file; parseResult reads the first balanced JSON object for sessionId/text and returns claimedSuccess=(exitCode===0). opencodeTool builds run --format json [--dir cwd] [--model] [--auto for FULL_AUTO] [--session <id> | --continue] -- <prompt>; parseResult extracts sessionID and the last text part from JSONL, same {claimedSuccess, finalMessage, sessionRef} shape."
     },
     {
@@ -241,7 +245,8 @@
         "runSupervisedTask",
         "resumeSupervisedTask",
         "HANDLE_INVALID identity gate",
-        "exharness-agent run/smoke --tool"
+        "exharness-agent run/smoke --tool",
+        "executed no-spawn adapter probe (research, 2026-10-01)"
       ],
       "PLANNED_CONTRACT": [],
       "RESEARCH_DESIRED_STATE": [
@@ -253,7 +258,7 @@
         "N2 missing-binary NOT_INSTALLED"
       ]
     },
-    "contradiction": "None. BB-104 and BB-122 are DONE with phase DELIVERED; every BB-128 input is delivered truth. The adapters already serve run/smoke; only the deliver manifest gate excludes them."
+    "contradiction": "None. BB-104 and BB-122 are DONE with phase DELIVERED; every BB-128 input is delivered truth. The executed no-spawn probe shows grok|opencode satisfy the same adapter contract as the deliver-admitted tools; only the SLICE_TOOLS whitelist excludes them."
   },
   "deliveryContract": {
     "precondition": "BB-104 DONE and BB-122 DONE; work-graph phase DELIVERED for both.",
