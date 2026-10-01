@@ -129,10 +129,19 @@ test("EN1 AGENT_CHILD_INHERITED_ENV is exported and the child copies only those 
   }
 });
 
+async function childEnvViaRunProcessInline(overlay) {
+  const run = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: overlay, timeoutMs: 30000, maxOutputBytes: 65536 });
+  assert.equal(run.status, "COMPLETED");
+  assert.equal(run.exitCode, 0, run.stderr);
+  return JSON.parse(run.stdout);
+}
+
 test("EN2 planted EXHARNESS_PLANTED_SECRET is not inherited", T, async () => {
   const restore = plantEnv({ EXHARNESS_PLANTED_SECRET: "en2-secret" });
   try {
-    const bare = await childEnvViaRunProcess({});
+    const run = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: {}, timeoutMs: 30000, maxOutputBytes: 65536 });
+    assert.equal(run.status, "COMPLETED");
+    const bare = JSON.parse(run.stdout);
     assert.equal(bare.planted, null);
   } finally {
     restore();
@@ -142,7 +151,9 @@ test("EN2 planted EXHARNESS_PLANTED_SECRET is not inherited", T, async () => {
 test("EN2 planted AWS_SECRET_ACCESS_KEY is not inherited", T, async () => {
   const restore = plantEnv({ AWS_SECRET_ACCESS_KEY: "en2-aws" });
   try {
-    const bare = await childEnvViaRunProcess({});
+    const run = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: {}, timeoutMs: 30000, maxOutputBytes: 65536 });
+    assert.equal(run.status, "COMPLETED");
+    const bare = JSON.parse(run.stdout);
     assert.equal(bare.aws, null);
   } finally {
     restore();
@@ -152,7 +163,9 @@ test("EN2 planted AWS_SECRET_ACCESS_KEY is not inherited", T, async () => {
 test("EN2 overlay key not on allowlist is present", T, async () => {
   const restore = plantEnv({ EXHARNESS_PLANTED_SECRET: "en2-secret" });
   try {
-    const overlaid = await childEnvViaRunProcess({ EXHARNESS_OVERLAY_PROBE: "yes", EXHARNESS_PLANTED_SECRET: "via-overlay" });
+    const run = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: { EXHARNESS_OVERLAY_PROBE: "yes", EXHARNESS_PLANTED_SECRET: "via-overlay" }, timeoutMs: 30000, maxOutputBytes: 65536 });
+    assert.equal(run.status, "COMPLETED");
+    const overlaid = JSON.parse(run.stdout);
     assert.equal(overlaid.overlayProbe, "yes");
     assert.equal(overlaid.planted, "via-overlay", "overlay keys present even off the allowlist");
   } finally {
@@ -163,9 +176,11 @@ test("EN2 overlay key not on allowlist is present", T, async () => {
 test("EN3 NODE_TEST_CONTEXT is absent from the child", T, async () => {
   const restore = plantEnv({ NODE_TEST_CONTEXT: "parent-context" });
   try {
-    const bare = await childEnvViaRunProcess({});
+    const run1 = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: {}, timeoutMs: 30000, maxOutputBytes: 65536 });
+    const bare = JSON.parse(run1.stdout);
     assert.equal(bare.nodeTestContext, null);
-    const overlaid = await childEnvViaRunProcess({ NODE_TEST_CONTEXT: "overlay-context" });
+    const run2 = await runProcess(process.execPath, ["-e", DUMP], { cwd: REPO_ROOT, env: { NODE_TEST_CONTEXT: "overlay-context" }, timeoutMs: 30000, maxOutputBytes: 65536 });
+    const overlaid = JSON.parse(run2.stdout);
     assert.equal(overlaid.nodeTestContext, null, "stripped even from the overlay");
   } finally {
     restore();
@@ -183,13 +198,17 @@ test("EN5 declared auth name is forwarded but undeclared ambient auth is not", T
   try {
     const tool = probeTool(["EXHARNESS_AUTH_PROBE"]);
     assert.ok(Object.isFrozen(tool.authEnvNames));
-    const passed = await childEnvViaInvocation(tool, {});
+    const run1 = await runAgentInvocation(tool, { prompt: "probe" }, { cwd: REPO_ROOT, env: {}, timeoutMs: 30000, maxOutputBytes: 65536 });
+    assert.equal(run1.status, "COMPLETED");
+    const passed = JSON.parse(run1.stdout);
     assert.equal(passed.authProbe, "auth-value");
     assert.equal(passed.undeclared, null);
-    const overlayWins = await childEnvViaInvocation(tool, { EXHARNESS_AUTH_PROBE: "overlay-wins" });
+    const run2 = await runAgentInvocation(tool, { prompt: "probe" }, { cwd: REPO_ROOT, env: { EXHARNESS_AUTH_PROBE: "overlay-wins" }, timeoutMs: 30000, maxOutputBytes: 65536 });
+    const overlayWins = JSON.parse(run2.stdout);
     assert.equal(overlayWins.authProbe, "overlay-wins", "caller overlay wins over auth passthrough");
     const undeclaredTool = probeTool([]);
-    const dropped = await childEnvViaInvocation(undeclaredTool, {});
+    const run3 = await runAgentInvocation(undeclaredTool, { prompt: "probe" }, { cwd: REPO_ROOT, env: {}, timeoutMs: 30000, maxOutputBytes: 65536 });
+    const dropped = JSON.parse(run3.stdout);
     assert.equal(dropped.authProbe, null);
     assert.equal(dropped.undeclared, null);
   } finally {
