@@ -41,7 +41,7 @@
     "AD7: Use literal minimal service/supervisor env, no process.env spread or NODE_OPTIONS; reject credential-bearing profile values/internal overrides. BB-130 PLANNED_CONTRACT supplies explicit verifier env overlay with NODE_TEST_CONTEXT stripped. QA receives only a protected PREVIEW_RECEIPT_PATH; receipt omits raw env/token.",
     "AD8: Use OBSERVED_READY/FAILED/UNRESOLVED/DISPOSED and typed causes; retain first specific cause, clean partial starts, report CLEANUP_INCOMPLETE on uncertain shutdown. Missing runtime/unsupported profile/timeout/interrupt do not grant readiness or QA acceptance.",
     "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. The historical probe lacked Docker; current replay observed Docker available. No container setup comparison was executed, so container setup time remains unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim.",
-    "AD10: The explicit service wire protocol is localPreviewContract.wireProtocol. Node fork uses operator runtime execPath; strict IPC LISTENING identifies the OS-assigned loopback port and health echoes the protected token/bindings. Seed copy is outside checkout. No shell/runtime wrapper or project-specific guessed health schema is introduced."
+    "AD10: The explicit service wire protocol is deliveryContract.localPreview.wireProtocol. Node fork uses operator runtime execPath; strict IPC LISTENING identifies the OS-assigned loopback port and health echoes the protected token/bindings. Seed copy is outside checkout. No shell/runtime wrapper or project-specific guessed health schema is introduced."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -377,70 +377,6 @@
     "evidenceClass": "EXECUTED_LOCAL_RESEARCH_FEASIBILITY_NOT_IMPLEMENTATION_OR_VALUE",
     "goNoGo": "Narrow NODE_HTTP_V1 research GO based on bounded executed synthetic fixtures. DRAFT until fresh exact Jev SATISFIED. Worker additionally requires BB-130 DONE. Containers and framework inference excluded; no measured effort/speedup claim."
   },
-  "localPreviewContract": {
-    "version": "LOCAL_PREVIEW_V1",
-    "authority": "Caller-declared profile and evaluator are protected inputs supplied separately from the candidate. Receipt is setup evidence and cannot publish quality acceptance.",
-    "api": "startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) -> {status,reason,receipt,handle?}; OBSERVED_READY has handle {observe(),reset(),dispose()}. Invalid declarations return a typed FAILED receipt before effects. reset returns a new generation/handle and permanently disposes the old handle. dispose is idempotent.",
-    "profile": {
-      "kind": "NODE_HTTP_V1",
-      "runtime": "Operator-selected absolute Node executable with expected version and SHA256. Recheck actual binary/version at observe/reset. Initial support: Node 24/Linux x64.",
-      "commands": "services:[{id,entry,args,env,port,healthPath}]; unique ids, literal string args, tracked relative JS entrypoints, shell:false. No installers, wrappers, hooks or external-service adoption.",
-      "configuration": "configInputs:[{path,sha256}],seed:{path,sha256}; tracked regular files, no symlink escape/traversal. Strict shape/limit checks before effects. Canonical sorted JSON for objects, raw SHA256 for files. Seed must be UTF-8 JSON array/object for this finite profile; parse/schema/size failure INVALID_PROFILE before effects, max seed1MiB. Config regular-file digest set remains unchanged through run.",
-      "ports": "Fixed 127.0.0.1; default port 0 is OS-assigned, nonzero conflict never cleared. No external URLs/redirects. Size/schema-check owned IPC messages and identify child sender.",
-      "environment": "Literal minimal env plus reserved PREVIEW_RUN_TOKEN/SERVICE_ID/DATA_DIR/PORT; reject internal overrides and credential-bearing keys; remove NODE_OPTIONS/NODE_TEST_CONTEXT. QA gets protected PREVIEW_RECEIPT_PATH through BB-130 explicit overlay. Receipt stores keys/digest, no raw values/token. Reserve and inject PREVIEW_CANDIDATE_SHA, PREVIEW_CANDIDATE_TREE, PREVIEW_CONFIG_DIGEST and PREVIEW_SEED_DIGEST from independently checked pins, so entrypoint can echo expected health bindings. Caller overrides of these keys reject.",
-      "budgets": "Positive bounded integers: startup default 30000/max120000 ms; probe default1000 within remaining deadline; response max16384 bytes; output default65536 per stream; shutdown default5000/max30000 ms. Bound runtime probes too."
-    },
-    "receipt": {
-      "fields": [
-        "version",
-        "receiptId",
-        "ownerId",
-        "generation",
-        "status",
-        "reason",
-        "candidate:{id,version,tree}",
-        "profileDigest",
-        "configDigest",
-        "inputDigest",
-        "runtime:{version,binarySha256,platform,arch}",
-        "evaluator:{id,digest,criterionIds}",
-        "services:[{id,entryDigest,argvDigest,envDigest,image:null,version,pid,endpoint,readiness:{status,at,responseDigest}}]",
-        "dataset:{seedDigest,generation,ownedDataId}",
-        "diagnostics:{redactedExcerpt,bytes,captureDigest,truncated}",
-        "cleanup:{status,reason,ownedResourcesOnly}"
-      ],
-      "binding": "SHA256 canonical receipt excluding receiptId. Observed health is timestamped, not perpetual. Consumers call live handle.observe and match protected identities/generation; disposed receipts are stale. No raw env/token publication.",
-      "serviceVersions": "Process service uses actual Node version plus entry/config digests; image:null is NOT_APPLICABLE. Do not invent container identity or missing measurements."
-    },
-    "outcomes": {
-      "OBSERVED_READY": "Every declared service is healthy and all independent bindings match; no QA acceptance is implied.",
-      "FAILED": [
-        "INVALID_PROFILE",
-        "CANDIDATE_MISMATCH",
-        "CONFIG_DRIFT",
-        "RUNTIME_DRIFT",
-        "EVALUATOR_MISMATCH",
-        "SEED_MISMATCH",
-        "READINESS_IDENTITY_MISMATCH",
-        "PORT_CONFLICT",
-        "EARLY_EXIT"
-      ],
-      "UNRESOLVED": [
-        "UNSUPPORTED_PROFILE",
-        "UNSUPPORTED_HOST",
-        "RUNTIME_UNAVAILABLE",
-        "READINESS_TIMEOUT",
-        "INTERRUPTED",
-        "CLEANUP_INCOMPLETE"
-      ],
-      "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
-    },
-    "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
-    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
-    "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
-    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
-    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
-  },
   "researchBrief": {
     "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
     "checkedAt": "2026-10-01T13:10:01.691549+00:00",
@@ -632,8 +568,10 @@
           "match": "export async function createLocalGitWorkspace"
         }
       ],
-      "supportingPlanFields": [
-        "localPreviewContract"
+      "supportingPlanFields": [],
+      "verificationIds": [
+        "focused",
+        "composition"
       ]
     },
     {
@@ -666,8 +604,9 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": [
-        "localPreviewContract"
+      "supportingPlanFields": [],
+      "verificationIds": [
+        "focused"
       ]
     },
     {
@@ -701,6 +640,10 @@
       ],
       "supportingPlanFields": [
         "researchEvidenceSummary"
+      ],
+      "verificationIds": [
+        "focused",
+        "composition"
       ]
     }
   ],
@@ -793,6 +736,73 @@
       "allChecksPass": true,
       "sourceRef": "preview-replay-observe.mjs",
       "limits": "Research feasibility only; production strict protocol/bounds remain Worker checks."
+    }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "deliveryContract": {
+    "localPreview": {
+      "version": "LOCAL_PREVIEW_V1",
+      "authority": "Caller-declared profile and evaluator are protected inputs supplied separately from the candidate. Receipt is setup evidence and cannot publish quality acceptance.",
+      "api": "startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) -> {status,reason,receipt,handle?}; OBSERVED_READY has handle {observe(),reset(),dispose()}. Invalid declarations return a typed FAILED receipt before effects. reset returns a new generation/handle and permanently disposes the old handle. dispose is idempotent.",
+      "profile": {
+        "kind": "NODE_HTTP_V1",
+        "runtime": "Operator-selected absolute Node executable with expected version and SHA256. Recheck actual binary/version at observe/reset. Initial support: Node 24/Linux x64.",
+        "commands": "services:[{id,entry,args,env,port,healthPath}]; unique ids, literal string args, tracked relative JS entrypoints, shell:false. No installers, wrappers, hooks or external-service adoption.",
+        "configuration": "configInputs:[{path,sha256}],seed:{path,sha256}; tracked regular files, no symlink escape/traversal. Strict shape/limit checks before effects. Canonical sorted JSON for objects, raw SHA256 for files. Seed must be UTF-8 JSON array/object for this finite profile; parse/schema/size failure INVALID_PROFILE before effects, max seed1MiB. Config regular-file digest set remains unchanged through run.",
+        "ports": "Fixed 127.0.0.1; default port 0 is OS-assigned, nonzero conflict never cleared. No external URLs/redirects. Size/schema-check owned IPC messages and identify child sender.",
+        "environment": "Literal minimal env plus reserved PREVIEW_RUN_TOKEN/SERVICE_ID/DATA_DIR/PORT; reject internal overrides and credential-bearing keys; remove NODE_OPTIONS/NODE_TEST_CONTEXT. QA gets protected PREVIEW_RECEIPT_PATH through BB-130 explicit overlay. Receipt stores keys/digest, no raw values/token. Reserve and inject PREVIEW_CANDIDATE_SHA, PREVIEW_CANDIDATE_TREE, PREVIEW_CONFIG_DIGEST and PREVIEW_SEED_DIGEST from independently checked pins, so entrypoint can echo expected health bindings. Caller overrides of these keys reject.",
+        "budgets": "Positive bounded integers: startup default 30000/max120000 ms; probe default1000 within remaining deadline; response max16384 bytes; output default65536 per stream; shutdown default5000/max30000 ms. Bound runtime probes too."
+      },
+      "receipt": {
+        "fields": [
+          "version",
+          "receiptId",
+          "ownerId",
+          "generation",
+          "status",
+          "reason",
+          "candidate:{id,version,tree}",
+          "profileDigest",
+          "configDigest",
+          "inputDigest",
+          "runtime:{version,binarySha256,platform,arch}",
+          "evaluator:{id,digest,criterionIds}",
+          "services:[{id,entryDigest,argvDigest,envDigest,image:null,version,pid,endpoint,readiness:{status,at,responseDigest}}]",
+          "dataset:{seedDigest,generation,ownedDataId}",
+          "diagnostics:{redactedExcerpt,bytes,captureDigest,truncated}",
+          "cleanup:{status,reason,ownedResourcesOnly}"
+        ],
+        "binding": "SHA256 canonical receipt excluding receiptId. Observed health is timestamped, not perpetual. Consumers call live handle.observe and match protected identities/generation; disposed receipts are stale. No raw env/token publication.",
+        "serviceVersions": "Process service uses actual Node version plus entry/config digests; image:null is NOT_APPLICABLE. Do not invent container identity or missing measurements."
+      },
+      "outcomes": {
+        "OBSERVED_READY": "Every declared service is healthy and all independent bindings match; no QA acceptance is implied.",
+        "FAILED": [
+          "INVALID_PROFILE",
+          "CANDIDATE_MISMATCH",
+          "CONFIG_DRIFT",
+          "RUNTIME_DRIFT",
+          "EVALUATOR_MISMATCH",
+          "SEED_MISMATCH",
+          "READINESS_IDENTITY_MISMATCH",
+          "PORT_CONFLICT",
+          "EARLY_EXIT"
+        ],
+        "UNRESOLVED": [
+          "UNSUPPORTED_PROFILE",
+          "UNSUPPORTED_HOST",
+          "RUNTIME_UNAVAILABLE",
+          "READINESS_TIMEOUT",
+          "INTERRUPTED",
+          "CLEANUP_INCOMPLETE"
+        ],
+        "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
+      },
+      "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
+      "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
+      "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
+      "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
+      "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
     }
   }
 }
