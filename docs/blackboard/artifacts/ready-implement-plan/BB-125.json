@@ -13,23 +13,31 @@
   ],
   "outOfScope": [
     "Objective supersession control-plane changes (BB-082).",
-    "Automatically approving requirement changes or rotating execution authority."
+    "Automatically approving requirement changes or rotating execution authority.",
+    "Retrofitting terminal BB-101 artifacts, crash-supervised.mjs, or RC1–RC5 behavioral assertions.",
+    "Hashing or persisting credential values; sandbox/gVisor (BB-067)."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
-    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
-    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+    "Product edits are packages/agent-tools/src/recovery.js, supervisor.js, deliver-slice.js, index.js plus the named test and Living docs in sourceScope.write.",
+    "Existing BB-101 recovery.test.js RC1–RC5 stay green: V2 writes compute digests automatically; recovery.md still contains the legacy string AGENT_TOOL_RUN_HANDLE_V1.",
+    "Default runSupervisedTask without recoveryDir stays byte-identical (mkdtemp, UUID session, finally-dispose).",
+    "canonicalJson stays the delivered export from packages/agent-tools/src/run-trace.js; that file is read-only.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "Canonical original-task and execution digests are persisted on a BOUND handle before first dispatch and revalidated before any resume side effect; id/repository/base identity alone never authorizes resume.",
+    "Changed prompt, verifier, requiredFiles, model, permissionProfile, launch limits, toolVersion, env key set or materialized context fail closed with CONTRACT_DRIFT before reopenRecoverableWorkspace or any child spawn.",
+    "Unchanged V2 bindings resume the same worktree, Core session and tool session; V1 handles fail closed with LEGACY_HANDLE and are never backfilled."
   ],
   "architectureDecisions": [
-    "Bind canonical normalized original task, verifications and declared context identity separately from materialized prompt; bind authority-bearing model/permission/tool launch fields and declared limits before spawning. Never hash or store credential values.",
-    "Reject drift before reopening side effects; no same-id fallback. Treat supported credential rotation as an explicit out-of-band operational policy, not permission or model drift.",
-    "Do not retrofit terminal BB-101 artifacts. Define a fail-closed compatibility boundary for existing handle files and test unchanged recovery with the delivered crash fixture."
+    "D1 — Original-versus-materialized digests. Use delivered canonicalJson (packages/agent-tools/src/run-trace.js: sorted keys, undefined dropped). taskDigest = sha256(canonicalJson({id, repositoryRoot: resolve(repositoryRoot), baseRevision, prompt, verifications: [{name, command, args, timeoutMs}], requiredFiles: requiredFiles ?? []})) over the validateAgentTask original, never over strategyTask. declaredContextDigest = sha256(canonicalJson({taskId, baseRevision, requiredFiles: requiredFiles ?? [], maxMaterializedBytes})). materializedContextDigest = sha256(canonicalJson({items: items.map(({path, sourceRef, snapshotRef, contentSha256}), promptPrefixDigest)})) from resolveAgentTaskContext; when agentContext is null or used:false use {items: [], promptPrefixDigest: sha256('')}. executionDigest = sha256(canonicalJson({model: model ?? null, permissionProfile, maxAttempts, maxFeedbackChars, timeoutMs, toolVersion, envKeys: Object.keys(env ?? {}).sort()})). Never hash env values. DELIVERED_TRUTH: runSupervisedTask builds strategyTask = agentContext?.used === true ? { ...task, prompt: `${agentContext.promptPrefix}\\n\\n${task.prompt}` } : task and passes strategyTask into runRecoverableTask, so persist today cannot bind the original prompt. Pass original `task` plus `strategyTask` plus `agentContext` into runRecoverableTask; persist digests from original task; dispatch still uses strategyTask.",
+    "D2 — V2 handle, BOUND phase, persist-before-dispatch. Export AGENT_TOOL_RUN_HANDLE_V2; AGENT_TOOL_RUN_HANDLE_VERSION becomes that string. HandlePhase gains BOUND. V2 createAgentToolRunHandle/assertHandleBody require taskDigest, declaredContextDigest, materializedContextDigest, executionDigest as 64-hex and include them in handleDigest. V1 reads still validate the current V1 field set (no digest fields). After workspace/session/toolVersion probe and before harness.start/vary, persist a BOUND handle: status RUNNING, candidateSha=baseRevision, toolSessionRef=null, attemptIndex=1, feedback=\"\". onActCompleted/onAttemptCompleted and terminal persist then refresh as today. DELIVERED_TRUTH: the first persist is inside onActCompleted after the first ACT returns; HandlePhase allows only ACT_COMPLETED|ATTEMPT_COMPLETED; a crash before first ACT leaves no handle.",
+    "D3 — Resume revalidation before side effects. resumeSupervisedTask gains repositoryReader, maxMaterializedBytes, snapshotObserve (same defaults as runSupervisedTask). Order before reopenRecoverableWorkspace or any child: verifyAgentToolRunHandle -> disk digest (else STALE_HANDLE) -> HANDLE_COMPLETE -> TOOL_MISMATCH -> version V1 or missing digest fields throws LEGACY_HANDLE -> validateAgentTask(rawTask) required -> recompute taskDigest/declaredContextDigest/executionDigest from the resupplied original task and the resolved launch params (model??null, permissionProfile, resolvedMaxAttempts, maxFeedbackChars, timeoutMs, probed toolVersion, env key set) -> re-run resolveAgentTaskContext at the pinned baseRevision under the bound maxMaterializedBytes and recompute materializedContextDigest -> any mismatch throws RecoveryError CONTRACT_DRIFT -> SOURCE_HEAD_DRIFT -> reopenRecoverableWorkspace. Then rebuild strategyTask with the identical promptPrefix so resume dispatches the byte-identical materialized prompt. DELIVERED_TRUTH: resume currently reopens the worktree before the id/repo/base check, compares only those three fields, drops the promptPrefix, and takes model/permissionProfile/timeoutMs/maxFeedbackChars/env from the resume call without binding.",
+    "D4 — Configurable-limit policy is exact equality, fail-closed. model, permissionProfile, maxAttempts, maxFeedbackChars, timeoutMs, maxMaterializedBytes, toolVersion and the env key set must match the bound digests; any change is CONTRACT_DRIFT, never a silent upgrade. Credential value rotation is out-of-band and is not drift because values are not hashed. Unchanged V2 resume retains the same worktree (reopenRecoverableWorkspace, no second git worktree add), the same Core session (createFileSessionStore over recoveryDir/core-session, sessionId agent-task:<id>, harness.recover(sessionId, {force: true}), never harness.start) and the same tool session (initialSessionRef: handle.toolSessionRef). BOUND resume: startAttempt=1, skipFirstAct=false, initialSessionRef=null.",
+    "D5 — Legacy fail-closed, no manufactured identity. AGENT_TOOL_RUN_HANDLE_V1 (or a handle missing the four digests) throws RecoveryError LEGACY_HANDLE with message 'AGENT_TOOL_RUN_HANDLE_V1 predates exact contract binding: dispose the legacy handle (disposeRecoverableRun) and re-dispatch via runSupervisedTask to mint a V2 binding; never backfill binding fields onto a legacy handle.' deliver-slice maps LEGACY_HANDLE to disposeRecoveryQuietly plus slice reason LEGACY_HANDLE and does not call resumeSupervisedTask. assertSliceHandleIdentity stays as the id/repo/base pre-check; CONTRACT_DRIFT and LEGACY_HANDLE from resume still apply. Do not write digest fields onto a V1 body.",
+    "D6 — Tests in packages/agent-tools/test/recovery-contract-binding.test.js. Titles: 'BB-125 N1 Same id with changed verifier must be rejected before any verification' (resumeSupervisedTask, CONTRACT_DRIFT, no verifier spawn), 'BB-125 N2 Same id with changed prompt must be rejected before dispatch' (CONTRACT_DRIFT before reopen/spawn), 'BB-125 N3 Legacy handle cannot acquire a self-asserted contract binding' (V1 handle -> LEGACY_HANDLE; writing digest fields onto it is not accepted). Positive: onHandleWrite first sees phase BOUND before any ACT; unchanged crash-supervised.mjs resume retains worktreeRoot, coreSessionId and toolSessionRef. Hermetic fake CLI; no network, no credentials, no real agent CLIs. Existing recovery.test.js RC1–RC5 remain the BB-101 contract.",
+    "D7 — Executed evidence (discovery.json at baseline 5386e2ad, providerCalls 0): sameIdChangedPromptAndVerifierAccepted true, status ACCEPTED, candidateStillSubtracts true, handleHasTaskDigest false. Source: resume identity check is id/repositoryRoot/baseRevision only; handle body has no prompt/verifications/model/permissionProfile; first persist is onActCompleted; strategyTask (materialized prompt) is what runRecoverableTask receives.",
+    "D8 — Living docs: docs/living/system/agent-tools/recovery.md describes V2 four digests, BOUND persist-before-dispatch, CONTRACT_DRIFT before reopen, LEGACY_HANDLE with the migration sentence, and original-versus-materialized prompt. Keep the string AGENT_TOOL_RUN_HANDLE_V1 as the legacy name so RC5 still matches. docs/living/system/agent-tools/state.md keeps the recovery.md pointer. No Blackboard ids."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -37,7 +45,8 @@
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/deliver-slice.js",
       "docs/blackboard/evidence/BB-125/discovery.json",
-      "docs/blackboard/process/delivery-value-improvement-research.md"
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/living/system/agent-tools/recovery.md"
     ],
     "expectedNew": [
       "packages/agent-tools/test/recovery-contract-binding.test.js"
@@ -48,56 +57,63 @@
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/src/recovery.js",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
       "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
+      "packages/agentic-system/src/**",
       "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-125/discovery.json"
+      "docs/blackboard/evidence/BB-125/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/index.js",
       "packages/agent-tools/test/recovery-contract-binding.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "docs/living/system/agent-tools/recovery.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/test/recovery.test.js",
+      "packages/agent-tools/test/fixtures/crash-supervised.mjs",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Binding schema and persist-before-dispatch [EXACT_RESUME]: implement D1–D2. V2 fields, BOUND phase, original-task digest, persist before harness.vary. Probe: onHandleWrite first handle is BOUND.",
+    "S2 — Resume revalidation and drift [EXACT_RESUME]: implement D3–D4. Four-digest compare before reopen; CONTRACT_DRIFT for prompt/verifier/model/permission/limits/env keys/context; re-apply promptPrefix. Tests BB-125 N1 and N2.",
+    "S3 — Legacy and unchanged resume [LEGACY_AND_RECOVERY]: implement D5. LEGACY_HANDLE without backfill; deliver-slice quiet dispose; unchanged crash fixture retains one semantic attempt. Test BB-125 N3. Living docs D8."
   ],
   "acceptanceCriteria": [
     {
       "id": "EXACT_RESUME",
-      "statement": "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
+      "statement": "A V2 handle persists taskDigest, declaredContextDigest, materializedContextDigest and executionDigest at phase BOUND before first dispatch; resume recomputes those digests from the original declared task and resolved launch fields and rejects changed prompt, verifier, requiredFiles, model, permissionProfile, limits, toolVersion, env key set or materialized context with CONTRACT_DRIFT before reopenRecoverableWorkspace or any child spawn.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "recovery-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "BB-125 N1 and N2 output calling resumeSupervisedTask; onHandleWrite BOUND-before-ACT probe; recovery.test.js RC1–RC5 still pass."
       ]
     },
     {
       "id": "LEGACY_AND_RECOVERY",
-      "statement": "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
+      "statement": "Unchanged V2 bindings resume the same worktreeRoot, coreSessionId and toolSessionRef via reopenRecoverableWorkspace plus harness.recover (never harness.start); a V1 handle fails closed with LEGACY_HANDLE carrying the dispose-and-re-dispatch instruction and is never backfilled.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "recovery-regression",
+        "docs"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "BB-125 N3 output calling resumeSupervisedTask; unchanged crash-supervised.mjs resume retains one semantic attempt; Living recovery.md names V2/BOUND/CONTRACT_DRIFT/LEGACY_HANDLE and still contains AGENT_TOOL_RUN_HANDLE_V1."
       ]
     }
   ],
@@ -105,6 +121,10 @@
     {
       "id": "focused",
       "command": "node --test packages/agent-tools/test/recovery-contract-binding.test.js"
+    },
+    {
+      "id": "recovery-regression",
+      "command": "node --test packages/agent-tools/test/recovery.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -117,27 +137,28 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "invariant": "Canonical original-task and execution digests are persisted on a BOUND handle before first dispatch and revalidated before any resume side effect; id/repository/base identity alone never authorizes resume.",
       "criterionIds": [
-        "EXACT_RESUME",
-        "LEGACY_AND_RECOVERY"
+        "EXACT_RESUME"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "invariant": "Changed prompt, verifier, requiredFiles, model, permissionProfile, launch limits, toolVersion, env key set or materialized context fail closed with CONTRACT_DRIFT before reopenRecoverableWorkspace or any child spawn.",
       "criterionIds": [
-        "EXACT_RESUME",
-        "LEGACY_AND_RECOVERY"
+        "EXACT_RESUME"
       ]
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "Unchanged V2 bindings resume the same worktree, Core session and tool session; V1 handles fail closed with LEGACY_HANDLE and are never backfilled.",
       "criterionIds": [
-        "EXACT_RESUME",
         "LEGACY_AND_RECOVERY"
       ]
     }
@@ -176,23 +197,257 @@
       "subjectSymbol": "resumeSupervisedTask"
     }
   ],
-  "researchGaps": [
-    "Specify the original-versus-materialized context digest, versioned handle compatibility, configurable-limit policy and migration instruction; execute unchanged and drift probes before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "docs/living/system/agent-tools/recovery.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that a recoverable handle is AGENT_TOOL_RUN_HANDLE_V2 with task, declared-context, materialized-context and execution digests persisted at phase BOUND before first dispatch; resume rejects contract drift before reopening the worktree; V1 handles fail closed with an explicit dispose-and-re-dispatch instruction; unchanged resume keeps the same worktree, Core session and tool session. Living docs contain no Blackboard ids and still name AGENT_TOOL_RUN_HANDLE_V1 as the legacy refuse-closed version."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-125/discovery.json",
+      "finding": "DELIVERED_TRUTH at 29935fa2/5386e2ad: sameIdChangedPromptAndVerifierAccepted true, status ACCEPTED, candidateStillSubtracts true, handleHasTaskDigest false, providerCalls 0."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: strategyTask is passed into runRecoverableTask; first persist is onActCompleted; resume reopens the worktree then compares only task.id, resolve(repositoryRoot) and baseRevision; comment states the task body is not part of the handle; model and permissionProfile are launch fields on the tool request and are not stored on the handle."
+    },
+    {
+      "ref": "packages/agent-tools/src/recovery.js",
+      "finding": "DELIVERED_TRUTH: AGENT_TOOL_RUN_HANDLE_VERSION is AGENT_TOOL_RUN_HANDLE_V1; HandlePhase is ACT_COMPLETED|ATTEMPT_COMPLETED; createAgentToolRunHandle fields have no prompt, verifications, model, permissionProfile or digest bindings other than handleDigest over the V1 body."
+    },
+    {
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "finding": "DELIVERED_TRUTH: assertSliceHandleIdentity compares slice.id/repositoryRoot/baseRevision only; RUNNING handles call resumeSupervisedTask with the current slice task, so a mutated slice prompt/verifier would be accepted by today's resume identity check."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-101"
+    ],
+    "workerStart": "Confirm origin/main still exports AGENT_TOOL_RUN_HANDLE_V1, persist-on-act-completed, and id/repo/base resume identity. Re-read discovery.json. Existing recovery.test.js RC1–RC5 must stay green after the V2 additive change.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "AGENT_TOOL_RUN_HANDLE_V1 handle fields and digest",
+        "createFileSessionStore plus harness.recover force resume",
+        "reopenRecoverableWorkspace",
+        "crash-supervised.mjs ACT_COMPLETED/ATTEMPT_COMPLETED crash seam",
+        "canonicalJson"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "V2 four-digest BOUND persist-before-dispatch",
+        "CONTRACT_DRIFT before reopen",
+        "LEGACY_HANDLE without backfill"
+      ]
+    },
+    "contradiction": "None. BB-101 remains the durable worktree/session seam; this task only binds task/config identity that BB-101 left unbound. Default mkdtemp path is unchanged."
+  },
+  "deliveryContract": {
+    "precondition": "BB-101 DONE.",
+    "completion": "focused + recovery.test.js RC1–RC5 + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No credential hashing, no V1 backfill, no second worktree/session on unchanged resume, no edits to crash-supervised.mjs or run-trace.js."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "recovery-regression",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "V1 handle read/validate for refuse-closed legacy",
+      "reopenRecoverableWorkspace and harness.recover force",
+      "onActCompleted/onAttemptCompleted persist cadence after BOUND",
+      "default runSupervisedTask without recoveryDir",
+      "RC1–RC5 crash/resume behavior",
+      "canonicalJson"
+    ],
+    "add": [
+      "AGENT_TOOL_RUN_HANDLE_V2 four digests and BOUND phase",
+      "CONTRACT_DRIFT and LEGACY_HANDLE",
+      "recovery-contract-binding tests"
+    ],
+    "rollback": "Restore V1-only handle and persist-on-act-completed; remove V2 fields, BOUND, CONTRACT_DRIFT, LEGACY_HANDLE and the new test file; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-125 objective + discovery.json + delivered recovery/supervisor/deliver-slice",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-101",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No V1 backfill, no credential hashing, no crash-fixture retrofit."
+      ]
+    }
+  ],
   "valueHypothesis": {
     "expectedValue": "Prevent a resumed run from silently changing the task or acceptance gate.",
     "measurement": "All contract drift cases stop before spawn/verifier; unchanged crash-resume retains one semantic attempt and candidate identity.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
+      "criterionIds": [
+        "EXACT_RESUME"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "recovery-regression",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/recovery.js",
+        "docs/blackboard/evidence/BB-125/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-125/discovery.json",
+          "match": "\"sameIdChangedPromptAndVerifierAccepted\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "The task body (prompt plus verifications) is not part of the handle; the caller"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "if (task.id !== handle.taskId || resolve(task.repositoryRoot) !== resolve(handle.repositoryRoot) || task.baseRevision !== handle.baseRevision)"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "need(Object.values(HandlePhase).includes(body.phase), \"handle phase must be ACT_COMPLETED or ATTEMPT_COMPLETED\");"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
+      "criterionIds": [
+        "LEGACY_AND_RECOVERY"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "recovery-regression",
+        "docs"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        7
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/deliver-slice.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export async function reopenRecoverableWorkspace({ repositoryRoot, worktreeRoot })"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "await harness.recover(sessionId, { force: true });"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "initialSessionRef: handle.toolSessionRef"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "throw new RecoveryError(\"HANDLE_INVALID\", \"deliver slice identity does not match the recovery handle\");"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "EXACT_RESUME",
+        "LEGACY_AND_RECOVERY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-125/discovery.json",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-125/discovery.json",
+          "match": "\"handleHasTaskDigest\": false"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export const AGENT_TOOL_RUN_HANDLE_VERSION = \"AGENT_TOOL_RUN_HANDLE_V1\";"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function resumeSupervisedTask("
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "await persistRecoverableHandle({"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
