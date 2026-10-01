@@ -26,10 +26,10 @@
     "Graph/plan use the same source-complete research baseline; objective sources and anchors resolve. Preserve later additive index exports."
   ],
   "invariants": [
-    "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness.",
-    "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance.",
-    "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers.",
-    "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT."
+    "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness. Acceptance coverage: PREVIEW_IDENTITY, SEEDED_RESET, RECEIPT_FAILURES.",
+    "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance. Acceptance coverage: QA_COMPOSITION, PREVIEW_IDENTITY.",
+    "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers. Acceptance coverage: RESOURCE_LIFECYCLE, SEEDED_RESET.",
+    "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT. Acceptance coverage: PROFILE_ENV, RECEIPT_FAILURES, RESOURCE_LIFECYCLE."
   ],
   "architectureDecisions": [
     "AD1: Select LOCAL_PREVIEW_V1/NODE_HTTP_V1: Linux x64, installed Node 24, self-contained tracked Node-standard-library JS entrypoints, explicit argv/env/seed/health, loopback only. Three synthetic separate repositories passed. No inferred install/build, downloaded runtime or Docker dependency; reject unsupported profiles before effects.",
@@ -40,7 +40,8 @@
     "AD6: Seed generated data outside checkout. reset disposes the old generation, revalidates source/seed identities and returns a new handle/receipt/token; stale handles fail. Mutation followed by reset must reproduce seed-only data and clean Git state.",
     "AD7: Use literal minimal service/supervisor env, no process.env spread or NODE_OPTIONS; reject credential-bearing profile values/internal overrides. BB-130 PLANNED_CONTRACT supplies explicit verifier env overlay with NODE_TEST_CONTEXT stripped. QA receives only a protected PREVIEW_RECEIPT_PATH; receipt omits raw env/token.",
     "AD8: Use OBSERVED_READY/FAILED/UNRESOLVED/DISPOSED and typed causes; retain first specific cause, clean partial starts, report CLEANUP_INCOMPLETE on uncertain shutdown. Missing runtime/unsupported profile/timeout/interrupt do not grant readiness or QA acceptance.",
-    "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. Docker is absent; container setup time is unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim."
+    "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. Docker is absent; container setup time is unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim.",
+    "AD10: The explicit service wire protocol is localPreviewContract.wireProtocol. Node fork uses operator runtime execPath; strict IPC LISTENING identifies the OS-assigned loopback port and health echoes the protected token/bindings. Seed copy is outside checkout. No shell/runtime wrapper or project-specific guessed health schema is introduced."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -103,7 +104,7 @@
   "implementationSlices": [
     "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview.",
     "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup.",
-    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions.",
+    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
     "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority."
   ],
   "acceptanceCriteria": [
@@ -164,7 +165,7 @@
         "composition"
       ],
       "evidenceRequired": [
-        "Invoke runSliceQa with good/failing checks, failed/stale setup and throwing check; assert authoritative QA decision, pinned receipt visibility and cleanup. Preserve no-preview regressions."
+        "New composition tests directly call runSliceQa for good/failing checks and failed/stale preview. New outer integration calls runDeliverSlice with optional preview and asserts exact fresh candidate checkout, immutable receipt env, failed QA stays failed, and preview disposal precedes QA worktree disposal. No-preview remains unchanged."
       ]
     }
   ],
@@ -193,7 +194,7 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness.",
+      "invariant": "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness. Acceptance coverage: PREVIEW_IDENTITY, SEEDED_RESET, RECEIPT_FAILURES.",
       "criterionIds": [
         "PREVIEW_IDENTITY",
         "SEEDED_RESET",
@@ -201,21 +202,21 @@
       ]
     },
     {
-      "invariant": "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance.",
+      "invariant": "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance. Acceptance coverage: QA_COMPOSITION, PREVIEW_IDENTITY.",
       "criterionIds": [
         "QA_COMPOSITION",
         "PREVIEW_IDENTITY"
       ]
     },
     {
-      "invariant": "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers.",
+      "invariant": "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers. Acceptance coverage: RESOURCE_LIFECYCLE, SEEDED_RESET.",
       "criterionIds": [
         "RESOURCE_LIFECYCLE",
         "SEEDED_RESET"
       ]
     },
     {
-      "invariant": "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT.",
+      "invariant": "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT. Acceptance coverage: PROFILE_ENV, RECEIPT_FAILURES, RESOURCE_LIFECYCLE.",
       "criterionIds": [
         "PROFILE_ENV",
         "RECEIPT_FAILURES",
@@ -424,7 +425,8 @@
     "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
     "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
     "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
-    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed."
+    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
+    "wireProtocol": "Service launch uses child_process.fork(runtime.execPath, tracked entry,args,{cwd:workspaceRoot,env,minimal,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference."
   },
   "researchBrief": {
     "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
@@ -617,9 +619,7 @@
           "match": "export async function createLocalGitWorkspace"
         }
       ],
-      "supportingPlanFields": [
-        "localPreviewContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
@@ -651,9 +651,7 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": [
-        "localPreviewContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
@@ -684,9 +682,7 @@
           "match": "\"experimentStatus\""
         }
       ],
-      "supportingPlanFields": [
-        "researchBrief"
-      ]
+      "supportingPlanFields": []
     }
   ]
 }
