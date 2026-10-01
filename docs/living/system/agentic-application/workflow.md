@@ -456,3 +456,11 @@ Backend acceptance authorizes creation of the QA handoff; QA acceptance authoriz
 Interrupted recovery only restores bounded execution authority. It cannot promote a candidate, manufacture Worker semantic results, bypass role evidence or authorize Blackboard completion.
 
 Blackboard problem completion remains a separate boundary: required review/acceptance obligations and unresolved current-work findings must be reconciled first.
+
+## Causal query rules
+
+- observation is query-only: `queryCurrent`/`queryHistorical` plus the `explainWhyNotDone`/`listRemainingWork`/`traceObligation`/`describeExecution`/`measureTiming`/`chainEvidence` readers;
+- every query starts from a pinned `CausalObservationSubject` (current queries pin first, historical queries never advance); a `CURRENT` subject that no longer equals the canonical heads is rejected before any live read;
+- `HISTORICAL` mode reconstructs blockers and pinned evidence only: remaining work is an explicit non-reconstructable marker, obligation tracing requires a current subject, lineage records count only when reachable from the pin, and the closure outcome counts only when bound to exactly the pin;
+- blocker, owner, execution-identity, timing and evidence answers cite durable refs, report `UNKNOWN`/`MISSING_PROVENANCE`/`INCONSISTENT_PROVENANCE` explicitly, and throw on integrity failures instead of degrading;
+- observation never claims, dispatches, recovers, accepts, selects strategies or issues remediation: those stay with the owning production boundaries.

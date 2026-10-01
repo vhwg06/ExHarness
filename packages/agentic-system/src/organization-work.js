@@ -165,7 +165,7 @@ function materializationReceipt(contract){
   });
 }
 
-export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry,lineage}){
+export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry,lineage,causalSink=null,causalNow=()=>new Date().toISOString()}){
   invariant(orchestrator&&typeof orchestrator.materializeAcceptedWork==="function","materializer requires orchestrator.materializeAcceptedWork");
   invariant(orchestrator&&typeof orchestrator.blockOrganizationMaterialization==="function","materializer requires orchestrator.blockOrganizationMaterialization");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function","materializer requires orchestrator.readBlackboard");
@@ -349,6 +349,10 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
 
       const receipt=materializationReceipt(contract);
       const materializationReceiptRef=await artifactRegistry.putMaterializationReceipt(receipt);
+      if(causalSink){
+        // Observational evidence only: sink failure never gates materialization.
+        try{await causalSink.record({kind:"CAUSAL_LIFECYCLE_EVIDENCE",version:1,workId:itemId,eventKind:"MATERIALIZED",observedAt:causalNow(),projectId:contract.projectId,workContractRef:contract.contractRef,boundaryRef:materializationReceiptRef});}catch{}
+      }
       return freeze({
         item:publishedItem,
         contract,
