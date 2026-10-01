@@ -306,8 +306,8 @@
           "match": "\"evalFlagsHasPermission\": false"
         },
         {
-          "ref": "packages/agent-tools/src/experiment/index.js",
-          "match": "export async function runAgentToolsEval({"
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "for (const flag of Object.keys(options)) if (!EVAL_FLAGS.includes(flag)) throw new UsageError(`unknown eval flag --${flag}`);"
         }
       ],
       "supportingPlanFields": [
