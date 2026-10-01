@@ -4,21 +4,20 @@
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-129",
   "status": "DRAFT",
-  "objective": {
-    "ref": "docs/blackboard/artifacts/objective/BB-129.json",
-    "hash": "521c19c7359ac6e08272ec69cb4c78c3b5fde831490b9d17bd12ffbe3af36555"
-  },
+  "objective": {"ref":"docs/blackboard/artifacts/objective/BB-129.json","hash":"521c19c7359ac6e08272ec69cb4c78c3b5fde831490b9d17bd12ffbe3af36555"},
   "scope": [
     "agent-tools.deliver-slice.review-handoff"
   ],
   "outOfScope": [
     "Generic GitHub/GitLab automation, PR publication and CI adapter (BB-068).",
-    "Full installable distribution and release claims (BB-073/076)."
+    "Full installable distribution and release claims (BB-073/076).",
+    "Product edits in research; supervisor/recovery/verifier/SCM internals, install/dependency automation, LFS/submodule transport, multi-file evaluators, SHA-256 repositories and Windows durability."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
     "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
     "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Only this plan changes; retain DRAFT. The canonical baseline predates two research refs; trusted controller must repin it before Jev. Worker waits for BB-127 DONE and rejudges any incompatible delivered adapter contract.",
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
@@ -27,164 +26,83 @@
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Compare raw SHA, binary Git diff, and incremental Git bundle. Prefer a content-addressed external output directory containing a manifest, binary patch for review and a verified incremental bundle when exact commit retention is required.",
-    "Use a private transport ref only in a temporary export repository to construct the bundle; do not silently create a source branch or push a PR. Bind base prerequisites explicitly.",
-    "Publish atomically before cleanup; exclude prompts and credentials. Packaging is not publication approval or a product-value verdict; SCM bridge remains BB-068."
+    "D1 Emit a binary patch for review plus an incremental v2 bundle to retain exact SHA-1 commit objects; patch replay alone preserves tree, not commit. SHA-only is not portable. Use full ancestor base history; no external repository/framework adoption.",
+    "D2 Create a private named ref only in a temporary bare exporter whose alternates read source objects. Bundle that ref excluding base. Never update source refs/config; published objects must survive exporter/source deletion.",
+    "D3 Normalize independently pinned BB-127 acceptance as PLANNED_CONTRACT. Bind all subject/evaluator/config/result/log bytes; omit prompt/env/transcripts/backend objects. Existing QA output is bounded summary only, with original-stream digests labelled separately.",
+    "D4 Opt in with reviewOutputDir/--review-out. Write private sibling staging under external output root, validate and sync all bytes, rename to manifest digest, sync parent, then clean QA/recovery. Use exclusive publisher lock and fail rather than overwrite corrupt existing output.",
+    "D5 Reviewer supplies clean complete base checkout and external manifest/evaluator/config pins. Verify before import, fetch only declared transport ref, detach exact candidate and assert tree, then explicitly rerun trusted standalone evaluator. Exported PASS is historical; replay makes a fresh candidate-bound record.",
+    "D6 Stream binary outputs with bounded quotas/timeouts. Fail on overflow, no object/patch/evaluator truncation. Use arg arrays and shell:false. Complete external acceptance logs required; existing QA summary is never substituted for full logs.",
+    "D7 Common fresh/resumed finalizer exports during QA checkout lifetime. On requested export failure return REVIEW_EXPORT_FAILED/nonzero/no bundle; clean owned stages and retain matching recovery. Without recovery no retry retention promised. Unrequested legacy status/result stays compatible.",
+    "D8 Same commit as base uses BASE_ONLY/empty patch/no bundle; same tree with different commit still bundles. Reject nonancestor/shallow/missing base, gitlinks/LFS pointers, non-UTF8 filenames, unsafe output and unsupported object format. Parse UTF-8 path records with NUL delimiters.",
+    "D9 Artifact export is local review handoff, no SCM/value/release authority. Hashes provide integrity against operator pins, not signatures. Exact objects can include committed sensitive bytes; no redaction while claiming unchanged identity. Evaluators are trusted local processes."
   ],
-  "sourceSeams": {
-    "requiredExisting": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
-      "docs/blackboard/evidence/BB-129/discovery.json",
-      "docs/blackboard/process/delivery-value-improvement-research.md"
-    ],
-    "expectedNew": [
-      "packages/agent-tools/src/review-bundle.js",
-      "packages/agent-tools/test/review-bundle.test.js"
-    ],
-    "expectedTests": [
-      "packages/agent-tools/test/review-bundle.test.js"
-    ]
-  },
-  "sourceScope": {
-    "read": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
-      "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
-      "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
-      "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-129/discovery.json"
-    ],
-    "write": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
-      "packages/agent-tools/src/review-bundle.js",
-      "packages/agent-tools/test/review-bundle.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
-    ],
-    "forbiddenWrite": [
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "packages/benchmark/**",
-      "docs/blackboard/**",
-      ".github/**"
-    ]
-  },
+  "sourceSeams": {"requiredExisting":["packages/agent-tools/src/deliver-slice.js","packages/agent-tools/bin/exharness-agent.mjs","packages/agent-tools/README.md","docs/blackboard/evidence/BB-129/discovery.json","docs/blackboard/process/delivery-value-improvement-research.md","packages/agentic-system/src/local-git-workspace.js","packages/agentic-system/src/local-command-verifier.js","packages/agent-tools/test/deliver-slice.test.js"],"expectedNew":["packages/agent-tools/src/review-bundle.js","packages/agent-tools/test/review-bundle.test.js"],"expectedTests":["packages/agent-tools/test/review-bundle.test.js"]},
+  "sourceScope": {"read":["packages/agent-tools/src/deliver-slice.js","packages/agent-tools/bin/exharness-agent.mjs","packages/agent-tools/README.md","packages/agent-tools/src/**","packages/agentic-system/src/**","packages/agent-tools/test/**","packages/agentic-system/test/**","docs/blackboard/process/delivery-value-improvement-research.md","docs/blackboard/evidence/BB-129/discovery.json","docs/blackboard/artifacts/objective/BB-129.json","docs/blackboard/artifacts/ready-implement-plan/BB-127.json","docs/living/system/agent-tools/state.md","docs/living/system/agent-tools/observation.md"],"write":["packages/agent-tools/src/deliver-slice.js","packages/agent-tools/bin/exharness-agent.mjs","packages/agent-tools/README.md","packages/agent-tools/src/review-bundle.js","packages/agent-tools/test/review-bundle.test.js","docs/living/system/agent-tools/state.md","docs/living/system/agent-tools/observation.md"],"forbiddenWrite":["packages/core-harness/**","packages/oracle/**","packages/benchmark/**","docs/blackboard/**",".github/**","packages/agent-tools/src/supervisor.js","packages/agent-tools/src/recovery.js","packages/agent-tools/src/index.js","packages/agentic-system/**","packages/agent-tools/package.json"]},
   "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — review-bundle.js: implement leaf validateReviewEvidence/exportReviewBundle/replayReviewBundle exactly as deliveryContract. Add typed failures, streaming caps, private exporter ref, binary patch/NUL paths, manifests, BASE_ONLY and synced atomic publication.",
+    "S2 — deliver-slice.js: validate external reviewOutputDir before spawn; normalize BB-127 packet. Common QA/export finalizer serves fresh finishBackend and ACCEPTED-handle resume. Export before QA dispose; recovery dispose only after success. Return REVIEW_EXPORT_FAILED on requested failure; commandDeliver forwards option; unrequested behavior unchanged.",
+    "S3 — exharness-agent.mjs: forward deliver --review-out and add review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 via direct leaf import. Require all pins; review explicitly executes evaluator. JSON output; exit0 PASS, 64 malformed arguments, 1 replay/export failure. No agent/provider/push.",
+    "S4 — review-bundle.test.js: deterministic temp Git repositories and existing fake-tool fixtures; each named negative directly calls its bound subject. Delete source/exporter before replay; assert exact commit/tree/binary/modes/deletion/special paths. Snapshot source and instrument cleanup order, CLI, retry/limits/collisions.",
+    "S5 — README plus livingDocs refs: document six replay steps, pins, supplied prerequisites, quotas, BASE_ONLY and failures, bounded summaries and local claim boundary. Run focused/existing regressions and bind exact Worker command/log/negative body hashes after READY."
   ],
   "acceptanceCriteria": [
-    {
-      "id": "REVIEW_ARTIFACT",
-      "statement": "Bundle contains exact base/candidate/tree, binary-capable patch or Git objects, changed-path summary and evaluator/result/log digests, with publication completed before scratch cleanup.",
-      "verificationIds": [
-        "focused"
-      ],
-      "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
-      ]
-    },
-    {
-      "id": "FRESH_REPLAY",
-      "statement": "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
-      "verificationIds": [
-        "focused"
-      ],
-      "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
-      ]
-    }
+    {"id":"REVIEW_ARTIFACT","statement":"A requested protected PASS candidate produces a self-contained incremental Git bundle, binary patch and manifest binding the exact slice/base/commit/tree, changed paths and independently pinned evaluator/config/result/log bytes.","verificationIds":["focused"],"evidenceRequired":["P1 exact portable commit/tree and P2 binary/special paths/modes/deletion; verify manifest/receipt/log hashes and truthful QA-summary completeness."]},
+    {"id":"FRESH_REPLAY","statement":"A clean fresh clone at the declared base restores the exact candidate and reruns the operator-pinned evaluator after source and exporter deletion; corrupted, mismatched or missing required inputs fail before import or evaluator execution.","verificationIds":["focused"],"evidenceRequired":["BB-129 P1 replay in a clone lacking candidate objects; record candidate/tree, evaluator/config hashes, stdout/stderr digests, exit and unchanged-tree check; all replay negative bindings."]},
+    {"id":"ATOMIC_LIFECYCLE","statement":"Fresh and accepted-handle delivery export and sync a complete artifact before QA/recovery cleanup; a failed requested export produces no accepted handoff and preserves a matching recovery handle.","verificationIds":["focused"],"evidenceRequired":["P3 fresh/resume export before cleanup; instrument export/sync/QA/recovery disposal order and bind failure tests N6/N7/N9."]},
+    {"id":"SOURCE_ISOLATION","statement":"Export creates transport refs only in an owned temporary bare repository and leaves source HEAD, refs, index/worktree and config unchanged on success and failure.","verificationIds":["focused"],"evidenceRequired":["P4 source HEAD/refs/status/config byte snapshots unchanged for linked worktree success/failure; published bundle has no source alternates."]},
+    {"id":"COMPATIBILITY","statement":"Opt-in API/CLI export and reviewer replay use the declared limits/errors/trust profile, preserve legacy deliver behavior, and handle base-only and unsupported-repository cases explicitly.","verificationIds":["focused","delivery-regression","agent-tools-regression"],"evidenceRequired":["BB-129 P5 legacy and CLI profile; BB-129 P6 base-only and same-tree different-commit transport; named quota/unsafe-root/nonancestor negatives and existing delivery regressions."]},
+    {"id":"DOCUMENTED_HANDOFF","statement":"README and declared Living docs accurately describe replay steps, supplied prerequisites, artifact integrity pins, observed log completeness, limits and local handoff claim boundary.","verificationIds":["focused","docs"],"evidenceRequired":["BB-129 P7 documented review recipe invokes CLI on the binary fixture and checks docs/options/result fields; docs verification log. No Blackboard work ids in Living prose."]}
   ],
   "verificationPlan": [
-    {
-      "id": "focused",
-      "command": "node --test packages/agent-tools/test/review-bundle.test.js"
-    },
-    {
-      "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
-    },
-    {
-      "id": "docs",
-      "command": "npm run verify:current-docs"
-    }
+    {"id":"focused","command":"node --test packages/agent-tools/test/review-bundle.test.js"},
+    {"id":"delivery-regression","command":"node --test packages/agent-tools/test/deliver-slice.test.js"},
+    {"id":"agent-tools-regression","command":"npm run test:agent-tools"},
+    {"id":"agentic-regression","command":"npm run test:agentic"},
+    {"id":"docs","command":"npm run verify:current-docs"}
   ],
   "invariantCoverage": [
-    {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-      "criterionIds": [
-        "REVIEW_ARTIFACT",
-        "FRESH_REPLAY"
-      ]
-    },
-    {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-      "criterionIds": [
-        "REVIEW_ARTIFACT",
-        "FRESH_REPLAY"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "REVIEW_ARTIFACT",
-        "FRESH_REPLAY"
-      ]
-    }
+    {"invariant":"The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.","criterionIds":["REVIEW_ARTIFACT","FRESH_REPLAY"]},
+    {"invariant":"Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.","criterionIds":["COMPATIBILITY","DOCUMENTED_HANDOFF"]},
+    {"invariant":"Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.","criterionIds":["ATOMIC_LIFECYCLE","SOURCE_ISOLATION","DOCUMENTED_HANDOFF"]}
   ],
   "negativeVerificationCases": [
     "Corrupted bundle must fail digest verification before import",
-    "A different base cannot be silently used for exact candidate replay"
+    "A different base cannot be silently used for exact candidate replay",
+    "Missing acceptance log bytes cannot grant portable acceptance",
+    "Changed evaluator or config cannot replay as pinned acceptance",
+    "Wrong slice candidate or tree receipt cannot be exported",
+    "Quota overflow removes owned staging and never returns EXPORTED",
+    "Write or rename failure cannot dispose matching recovery before publication",
+    "Missing base prerequisites fail before bundle import",
+    "Corrupt existing output cannot be overwritten or treated as success",
+    "Unsafe output root nonancestor or unsupported Git payload is refused",
+    "Evaluator failure or tree mutation cannot produce replay PASS"
   ],
   "negativeCaseBindings": [
-    {
-      "id": "NEG_129_1",
-      "negativeCaseIndex": 0,
-      "criterionId": "FRESH_REPLAY",
-      "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/review-bundle.test.js",
-      "testTitle": "BB-129 N1 Corrupted bundle must fail digest verification before import",
-      "subjectSymbol": "runDeliverSlice"
-    },
-    {
-      "id": "NEG_129_2",
-      "negativeCaseIndex": 1,
-      "criterionId": "FRESH_REPLAY",
-      "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/review-bundle.test.js",
-      "testTitle": "BB-129 N2 A different base cannot be silently used for exact candidate replay",
-      "subjectSymbol": "runDeliverSlice"
-    }
+    {"id":"NEG_129_1","negativeCaseIndex":0,"criterionId":"FRESH_REPLAY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N1 Corrupted bundle must fail digest verification before import","subjectSymbol":"replayReviewBundle"},
+    {"id":"NEG_129_2","negativeCaseIndex":1,"criterionId":"FRESH_REPLAY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N2 A different base cannot be silently used for exact candidate replay","subjectSymbol":"replayReviewBundle"},
+    {"id":"NEG_129_3","negativeCaseIndex":2,"criterionId":"REVIEW_ARTIFACT","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N3 Missing acceptance log bytes cannot grant portable acceptance","subjectSymbol":"exportReviewBundle"},
+    {"id":"NEG_129_4","negativeCaseIndex":3,"criterionId":"FRESH_REPLAY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N4 Changed evaluator or config cannot replay as pinned acceptance","subjectSymbol":"replayReviewBundle"},
+    {"id":"NEG_129_5","negativeCaseIndex":4,"criterionId":"REVIEW_ARTIFACT","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N5 Wrong slice candidate or tree receipt cannot be exported","subjectSymbol":"exportReviewBundle"},
+    {"id":"NEG_129_6","negativeCaseIndex":5,"criterionId":"ATOMIC_LIFECYCLE","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N6 Quota overflow removes owned staging and never returns EXPORTED","subjectSymbol":"exportReviewBundle"},
+    {"id":"NEG_129_7","negativeCaseIndex":6,"criterionId":"ATOMIC_LIFECYCLE","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N7 Write or rename failure cannot dispose matching recovery before publication","subjectSymbol":"runDeliverSlice"},
+    {"id":"NEG_129_8","negativeCaseIndex":7,"criterionId":"FRESH_REPLAY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N8 Missing base prerequisites fail before bundle import","subjectSymbol":"replayReviewBundle"},
+    {"id":"NEG_129_9","negativeCaseIndex":8,"criterionId":"ATOMIC_LIFECYCLE","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N9 Corrupt existing output cannot be overwritten or treated as success","subjectSymbol":"exportReviewBundle"},
+    {"id":"NEG_129_10","negativeCaseIndex":9,"criterionId":"COMPATIBILITY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N10 Unsafe output root nonancestor or unsupported Git payload is refused","subjectSymbol":"exportReviewBundle"},
+    {"id":"NEG_129_11","negativeCaseIndex":10,"criterionId":"FRESH_REPLAY","verificationId":"focused","testRef":"packages/agent-tools/test/review-bundle.test.js","testTitle":"BB-129 N11 Evaluator failure or tree mutation cannot produce replay PASS","subjectSymbol":"replayReviewBundle"}
   ],
-  "researchGaps": [
-    "Prototype incremental bundle generation/import without mutating source refs; decide binary/large-output limits and failure cleanup; measure fresh reviewer steps before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
+  "researchGaps": [],
   "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-  "livingDocs": {
-    "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
-    ],
-    "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
-  },
-  "valueHypothesis": {
-    "expectedValue": "Turn a local accepted SHA into a change another developer can review and use.",
-    "measurement": "Exact candidate tree reconstructed in a fresh clone with no source worktree/conversation; timed reviewer steps and replay coverage.",
-    "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+  "livingDocs": {"refs":["docs/living/system/agent-tools/state.md","docs/living/system/agent-tools/observation.md"],"questionId":"LIVING_DOCS","statement":"Living docs describe implemented review export/replay pins, supplied prerequisites, bounded summaries, quotas/failures and local claim boundary; no research statuses, Blackboard ids or value/release claim."},
+  "valueHypothesis": {"expectedValue":"Turn a local accepted SHA into a change another developer can review and use.","measurement":"Exact commit/tree reconstructed after source deletion; all negatives refuse acceptance. Record automated clone/replay time and manual setup separately. Prototype 132.592ms excludes clone/install/operator effort; one synthetic sample proves no product-value improvement.","evidenceClass":"RESEARCH_DESIRED_STATE_WITH_EXECUTED_TRANSPORT_PROTOTYPE","valueOwner":"BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"},
+  "dependencyReview": {"asOf":"2026-10-01","sourceCommit":"a53a28e5272c829cfb05fc399d324bf02fa60127","direct":[{"taskId":"BB-127","status":"PLANNED","lane":"RESEARCH_SA","phase":"RESEARCH","inputClass":"PLANNED_CONTRACT","planRef":"docs/blackboard/artifacts/ready-implement-plan/BB-127.json","planContentSha256":"ebbff031e6c0ddad6c8624a462a022c389344b6e222cee3e76d2cc484a90d1ad","blockingRule":"Research may run ahead; Worker must have DONE dependency and fresh exact readiness. No protected-acceptance runtime API is delivered at this source commit."}],"transitiveContext":"BB-127 depends on BB-104, BB-130 and BB-125. BB-104 is DONE; BB-130/125 remain planned research. These are context only, not duplicated graph edges."},
+  "readinessPrerequisites": {"status":"DRAFT_ONLY","baselineBinding":{"canonicalGraphSha":"29935fa23cb19af278a6fa8db68b9448bc6b1a0e","planResearchBaselineSha":"29935fa23cb19af278a6fa8db68b9448bc6b1a0e","observedSourceCommit":"a53a28e5272c829cfb05fc399d324bf02fa60127","missingAtCanonicalBaseline":["docs/blackboard/process/delivery-value-improvement-research.md","docs/blackboard/evidence/BB-129/discovery.json"]},"upstream":"BB-127 must be DONE before Worker. Its actual external evaluator/receipt/log shape must satisfy dependencyAdapter; reconcile and rejudge plan on contradiction.","researchGapDisposition":"Design gaps resolved. Stale controller baseline and non-DONE upstream remain readiness/execution prerequisites."},
+  "researchEvidence": {"classification":"RESEARCH_ONLY","date":"2026-10-01","baselineFacts":"Pinned product seams and current task/objective/discovery read; synthetic probe is transport feasibility, zero product edits/provider calls.","primarySources":[{"url":"https://git-scm.com/docs/git-bundle","accessed":"2026-10-01","claim":"Bundles transport Git objects with named refs. Exclusion ranges declare prerequisites, checked by verify. Raw unnamed SHA does not suffice. Version 2 is for SHA-1. This motivates a temporary named exporter ref and explicit base prerequisites."},{"url":"https://git-scm.com/docs/git-diff","accessed":"2026-10-01","claim":"The binary option creates an applicable patch; full-index and disabled textconv/external diff support byte-preserving review. NUL path output avoids line-based filename ambiguity."},{"url":"https://git-scm.com/docs/git-fetch","accessed":"2026-10-01","claim":"Fetch supports selecting a source ref and explicit destination ref, used only inside the independent reviewer checkout."},{"url":"https://nodejs.org/api/fs.html","accessed":"2026-10-01","claim":"Await file writes/sync and rename in order. File sync requests device persistence; implementation-specific filesystem behavior still bounds durability claims."}],"prototype":{"language":"python3 standard library plus git and node","recipe":"Executed Python3 stdlib script (SHA-256 below), using git2.43 and node24.20. Reproduce the discriminating commands below in OS temporary directories; actual Worker tests must invoke product subjects. The original script is not a product file and is not needed for artifact replay.","recipeSha256":"f05a43c559c6168f0fe9b0acebe817a1c9acf79e12842de99e256de7cd3e30be","observed":{"classification":"EXECUTED_GIT_FILESYSTEM_PROTOTYPE_NOT_PRODUCT_IMPLEMENTATION","providerCalls":0,"gitVersion":"git version 2.43.0","nodeVersion":"v24.20.0","baseSha":"11f97bc97bcc58a240898168496074eedf782c10","candidateSha":"0361f42e259c10c8eaf66fdd8ea31d681a4a4df5","candidateTree":"47dc8511fc7758ee83ed5738c27c424393660388","binaryBytes":1048576,"bundleBytes":1049441,"patchBytes":1352429,"manifestBytes":1395,"bundleSha256":"d96cc58953726ffff5b7907ea57c2828203ee4576c17501f80a0296b2a398636","patchSha256":"97f9a087977284fbf5f5b59862048dd5b65a7adfe047fd24d12ac65690a57021","manifestSha256":"09180cbaf1eafa19e0a5e9282988eb49e581e5f198c077672acfdc705be29412","header":"# v2 git bundle\n-11f97bc97bcc58a240898168496074eedf782c10 base\n0361f42e259c10c8eaf66fdd8ea31d681a4a4df5 refs/heads/review-candidate","changedPaths":[{"status":"A","path":"binary.dat"},{"status":"M","path":"mode.sh"},{"status":"D","path":"removed.txt"},{"status":"A","path":"space\ttab\nnewline.txt"},{"status":"M","path":"sum.mjs"}],"sourceSnapshotUnchanged":true,"rawShaBundleRejected":128,"patchTreeMatches":true,"candidateAbsentFromFreshCloneBeforeFetch":true,"sourceAndExportDeletedBeforeReplay":true,"replayExit":0,"replayStdout":"PASS exact candidate fixture\n","sixReviewerStepsMs":132.592,"negativeResults":{"corrupt":"FILE_DIGEST_MISMATCH","missing":"EVIDENCE_MISSING","base":"BASE_MISMATCH","tamper":"FILE_DIGEST_MISMATCH","missingPrerequisiteExit":1},"failureCleanup":{"size":"OUTPUT_LIMIT","rename":"OSError"},"noOpDecision":"base-only manifest; empty-range bundle intentionally skipped","limitations":["Size and rename tests exercise filesystem policy only, not future product exporter.","One synthetic local run; no reviewer time or delivery-value conclusion.","No GC was needed: source repository was deleted before replay."]},"reproductionSteps":["Create temp source git init -b main; fixed probe@example.invalid author/committer and 2026-10-01T00:00:00Z dates. Commit sum.mjs exporting (a,b)=>a-b, removed.txt and mode.sh. Record base/HEAD/refs/status.","git worktree add --detach candidate base. Change sum to addition, delete removed.txt, chmod mode.sh 0755, add binary.dat=random.Random(129).randbytes(1048576), add path with tab/newline. Commit; record candidate/tree. Snapshot source unchanged.","Init bare export.git; write objects/info/alternates to source absolute objects path. update-ref refs/heads/review-candidate candidate. bundle create --version=2 candidate.bundle refs/heads/review-candidate ^base. Raw candidate SHA without named ref must fail. Check header contains base prerequisite and only candidate ref.","git diff --binary --full-index --no-ext-diff --no-textconv --no-renames base candidate -- to candidate.patch. Parse diff --name-status -z. Pin standalone Node evaluator bytes checking sum(2,3)==5 and binary SHA, config, result and stdout/stderr with sha256. Manifest contains artifact bytes/hashes and exact subjects.","Sync staged artifact files and rename to manifest digest directory. git clone --no-local source reviewer and patch-reviewer: candidate must be absent. git apply --index candidate.patch then write-tree must equal candidateTree. Remove source worktree and delete source/export repositories.","Time six steps: validate pins/base, bundle verify/list-heads, fetch ref, checkout --detach candidate, assert commit/tree, run pinned evaluator. Repeat negative gates with flipped bundle byte, removed log, changed evaluator, wrong HEAD and empty repository missing prerequisite. Test actual empty-range bundle at an existing named base ref returns empty-bundle error.","Filesystem probes: 17-byte staged file over 16-byte test quota and rename into nonempty target both fail; remove owned failed stages and validate original artifact. These are policy probes, not future exporter tests. All synthetic repositories cleaned; providerCalls=0."]}},
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {"objectiveCriterion":"Bundle contains exact base/candidate/tree, binary-capable patch or Git objects, changed-path summary and evaluator/result/log digests, with publication completed before scratch cleanup.","criterionIds":["REVIEW_ARTIFACT","ATOMIC_LIFECYCLE","SOURCE_ISOLATION"],"planElements":["S1","S2","S4"],"verificationIds":["focused"],"decisionIndexes":[0,1,2,3,5,6],"sourceRefs":["packages/agent-tools/src/deliver-slice.js","packages/agentic-system/src/local-command-verifier.js"],"sourceAnchors":[{"ref":"packages/agent-tools/src/deliver-slice.js","match":"async function runQaOnFreshCheckout"},{"ref":"packages/agent-tools/src/deliver-slice.js","match":"await disposeRecoveryQuietly(recoveryDir);"},{"ref":"packages/agentic-system/src/local-command-verifier.js","match":"summary: `${name} ${reason}"}],"supportingPlanFields":["dependencyReview"]},
+    {"objectiveCriterion":"A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.","criterionIds":["FRESH_REPLAY","COMPATIBILITY"],"planElements":["S1","S3","S4"],"verificationIds":["focused"],"decisionIndexes":[0,4,7,8],"sourceRefs":["packages/agentic-system/src/local-git-workspace.js","packages/agent-tools/bin/exharness-agent.mjs"],"sourceAnchors":[{"ref":"packages/agentic-system/src/local-git-workspace.js","match":"[\"worktree\", \"add\", \"--detach\", root, baseRevision]"},{"ref":"packages/agent-tools/bin/exharness-agent.mjs","match":"async function commandDeliverCli(options)"}],"supportingPlanFields":[]},
+    {"objectiveCriterion":"Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.","criterionIds":["REVIEW_ARTIFACT","FRESH_REPLAY","ATOMIC_LIFECYCLE","SOURCE_ISOLATION","COMPATIBILITY","DOCUMENTED_HANDOFF"],"planElements":["S1","S2","S3","S4","S5"],"verificationIds":["focused","docs"],"decisionIndexes":[5,6,8],"sourceRefs":["packages/agent-tools/test/deliver-slice.test.js","packages/agent-tools/src/deliver-slice.js"],"sourceAnchors":[{"ref":"packages/agent-tools/test/deliver-slice.test.js","match":"DL3 accepted handle skips Backend and runs QA"},{"ref":"packages/agent-tools/src/deliver-slice.js","match":"if (existing.status === \"ACCEPTED\")"}],"supportingPlanFields":["researchEvidence","readinessPrerequisites"]}
+  ],
+  "deliveryContract": {"reviewBundle":{"version":"REVIEW_BUNDLE_V1","api":"exportReviewBundle({repositoryRoot,sliceId,baseSha,candidateSha,candidateTree,outputRoot,acceptancePacket,qaRecords,limits?}) -> {version,directory,manifestSha256,candidateSha,candidateTree,status:EXPORTED}; ReviewBundleError on failure. validateReviewEvidence(packet,subject) rehashes bytes and returns immutable normalized evidence. Optional reviewOutputDir option overrides slice field; commandDeliver accepts reviewOutputDir/review-out.","dependencyAdapter":{"classification":"PLANNED_CONTRACT","producer":"BB-127 external acceptance; its DRAFT has no delivered return API. deliver-slice.js maps actual upstream return shape, never invents an existing symbol. Contradiction requires research/rejudgment before Worker.","packet":"{sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},logs:[{name:stdout|stderr,bytes,sha256,complete}],protectedManifestSha256}. Result decodes to PASS for the same subjects/evaluator/config. Snapshot operator-owned evaluator/config before Backend through BB-127; rehash at export. Missing/incomplete logs, opaque digest-only receipt or changed subjects/bytes fail EVIDENCE_MISSING/EVIDENCE_MISMATCH.","profile":"Standalone .mjs plus canonical JSON config {args:string[],timeoutMs:positiveInteger,runtimePrerequisites:string[]}; execution uses reviewer Node plus evaluator path, candidate-root arg and pinned args. No arbitrary embedded command or installation. Existing QA summaries retain only claim/status/revision/exit/reason and summary bytes; fullStreamsRetained:false with original stream digests explicitly distinct."},"manifest":"Sorted-key UTF-8 JSON + newline; manifestSha256 hashes exact bytes, final directory named by digest. Bind version,sliceId,baseSha/baseTree,candidateSha/candidateTree,objectFormat:sha1,transportMode:INCREMENTAL|BASE_ONLY,transportRef|null,prerequisites,changedPaths:[{status,path}],evaluator/config/protectedManifest hashes, acceptanceStatus:PASS and records. Artifact entries {path,role,bytes,sha256,complete,originalStreamSha256?}; no self-hash, timestamp, absolute host path, prompt/env/handle/transcript.","files":"Fixed regular filenames only: manifest.json,candidate.patch,candidate.bundle (incremental only),evaluator.mjs,evaluator-config.json,acceptance-result.json,acceptance-stdout.log,acceptance-stderr.log,qa-records.json,qa-summary.log. List/hash every artifact except manifest exactly once; reject extra/missing/duplicate/unknown/traversal/symlink entries.","gitRecipe":["Resolve commits/trees; SHA-1 format, ancestor check, full nonshallow base required. Detect unsupported tree modes/LFS pointers. Temporary bare exporter uses source rev-parse --path-format=absolute --git-path objects, private alternates and update-ref refs/heads/review-candidate candidateSha.","bundle create --version=2 <stage>/candidate.bundle refs/heads/review-candidate ^<baseSha>. Require exactly candidate/ref from list-heads; parse prerequisite IDs, require each prerequisite ancestor of base and complete in base-only verifier. Record actual frontier, never infer only one from baseSha.","diff --binary --full-index --no-ext-diff --no-textconv --no-renames baseSha candidateSha -- streamed to patch. diff --name-status -z --no-renames parsed status/path records.","Before publication verify/import bundle in independent temporary base-only repo with complete base objects and no source/export alternates, fsck and compare commit/tree. BASE_ONLY skips bundle and requires empty patch; different commit/equal tree still bundles."],"publication":"Validate nonempty outputRoot before agent spawn; realpath existing parents, require private POSIX local output outside source worktree/Git common dir/recovery/Backend/QA scratch, reject containment in either direction and symlink components. Exclusive .review-export.lock serializes publishers; existing lock means OUTPUT_BUSY/manual stale-lock recovery. Own random .stage-* mode0700/files0600 with exclusive creation. Await write+file sync+stage sync and byte verification; under lock rename to digest directory without overwrite, sync parent before returning EXPORTED. Existing exact output must fully revalidate to reuse; corrupt collision fails unchanged. Post-rename sync failure returns failure while retaining complete final artifact. Remove only own lock/staging/exporter.","limits":{"bundleBytes":134217728,"patchBytes":33554432,"manifestBytes":1048576,"evidenceAggregateBytes":4194304,"totalBytes":173015040,"gitTimeoutMs":120000,"policy":"Positive integer overrides may lower caps only; no CLI tuning in this task. Stream bytes/hash/count, shell:false; kill process group and await close on overflow/timeout, clean partial stages. Never advertise incomplete external acceptance logs as complete."},"lifecycle":"Fresh and ACCEPTED-handle finalizers export after QA/protected PASS inside QA try before finally disposal. Success adds reviewBundle {version,directory,manifestSha256,status:EXPORTED} only if requested, then disposes matching recovery. Failure returns REVIEW_EXPORT_FAILED/reason/code/backendSha/sanitized QA/reviewBundle:null; retain matching recovery. Always remove owned QA scratch; without recovery no retry retention promised. Failed QA/exhausted/unavailable exports nothing. Keep local claimBoundary."},"replay":{"api":"replayReviewBundle({bundleDirectory,repositoryRoot,expectedManifestSha256,expectedEvaluatorSha256,expectedConfigSha256,executeEvaluator:false|true}). Default validates/imports, returns NOT_EVALUATED; explicit true (review CLI) executes and returns fresh subject-bound PASS/REPLAY_FAILED with stdout/stderr digests.","sixSteps":["1. Fresh reviewer clone at exact base with caller-supplied dependencies: require clean index/worktree, full prerequisites, SHA-1. Check externally supplied pins, manifest schema/quotas and all file byte hashes before import/spawn.","2. Inspect patch/paths/historical results. bundle verify/list-heads and prerequisite frontier must match manifest. BASE_ONLY requires same commit/tree and empty patch/no bundle.","3. Fetch declared ref with --no-tags into refs/heads/review/<manifestSha256>; refuse existing different target ref, reuse exact only. No source access or agent conversation.","4. Detach at candidateSha without force/reset of edits; disable hooks/external checkout filters. Assert HEAD, tree and NUL changed-path records against manifest.","5. Rehash evaluator/config; use process.execPath, explicit evaluator/candidate root plus pinned config args, shell:false/timeout and bounded complete logs. Explicit trusted local execution only, no sandbox or automatic installation.","6. Require exit0, unchanged HEAD/tree/status and receipt subject; write separate replay record. Timeout/nonzero/missing prerequisite/mutation/overflow never inherits historical PASS. Patch-only comparison may prove tree, not commit."],"trust":"Expected digests come from operator result/independent review, never the same untrusted manifest. Integrity is not signature/authorship. Standalone evaluator/config profile only; caller supplies declared runtime dependencies. Artifact symlinks refused; Git candidate symlinks preserved as objects and never followed during export.","errors":["MANIFEST_INVALID","MANIFEST_DIGEST_MISMATCH","FILE_DIGEST_MISMATCH","EVIDENCE_MISSING","EVIDENCE_MISMATCH","BASE_MISMATCH","DIRTY_REPOSITORY","PREREQUISITES_MISSING","CANDIDATE_MISMATCH","UNSUPPORTED_REPOSITORY","UNSAFE_OUTPUT","OUTPUT_LIMIT","OUTPUT_BUSY","OUTPUT_COLLISION","REPLAY_FAILED"],"support":"POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay."}}
 }
