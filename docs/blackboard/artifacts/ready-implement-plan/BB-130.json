@@ -18,7 +18,7 @@
     "Changing acceptance authority, status/result schemas, recovery identity or benchmark/value protocols."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
     "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
@@ -187,37 +187,19 @@
     {
       "id": "env-boundary",
       "command": "node --test --test-name-pattern='^BB-130 (N1|E1) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-130 N1 parent-only synthetic secrets are absent",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "ENV_BOUNDARY"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests BB130-N1. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "overlay",
       "command": "node --test --test-name-pattern='^BB-130 (E2|E3|N3) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-130 N3 malformed overlay is rejected before verification",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "OVERLAY"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests BB130-N3. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "test-channel",
       "command": "node --test --test-name-pattern='^BB-130 (N2|E4) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "TEST_CHANNEL"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests BB130-N2. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
@@ -228,30 +210,13 @@
     {
       "id": "integrity",
       "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js packages/agentic-system/test/bb096-real-backend-qa.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-130 N5 revision mismatch fails before command side effects",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "INTEGRITY"
-        },
-        {
-          "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "INTEGRITY"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests BB130-N5, BB130-N6. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "internal-env",
       "command": "node --test --test-name-pattern='^BB-130 (N4|E6) ' packages/agentic-system/test/local-verifier-environment.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-130 N4 command overlay cannot redirect Git identity checks",
-          "subject": "createLocalCommandVerifier",
-          "criterionId": "INTERNAL_ENV"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests BB130-N4. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
@@ -599,7 +564,8 @@
         }
       ],
       "supportingPlanFields": [
-        "environmentContract"
+        "environmentContract",
+        "researchEvidenceSummary"
       ]
     },
     {
@@ -639,7 +605,9 @@
           "match": "test(\"RB4 QA ACCEPTs on the accepted sha with both QA records PASS at that revision\""
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
@@ -764,8 +732,32 @@
   "validationLimitations": "Canonical materialization succeeds after source-complete baseline reconciliation. Prototype proves only the declared pure environment builder and delivered verifier seam; Worker must implement the exported helper/factory composition and execute focused child-process tests at the candidate. Trusted process execution is not OS confinement.",
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "researchEvidenceSummary": {
-    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
-    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "classification": "EXECUTED_RESEARCH_PROTOTYPE_NOT_PRODUCT",
+    "prototype": {
+      "classification": "RESEARCH_PROTOTYPE_NOT_IMPLEMENTATION",
+      "node": "v24.20.0",
+      "platform": "linux",
+      "sourceRef": "packages/agentic-system/src/local-command-verifier.js",
+      "sourceSha256": "f626fae5ba916469518da47373de07fe54320ec180f67b3711f625f75efd8967",
+      "providerCalls": 0,
+      "actualHostSecretRead": false,
+      "nativeWindowsExecuted": false,
+      "checks": {
+        "baselineInheritsBothSyntheticSecrets": true,
+        "prototypeFiltersSecretsPreservesPathHomeAndSnapshotsOverlay": true,
+        "explicitSyntheticSecretOverlayIsAllowed": true,
+        "revisionMismatchFailsClosed": true,
+        "nonzeroExitRemainsFail": true,
+        "timeoutRemainsInconclusive": true,
+        "treeMutationFailsClosed": true,
+        "simulatedWindowsCasingAndOverlayPrecedence": true,
+        "simulatedPosixCaseSensitivity": true,
+        "onlyOwnParentKeysInherited": true,
+        "invalidOverlayRejectedBeforeVerify": true,
+        "gitChecksUseFilteredEnvWithoutCommandOverlay": true,
+        "missingParentVariablesNotInvented": true
+      }
+    },
     "limits": [
       "In-memory prototype only; no product source edit, Jev readiness or implementation acceptance.",
       "Windows casing is simulated. Native Windows launch/taskkill, final per-verify snapshot and post-BB-120 suites remain Worker obligations.",
