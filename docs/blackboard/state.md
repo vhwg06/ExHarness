@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-145
+next-work-id: BB-152
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -67,6 +67,13 @@ NONE
 - BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
 - BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
 - BB-144 [RESEARCH_SA/RESEARCH] — Expose deliver CLI tool override
+- BB-145 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main
+- BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
+- BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
+- BB-148 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-083 application-owned feedback loop on current main
+- BB-149 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-085 application-owned feedback episode lifecycle on current main
+- BB-150 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-120 agent-tools child-environment trust boundary on current main
+- BB-151 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-123 observed-only grok cost guard and worktree-local context exclusion on current main
 
 ## Dependency graph
 
@@ -154,6 +161,13 @@ BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
 BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
 BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-145 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-146 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-147 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080, BB-065
+BB-148 [RESEARCH_SCHEDULABLE] <- BB-059, BB-064, BB-065
+BB-149 [RESEARCH_SCHEDULABLE] <- BB-084
+BB-150 [RESEARCH_SCHEDULABLE] <- BB-097
+BB-151 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
 ```
 
 ## Context semantics
