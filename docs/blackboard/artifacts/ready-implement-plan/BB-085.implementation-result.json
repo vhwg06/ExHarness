@@ -1,0 +1,117 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-085-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+    "hash": "4728e4d6b724a026b0aa08cc6b3aa85156d781a202375ce74943585eb7527676"
+  },
+  "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+  "baselineSha": "7bc4de8e24cad4f6cf7e74fb2b2c77fbb42269cc",
+  "candidateTree": "d706f53dc6ec6bb889e2e74c6195c7fb935cec15",
+  "verificationRuns": [
+    {
+      "id": "dependency",
+      "command": "node --test test/feedback-lifecycle-dependency-contract.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/dependency.txt",
+      "logHash": "db66a968980b3a7601167a9ba893cb8f46c56253478db7286330707ff9b4ab03"
+    },
+    {
+      "id": "contracts",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/contracts.txt",
+      "logHash": "6b5ae77ab6d032768357feb76eb7fea622df3114f13ab467da42e8dd487e70cf"
+    },
+    {
+      "id": "controller",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/controller.txt",
+      "logHash": "3072334634dc6cfcc6d6ba1c91181c3d7419f63f46881346b4d2da18a0e74cef"
+    },
+    {
+      "id": "outcome",
+      "command": "node --test packages/agentic-system/test/feedback-outcome.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/outcome.txt",
+      "logHash": "c836c21a3546b98000664adc145a2293830b05bcdbe5bc45c1ff0ac301ab603d"
+    },
+    {
+      "id": "recovery",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/recovery.txt",
+      "logHash": "e8dec5e562db923725915f2d906e75ab700b31c61952ae806ec94e3c4318d105"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/agentic-regression.txt",
+      "logHash": "612e6b6fde82fb370e48229e02ba35ac9a70e506a329e0bf3dfb624b97c029e2"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf",
+      "logRef": "docs/blackboard/evidence/BB-085/repository.txt",
+      "logHash": "be1794b5e4922e1666b77459afe713a8ef2b5c778f03fae6a3523e03294d0eaf"
+    }
+  ],
+  "claims": [
+    {
+      "id": "FL1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-085/contracts.txt",
+        "docs/blackboard/evidence/BB-085/controller.txt"
+      ]
+    },
+    {
+      "id": "FL2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-085/controller.txt",
+        "docs/blackboard/evidence/BB-085/recovery.txt",
+        "docs/blackboard/evidence/BB-085/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "FL3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-085/controller.txt",
+        "docs/blackboard/evidence/BB-085/outcome.txt"
+      ]
+    },
+    {
+      "id": "FL4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-085/dependency.txt",
+        "docs/blackboard/evidence/BB-085/controller.txt",
+        "docs/blackboard/evidence/BB-085/recovery.txt"
+      ]
+    },
+    {
+      "id": "FL5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-085/dependency.txt",
+        "docs/blackboard/evidence/BB-085/repository.txt"
+      ]
+    }
+  ]
+}

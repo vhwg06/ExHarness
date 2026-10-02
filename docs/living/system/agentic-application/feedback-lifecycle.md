@@ -88,13 +88,18 @@ different content fails without rebase. A crash between artifact put and
 head swap leaves the head unchanged; retry recreates the same content
 addressed ref and performs exactly one transition.
 
-Lifecycle states are `OPEN`, responded acted, rejected, deferred or
-superseded, outcome recorded and resolved. An acted response can record an
-outcome; a recorded non-unknown outcome can resolve; rejected and
-superseded responses resolve without an outcome. `UNKNOWN` never advances
-the head, so a later fresh outcome or a new deferred or superseded response
-remains possible. Deferred responses can be revisited with any disposition.
-Resolved is terminal. `UNKNOWN` and deferred states never resolve.
+Lifecycle states are `OPEN`, `RESPONDED_ACTED`, `RESPONDED_REJECTED`,
+`RESPONDED_DEFERRED`, `RESPONDED_SUPERSEDED`, `OUTCOME_RECORDED` and
+`RESOLVED`. An acted response can record an outcome; a recorded non-unknown
+outcome can resolve; rejected and superseded responses resolve without an
+outcome. `UNKNOWN` never advances the head, so a later fresh outcome or a new
+deferred or superseded response remains possible; every `UNKNOWN` outcome
+carries explicit reason codes naming the failure
+(`NON_CURRENT_RESPONSE`, `INPUT_ALREADY_IN_EPISODE`,
+`UNRESOLVED_FRESH_INPUT`, `ATTEMPT_REUSED`,
+`BOUNDARY_NOT_AFTER_RESPONSE`, `MISSING_MEASUREMENT`). Deferred responses
+can be revisited with any disposition. Resolved is terminal. `UNKNOWN` and
+deferred states never resolve.
 
 ## Dependency seam
 
