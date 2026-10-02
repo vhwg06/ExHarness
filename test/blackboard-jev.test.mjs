@@ -580,6 +580,10 @@ test('CI keeps Blackboard routing inside the PR test workflow and Jev evaluation
   assert.match(testWorkflow,/needs: \[living-doc-impact, kernel\]/);
   assert.match(testWorkflow,/trusted_sha: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
   assert.match(testWorkflow,/candidate_sha: \$\{\{ matrix\.work\.sha \}\}/);
+  const mergeGate=testWorkflow.slice(testWorkflow.indexOf('  merge-gate:'));
+  assert.match(mergeGate,/require_success "blackboard-jev" "\$JEV_RESULT"/);
+  assert.match(mergeGate,/blackboard-jev not applicable: selector emitted no JEV work/);
+  assert.doesNotMatch(mergeGate,/require_skipped/);
   // OBJECTIVE_SUPERSESSION runs as a deterministic sibling job: trusted scripts, no secrets, no Jev.
   assert.match(testWorkflow,/supersessions: \$\{\{ steps\.select\.outputs\.supersessions \}\}/);
   const supersession=testWorkflow.slice(testWorkflow.indexOf('  objective-supersession-verify:'));
