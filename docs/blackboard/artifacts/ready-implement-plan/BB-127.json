@@ -28,18 +28,18 @@
     "RESEARCH_SA does not implement/claim READY; Worker requires all direct dependencies DONE and exact independent READY. Acceptance coverage: COMPATIBILITY_DOCS."
   ],
   "architectureDecisions": [
-    "D1 \u2014 Additive DELIVER_SLICE_V1 optional acceptance={version:\"LOCAL_ACCEPTANCE_V1\",manifestPath:absolutePath,manifestSha256:64-lowercase-hex}. Omission preserves legacy behavior and claim boundary, adding acceptance:null; protected results use assurance EXTERNALLY_PINNED_TRUSTED_LOCAL. Presence requires strict validation; null/unknown keys/version/missing digest is TypeError DELIVER_SLICE_V1 invalid (CLI usage 64), never silent downgrade. Operator supplies expected digest before dispatch; agent output cannot choose/recompute authority.",
-    "D2 \u2014 local-acceptance.js exports pinLocalAcceptance({slice,worktreeRoots,recoveryDir,handleExists}), bindSliceAcceptance({slice,pin,recoveryDir,handleExists}), runLocalAcceptance({pin,workspaceRoot,candidateSha,sliceId}). Strict manifest: {version:\"LOCAL_ACCEPTANCE_MANIFEST_V1\",objectiveSha256,entryPoint,files:[{path,sha256}],runtime:{path,sha256},args:[string],timeoutMs,protectedPaths:[relativePOSIXPath]}. files/protectedPaths nonempty and unique; entryPoint is listed .mjs; timeout positive integer; runtime absolute pinned Node executable. Hash raw manifest/files/runtime bytes. objectiveSha256 hashes UTF-8 recursively sorted-key canonical JSON {id,repositoryRoot:realpath,baseRevision,prompt}; preserve array order. Reject unknown keys/digest shape, credentials in config, unsafe/control-character paths, .git segments, globs/backslashes, symlink components, directories/submodules and non-SHA1 Git repos.",
-    "D3 \u2014 Resolve realpaths and path.relative containment; enumerate git worktree list --porcelain -z. Manifest/evaluator/runtime/recovery snapshot must be outside source repo and every linked worktree, explicitly including Backend/QA roots. files/entryPoint remain within manifest directory. Read complete git ls-tree -r -z --full-tree baseRevision and select exact protected filenames in memory, avoiding path-pattern interpretation. Pin {path,mode,type,oid} for existing regular blobs 100644/100755; compare exact candidate tuple. Modification/deletion/rename/mode/type change fails PROTECTED_PATH_CHANGED. Other tests may change/add but cannot replace independent external assertions.",
-    "D4 \u2014 Before dispatch snapshot verified manifest/listed evaluator bytes outside worktrees, preserving relative files. Private/nonwritable modes are hygiene, not same-uid isolation. Run pinned absolute runtime with [absoluteSnapshotEntryPoint,...manifest.args,realpath(candidateCheckout)] and cwd=candidateCheckout, shell:false. Last arg is exact candidate root. Support trusted self-contained evaluator or declared siblings/Node builtins; unlisted third-party acceptance dependencies/dynamic downloads unsupported. No automatic import-closure or evaluator-adequacy certification: operator-pinned no-op evaluator cannot establish quality.",
-    "D5 \u2014 runDeliverSlice pins/binds before any Backend/resume/QA/disposal side effect; never expose acceptance files/config through backendTaskFor/prompt. After Backend ACCEPTED, use existing fresh detached QA checkout; require clean HEAD==candidateSha, tree==candidateSha^{tree}. Compare protected tuples, run ordinary QA, then external evaluator on SAME checkout only if ordinary QA passes. runLocalAcceptance composes createLocalCommandVerifier(claim:acceptance.external,requireUnchangedTree:true), pinned runtime/argv and delivered BB-130 child environment semantics. Preserve full revision/exit/reason/stdout-stderr SHA256 evidence and bounded summary; no package dependency reversal.",
-    "D6 \u2014 Immediately pre/post evaluation verify original manifest/files, snapshot files and runtime digests, HEAD/tree/working state. Missing/drift never passes. Timeout is INCONCLUSIVE, signal/spawn/nonzero errors FAIL; both return QA_FAILED. Always finally-clean QA and ephemeral acceptance scratch. Trust boundary: trusted operator/adapter/evaluator, stable Git/runtime, no concurrent adversarial writers; external means outside checkout, not OS-inaccessible under one uid. Persistent substitution is detected; malicious write-and-restore, runtime/native escapes and collusion require BB-067 confinement. No value/publication authority claim.",
-    "D7 \u2014 Result acceptance={profile:\"LOCAL_ACCEPTANCE_V1\",assurance:\"EXTERNALLY_PINNED_TRUSTED_LOCAL\",status:PASS|FAIL|INCONCLUSIVE,reason,objectiveSha256,contractSha256,manifestSha256,evaluatorFiles:[{path,sha256}],runtime:{path,sha256},protectedBase:[{path,mode,type,oid}],candidateSha,candidateTree,verification:fullVerifierRecord}. Protected ACCEPTED requires non-null PASS, candidateSha==backendSha and exact tree. Operational preflight failure returns QA_FAILED/backendSha:null/qa:null/acceptance:FAIL with available bindings; CLI prints JSON exit 1. Retain existing ACCEPTED=0/TOOL_UNAVAILABLE=2/usage=64. Reasons include ACCEPTANCE_MANIFEST_INVALID, ACCEPTANCE_DIGEST_MISMATCH, OBJECTIVE_MISMATCH, PROTECTED_PATH_CHANGED, ACCEPTANCE_BINDING_MISMATCH and delivered verifier reasons.",
+    "D1 — Additive DELIVER_SLICE_V1 optional acceptance={version:\"LOCAL_ACCEPTANCE_V1\",manifestPath:absolutePath,manifestSha256:64-lowercase-hex}. Omission preserves legacy behavior and claim boundary, adding acceptance:null; protected results use assurance EXTERNALLY_PINNED_TRUSTED_LOCAL. Presence requires strict validation; null/unknown keys/version/missing digest is TypeError DELIVER_SLICE_V1 invalid (CLI usage 64), never silent downgrade. Operator supplies expected digest before dispatch; agent output cannot choose/recompute authority.",
+    "D2 — local-acceptance.js exports pinLocalAcceptance({slice,worktreeRoots,recoveryDir,handleExists}), bindSliceAcceptance({slice,pin,recoveryDir,handleExists}), runLocalAcceptance({pin,workspaceRoot,candidateSha,sliceId}). Strict manifest: {version:\"LOCAL_ACCEPTANCE_MANIFEST_V1\",objectiveSha256,entryPoint,files:[{path,sha256}],runtime:{path,sha256},args:[string],timeoutMs,protectedPaths:[relativePOSIXPath]}. files/protectedPaths nonempty and unique; entryPoint is listed .mjs; timeout positive integer; runtime absolute pinned Node executable. Hash raw manifest/files/runtime bytes. objectiveSha256 hashes UTF-8 recursively sorted-key canonical JSON {id,repositoryRoot:realpath,baseRevision,prompt}; preserve array order. Reject unknown keys/digest shape, credentials in config, unsafe/control-character paths, .git segments, globs/backslashes, symlink components, directories/submodules and non-SHA1 Git repos.",
+    "D3 — Resolve realpaths and path.relative containment; enumerate git worktree list --porcelain -z. Manifest/evaluator/runtime/recovery snapshot must be outside source repo and every linked worktree, explicitly including Backend/QA roots. files/entryPoint remain within manifest directory. Read complete git ls-tree -r -z --full-tree baseRevision and select exact protected filenames in memory, avoiding path-pattern interpretation. Pin {path,mode,type,oid} for existing regular blobs 100644/100755; compare exact candidate tuple. Modification/deletion/rename/mode/type change fails PROTECTED_PATH_CHANGED. Other tests may change/add but cannot replace independent external assertions.",
+    "D4 — Before dispatch snapshot verified manifest/listed evaluator bytes outside worktrees, preserving relative files. Private/nonwritable modes are hygiene, not same-uid isolation. Run pinned absolute runtime with [absoluteSnapshotEntryPoint,...manifest.args,realpath(candidateCheckout)] and cwd=candidateCheckout, shell:false. Last arg is exact candidate root. Support trusted self-contained evaluator or declared siblings/Node builtins; unlisted third-party acceptance dependencies/dynamic downloads unsupported. No automatic import-closure or evaluator-adequacy certification: operator-pinned no-op evaluator cannot establish quality.",
+    "D5 — runDeliverSlice pins/binds before any Backend/resume/QA/disposal side effect; never expose acceptance files/config through backendTaskFor/prompt. After Backend ACCEPTED, use existing fresh detached QA checkout; require clean HEAD==candidateSha, tree==candidateSha^{tree}. Compare protected tuples, run ordinary QA, then external evaluator on SAME checkout only if ordinary QA passes. runLocalAcceptance composes createLocalCommandVerifier(claim:acceptance.external,requireUnchangedTree:true), pinned runtime/argv and delivered BB-130 child environment semantics. Preserve full revision/exit/reason/stdout-stderr SHA256 evidence and bounded summary; no package dependency reversal.",
+    "D6 — Immediately pre/post evaluation verify original manifest/files, snapshot files and runtime digests, HEAD/tree/working state. Missing/drift never passes. Timeout is INCONCLUSIVE, signal/spawn/nonzero errors FAIL; both return QA_FAILED. Always finally-clean QA and ephemeral acceptance scratch. Trust boundary: trusted operator/adapter/evaluator, stable Git/runtime, no concurrent adversarial writers; external means outside checkout, not OS-inaccessible under one uid. Persistent substitution is detected; malicious write-and-restore, runtime/native escapes and collusion require BB-067 confinement. No value/publication authority claim.",
+    "D7 — Result acceptance={profile:\"LOCAL_ACCEPTANCE_V1\",assurance:\"EXTERNALLY_PINNED_TRUSTED_LOCAL\",status:PASS|FAIL|INCONCLUSIVE,reason,objectiveSha256,contractSha256,manifestSha256,evaluatorFiles:[{path,sha256}],runtime:{path,sha256},protectedBase:[{path,mode,type,oid}],candidateSha,candidateTree,verification:fullVerifierRecord}. Protected ACCEPTED requires non-null PASS, candidateSha==backendSha and exact tree. Operational preflight failure returns QA_FAILED/backendSha:null/qa:null/acceptance:FAIL with available bindings; CLI prints JSON exit 1. Retain existing ACCEPTED=0/TOOL_UNAVAILABLE=2/usage=64. Reasons include ACCEPTANCE_MANIFEST_INVALID, ACCEPTANCE_DIGEST_MISMATCH, OBJECTIVE_MISMATCH, PROTECTED_PATH_CHANGED, ACCEPTANCE_BINDING_MISMATCH and delivered verifier reasons.",
     "D8 Protected opt-in only writes acceptance-binding.json and stable snapshot before first dispatch. Schema {version:DELIVER_ACCEPTANCE_BINDING_V1,sliceId,repositoryRoot,baseRevision,contractSha256,acceptance:pinnedIdentity}; contract pins objective/profile, real manifest/snapshot paths, bytes/runtime/argv/timeout/QA/protected tuples. Existing protected handle requires matching sidecar for every status before resume/QA/disposal; reuse its snapshot, never create random replacement before equality checks. Missing/corrupt/foreign sidecar or added/removed/changed protected config rejects with restart instruction, no fallback or state deletion. Legacy omission with no sidecar preserves delivered resume/complete-handle behavior and writes no new snapshot/sidecar; it still uses BB-125 existing handle binding. Omission with a protected sidecar present rejects downgrade. Protected opt-in on an old legacy handle without sidecar rejects upgrade. No-handle protected pre-dispatch restart is permitted only after proven handle absence and matching saved sidecar; corrupt handle is not absence. Preserve snapshot across interruption, rehash on resume, never cache PASS, dispose only matching protected terminal state after fresh evaluation.",
-    "D9 \u2014 BB-104 delivered fresh QA/source preservation is reused; BB-125 owns exact task/execution/model/permission/launch handle binding and BB-130 owns verifier env. Both are PLANNED_CONTRACT, not delivered fixes. Require all direct dependencies DONE and reread exact APIs before Worker; contradictions return to research. No BB-125 handle schema change or new general evaluator framework; BB-099 separation informs authority without reopening terminal claims.",
-    "D10 \u2014 Focused tests use scratch Git and deterministic fake Backend adapters, no credentials/providers. Each distinct negative body directly invokes bound product symbol and asserts failure reason/no ACCEPTED plus dispatch/verifier/disposal counters where relevant. Positive: genuine addition fix and fresh replay with same pins/exact SHA-tree; allowed UNPROTECTED test edit with independent evaluator and unchanged separate protected file. Cover protected tuple matrix, no-op QA, runtime/config/goal tamper, postcheck drift, unchanged interrupted resume, complete-handle replay, CLI and legacy null. Source repository snapshot remains identical.",
-    "D11 \u2014 Executed seven-case scratch prototype uses delivered runSliceQa plus experimental digest/protected-entry gate: ordinary no-op QA passes broken candidate; external assertions reject broken/weakened tests; protected change, evaluator replacement, missing pin and candidate mismatch rejected; real implementation fix passes. This is research feasibility, not implementation of new exports/durable resume/fresh delivery. Worker evidence must invoke product seams at candidate. Independent fresh Jev still required.",
-    "D12 \u2014 Update only declared Living state/observation after Worker delivery: manifest/evidence API, optional legacy/null, operator assertion ownership, trusted-process scope, resume restart rules; no Blackboard ids/research statuses. CLI help describes acceptance in slice manifest only; preserve unrelated operator factor work and status/exit routing."
+    "D9 — BB-104 delivered fresh QA/source preservation is reused; BB-125 owns exact task/execution/model/permission/launch handle binding and BB-130 owns verifier env. Both are PLANNED_CONTRACT, not delivered fixes. Require all direct dependencies DONE and reread exact APIs before Worker; contradictions return to research. No BB-125 handle schema change or new general evaluator framework; BB-099 separation informs authority without reopening terminal claims.",
+    "D10 — Focused tests use scratch Git and deterministic fake Backend adapters, no credentials/providers. Each distinct negative body directly invokes bound product symbol and asserts failure reason/no ACCEPTED plus dispatch/verifier/disposal counters where relevant. Positive: genuine addition fix and fresh replay with same pins/exact SHA-tree; allowed UNPROTECTED test edit with independent evaluator and unchanged separate protected file. Cover protected tuple matrix, no-op QA, runtime/config/goal tamper, postcheck drift, unchanged interrupted resume, complete-handle replay, CLI and legacy null. Source repository snapshot remains identical.",
+    "D11 — Executed seven-case scratch prototype uses delivered runSliceQa plus experimental digest/protected-entry gate: ordinary no-op QA passes broken candidate; external assertions reject broken/weakened tests; protected change, evaluator replacement, missing pin and candidate mismatch rejected; real implementation fix passes. This is research feasibility, not implementation of new exports/durable resume/fresh delivery. Worker evidence must invoke product seams at candidate. Independent fresh Jev still required.",
+    "D12 — Update only declared Living state/observation after Worker delivery: manifest/evidence API, optional legacy/null, operator assertion ownership, trusted-process scope, resume restart rules; no Blackboard ids/research statuses. CLI help describes acceptance in slice manifest only; preserve unrelated operator factor work and status/exit routing."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -95,9 +95,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions. Return pin includes verified raw manifest hash, frozen file/runtime pins, protected base tuples and stable snapshot paths. Pin before agent dispatch; executor is pinned absolute Node with evaluator first and candidate root last. runLocalAcceptance composes createLocalCommandVerifier at exact candidate revision with unchanged-tree guard; original/snapshot/runtime pre/post hash drift or protected tuple drift prevents PASS. Operator assertions must independently reject broken sum under no-op QA and protected-test deletion, then accept genuine sum fix. Explicit trusted-local boundary excludes malicious same-uid write-and-restore. For durable resume, pinLocalAcceptance first reads existing delivery sidecar, verifies caller contract and reuses its saved snapshot paths/bytes; do not create random replacement before equality checks. For first-run without handle, create owned snapshot then bind sidecar; partial pre-dispatch restart only on proven handle absence. Inputs recoveryDir/handleExists are explicit optional pin arguments, not inferred from an overridden manifest path.",
-    "S2 \u2014 deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only. For protected opt-in persist sidecar/stable snapshot before first dispatch; matching sidecar is required before every protected handle path including ACCEPTED replay. Legacy omission without sidecar preserves existing behavior; a protected sidecar with omitted acceptance rejects downgrade, and opt-in on a legacy handle without sidecar rejects upgrade before effects. Every fresh or resumed QA run executes the pinned evaluator again. Sidecar validation failure leaves all recovery bytes untouched; terminal cleanup runs only after final evaluation. Pass pin into private runQaOnFreshCheckout; inside its existing try run ordinary runSliceQa, then runLocalAcceptance on workspace.root and acceptedSha only when ordinary passed. Return combined passed/status plus acceptance record; finally dispose QA workspace after this gate. Every fresh finishBackend and ACCEPTED-handle branch uses this helper. Build acceptedSliceResult only when ordinary+protected PASS; other outcomes use QA_FAILED. Add acceptance:null to legacy sliceResult envelopes and propagate scoped protected failure bindings. Terminal disposal removes only the exact matching handle/sidecar/snapshot after completed gate; thrown gate still cleans QA, interrupted durable state remains available. Legacy omission has no new external evaluator dispatch.",
-    "S3 \u2014 local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment. Positive/negative oracle: external evaluator asserts sum(2,3)==5 and sum(-2,4)==2. Broken subtraction and assertion-free candidate test must fail independently even with ordinary QA exit0; deleting the separate pinned protected file fails tuple gate. Genuine addition preserves the protected tuple and passes. Focused checks run on fresh candidate checkout and re-run after complete-handle replay, preserving source refs/status."
+    "S1 — [PROTECTED_ACCEPTANCE, QUALITY_BOUNDARY, RESUME_BINDING] local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions. Return pin includes verified raw manifest hash, frozen file/runtime pins, protected base tuples and stable snapshot paths. Pin before agent dispatch; executor is pinned absolute Node with evaluator first and candidate root last. runLocalAcceptance composes createLocalCommandVerifier at exact candidate revision with unchanged-tree guard; original/snapshot/runtime pre/post hash drift or protected tuple drift prevents PASS. Operator assertions must independently reject broken sum under no-op QA and protected-test deletion, then accept genuine sum fix. Explicit trusted-local boundary excludes malicious same-uid write-and-restore. For durable resume, pinLocalAcceptance first reads existing delivery sidecar, verifies caller contract and reuses its saved snapshot paths/bytes; do not create random replacement before equality checks. For first-run without handle, create owned snapshot then bind sidecar; partial pre-dispatch restart only on proven handle absence. Inputs recoveryDir/handleExists are explicit optional pin arguments, not inferred from an overridden manifest path. S1 builds only on DELIVERED contracts (BB-104 runSliceQa, createLocalCommandVerifier, createLocalGitWorkspace); BB-125/BB-130 are interface-compatibility checks at worker time, not implementation blockers.",
+    "S2 — [PROTECTED_ACCEPTANCE, RESUME_BINDING, QUALITY_BOUNDARY] deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only. For protected opt-in persist sidecar/stable snapshot before first dispatch; matching sidecar is required before every protected handle path including ACCEPTED replay. Legacy omission without sidecar preserves existing behavior; a protected sidecar with omitted acceptance rejects downgrade, and opt-in on a legacy handle without sidecar rejects upgrade before effects. Every fresh or resumed QA run executes the pinned evaluator again. Sidecar validation failure leaves all recovery bytes untouched; terminal cleanup runs only after final evaluation. Pass pin into private runQaOnFreshCheckout; inside its existing try run ordinary runSliceQa, then runLocalAcceptance on workspace.root and acceptedSha only when ordinary passed. Return combined passed/status plus acceptance record; finally dispose QA workspace after this gate. Every fresh finishBackend and ACCEPTED-handle branch uses this helper. Build acceptedSliceResult only when ordinary+protected PASS; other outcomes use QA_FAILED. Add acceptance:null to legacy sliceResult envelopes and propagate scoped protected failure bindings. Terminal disposal removes only the exact matching handle/sidecar/snapshot after completed gate; thrown gate still cleans QA, interrupted durable state remains available. Legacy omission has no new external evaluator dispatch. S2 modifies only deliver-slice.js and recovery.js against their delivered APIs; no BB-125/BB-130 schema changes.",
+    "S3 — [QUALITY_BOUNDARY, COMPATIBILITY_DOCS] local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment. Positive/negative oracle: external evaluator asserts sum(2,3)==5 and sum(-2,4)==2. Broken subtraction and assertion-free candidate test must fail independently even with ordinary QA exit0; deleting the separate pinned protected file fails tuple gate. Genuine addition preserves the protected tuple and passes. Focused checks run on fresh candidate checkout and re-run after complete-handle replay, preserving source refs/status."
   ],
   "acceptanceCriteria": [
     {
@@ -618,29 +618,33 @@
         0,
         1,
         2,
-        3,
         4,
         5,
-        6,
-        7,
-        8
+        7
       ],
       "sourceRefs": [
+        "packages/agentic-system/src/local-git-workspace.js",
+        "packages/agent-tools/src/recovery.js",
         "packages/agent-tools/src/deliver-slice.js",
+        "docs/blackboard/evidence/BB-127/discovery.json",
         "packages/agentic-system/src/local-command-verifier.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "if (existing.status === \"ACCEPTED\")"
-        },
-        {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "return await runSliceQa({"
+          "ref": "packages/agentic-system/src/local-git-workspace.js",
+          "match": "await git(source, [\"worktree\", \"add\", \"--detach\", root, baseRevision]);"
         },
         {
           "ref": "packages/agentic-system/src/local-command-verifier.js",
-          "match": "requireUnchangedTree = true"
+          "match": "reason: LocalVerificationReason.REVISION_MISMATCH });"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "reason = LocalVerificationReason.TREE_MUTATED;"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-127/discovery.json",
+          "match": "\"trustBoundary\": \"Trusted local commands do not protect test content"
         }
       ],
       "supportingPlanFields": []
@@ -666,24 +670,31 @@
       ],
       "decisionIndexes": [
         0,
-        2,
         4,
-        5,
         9,
         10
       ],
       "sourceRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md",
         "docs/blackboard/evidence/BB-127/discovery.json",
-        "docs/blackboard/process/delivery-value-improvement-research.md"
+        "packages/agentic-system/src/local-command-verifier.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/evidence/BB-127/discovery.json",
-          "match": "\"candidateStillSubtracts\": true"
+          "ref": "docs/blackboard/process/delivery-value-improvement-research.md",
+          "match": "Removing a repository test assertion passes Backend and fresh QA while code is still wrong"
         },
         {
-          "ref": "docs/blackboard/process/delivery-value-improvement-research.md",
-          "match": "External files are not inaccessible to an unsandboxed process"
+          "ref": "docs/blackboard/evidence/BB-127/discovery.json",
+          "match": "\"editedAcceptanceTestPassesFreshQa\": true,"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "reason: LocalVerificationReason.REVISION_MISMATCH });"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "REVISION_MISMATCH: \"REVISION_MISMATCH\","
         }
       ],
       "supportingPlanFields": []
@@ -701,14 +712,7 @@
       ],
       "verificationIds": [
         "focused",
-        "docs",
-        "pinning",
-        "agent-tools-regression",
-        "agentic-regression",
-        "quality",
-        "recovery",
-        "compatibility",
-        "legacy-deliver"
+        "docs"
       ],
       "decisionIndexes": [
         9,
@@ -716,21 +720,22 @@
         11
       ],
       "sourceRefs": [
-        "packages/agent-tools/src/deliver-slice.js",
-        "docs/blackboard/evidence/BB-127/discovery.json"
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/agent-tools/observation.md"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "export async function runDeliverSlice(sliceInput, options = {})"
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "## Durable recovery"
         },
         {
-          "ref": "docs/blackboard/evidence/BB-127/discovery.json",
-          "match": "\"classification\": \"EXECUTED_LOCAL_PROBE\""
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "## Digest chain"
         }
       ],
       "supportingPlanFields": []
     }
   ],
-  "readinessBlockers": []
+  "readinessBlockers": [],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
