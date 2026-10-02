@@ -416,6 +416,56 @@ test('CI selector routes exact research plan candidates from PR heads and merged
 });
 
 
+test('CI selector does not instantiate Jev for candidate-only task registration',t=>{
+  const f=fixture(t);
+  f.git('add','.');f.git('commit','-m','record trusted research control plane');
+
+  const ciScript=path.resolve('scripts/blackboard-jev-ci.mjs');
+  const runSelect=(trustedRoot,subjectRoot,candidateSha)=>{
+    const output=path.join(subjectRoot,'jev-select.out');
+    fs.rmSync(output,{force:true});
+    execFileSync(process.execPath,[ciScript,'select'],{
+      cwd:process.cwd(),
+      env:{...process.env,WORK_ID:'',CANDIDATE_SHA:candidateSha,TRUSTED_ROOT:trustedRoot,SUBJECT_ROOT:subjectRoot,GITHUB_OUTPUT:output},
+      stdio:['ignore','pipe','pipe']
+    });
+    const line=fs.readFileSync(output,'utf8').trim().split('\n').find(x=>x.startsWith('work='));
+    return JSON.parse(line.slice('work='.length));
+  };
+
+  const subject=fs.mkdtempSync(path.join(os.tmpdir(),'bb-jev-subject-'));
+  t.after(()=>removeFixture(subject));
+  fs.cpSync(f.root,subject,{recursive:true});
+  const subjectGit=(...args)=>execFileSync('git',args,{cwd:subject,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+
+  const objective=structuredClone(read(subject,'objective.json'));
+  objective.artifactId='BB-2';
+  write(subject,'objective-2.json',objective);
+
+  const plan=structuredClone(read(subject,'plan.json'));
+  plan.artifactId='BB-2';
+  plan.objective={ref:'objective-2.json',hash:hash(objective)};
+  write(subject,'plan-2.json',plan);
+
+  const graph=read(subject,'docs/blackboard/work-graph.json');
+  graph.tasks.push({
+    id:'BB-2',
+    status:'PLANNED',
+    lane:'RESEARCH_SA',
+    phase:'RESEARCH',
+    dependencies:[],
+    components:['outer/blackboard'],
+    artifacts:{inputRefs:['objective-2.json','plan-2.json'],outputRefs:[],consolidatedRefs:['docs/living/system/state.md']},
+    contract:{objectiveRef:'objective-2.json',planRef:'plan-2.json',researchBaselineSha:f.git('rev-parse','HEAD')}
+  });
+  write(subject,'docs/blackboard/work-graph.json',graph);
+  subjectGit('add','.');subjectGit('commit','-m','register new research task');
+  const registrationSha=subjectGit('rev-parse','HEAD');
+
+  assert.deepEqual(runSelect(f.root,subject,registrationSha),[]);
+});
+
+
 test('CI selector judges RESEARCH_SA even when execution dependencies are not DONE',t=>{
   const f=fixture(t);
   const graph=read(f.root,'docs/blackboard/work-graph.json');
