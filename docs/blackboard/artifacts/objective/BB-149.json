@@ -1,0 +1,39 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-149",
+  "recoversTrustFor": "BB-085",
+  "outcome": "Trusted evidence that the currently-live application-owned feedback episode lifecycle in @exharness/agentic-system (episode immutability with authority separation, application-owned response transitions, fresh measured outcomes against a frozen policy, derived terminal resolutions) behaves as specified.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-085) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/agentic-system/src/feedback-lifecycle-contracts.js (defineFeedbackEpisode/episodeIdFor, defineFeedbackResponse, defineFeedbackOutcomePolicy, defineFeedbackOutcome, defineFeedbackResolution + frozen vocabularies), feedback-lifecycle-controller.js (createFeedbackLifecycleController: openEpisode/respond/recordOutcome/resolve/recover, CAS head store), feedback-outcome.js (classifyFeedbackOutcome), re-exported from the agentic-system package root.",
+  "scope": [
+    "agentic-system.feedback-lifecycle.episode-immutability",
+    "agentic-system.feedback-lifecycle.response-transitions",
+    "agentic-system.feedback-lifecycle.fresh-outcome",
+    "agentic-system.feedback-lifecycle.terminal-resolution"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-085's historical evidence and invalid-merge lineage stay as fact.",
+    "No .github/** changes; no trusted JEV/controller changes; no changes to BB-083 territory.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C3 (episode immutability with sha256 episodeId and authority-field rejection, legal response transitions under verified principals with CAS idempotency and crash recovery, fresh outcomes against the frozen policy digest with UNKNOWN never advancing the head, derived terminal resolutions).",
+    "Specify negative cases N1-N2 (authority smuggling / spoofed OBSERVER/EVALUATOR/PROVIDER/OPTIMIZER principals; freshness violations: non-current response, reused inputs/attempts, non-strictly-later boundaries, missing measurements yielding UNKNOWN with explicit reasons).",
+    "Specify exact file-level recovery tests (feedback-lifecycle-contracts/controller/recovery/outcome tests, feedback-lifecycle-dependency-contract.test.mjs), the agentic-system package suite and npm run verify.",
+    "Specify the Living Doc statement (agentic-application/feedback-lifecycle.md) with one verifiable statement per behavior and no benchmark/optimizer/promotion/pattern/cross-episode dependency."
+  ],
+  "currentSourceRefs": [
+    "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+    "packages/agentic-system/src/feedback-lifecycle-controller.js",
+    "packages/agentic-system/src/feedback-outcome.js",
+    "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+    "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+    "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+    "packages/agentic-system/test/feedback-outcome.test.js",
+    "test/feedback-lifecycle-dependency-contract.test.mjs",
+    "docs/living/system/agentic-application/feedback-lifecycle.md"
+  ]
+}

@@ -6398,10 +6398,393 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-145",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/domain-execution-control",
+        "agentic/causal-observation",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-058",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-145.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-145/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-145/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/self-upgrade.md",
+          "docs/living/system/agentic-application/evaluation.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/reference/architecture/trust-pipeline.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live HOW-evolution loop evaluates HOW changes against a pinned baseline/candidate protocol before independent promotion.",
+        "Negative-case evidence for semantic drift, currentness drift, authority mismatch, Jev fail-closed, rollback rejection and attempt-pinning.",
+        "Living Docs statements binding every behavior claim C1-C7 and negative case N1-N7 to exact tests and artifact refs."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-145.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-145.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-146",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-146.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-146/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-146/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live async agent coordinator performs durable steering, bounded coalescing, explicit cancellation and crash recovery over at most one active model generation as non-authority.",
+        "Negative-case evidence for crash-before-abort, wakeup loss and non-cooperating ABORT_SIGNAL providers.",
+        "Living Docs statements scoping the recovered trust claim to behavior, not history."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-146.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-146.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-147",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-080",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-147.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-147/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-147/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/capabilities.md",
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md",
+          "docs/living/system/core-harness/decisions.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live held-out profile acceptance (32-unit cohort, frozen deterministic decision reducer) and fault-ablation protocol behave as specified.",
+        "The six bb081/*.test.mjs suites wired into an npm script (package.json only, no .github/** changes) with N1-N5 negative cases.",
+        "Living Docs statements: CORE_SYNC default, CORE_ASYNC_FIRST_V1 publication gating, B/C diagnostic-only, held-out reservation, offline fixtures never promotion evidence."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-147.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-147.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-148",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-083 application-owned feedback loop on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/causal-observation",
+        "agentic/how-evolution",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-064",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-148.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-148/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-148/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live application-owned feedback loop (typed contracts, application-owned response lifecycle, deterministic cross-episode projection, independent HOW improvement handoff, offline GEPA bridge) behaves as specified.",
+        "Negative-case evidence for forged authority, stale revise, corrupt resolution, holdout leak, budget/reservation failure and crash reconciliation.",
+        "Living Docs statements covering contracts, authority boundaries, fail-closed semantics and v1 limitations."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-148.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-148.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-149",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-085 application-owned feedback episode lifecycle on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/feedback-lifecycle"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-084",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-149.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-149/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-149/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback-lifecycle.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live feedback episode lifecycle (episode immutability, application-owned response transitions, fresh measured outcomes against a frozen policy, derived terminal resolutions) behaves as specified.",
+        "Negative-case evidence for authority smuggling/spoofed principals and freshness/honesty violations.",
+        "Living Docs statements binding every behavior claim to exact tests with no cross-episode dependency."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-149.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-149.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-150",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-120 agent-tools child-environment trust boundary on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-150.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-150/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-150/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live child-environment trust boundary (AGENT_CHILD_INHERITED_ENV allowlist, declared per-tool auth passthrough, bin-forwarded caller overlay) keeps host secrets out of agent children.",
+        "Negative-case evidence for planted-secret leak, NODE_TEST_CONTEXT smuggling, undeclared auth leak, malformed --env and overlay precedence.",
+        "Living Docs trust-boundary statement kept accurate; package explicitly not a sandbox."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-150.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-150.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-151",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-123 observed-only grok cost guard and worktree-local context exclusion on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-151.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-151/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-151/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/agent-tools/context.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live grok cost guard reports totalCostUsd only for finite numbers >= 0 (never coerced) and that grounded-context exclusion is worktree-local with the source repository never written.",
+        "Negative-case evidence for null/empty/boolean/string/NaN/negative/Infinity costs and write-outside-worktree attempts.",
+        "Living Docs statements for observed-only cost and worktree-local exclusion with no Blackboard ids."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-151.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-151.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-145",
+    "nextWorkId": "BB-152",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

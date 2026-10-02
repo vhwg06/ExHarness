@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-151",
+  "recoversTrustFor": "BB-123",
+  "outcome": "Trusted evidence that the currently-live observed-only grok cost guard and worktree-local grounded-context exclusion in @exharness/agent-tools behave as specified on current main.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-123) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/agent-tools/src/output-parsers.js parseGrokJson observed-only cost guard (only typeof number && finite && >= 0 becomes observed totalCostUsd, else null with the existing unavailable reason) and packages/agent-tools/src/task-context.js projectAgentTaskContext writing worktree-local .exharness/.gitignore only (source repository metadata byte-identical, grounded copies never enter the candidate commit). Boundary: parseOpencodeJsonl guard belongs to BB-122; child-env surface belongs to BB-120; excluded.",
+  "scope": [
+    "agent-tools.grok-cost.observed-only-guard",
+    "agent-tools.task-context.worktree-local-exclusion",
+    "agent-tools.task-context.source-untouched",
+    "agent-tools.grok-cost.truncation-reasons"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-123's historical evidence and invalid-merge lineage stay as fact; recovery writes fresh evidence only.",
+    "No .github/** changes; no trusted JEV/controller changes; no changes to BB-120 child-env or BB-122 opencode guard.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C6 (finite >= 0 costs observed incl. numeric 0; null/\"\"/boolean/string/NaN/Infinity/negative stay null; token parsing unchanged; worktree-local .gitignore with byte-identical source info/exclude; grounded copies out of the candidate commit; truncation reasons unchanged).",
+    "Specify negative cases N1-N4 (null cost recorded as null not 0; \"\"/true/\"0.5\"/NaN/-1/Infinity all null; write-outside-worktree failure mode; exclusion failure mode).",
+    "Specify exact file-level recovery tests (followup-correctness.test.js FU1-FU3 hermetic), npm run test:agent-tools, npm run verify:current-docs and npm run verify.",
+    "Specify Living Docs statements (agent-tools/observation.md, context.md): observed-only cost never zero-filled, worktree-local exclusion with source never written, no Blackboard ids."
+  ],
+  "currentSourceRefs": [
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/task-context.js",
+    "packages/agent-tools/test/followup-correctness.test.js",
+    "docs/living/system/agent-tools/observation.md",
+    "docs/living/system/agent-tools/context.md"
+  ]
+}

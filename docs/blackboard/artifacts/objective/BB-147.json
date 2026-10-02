@@ -1,0 +1,42 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-147",
+  "recoversTrustFor": "BB-081",
+  "outcome": "Trusted evidence that the currently-live held-out harness profile acceptance and fault-ablation protocol (execution-profile gating, 32-unit held-out cohort, frozen deterministic decision reducer, fault matrix, dependency binding, offline-fixture reporting) behaves as specified on current main.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-081) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/core-harness/src/execution-profile.js and benchmarks/harness_efficiency/bb081/ (accept.mjs, ablation-contract.mjs, fault-matrix.mjs, dependency-binding.mjs, profile-capabilities.mjs, run.mjs, report.mjs, heldout-profile.json). Process note: the six bb081/*.test.mjs suites were merged unwired to any npm script or CI job; recovery wiring must happen via package.json script addition only.",
+  "scope": [
+    "core-harness.execution-profile.held-out-cohort",
+    "core-harness.execution-profile.decision-reducer",
+    "core-harness.execution-profile.fault-ablation",
+    "core-harness.execution-profile.publication-gating",
+    "core-harness.execution-profile.dependency-composability",
+    "core-harness.execution-profile.reporting-integrity"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "Test wiring via package.json scripts only; never mutate .github/** to wire tests.",
+    "No history rewrite: BB-081's historical evidence and invalid-merge lineage stay as fact.",
+    "No trusted JEV/controller changes.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C6 (32-unit held-out cohort with DEV_REJECTED, deterministic decide() reducer with six primary gates, fault-ablation safety driving the verdict, publication gating with STALE/mid-flight refusal, dependency composability without approximation, reporting integrity with unknown-never-zero).",
+    "Specify negative cases N1-N5 (fabricated cohort member, duplicate-effect fault flipping the verdict, binding drift after decision, mid-flight rollback refusal, unknown accounting staying unknown).",
+    "Specify exact file-level recovery tests (the six bb081/*.test.mjs suites wired via a new test:bb081 npm script, execution-profile.test.js), the core-harness/benchmark package suites and npm run verify.",
+    "Specify Living Docs statements (capabilities.md H9, state.md, workflow.md, decisions.md): CORE_SYNC default, CORE_ASYNC_FIRST_V1 publication gating, B/C diagnostic-only, held-out reservation, offline fixtures never promotion evidence."
+  ],
+  "currentSourceRefs": [
+    "packages/core-harness/src/execution-profile.js",
+    "benchmarks/harness_efficiency/bb081/accept.mjs",
+    "benchmarks/harness_efficiency/bb081/ablation-contract.mjs",
+    "benchmarks/harness_efficiency/bb081/fault-matrix.mjs",
+    "benchmarks/harness_efficiency/bb081/dependency-binding.mjs",
+    "benchmarks/harness_efficiency/bb081/profile-capabilities.mjs",
+    "benchmarks/harness_efficiency/bb081/report.mjs",
+    "packages/core-harness/test/execution-profile.test.js",
+    "docs/living/system/core-harness/capabilities.md"
+  ]
+}
