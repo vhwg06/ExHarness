@@ -1,0 +1,260 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-146",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-146.json",
+    "hash": "331ac1cbe6a520e560c5a644002b77f0d37662ef62ad3698abc13d44c668c69f"
+  },
+  "scope": [
+    "core-harness.async-agent-coordinator.steering",
+    "core-harness.async-agent-coordinator.coalescing",
+    "core-harness.async-agent-coordinator.stop",
+    "core-harness.async-agent-coordinator.recovery",
+    "core-harness.async-agent-coordinator.non-authority"
+  ],
+  "outOfScope": [
+    "Rewriting BB-080 historical evidence, lineage or the invalid-merge PR record.",
+    "Changing the BB-077/BB-078/BB-079 deliveries the coordinator manifest pins.",
+    "Granting the coordinator effect-confirmation or product-acceptance authority.",
+    "Changing model provider semantics outside the generation-cancellation path."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "At most one active model generation per session; late responses from a superseded generation are fenced before action dispatch",
+    "STOP persists the stopFence before any cancellation side effect; no coordinator path confirms an EffectOperation or accepts a product"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: rerun async-agent-coordinator.test.js and async-agent-coordinator-recovery.test.js against current main with deterministic clock fixtures before adding any fixture; N1/N2/N3 fixtures are added only for gaps found.",
+    "D2 -- End-to-end recovery proof: chain coordinator + createDetachedOperationManager (BB-078) + async-result checkpoint (BB-079) across a simulated kill/restart to prove exact-identity recovery and zero duplicate effects.",
+    "D3 -- DEV probes stay DEV: rerun bb-080-async-profile.test.mjs to confirm no held-out/HOLD-* execution and no promotion verdict; probe output is never delivery evidence.",
+    "D4 -- Repair boundary: a defect found in the signal-fencing path (model.js / model-routing.js / agent-runtime.js / javascript-codeact-strategy.js) is repaired minimally on that exact path, with regression evidence covering the defect and N1/N2/N3."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/core-harness/src/async-agent-coordinator.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/javascript-codeact-strategy.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/async-agent-coordinator.test.js",
+      "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-080/**",
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/async-agent-coordinator.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/javascript-codeact-strategy.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/async-agent-coordinator.test.js",
+      "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/core-harness/test/async-agent-coordinator.test.js",
+      "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Steering and coalescing proof [C1, C2]: persist-first USER_INPUT, generation fence, replacement-turn identity, wake coalescing under CAS conflict.",
+    "S2 -- STOP and non-authority proof [C3, C5, N1]: stopFence persistence, dispatch blocking, unresolved-ambiguity labeling, no authority crossing.",
+    "S3 -- Crash recovery proof [C4, N2, N3]: three-boundary recovery, cross-restart dedupe, grace-window wake convergence, non-cooperating provider fencing.",
+    "S4 -- Living Docs: behavior-scoped statements (non-authority, at-most-one generation) bound to exact tests."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "USER_INPUT accepted while a model generation is active is persist-first, increments the generation fence, and schedules exactly one replacement turn covering the input high-water mark; the old generation's late response is discarded before action normalization/tool dispatch/result publication; detached operations continue unless explicitly stopped.",
+      "verificationIds": [
+        "focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "Coordinator suite output on current main (19 + 11 tests plus gap-covering fixtures)."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "Concurrent operation-transition ingress and duplicate transitionId redelivery coalesce to at most one current wake per drained burst; ingressSeq remains the semantic order; concurrent CAS-conflict ingress cannot create two current wakes; completion-only drains respect completionIdleMs/maxCoalescedTransitions while USER_INPUT, STOP and explicit wakes bypass immediately.",
+      "verificationIds": [
+        "focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "Coordinator suite output on current main (19 + 11 tests plus gap-covering fixtures)."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "STOP persists the stopFence before any cancellation side effect, blocks all new model/tool dispatch and detached launch/retry, survives restart, and never labels an unresolved post-dispatch effect cancelled (a racing CONFIRMED effect still wins as scheduler SUCCEEDED; unresolved ambiguity stays UNKNOWN).",
+      "verificationIds": [
+        "focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "Coordinator suite output on current main (19 + 11 tests plus gap-covering fixtures)."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "Crashes at the three boundaries (scheduled-before-dispatch, dispatched-before-terminal, model-in-flight) reconstruct exact pending identity via BB-078 recover(), stage unseen transitions through the BB-079 checkpoint exactly once, abandon the crashed submission, advance the generation, and schedule at most one replacement wake with zero duplicate effects.",
+      "verificationIds": [
+        "focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "Coordinator suite output on current main (19 + 11 tests plus gap-covering fixtures)."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "No coordinator path confirms an EffectOperation or accepts a product; conflicting transitionId reuse, missing effect identity, corrupted recovery bindings and conflicting operation bindings fail closed; probe metrics never produce a PROMOTE_ASYNC verdict.",
+      "verificationIds": [
+        "focused",
+        "core",
+        "profile"
+      ],
+      "evidenceRequired": [
+        "Coordinator suite output on current main (19 + 11 tests plus gap-covering fixtures). DEV probe output."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "Coordinator crash mid-run with a STOP fence persisted but model abort not yet delivered: restart keeps the fence, blocks dispatch, and does not silently resume the old generation.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "Coordinator restarted during an active completion-grace window or with pending OPERATION_TRANSITION ingress not yet staged: recovery converges to exactly one wake covering the durable ingress (no duplicate wakes, no dropped wake, no heartbeat self-initiation when nothing is pending).",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "An ABORT_SIGNAL-declared model adapter that never actually aborts (non-cooperating provider): the late response is still fenced (FENCE_ONLY fallback) with zero action/tool dispatch.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "At most one active model generation per session; late responses from a superseded generation are fenced before action dispatch",
+      "criterionIds": [
+        "C1",
+        "N3"
+      ]
+    },
+    {
+      "invariant": "STOP persists the stopFence before any cancellation side effect; no coordinator path confirms an EffectOperation or accepts a product",
+      "criterionIds": [
+        "C3",
+        "C5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator.test.js packages/core-harness/test/async-agent-coordinator-recovery.test.js"
+    },
+    {
+      "id": "core",
+      "command": "npm test --workspace=@exharness/core-harness"
+    },
+    {
+      "id": "profile",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The docs must establish that durable steering, bounded coalescing, explicit cancellation, and crash recovery operate over at most one active model generation with the coordinator as non-authority over effect confirmation and product acceptance, so the recovered trust claim is behavior-scoped rather than a restatement of history."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-077",
+      "BB-078",
+      "BB-079"
+    ],
+    "note": "Dependency manifest BB-080_DEPENDENCY_MANIFEST_V1 pins BB-077 (checkpoint vocabulary), BB-078 (detached operations + recover), BB-079 (async-result checkpoint)."
+  }
+}

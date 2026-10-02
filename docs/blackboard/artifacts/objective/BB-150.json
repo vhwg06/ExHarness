@@ -1,0 +1,36 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-150",
+  "recoversTrustFor": "BB-120",
+  "outcome": "Trusted evidence that the currently-live child-environment trust boundary of @exharness/agent-tools (AGENT_CHILD_INHERITED_ENV allowlist, declared per-tool auth passthrough, bin-forwarded caller overlay) keeps host secrets out of agent child processes on current main.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-120) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/agent-tools/src/process-runner.js (AGENT_CHILD_INHERITED_ENV frozen allowlist, childEnvironment allowlist->authPassthrough->overlay with NODE_TEST_CONTEXT always deleted, authPassthrough, binOverlayEnv, spawnBounded threading tool), packages/agent-tools/src/tool-adapters.js (normalizeAuthEnvNames, defineAgentTool frozen authEnvNames, all five adapters declare []), packages/agent-tools/bin/exharness-agent.mjs (repeatable --env KEY=VALUE, exit 64 on malformed). Boundary: task-context.js/output-parsers.js and BB-123 cost-guard surfaces are excluded.",
+  "scope": [
+    "agent-tools.child-env.allowlist-inheritance",
+    "agent-tools.child-env.auth-passthrough",
+    "agent-tools.child-env.caller-overlay",
+    "agent-tools.child-env.node-test-context-stripping",
+    "agent-tools.child-env.bin-forwarding"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-120's historical evidence and invalid-merge lineage stay as fact.",
+    "No .github/** changes; no trusted JEV/controller changes; no changes to BB-123 cost-guard surfaces.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C7 (no secret crossing, PATH/HOME inheritance, NODE_TEST_CONTEXT stripping on both routes, overlay-wins precedence, declared auth passthrough with all adapters frozen [], bin end-to-end via binOverlayEnv, export integrity).",
+    "Specify negative cases N1-N5 (planted-secret leak, NODE_TEST_CONTEXT smuggling via parent and overlay, undeclared ambient auth leak, malformed --env exit 64, overlay-beats-passthrough precedence).",
+    "Specify exact file-level recovery tests (child-env.test.js EN1-EN7 plus N1-N5 probes), regression on AT4 x2 and GR3 bin-driven tests, npm run test:agent-tools and npm run verify.",
+    "Specify the Living Docs trust-boundary statement (agent-tools/state.md): allowlist + declared auth + overlay, host secrets never copied wholesale, package explicitly not a sandbox."
+  ],
+  "currentSourceRefs": [
+    "packages/agent-tools/src/process-runner.js",
+    "packages/agent-tools/src/tool-adapters.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/test/child-env.test.js",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}
