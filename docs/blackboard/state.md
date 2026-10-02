@@ -60,7 +60,7 @@ NONE
 - BB-135 [RESEARCH_SA/RESEARCH] — Expose durable recovery on the operator run command
 - BB-136 [RESEARCH_SA/RESEARCH] — Wire observation traces through the local deliver slice
 - BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
-- BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
+- BB-138 [WORKER/EXECUTION] — Forward run permission and model options through deliver
 - BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
 - BB-140 [WORKER/EXECUTION] — Pin eval permission and timeout factors from the operator CLI
 - BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
@@ -150,7 +150,7 @@ BB-134 [DONE] <- BB-056
 BB-135 [RESEARCH_SCHEDULABLE] <- BB-101
 BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
 BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
-BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-138 [WORKER_SCHEDULABLE] <- BB-104
 BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
 BB-140 [WORKER_SCHEDULABLE] <- BB-099
 BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
