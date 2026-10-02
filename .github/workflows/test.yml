@@ -7,6 +7,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: test-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   living-doc-impact:
     runs-on: ubuntu-latest
@@ -200,3 +204,77 @@ jobs:
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
         run: node trusted/scripts/blackboard-jev-ci.mjs verify-supersession
+
+  merge-gate:
+    name: merge-gate
+    if: ${{ always() }}
+    needs:
+      - living-doc-impact
+      - kernel
+      - blackboard
+      - blackboard-jev
+      - readiness-verify
+      - objective-supersession-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require complete CI for exact PR head
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LIVING_DOC_RESULT: ${{ needs.living-doc-impact.result }}
+          KERNEL_RESULT: ${{ needs.kernel.result }}
+          BLACKBOARD_RESULT: ${{ needs.blackboard.result }}
+          WORK: ${{ needs.blackboard.outputs.work }}
+          JEV_RESULT: ${{ needs.blackboard-jev.result }}
+          PUBLICATIONS: ${{ needs.blackboard.outputs.publications }}
+          READINESS_RESULT: ${{ needs.readiness-verify.result }}
+          SUPERSESSIONS: ${{ needs.blackboard.outputs.supersessions }}
+          SUPERSESSION_RESULT: ${{ needs.objective-supersession-verify.result }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            echo "::error::$*"
+            exit 1
+          }
+
+          require_success() {
+            stage="$1"
+            result="$2"
+            [ "$result" = "success" ] || fail "$stage must succeed; got $result"
+          }
+
+          assert_exact_subjects() {
+            label="$1"
+            payload="$2"
+            bad="$(jq -r --arg sha "$PR_HEAD_SHA" '[.[] | select(.sha != $sha)] | length' <<<"$payload")"
+            [ "$bad" = "0" ] || fail "$label contains subject SHA different from PR head $PR_HEAD_SHA"
+          }
+
+          require_success "living-doc-impact" "$LIVING_DOC_RESULT"
+          require_success "kernel" "$KERNEL_RESULT"
+          require_success "blackboard-gate" "$BLACKBOARD_RESULT"
+
+          assert_exact_subjects "blackboard work" "$WORK"
+          assert_exact_subjects "readiness publications" "$PUBLICATIONS"
+          assert_exact_subjects "objective supersessions" "$SUPERSESSIONS"
+
+          if [ "$(jq 'length' <<<"$WORK")" -gt 0 ]; then
+            require_success "blackboard-jev" "$JEV_RESULT"
+          else
+            echo "blackboard-jev not applicable: selector emitted no JEV work"
+          fi
+
+          if [ "$(jq 'length' <<<"$PUBLICATIONS")" -gt 0 ]; then
+            require_success "readiness-verify" "$READINESS_RESULT"
+          else
+            echo "readiness-verify not applicable: selector emitted no readiness publication"
+          fi
+
+          if [ "$(jq 'length' <<<"$SUPERSESSIONS")" -gt 0 ]; then
+            require_success "objective-supersession-verify" "$SUPERSESSION_RESULT"
+          else
+            echo "objective-supersession-verify not applicable: selector emitted no supersession"
+          fi
+
+          echo "MERGE_GATE_ACCEPT candidate=$PR_HEAD_SHA"
+

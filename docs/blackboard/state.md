@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-145
+next-work-id: BB-152
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -40,16 +40,16 @@ NONE
 
 ## Schedulable tasks
 
-- BB-081 [WORKER/EXECUTION] — Research held-out harness profile acceptance and fault-ablation protocol
+- BB-066 [WORKER/EXECUTION] — Integrate a real coding-agent execution strategy
 - BB-083 [WORKER/EXECUTION] — Research feedback lifecycle and cross-episode learning
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
+- BB-094 [WORKER/EXECUTION] — Verify Oracle on supported Core execution profiles
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
 - BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 - BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
 - BB-125 [RESEARCH_SA/RESEARCH] — Bind supervised resume to the exact task and execution contract
-- BB-126 [RESEARCH_SA/RESEARCH] — Stop repeated no-progress retries with evidence-bound feedback
 - BB-127 [RESEARCH_SA/RESEARCH] — Add externally pinned acceptance for local delivery slices
 - BB-128 [RESEARCH_SA/RESEARCH] — Expose delivered Grok and OpenCode adapters through operator delivery
 - BB-129 [RESEARCH_SA/RESEARCH] — Export a durable review bundle for the exact local candidate
@@ -62,11 +62,14 @@ NONE
 - BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
 - BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
 - BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
-- BB-140 [RESEARCH_SA/RESEARCH] — Pin eval permission and timeout factors from the operator CLI
+- BB-140 [WORKER/EXECUTION] — Pin eval permission and timeout factors from the operator CLI
 - BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
 - BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
 - BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
 - BB-144 [RESEARCH_SA/RESEARCH] — Expose deliver CLI tool override
+- BB-145 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main
+- BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
+- BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
 
 ## Dependency graph
 
@@ -86,7 +89,7 @@ BB-062 [DONE] <- BB-061
 BB-063 [DONE] <- BB-062
 BB-064 [DONE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [DONE] <- ROOT
-BB-066 [BLOCKED_BY BB-081] <- BB-065, BB-048, BB-081
+BB-066 [WORKER_SCHEDULABLE] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
 BB-069 [BLOCKED_BY BB-068] <- BB-068, BB-064
@@ -94,14 +97,14 @@ BB-070 [BLOCKED_BY BB-069] <- BB-069, BB-055
 BB-071 [BLOCKED_BY BB-070] <- BB-070, BB-057
 BB-072 [BLOCKED_BY BB-068] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
-BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
+BB-074 [BLOCKED_BY BB-071,BB-073] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
 BB-079 [DONE] <- BB-077, BB-078
 BB-080 [DONE] <- BB-078, BB-079
-BB-081 [WORKER_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [DONE] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [WORKER_SCHEDULABLE] <- BB-059, BB-064, BB-065
 BB-084 [DONE] <- BB-058, BB-064
@@ -114,7 +117,7 @@ BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
 BB-092 [DONE] <- BB-091
 BB-093 [DONE] <- BB-092
-BB-094 [BLOCKED_BY BB-081] <- BB-093, BB-081
+BB-094 [WORKER_SCHEDULABLE] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
@@ -135,7 +138,7 @@ BB-122 [DONE] <- BB-097, BB-098
 BB-123 [WORKER_SCHEDULABLE] <- BB-105, BB-102
 BB-124 [RESEARCH_SCHEDULABLE] <- BB-098, BB-105, BB-123
 BB-125 [RESEARCH_SCHEDULABLE] <- BB-101
-BB-126 [RESEARCH_SCHEDULABLE] <- BB-125
+BB-126 [BLOCKED_BY BB-125] <- BB-125
 BB-127 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130, BB-125
 BB-128 [RESEARCH_SCHEDULABLE] <- BB-104, BB-122
 BB-129 [RESEARCH_SCHEDULABLE] <- BB-127
@@ -149,11 +152,18 @@ BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
 BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
 BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
 BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
-BB-140 [RESEARCH_SCHEDULABLE] <- BB-099
+BB-140 [WORKER_SCHEDULABLE] <- BB-099
 BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
 BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
 BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-145 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-146 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-147 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-148 [BLOCKED] <- BB-059, BB-064, BB-065
+BB-149 [BLOCKED] <- BB-084
+BB-150 [BLOCKED] <- BB-097
+BB-151 [BLOCKED] <- BB-105, BB-102
 ```
 
 ## Context semantics

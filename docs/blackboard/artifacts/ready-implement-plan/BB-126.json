@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-126",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-126.json",
     "hash": "f3779bdb822b00c2e728fd05b13f24cfec806f0d7f06f0d87f5f9e70b02a2171"
@@ -13,29 +13,38 @@
   ],
   "outOfScope": [
     "Cross-episode patterns, automatic HOW promotion and feedback authority (BB-083..086).",
-    "Changing BB-099 or BB-075 accepted contracts."
+    "Changing BB-099 or BB-075 accepted contracts.",
+    "Default enablement, CLI/Application option forwarding, provider retry/backoff, verifier caching, sandboxing and semantic quality scoring. Existing BB-099 benchmark and BB-075 contracts stay unchanged."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
     "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance. Acceptance coverage: PROGRESS_POLICY, DURABLE_POLICY.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value. Acceptance coverage: BOUNDED_VALUE, FAILURE_TAXONOMY, EVIDENCE_FEEDBACK.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan. Acceptance coverage: REGRESSION_SCOPE."
   ],
   "architectureDecisions": [
-    "Compare fixed maxAttempts, repeat fingerprint stop, and one explicit feedback escalation; keep maxAttempts as an outer hard ceiling and preserve opt-in/default compatibility until measured.",
-    "Do not skip correctness verification solely because a cached hash matches. Any verifier cache requires immutable evaluator/config/environment identity and fresh acceptance; begin with fewer dispatches, not cached PASS.",
-    "Feedback carries exact named failed checks with bounded actionable context. Cross-episode learning and semantic FeedbackResolution remain BB-085/086."
+    "Default progressPolicy=null preserves fixed maxAttempts. Opt-in {kind:\"TREE_FAILURE_GRACE_V1\"} validates before side effects and binds through BB-125.",
+    "Select two identical observations plus one grace retry: escalate at streak 2, stop at 3. Changed content/diagnostics resets. maxAttempts is always the hard ceiling.",
+    "Compare tree and typed failure digests, never SHA alone or summary text. Fresh verification/Core evaluation remain mandatory; no cached PASS.",
+    "Stop only typed pinned external SPAWN_ERROR or candidate integrity failure immediately; keep repository-local spawn failure, timeout and agent auth prose repairable/unknown.",
+    "Reuse canonical JSON and redaction helpers. Persist exact failed checks and decision before dispatch/cleanup; policy never supplies acceptance.",
+    "Extend BB-125 handle binding/state; deduplicate completed semantic attempts across replay. Keep terminal status EXHAUSTED with additive stopReason.",
+    "Retain adverse delayed4 control. No default enablement or broad quality/cost claim before accepted BB-099-compatible held-out comparison."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/run-trace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/recovery.test.js",
       "docs/blackboard/evidence/BB-126/discovery.json",
       "docs/blackboard/process/delivery-value-improvement-research.md"
     ],
@@ -51,17 +60,19 @@
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/run-trace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agent-tools/src/redaction.js",
       "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
       "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
-      "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-126/discovery.json"
+      "packages/core-harness/src/**",
+      "docs/blackboard/artifacts/objective/BB-126.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-125.json",
+      "docs/blackboard/evidence/BB-126/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
     ],
     "write": [
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/recovery.js",
-      "packages/agent-tools/src/run-trace.js",
       "packages/agent-tools/test/retry-progress-policy.test.js",
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agent-tools/observation.md"
@@ -75,76 +86,142 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — supervisor.js; PROGRESS_POLICY/FAILURE_TAXONOMY. Add progressPolicy=null to strategy/run/resume; sole nonnull {kind:TREE_FAILURE_GRACE_V1}, extra keys reject. Bind canonical policy digest through existing BB-125 execution binding; preserve exact task/tool/model/permission/verifier/launch checks. Comparable fingerprint SHA256 canonicalJson({policyKind,executionBindingDigest,candidateTree,evaluationDisposition,checks:sortedByName}); tree from git rev-parse --verify candidateSha^{tree}, checks include name/claim/status/reason/exit/stdout-stderr hashes, revision excluded but retained provenance. Parse the exact five name-prefixed entries specified in progressPolicyContract.fingerprint.evidence; require unique complete record/current candidate/expected claim. Unknown or malformed clears streak to0. Fresh Core PASS+mutation still solely authorizes acceptance. Otherwise classify REVISION_MISMATCH/TREE_MUTATED immediate integrity stop; SPAWN_ERROR immediate setup stop only for pinned absolute external executable after realpath containment check, candidate-local/PATH commands repairable; TIMEOUT/prose unknown/transient, no immediate setup stop. Same comparable fingerprint streak+1, change starts1 and clears grace. At streak2 with budget persist one grace notice; streak3 persists EXHAUSTED/NO_PROGRESS before another ACT. maxAttempts remains hard ceiling, TOOL_UNAVAILABLE existing immediate path. No task-schema/CLI/Core changes. Integration points: in BOTH regular and skipFirstAct verifier loops retain validated full artifacts separately from current public attempt.verification records. After fresh EVALUATE and existing PASS/mutation guard, compute transition from those artifacts/current tree. Extend existing onActCompleted/onAttemptCompleted payloads with enabled-only progressState; persist stop decision through onAttemptCompleted before returning EXHAUSTED, not by throwing a sentinel. Add validated initialProgressState to strategy options for resume; regular fresh callers supply empty state, resume supplies verified handle state. Before next ACT use returned redacted feedback/grace instruction. Disabled path executes original branches and payloads.",
+    "S2 — packages/agent-tools/src/supervisor.js and recovery.js; EVIDENCE_FEEDBACK/DURABLE_POLICY. Enabled FEEDBACK_HEADER/maxFeedbackChars remain. Prioritize names/status/reasons, one grace repair instruction, then bounded excerpts. Redact with combined invocation secret set and containsSecret before storage. Store digests/full structured checks separately; prompt truncation sets feedbackTruncated/omitted count without dropping metadata. Enabled-only progressSummary={policyKind,policyDigest,stopReason,attemptIndex,candidateSha,candidateTree,executionBindingDigest,fingerprint,streak,graceIssued,failedChecks,feedbackTruncated,remainingDispatchBudget}. Remaining budget=max(0,maxAttempts-attemptIndex), not saved calls/cost. Disabled result/feedback/handle shape unchanged. State={version:1,policyDigest,lastCompletedAttempt,previousFingerprint,streak,graceIssued,lastDecision,lastEvidence,terminalSummary}. Extend delivered BB-125 create/assert/write handle explicitly; validate bounds/digests/candidate binding. Persist ATTEMPT_COMPLETED before another ACT. ACT_COMPLETED keeps prior completed state; fresh replay applies transition once from that state. Changed replay evidence recomputes, never double-counts. Terminal EXHAUSTED rejects resume. Missing/corrupt/drifting opt-in state rejects before probe/worktree/verifier; disabled legacy follows BB-125 migration. ACT_COMPLETED reruns verifiers, not ACT; ATTEMPT_COMPLETED reuses completed decision without resetting streak or adding grace. Record replay call counts separately; semantic attempts cannot prove total actual calls. Use delivered writeAgentToolRunHandle/createAgentToolRunHandle/validation; add opt-in policy binding and state in those existing functions, not an undeclared API. The versioned policy state above is the chosen schema; dependency DONE is solely an execution prerequisite. runRecoverableTask/resumeSupervisedTask thread the enabled state into both existing persistRecoverableHandle callbacks. ACT_COMPLETED stores prior completed state and current candidate as distinct provenance; ATTEMPT_COMPLETED stores transition for that semantic attempt. On Core accepted outcome clear repeat state and attach accepted terminal state to outcome; existing final wrapper persists it only after successful promotion. freezeSupervisedResult conditionally preserves outcome.progressSummary when enabled, otherwise original keys. Plain runSupervisedTask receives the same optional summary without recovery. No new Core evaluator/lineage or artifact schemas outside allowed supervisor/recovery files.",
+    "S3 — retry-progress-policy.test.js directly invokes the enabled and disabled strategy with real Git, fake CLI and external frozen assertions. Paired matrix fixed/repeat2/grace: repeated failure ceiling5 expects5/2/3 ACT and verifiers with no acceptance; delayed2 expects acceptance at2 in all arms; delayed3 at3 in fixed/grace and rejection in repeat2; multistep changed-tree and diagnostics-change fix at4 must accept in fixed/grace. Retain identical-prefix delayed4 as an adverse rejected control in grace, not a quality-preservation result; default stays disabled. Ceiling3 repeat demonstrates no saving. Log actual dispatches/verifiers/promotion and independent quality, not remaining budget or model gains. Also execute exact negative titles and both crash phases on product APIs. The measured research rows use the explicitly declared resultColumns; future product runs must reproduce the selected positive controls and report the adverse control unchanged.",
+    "S4 — Run mapped regressions/docs, collect exact candidate/plan/tree-bound evidence, and update the two Living docs with opt-in behavior and measured limits."
   ],
   "acceptanceCriteria": [
     {
       "id": "PROGRESS_POLICY",
-      "statement": "The policy uses tree/content plus verification-failure fingerprints, not commit SHA alone, and distinguishes no progress, changed candidate, changing diagnostics and infrastructure setup failure.",
+      "statement": "Full tree and complete typed failure evidence bind enabled policy. SHA churn repeats; changed tree/diagnostics resets; unknown evidence grants no acceptance. Disabled mode preserves behavior/shape.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "supervisor-recovery-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "Named tree/diagnostics/unknown/disabled fixtures; actual ACT/verifier/promotion counts and immutable candidate tree/digests."
       ]
     },
     {
       "id": "BOUNDED_VALUE",
-      "statement": "Frozen repeated-failure fixtures dispatch fewer calls; delayed-fix and legitimate multi-step fixtures retain accepted quality; stop reasons and saved work are recorded without asserting model-level gains.",
+      "statement": "At maxAttempts=5 frozen failure yields 3/3 ACT/verifiers versus fixed 5/5. Delayed2/3 and changed-tree/diagnostics fourth fixes pass external checks. At ceiling 3 record no repeat saving. Retain adverse identical-prefix delayed4 loss.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "Three-arm paired deterministic fixture counts, external acceptance PASS/FAIL and limits, including rejected repeat2 arm and adverse delayed4 control."
+      ]
+    },
+    {
+      "id": "FAILURE_TAXONOMY",
+      "statement": "Pinned external SPAWN_ERROR and integrity failures stop before another ACT; candidate-local missing commands, TIMEOUT and agent auth text remain repairable/unknown. No failed terminal is accepted.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Separate positive/negative spawn, repairable missing command, timeout, mutation and revision fixtures with zero unexpected dispatch/promotion."
+      ]
+    },
+    {
+      "id": "EVIDENCE_FEEDBACK",
+      "statement": "Result/handle retain exact named checks, tree/SHA, execution/policy digests, fingerprint and redacted bounded feedback. One grace notice per streak. Unused budget is labelled as budget, never inferred savings.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Recorded fake-CLI prompts and digest-bound result/handle inspection; planted synthetic secret absence and feedback character-bound assertions."
+      ]
+    },
+    {
+      "id": "DURABLE_POLICY",
+      "statement": "Crash/resume preserves exactly one transition per semantic attempt across both phases. Stopped handles reject. Missing/corrupt/drifting policy rejects before side effects under delivered BB-125 binding.",
+      "verificationIds": [
+        "focused",
+        "supervisor-recovery-regression"
+      ],
+      "evidenceRequired": [
+        "Real recoveryDir crash/resume fixtures, handle read/digest verification, same Core/tool/worktree identity and dispatch/verifier/promotion counters."
+      ]
+    },
+    {
+      "id": "REGRESSION_SCOPE",
+      "statement": "Only scoped files change; agent-tools/agentic regressions and docs checks pass. Living docs describe implemented opt-in policy and limits without research/delivery claims.",
+      "verificationIds": [
+        "agent-tools-regression",
+        "agentic-regression",
+        "docs"
+      ],
+      "evidenceRequired": [
+        "Candidate-bound command logs, diff-scope review and exact consolidated Living refs."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js"
+      "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js",
+      "negativeCases": "Execute distinct bound tests NEG_126_1, NEG_126_2, NEG_126_3, NEG_126_4, NEG_126_5, NEG_126_6, NEG_126_7, NEG_126_8, NEG_126_9, NEG_126_10, NEG_126_11, NEG_126_12, NEG_126_13. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+    },
+    {
+      "id": "supervisor-recovery-regression",
+      "command": "node --test packages/agent-tools/test/agent-tools.test.js packages/agent-tools/test/recovery.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance. Acceptance coverage: PROGRESS_POLICY, DURABLE_POLICY.",
       "criterionIds": [
         "PROGRESS_POLICY",
-        "BOUNDED_VALUE"
+        "DURABLE_POLICY"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value. Acceptance coverage: BOUNDED_VALUE, FAILURE_TAXONOMY, EVIDENCE_FEEDBACK.",
       "criterionIds": [
-        "PROGRESS_POLICY",
-        "BOUNDED_VALUE"
+        "BOUNDED_VALUE",
+        "FAILURE_TAXONOMY",
+        "EVIDENCE_FEEDBACK"
       ]
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan. Acceptance coverage: REGRESSION_SCOPE.",
       "criterionIds": [
-        "PROGRESS_POLICY",
-        "BOUNDED_VALUE"
+        "REGRESSION_SCOPE"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "A changing commit SHA with identical content cannot count as progress",
-    "One unchanged attempt before a valid delayed fix cannot be stopped prematurely"
+    "Commit SHA churn with identical tree must repeat",
+    "One unchanged attempt must allow delayed fix two",
+    "Two failures must allow grace fix three",
+    "Changed diagnostics must reset repetition",
+    "Missing digests cannot fabricate progress evidence",
+    "Timeout or auth prose cannot imply unrecoverable setup",
+    "Candidate-local missing verifier must remain repairable",
+    "Secrets and excess output must stay bounded",
+    "ACT_COMPLETED replay cannot double-count grace",
+    "ATTEMPT_COMPLETED resume cannot reset streak",
+    "Stopped handles must reject repair dispatch",
+    "Missing corrupt or drifting policy must reject",
+    "Passing unchanged base cannot bypass mutation gate"
   ],
   "negativeCaseBindings": [
     {
@@ -153,7 +230,7 @@
       "criterionId": "PROGRESS_POLICY",
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
-      "testTitle": "BB-126 N1 A changing commit SHA with identical content cannot count as progress",
+      "testTitle": "BB-126 N1 Commit SHA churn with identical tree must repeat",
       "subjectSymbol": "createSupervisedAgentStrategy"
     },
     {
@@ -162,15 +239,111 @@
       "criterionId": "BOUNDED_VALUE",
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
-      "testTitle": "BB-126 N2 One unchanged attempt before a valid delayed fix cannot be stopped prematurely",
+      "testTitle": "BB-126 N2 One unchanged attempt must allow delayed fix two",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_126_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "BOUNDED_VALUE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N3 Two failures must allow grace fix three",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_126_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "PROGRESS_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N4 Changed diagnostics must reset repetition",
       "subjectSymbol": "createSupervisedAgentStrategy"
+    },
+    {
+      "id": "NEG_126_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "PROGRESS_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N5 Missing digests cannot fabricate progress evidence",
+      "subjectSymbol": "createSupervisedAgentStrategy"
+    },
+    {
+      "id": "NEG_126_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "FAILURE_TAXONOMY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N6 Timeout or auth prose cannot imply unrecoverable setup",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_126_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "FAILURE_TAXONOMY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N7 Candidate-local missing verifier must remain repairable",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_126_8",
+      "negativeCaseIndex": 7,
+      "criterionId": "EVIDENCE_FEEDBACK",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N8 Secrets and excess output must stay bounded",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_126_9",
+      "negativeCaseIndex": 8,
+      "criterionId": "DURABLE_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N9 ACT_COMPLETED replay cannot double-count grace",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_126_10",
+      "negativeCaseIndex": 9,
+      "criterionId": "DURABLE_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N10 ATTEMPT_COMPLETED resume cannot reset streak",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_126_11",
+      "negativeCaseIndex": 10,
+      "criterionId": "DURABLE_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N11 Stopped handles must reject repair dispatch",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_126_12",
+      "negativeCaseIndex": 11,
+      "criterionId": "DURABLE_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N12 Missing corrupt or drifting policy must reject",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_126_13",
+      "negativeCaseIndex": 12,
+      "criterionId": "PROGRESS_POLICY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/retry-progress-policy.test.js",
+      "testTitle": "BB-126 N13 Passing unchanged base cannot bypass mutation gate",
+      "subjectSymbol": "runSupervisedTask"
     }
   ],
-  "researchGaps": [
-    "Preregister repetition threshold, failure taxonomy and reset/continue behavior; demonstrate delayed-fix non-regression. Live value is measured later through the existing BB-099 kernel.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
@@ -180,9 +353,583 @@
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Reduce wasted invocations and verifier time while retaining repair quality.",
-    "measurement": "Invocation/verifier count and elapsed time on repeat fixtures; paired held-out accepted quality and cost in BB-099-compatible studies.",
+    "expectedValue": "Fewer scheduled retries on frozen failures above the three-attempt grace window, and immediate termination of pinned unrecoverable setup/integrity failures.",
+    "measurement": "Paired fixture ACT/verifier counts and independently frozen acceptance checks first. Fixed maxAttempts=3 has no frozen-repeat count benefit. Single-run elapsed times are telemetry. BB-099-compatible held-out quality/cost studies remain separate.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value",
+    "target": "At maxAttempts=5, frozen repeat fixture must reduce ACT/verifier counts from 5/5 to 3/3 without loss on preregistered delayed2/delayed3, changing-content and changing-diagnostics controls.",
+    "nonRegressionBoundary": "A valid fourth-attempt fix following the identical failing prefix is stopped. Do not describe fixture non-regression as all-task quality preservation or promote this policy to the default."
+  },
+  "progressPolicyContract": {
+    "api": "Optional progressPolicy=null on createSupervisedAgentStrategy, runSupervisedTask and resumeSupervisedTask. The sole non-null shape is {kind:\"TREE_FAILURE_GRACE_V1\"}; reject extra keys/unknown kinds. No AGENT_TASK_V1, CLI or Application schema changes.",
+    "identity": "Include credential-free canonical policy digest in delivered BB-125 execution binding before dispatch. Consume its exact original/materialized task/tool/model/permission/verifier/launch checks; never hash secrets or create a second task binding.",
+    "fingerprint": {
+      "content": "Argument-array git rev-parse --verify <candidateSha>^{tree>. Full tree includes modes/files/submodule entries; lookup failure aborts. Tree equality is conservative content equality, not semantic quality.",
+      "evidence": "Parse only verifier.evidence entries with the exact declared name prefix and five keys: revision=<40hex>, exit=<signed integer or null>, reason=<LocalVerificationReason>, stdout-sha256=<64hex>, stderr-sha256=<64hex>. Require exactly one of each, record.candidate.version and revision equal current candidate, record.claim equal agent-task.<name>, and a valid PASS/FAIL/INCONCLUSIVE record.status. Split at the prefix/key delimiter, never from summary/prose; duplicate, malformed, foreign-prefix or missing required entry is EVIDENCE_UNKNOWN. Compare name/claim/status/reason/exit/stream digests; retain candidate revision as provenance only.",
+      "digest": "SHA-256 canonicalJson({policyKind,executionBindingDigest,candidateTree,evaluationDisposition,checks:sortedByName}). Each check includes status/reason/exit/stream digests; exclude revision, attempt/time, feedback and SHA. Retain excluded provenance alongside.",
+      "unknown": "Missing/malformed/duplicate evidence or invalid evaluator identity => EVIDENCE_UNKNOWN: clear streak and compare nothing, continue under ceiling without acceptance. Full TIMEOUT evidence may repeat; timeout alone is not setup.",
+      "pass": "Check fresh Core PASS and existing mutation gate first. PASS without acceptable mutation uses NO_ACCEPTABLE_MUTATION disposition and complete check records, never a policy acceptance shortcut."
+    },
+    "transition": [
+      "After every complete verification+EVALUATE, honor only existing Core acceptance; otherwise classify setup/integrity first.",
+      "Same comparable fingerprint increments streak; changed fingerprint starts at 1 and clears grace; unknown evidence clears to 0.",
+      "At streak 2 and remaining budget persist one grace notice for this streak. At streak 3 persist terminal evidence and return EXHAUSTED/NO_PROGRESS/acceptedSha=null before next ACT.",
+      "Ceiling => EXHAUSTED/MAX_ATTEMPTS unless this attempt proves a more specific stop. Existing TOOL_UNAVAILABLE remains immediate. Agent exit/success/auth prose cannot provide verifier reason."
+    ],
+    "taxonomy": [
+      {
+        "reasons": [
+          "FAIL"
+        ],
+        "classification": "REPAIRABLE",
+        "behavior": "Complete fingerprints use grace; candidate-local dependencies remain repairable."
+      },
+      {
+        "reasons": [
+          "TIMEOUT"
+        ],
+        "classification": "TRANSIENT_OR_UNKNOWN",
+        "behavior": "No immediate setup stop; complete identical evidence may reach repetition."
+      },
+      {
+        "reasons": [
+          "SPAWN_ERROR"
+        ],
+        "classification": "SETUP_CANDIDATE",
+        "behavior": "Immediate SETUP_UNRECOVERABLE only for fixed external executable outside candidate. Resolve symlink/real path. Relative PATH commands or paths inside editable candidate stay unknown/repairable."
+      },
+      {
+        "reasons": [
+          "REVISION_MISMATCH",
+          "TREE_MUTATED"
+        ],
+        "classification": "CANDIDATE_INTEGRITY",
+        "behavior": "Immediate EXHAUSTED/CANDIDATE_INTEGRITY; retain all failures, acceptedSha=null."
+      },
+      {
+        "reasons": [
+          "EVIDENCE_UNKNOWN"
+        ],
+        "classification": "UNKNOWN",
+        "behavior": "Clear streak, ceiling-bound retry, no acceptance."
+      }
+    ],
+    "feedback": "Enabled FEEDBACK_HEADER/maxFeedbackChars remain. Prioritize names/status/reasons, one grace repair instruction, then bounded excerpts. Redact with combined invocation secret set and containsSecret before storage. Store digests/full structured checks separately; prompt truncation sets feedbackTruncated/omitted count without dropping metadata.",
+    "result": "Enabled-only progressSummary={policyKind,policyDigest,stopReason,attemptIndex,candidateSha,candidateTree,executionBindingDigest,fingerprint,streak,graceIssued,failedChecks,feedbackTruncated,remainingDispatchBudget}. Remaining budget=max(0,maxAttempts-attemptIndex), not saved calls/cost. Disabled result/feedback/handle shape unchanged.",
+    "recovery": "State={version:1,policyDigest,lastCompletedAttempt,previousFingerprint,streak,graceIssued,lastDecision,lastEvidence,terminalSummary}. Extend delivered BB-125 create/assert/write handle explicitly; validate bounds/digests/candidate binding. Persist ATTEMPT_COMPLETED before another ACT. ACT_COMPLETED keeps prior completed state; fresh replay applies transition once from that state. Changed replay evidence recomputes, never double-counts. Terminal EXHAUSTED rejects resume. Missing/corrupt/drifting opt-in state rejects before probe/worktree/verifier; disabled legacy follows BB-125 migration.",
+    "crash": "ACT_COMPLETED reruns verifiers, not ACT; ATTEMPT_COMPLETED reuses completed decision without resetting streak or adding grace. Record replay call counts separately; semantic attempts cannot prove total actual calls.",
+    "compatibility": "Wait for BB-125 DONE; inspect exact delivered version/bindings. Contradiction returns to research. No independent digest scheme or weakened migration."
+  },
+  "dependencyInputs": [
+    {
+      "workId": "BB-125",
+      "classification": "PLANNED_CONTRACT",
+      "status": "PLANNED",
+      "objectiveRef": "docs/blackboard/artifacts/objective/BB-125.json",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-125.json",
+      "observedPlanContentHash": "b1f3967a35af4a60e80c53eb13dbdaa0c46741580a0f1d94a30c31d0dd79e61d",
+      "assumption": "BB-125 delivers canonical exact task/config binding before first dispatch and validates before resume side effects, with explicit legacy rejection/migration. Consume that contract and append progressPolicy identity; no Worker until dependency DONE and exact fresh Jev readiness.",
+      "refresh": "Re-read graph and delivered BB-125 contract before publication/Worker start. Its current DRAFT hash pins the assumption only, not implementation authority."
+    }
+  ],
+  "readinessGates": [
+    "This plan remains DRAFT. No independent Jev call or SATISFIED verdict is asserted. Deterministic materialization validates bindings/evidence routing only; Jev owns semantic readiness.",
+    "Worker requires BB-125 DONE, concrete contract compatibility, a fresh exact-plan SATISFIED Jev readiness binding and normal candidate judgment. Research schema validation does not bypass those gates.",
+    "Broader quality/value and default enablement require separately accepted BB-099-compatible held-out comparison. The selected opt-in fixture contract is bounded to the stated grace behavior, with the delayed4 counterexample visible.",
+    "Canonical baseline 5386e2adee15a3175a5b6635b63a54f6e24128cb now contains every trusted objective and required source; all declared anchors match. This resolves the former missing-source gap without changing the objective. Fresh independent Jev judgment remains mandatory."
+  ],
+  "researchEvidence": {
+    "classification": "EXECUTED_LOCAL_RESEARCH_PROTOTYPE",
+    "date": "2026-10-01",
+    "observedMainSha": "e78c815a5f8a7025997fb35a3969cbe6348481bc",
+    "providerCalls": 0,
+    "subjectSymbols": [
+      "runSupervisedTask",
+      "createSupervisedAgentStrategy",
+      "createLocalCommandVerifier"
+    ],
+    "method": "Baseline invokes delivered supervisor/fake CLI. Prototype invokes delivered strategy with scripted ACT/EVALUATE/PROMOTE, real Git and local command verifier; onAttemptCompleted throws a caught research sentinel. Escalation counts a decision, not new prompt behavior. Frozen inline Node assertions outside candidate files inspect final sum independently.",
+    "baseline": {
+      "status": "EXHAUSTED",
+      "attempts": 3,
+      "identicalCandidateCount": 1,
+      "verificationExecutions": 3
+    },
+    "resultColumns": [
+      "scenario",
+      "arm",
+      "maxAttempts",
+      "dispatches",
+      "verifierExecutions",
+      "independentQualityPass",
+      "stopReason",
+      "escalations",
+      "elapsedMs"
+    ],
+    "results": [
+      [
+        "repeat",
+        "fixed",
+        5,
+        5,
+        5,
+        false,
+        null,
+        0,
+        1409
+      ],
+      [
+        "repeat",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        772
+      ],
+      [
+        "repeat",
+        "grace",
+        5,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        705
+      ],
+      [
+        "delayed2",
+        "fixed",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        664
+      ],
+      [
+        "delayed2",
+        "repeat2",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        481
+      ],
+      [
+        "delayed2",
+        "grace",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        419
+      ],
+      [
+        "delayed3",
+        "fixed",
+        5,
+        3,
+        3,
+        true,
+        null,
+        0,
+        956
+      ],
+      [
+        "delayed3",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        724
+      ],
+      [
+        "delayed3",
+        "grace",
+        5,
+        3,
+        3,
+        true,
+        null,
+        1,
+        838
+      ],
+      [
+        "delayed4",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1530
+      ],
+      [
+        "delayed4",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        628
+      ],
+      [
+        "delayed4",
+        "grace",
+        5,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        855
+      ],
+      [
+        "multistep",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1037
+      ],
+      [
+        "multistep",
+        "repeat2",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1221
+      ],
+      [
+        "multistep",
+        "grace",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1392
+      ],
+      [
+        "diagnostics",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1295
+      ],
+      [
+        "diagnostics",
+        "repeat2",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1671
+      ],
+      [
+        "diagnostics",
+        "grace",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1329
+      ],
+      [
+        "spawn",
+        "fixed",
+        5,
+        5,
+        5,
+        false,
+        null,
+        0,
+        748
+      ],
+      [
+        "spawn",
+        "repeat2",
+        5,
+        1,
+        1,
+        false,
+        "SETUP_UNRECOVERABLE",
+        0,
+        301
+      ],
+      [
+        "spawn",
+        "grace",
+        5,
+        1,
+        1,
+        false,
+        "SETUP_UNRECOVERABLE",
+        0,
+        614
+      ],
+      [
+        "repeat",
+        "grace",
+        3,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        868
+      ]
+    ],
+    "sameContentDifferentCommitEvidence": [
+      {
+        "index": 1,
+        "candidateSha": "870c7d243c2766f5548a59a3b1c50eb756a96ec7",
+        "tree": "cff2ed6dc326c590e525dcd26486b890e1de68ee",
+        "fingerprint": "ae62945a51ce4e7fa9f1919cec02a4aec30c743ce506132ae05b196d20e11fff",
+        "reason": "FAIL"
+      },
+      {
+        "index": 2,
+        "candidateSha": "5a9969fcfea98fd07dca15324df920141e17d951",
+        "tree": "cff2ed6dc326c590e525dcd26486b890e1de68ee",
+        "fingerprint": "ae62945a51ce4e7fa9f1919cec02a4aec30c743ce506132ae05b196d20e11fff",
+        "reason": "FAIL"
+      },
+      {
+        "index": 3,
+        "candidateSha": "f83fd8c8c76086f34bd5526feafb9760a294949b",
+        "tree": "cff2ed6dc326c590e525dcd26486b890e1de68ee",
+        "fingerprint": "ae62945a51ce4e7fa9f1919cec02a4aec30c743ce506132ae05b196d20e11fff",
+        "reason": "FAIL"
+      }
+    ],
+    "findings": [
+      "At ceiling 5: fixed repeat 5/5 ACT/verifiers; repeat2 2/2; grace 3/3. Grace saves two observed calls of each kind on this fixture.",
+      "At ceiling 3: fixed/grace repeat both 3/3; no repeat saving. Pinned setup fixture stops 1/1.",
+      "Repeat2 loses delayed3; grace preserves delayed2/3 and changed-tree/diagnostics delayed4.",
+      "Grace loses identical-prefix delayed4; no finite stop can predict that future repair. Retain adverse control and keep default disabled.",
+      "Three distinct commits share one tree/failure digest; commit churn did not reset.",
+      "Single local elapsed times are telemetry only, with warmup/variance; no latency/model cost/productivity inference."
+    ],
+    "limits": "No feature, durable integration, enhanced prompt/redaction, MCP or live/accepted benchmark measured. Scripted controls discriminate policy only. Temporary repos were cleaned. Future subject-invoking tests supply implementation evidence.",
+    "reproduction": {
+      "encoding": "gzip+base64",
+      "programSha256": "55b7ab7fa59889a2d1d921fd5111b1e8e5e8db78a6d2d8f04f9b8cb94a88fd1f",
+      "command": "node --input-type=module -e 'import fs from \"node:fs\"; import {gunzipSync} from \"node:zlib\"; import {spawnSync} from \"node:child_process\"; const p=JSON.parse(fs.readFileSync(\"docs/blackboard/artifacts/ready-implement-plan/BB-126.json\")); const code=gunzipSync(Buffer.from(p.researchEvidence.reproduction.stdinProgramGzipBase64,\"base64\")).toString(); const r=spawnSync(process.execPath,[\"--input-type=module\"],{input:code,stdio:[\"pipe\",\"inherit\",\"inherit\"]}); process.exit(r.status??1);'",
+      "stdinProgramGzipBase64": "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"
+    }
+  },
+  "primarySources": [
+    {
+      "url": "https://git-scm.com/docs/git-rev-parse",
+      "checkedAt": "2026-10-01",
+      "relevance": "Git documents <rev>^{tree} as tree-object dereferencing. The executed Git 2.43.0 probe demonstrates distinct commits sharing one tree; use argument arrays for lookup."
+    },
+    {
+      "url": "https://docs.cloud.google.com/storage/docs/retry-strategy",
+      "checkedAt": "2026-10-01",
+      "relevance": "Primary service documentation distinguishes transient and permanent errors and warns against unbounded/layered retries. This motivates typed taxonomy only; its network backoff advice is not evidence for coding-agent quality or our threshold."
+    }
+  ],
+  "evidenceRouting": {
+    "policy": "atomic-claims-1",
+    "negativeCaseBindingsFromWorkId": "BB-100",
+    "confidenceGate": false,
+    "research": "Full canonical plan and objective evidence via the existing RESEARCH_SA materializer. All design, test, prototype and dependency contracts are present directly in state.plan; exact source bodies remain bounded and hash-bound. No custom route removes a readiness field.",
+    "worker": "Candidate/plan/tree-bound IMPLEMENTATION_RESULT verificationRuns and per-criterion claims via existing collector. Exact negative titles must pass once unskipped and invoke named subjects. Research discovery/prototype is not feature proof.",
+    "sourceBaseline": "Exact research baseline 5386e2adee15a3175a5b6635b63a54f6e24128cb; trusted objective ref/hash preserved. Current-main prototype remains separately pinned, with no terminal retrofit."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "The policy uses tree/content plus verification-failure fingerprints, not commit SHA alone, and distinguishes no progress, changed candidate, changing diagnostics and infrastructure setup failure.",
+      "criterionIds": [
+        "PROGRESS_POLICY",
+        "FAILURE_TAXONOMY",
+        "DURABLE_POLICY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "supervisor-recovery-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agentic-system/src/local-command-verifier.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export function createSupervisedAgentStrategy"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function resumeSupervisedTask"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "stdout-sha256="
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export function createAgentToolRunHandle"
+        }
+      ],
+      "supportingPlanFields": [
+        "progressPolicyContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Frozen repeated-failure fixtures dispatch fewer calls; delayed-fix and legitimate multi-step fixtures retain accepted quality; stop reasons and saved work are recorded without asserting model-level gains.",
+      "criterionIds": [
+        "BOUNDED_VALUE",
+        "EVIDENCE_FEEDBACK"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        4,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export function buildFeedback"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "PROGRESS_POLICY",
+        "BOUNDED_VALUE",
+        "FAILURE_TAXONOMY",
+        "EVIDENCE_FEEDBACK",
+        "DURABLE_POLICY",
+        "REGRESSION_SCOPE"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "focused",
+        "supervisor-recovery-regression",
+        "agent-tools-regression",
+        "agentic-regression",
+        "docs"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/run-trace.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "function freezeSupervisedResult"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export function verifyAgentToolRunHandle"
+        },
+        {
+          "ref": "packages/agent-tools/src/run-trace.js",
+          "match": "export function canonicalJson"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
+    }
+  ],
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "findings": [
+      "At ceiling 5: fixed repeat 5/5 ACT/verifiers; repeat2 2/2; grace 3/3. Grace saves two observed calls of each kind on this fixture.",
+      "At ceiling 3: fixed/grace repeat both 3/3; no repeat saving. Pinned setup fixture stops 1/1.",
+      "Repeat2 loses delayed3; grace preserves delayed2/3 and changed-tree/diagnostics delayed4.",
+      "Grace loses identical-prefix delayed4; no finite stop can predict that future repair. Retain adverse control and keep default disabled.",
+      "Three distinct commits share one tree/failure digest; commit churn did not reset.",
+      "Single local elapsed times are telemetry only, with warmup/variance; no latency/model cost/productivity inference."
+    ],
+    "limits": "No feature, durable integration, enhanced prompt/redaction, MCP or live/accepted benchmark measured. Scripted controls discriminate policy only. Temporary repos were cleaned. Future subject-invoking tests supply implementation evidence.",
+    "resultColumns": [
+      "scenario",
+      "arm",
+      "maxAttempts",
+      "dispatches",
+      "verifierExecutions",
+      "independentQualityPass",
+      "stopReason",
+      "escalations",
+      "elapsedMs"
+    ],
+    "resultsRef": "researchEvidence.results; same resultColumns, findings and limits retained here."
+  },
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-126.readiness-jev-evaluation.json"
 }

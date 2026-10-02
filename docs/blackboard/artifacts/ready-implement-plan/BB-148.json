@@ -1,0 +1,325 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-148",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-148.json",
+    "hash": "ebdd177079b8b21f9300066fe3e74c660cf3327b78112bca4231ca80e5033215"
+  },
+  "scope": [
+    "agentic-system.feedback.contracts",
+    "agentic-system.feedback.controller",
+    "agentic-system.feedback.projection",
+    "agentic-system.feedback.improvement-handoff",
+    "agentic-system.feedback.gepa-bridge"
+  ],
+  "outOfScope": [
+    "Rewriting BB-083 historical evidence, lineage or the invalid-merge PR record.",
+    "The BB-085 lifecycle surface (feedback-outcome.js, feedback-lifecycle-*.js) — a separate recovery (BB-149).",
+    "Granting the feedback loop promotion, evaluation, or product-acceptance authority.",
+    "Changing the GEPA offline optimizer model or requirements.lock."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason.",
+    "feedback-outcome.js and feedback-lifecycle-*.js belong to BB-085 (git provenance b2ba26c8) and are not in this recovery's scope."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "Only an application principal can create or revise feedback responses; observer/evaluator/provider/gepa/model principals are rejected",
+    "Missing, stale or digest-mismatched Oracle context binds UNRESOLVED with a typed reason and never produces a grounded episode",
+    "The improvement handoff freezes experiment scope before search; final-holdout membership anywhere in input is rejected"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: run the four feedback suites plus the two repo-root bridge/dependency contract tests on current main before adding recovery tests for N1-N6.",
+    "D2 -- The BB-083/BB-085 boundary is enforced by git provenance: lifecycle modules are excluded from sourceScope.write even though they share the package.",
+    "D3 -- GEPA bridge failure modes (N5/N6) are proved via the Node<->Python protocol test with GEPA_BRIDGE_CRASH_AFTER_COMMIT=1, asserting dispatch-count stability and receipt replay.",
+    "D4 -- Repair boundary: a defect found in the feedback contracts/controller/projection/improvement/bridge surface is repaired minimally on the exact ref, with regression evidence covering the defect and N1-N6."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "packages/agentic-system/src/feedback-dependencies.js",
+      "packages/agentic-system/src/index.js",
+      "scripts/feedback/gepa-bridge.mjs",
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-improvement.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "test/feedback-dependency-contract.test.mjs",
+      "test/feedback-gepa-bridge.test.mjs",
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-083/**",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "packages/agentic-system/src/feedback-lifecycle-*.js",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "packages/agentic-system/src/feedback-dependencies.js",
+      "packages/agentic-system/src/index.js",
+      "scripts/feedback/gepa-bridge.mjs",
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-improvement.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "test/feedback-dependency-contract.test.mjs",
+      "test/feedback-gepa-bridge.test.mjs",
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-improvement.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "test/feedback-dependency-contract.test.mjs",
+      "test/feedback-gepa-bridge.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Application ownership and lifecycle integrity [C1, C3, N1, N2]: principal roles, CAS revisions, idempotent recovery, frozen journal.",
+    "S2 -- Fail-closed context binding [C2, N3]: exact Oracle resolution identity, typed UNRESOLVED reasons, never a grounded episode on corrupt resolution.",
+    "S3 -- Deterministic projection [C4]: episode id dedupe, cohortKey-only grouping, contrary-evidence attachment, systemic proposal support+mechanism.",
+    "S4 -- Independent improvement handoff [C5, N4, N5]: scope freeze before search, holdout leak rejection, reserve-before-dispatch, decisive-margin IMPROVED.",
+    "S5 -- GEPA bridge orchestration [C6, N6]: budget-before-reservation, crash UNCERTAIN, reconcile replay, cancel SIGKILL with consumed reservation.",
+    "S6 -- Living Docs: feedback.md statements on contracts, authority boundaries, fail-closed semantics, explicit v1 limitations."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "Only a principal with role application can create/revise FEEDBACK_RESPONSE_V1; observer/evaluator/provider/gepa/model principals are rejected by defineApplicationPrincipal and by createResponse/reviseResponse (no lifecycle mutation, no journal entry for rejected attempts).",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "createFeedbackProjector binds the exact Oracle ContextResolution identity (ref+digest+currentness+sourceObservationRef); missing/stale/digest-mismatched/subject-mismatched context yields an explicit UNRESOLVED binding with the correct typed reason (MISSING_CONTEXT/STALE_CONTEXT/RESOLUTION_DIGEST_MISMATCH/SOURCE_OBSERVATION_MISMATCH) and never produces a grounded episode.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "createResponse starts at revision 1; reviseResponse is compare-and-swap (stale expectedRevision fails, current revision unchanged, never silently rebase); recoverResponse is idempotent (identical current revision, exactly one journal entry); recordOutcome binds the latest revision; IMPROVED/NO_CHANGE/REGRESSED require an evidenceRef, missing fresh evidence stays UNKNOWN (never IMPROVED); the journal is append-only and frozen.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "Episodes deduplicate by deterministic episode id; grouping happens ONLY on an explicit cohortKey (null cohortKey episodes never group); contrary evidence stays attached; proposeSystemic requires support >= 2 AND explicit mechanism evidence (frequency alone fails); reinforce records evidence without auto-escalation or state mutation.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "freezeExperimentScope freezes HOW subject, optimizer identity, partitions (finalHoldoutSealed=true) and metric-policy ref+digest+minEffect BEFORE search; final-holdout membership/evidence anywhere in input is rejected; submitCandidate reserves the benchmark attempt BEFORE dispatch (null reservation or registerAttempt throw -> no proposal); optimizer accepted/promoted/verdict/score claims are ignored; the proposal envelope carries no acceptance flags; evaluateFinal returns IMPROVED only on decisive aggregate margin over the frozen minEffect, with critical regression dominating.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main."
+      ]
+    },
+    {
+      "id": "C6",
+      "statement": "The GEPA bridge budget check runs BEFORE reserveAttempt; Node owns orchestration; a crashed/killed invocation yields UNCERTAIN with no auto-retry; reconcile replays the durable receipt without duplicate dispatch (dispatch-counts.json unchanged); cancel SIGKILLs the child and the reservation stays consumed (no refund); usageCost stays null; results never contain accepted/promoted/verdict keys.",
+      "verificationIds": [
+        "repo-bridge",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Feedback package suites output on current main. Bridge protocol test output."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "createResponse/reviseResponse with evaluator/observer/provider/gepa/model principals -> FEEDBACK_CONTRACT_INVALID thrown, no record created, no journal mutation.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "expectedRevision mismatch, or replaying the same expectedRevision twice -> fails with no silent rebase and the current revision unchanged.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "Digest mismatch, stale currentness, wrong sourceObservationRef, malformed resolution, explicit null resolution -> fail closed to the correct UNRESOLVED reason, never a BOUND episode.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N4",
+      "statement": "freezeExperimentScope input containing finalHoldoutMembers or finalHoldoutEvidence anywhere (nested included) -> throws; unsealed partitions and missing/non-finite minEffect -> throws.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N5",
+      "statement": "Null reservation, registerAttempt throw, or bridge budget exhausted -> dispatch throws and the Python worker never spawns (no python process).",
+      "verificationIds": [
+        "repo-bridge"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N6",
+      "statement": "Adapter crash-after-commit (GEPA_BRIDGE_CRASH_AFTER_COMMIT=1) -> dispatch result UNCERTAIN; reconcile yields SETTLED_BY_RECONCILIATION replaying the same receipt with no duplicate dispatch (dispatch-counts unchanged, no receipt rewrite).",
+      "verificationIds": [
+        "repo-bridge"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "Only an application principal can create or revise feedback responses; observer/evaluator/provider/gepa/model principals are rejected",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "Missing, stale or digest-mismatched Oracle context binds UNRESOLVED with a typed reason and never produces a grounded episode",
+      "criterionIds": [
+        "C2",
+        "N3"
+      ]
+    },
+    {
+      "invariant": "The improvement handoff freezes experiment scope before search; final-holdout membership anywhere in input is rejected",
+      "criterionIds": [
+        "C5",
+        "N4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "cd packages/agentic-system && node --test test/feedback-contracts.test.js test/feedback-controller.test.js test/feedback-improvement.test.js test/feedback-projection.test.js"
+    },
+    {
+      "id": "repo-bridge",
+      "command": "node --test test/feedback-dependency-contract.test.mjs test/feedback-gepa-bridge.test.mjs"
+    },
+    {
+      "id": "agentic",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The doc must establish the delivered contracts, authority boundaries, fail-closed semantics and explicit v1 limitations of the application-owned feedback loop so an independent reader can check the live implementation's behavior against the claims."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-059",
+      "BB-064",
+      "BB-065"
+    ],
+    "note": "Pinned exports: BB-059 evaluation/promotion authority receiving HOW_IMPROVEMENT_PROPOSAL_V1; BB-064 Oracle ContextResolution behind the resolveContext seam; BB-065 AttemptLedger behind the reservation seam. BB-059 is itself LIVE_UNTRUSTED with its own recovery; this recovery verifies the pinned exports at worker start and does not wait on it."
+  }
+}

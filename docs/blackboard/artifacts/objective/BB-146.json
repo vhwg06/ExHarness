@@ -1,0 +1,41 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-146",
+  "recoversTrustFor": "BB-080",
+  "outcome": "Trusted evidence that the currently-live async agent coordinator in @exharness/core-harness performs durable steering, bounded completion coalescing, explicit cancellation and crash recovery over at most one active model generation, as non-authority over effect confirmation and product acceptance.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-080) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/core-harness/src/async-agent-coordinator.js (createAsyncAgentCoordinator: ingestUserInput/ingestStop/ingestOperationTransition/requestExplicitWake/drainCompletions/takeNextModelTurn/dispatchModelResponse/completeModelTurn/failModelTurn/inspectLiveness/snapshot/probeMetrics/recover, one CAS ASYNC_AGENT_COORDINATOR_STATE/v1 document per session) plus the generation-cancellation signal path (model.js, model-routing.js, agent-runtime.js, javascript-codeact-strategy.js).",
+  "scope": [
+    "core-harness.async-coordinator.steering",
+    "core-harness.async-coordinator.coalesce-wake",
+    "core-harness.async-coordinator.stop",
+    "core-harness.async-coordinator.recovery",
+    "core-harness.async-coordinator.non-authority",
+    "core-harness.async-coordinator.generation-cancellation"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-080's historical evidence and invalid-merge lineage stay as fact.",
+    "No .github/** changes; no trusted JEV/controller changes; no changes to BB-077/078/079 deliveries.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C5 (persist-first steering with generation fence, coalesced wakes, stopFence persistence and restart survival, three-boundary crash recovery with exact identity and zero duplicate effects, non-authority fail-closed).",
+    "Specify negative cases N1-N3 (crash-before-abort with persisted STOP fence, wakeup loss during completion-grace, non-cooperating ABORT_SIGNAL provider with FENCE_ONLY fallback).",
+    "Specify exact file-level recovery tests (async-agent-coordinator.test.js, async-agent-coordinator-recovery.test.js, bb-080-async-profile.test.mjs DEV probes), the core-harness package suite and npm run verify.",
+    "Specify Living Docs statements (core-harness state.md and workflow.md async-steering sections) scoping the recovered trust claim to behavior, not history."
+  ],
+  "currentSourceRefs": [
+    "packages/core-harness/src/async-agent-coordinator.js",
+    "packages/core-harness/src/model.js",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/javascript-codeact-strategy.js",
+    "packages/core-harness/test/async-agent-coordinator.test.js",
+    "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+    "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md"
+  ]
+}

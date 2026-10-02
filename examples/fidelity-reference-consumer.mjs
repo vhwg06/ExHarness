@@ -347,7 +347,14 @@ try {
       model: sequenceModel([{ type: "execute_javascript", code: "while (true) {}" }]),
       executor: loopExecutor,
       maxTurns: 1,
-      maxDurationMs: 100
+      // Budget must comfortably exceed the session-open cost (child process
+      // spawn + init handshake, ~100ms) so the budget is exhausted while the
+      // infinite-loop cell is in flight. That is what exercises the
+      // abort -> SIGKILL containment path counted by forcedProcessKills.
+      // A tight budget (e.g. 100ms) can expire during session_open on slower
+      // machines, containing the run without ever starting a cell, which
+      // makes forcedProcessKills nondeterministically 0.
+      maxDurationMs: 5000
     })
   }).run();
 } catch (error) {

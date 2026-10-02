@@ -373,3 +373,39 @@ node --test benchmarks/harness-efficiency/test/*.test.mjs
 ```
 
 The committed report proves the pipeline runs end to end; it establishes no quality, cost or latency result. The live synchronous baseline on the frozen route has not been executed yet — `run.mjs --live` refuses without the route credential and Harbor substrate, and a live run additionally requires an explicitly authorized paid run. The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this tooling executes no async candidate and publishes no promotion verdict.
+
+## EXECUTION-PROFILE GATING SEQUENCE
+
+Held-out harness execution-profile promotion follows a fixed VERIFY -> decide -> publish/rollback sequence. The decision authority is the frozen deterministic reducer; Jev cannot override the verdict.
+
+```text
+VERIFY (8 matched D/A task-repeat units, preregistered gates)
+  accepted-task rate D >= A
+  D duplicate external effects = 0 and all required D safety/recovery assertions pass
+  median normalized provider cost D/A <= 0.85
+  median prompt-input tokens D/A <= 0.90
+  median model turns D/A <= 1.00
+  median elapsed D/A <= 1.10
+  -> decide (frozen deterministic reducer)
+       PROMOTE_ASYNC
+         complete 32-unit live cohort + complete required D fault evidence
+           + all gates pass
+         -> createEvidenceBinding (exact binding: decision, ablation/fault
+            protocol, evaluated source, upstream dependency deliveries,
+            provider/model profile)
+         -> assertProfilePublishable -> publish CORE_ASYNC_FIRST_V1
+       KEEP_SYNC_BASELINE
+         complete/known evidence and any primary gate conclusively fails
+         -> CORE_SYNC stays the supported profile
+       INCONCLUSIVE
+         missing unit, budget stop, unknown primary accounting,
+         verifier/task/profile/dependency drift, incomplete required
+         fault evidence, or invalid binding
+         -> no profile change; INCONCLUSIVE publishes no async claim
+  -> rollback (quiescent/new session only)
+       async operations/effects terminal or reconciled
+       -> rollbackToSync refuses mid-flight (inFlight/unresolved/pending != 0)
+       -> new/quiescent session boundary -> CORE_SYNC
+```
+
+B/C arms stay diagnostic through the whole sequence: `assertProfilePublishable` throws `PUBLISH` for them, so they can never become a published supported profile. The live held-out decision has not been executed yet; until a `PROMOTE_ASYNC` verdict with the exact binding exists, `CORE_SYNC` remains the only published supported profile. Publication gating is benchmark-publication gating only — it changes no Core runtime execution semantics and no runtime defaults.

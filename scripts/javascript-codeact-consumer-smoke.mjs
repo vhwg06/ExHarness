@@ -140,7 +140,14 @@ const loopingRuntime = createAgentRuntime({
     model: sequenceModel([{ type: "execute_javascript", code: "while (true) {}" }]),
     executor: loopingExecutor,
     maxTurns: 1,
-    maxDurationMs: 100
+    // Budget must comfortably exceed the session-open cost (child process
+    // spawn + init handshake, ~100ms) so the budget is exhausted while the
+    // infinite-loop cell is in flight. That is what exercises the
+    // abort -> SIGKILL containment path counted by forcedKills.
+    // A tight budget (e.g. 100ms) can expire during session_open on slower
+    // machines, containing the run without ever starting a cell, which
+    // makes forcedKills nondeterministically 0. (Same root cause as BB-083.)
+    maxDurationMs: 5000
   })
 });
 let infiniteLoopContained = false;

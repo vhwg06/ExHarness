@@ -1,0 +1,328 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-147",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-147.json",
+    "hash": "4df3eca3bb759035f809591170e5f2c719e577828598272001240b4dcc0cacf4"
+  },
+  "scope": [
+    "core-harness.execution-profile.heldout-cohort",
+    "core-harness.execution-profile.decision",
+    "core-harness.execution-profile.fault-ablation",
+    "core-harness.execution-profile.publication-gating",
+    "core-harness.execution-profile.dependency-binding",
+    "core-harness.execution-profile.reporting"
+  ],
+  "outOfScope": [
+    "Rewriting BB-081 historical evidence, lineage or the invalid-merge PR record.",
+    "Running live paid benchmark runs (explicit auth required; recovery uses offline fixtures only).",
+    "Mutating .github/workflows/test.yml; test wiring happens via package.json script addition only.",
+    "Changing BB-077/BB-078/BB-079/BB-080 deliveries the dependency contract pins."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason.",
+    "The six bb081/*.test.mjs files must be wired into a test:bb081 package.json script; no .github/** mutation is permitted for this wiring.",
+    "Recovery uses offline fixtures only; live paid benchmark execution is out of scope."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "The held-out cohort is exactly the 32 registered arm units; DEV/replacement/mutated tasks are hard-rejected and never substitute",
+    "The decision reducer alone decides; a Jev verdict cannot override PROMOTE_ASYNC / KEEP_SYNC_BASELINE / INCONCLUSIVE",
+    "Unknown cost/token/timing stays null/UNKNOWN, never zero-filled; offline fixtures are never promotion evidence"
+  ],
+  "architectureDecisions": [
+    "D1 -- Wire the six bb081/*.test.mjs files into a new test:bb081 npm script (package.json scripts addition only, no CI workflow mutation); add N1-N5 as node:test cases alongside them.",
+    "D2 -- Offline fixture end-to-end: run.mjs fixtureScript (32 registered units) -> report.mjs buildReport -> accept.mjs decide, asserting reducer determinism on both the promotion path (all gates) and the keep-sync path (mutated fault fixture).",
+    "D3 -- Dependency binding is checked against the live @exharness/benchmark package root and the real Core public entry via assertComposableCore/assertAllComposable; BB-065 substrate manifest benchmarks/substrate/manifests/terminal-bench-2.1.json is read-only.",
+    "D4 -- Repair boundary: a defect found in the bb081 protocol or execution-profile surface is repaired minimally on the exact ref, with regression evidence covering the defect and N1-N5."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/core-harness/src/execution-profile.js",
+      "packages/core-harness/src/index.js",
+      "benchmarks/harness_efficiency/bb081/*.mjs",
+      "benchmarks/harness_efficiency/bb081/test/*.test.mjs",
+      "benchmarks/harness_efficiency/bb081/heldout-profile.json",
+      "packages/core-harness/test/execution-profile.test.js",
+      "package.json",
+      "docs/living/system/core-harness/capabilities.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md",
+      "docs/living/system/core-harness/decisions.md",
+      "docs/living/system/core-harness/architecture.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-081/**",
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/execution-profile.js",
+      "packages/core-harness/src/index.js",
+      "benchmarks/harness_efficiency/bb081/accept.mjs",
+      "benchmarks/harness_efficiency/bb081/ablation-contract.mjs",
+      "benchmarks/harness_efficiency/bb081/fault-matrix.mjs",
+      "benchmarks/harness_efficiency/bb081/dependency-binding.mjs",
+      "benchmarks/harness_efficiency/bb081/profile-capabilities.mjs",
+      "benchmarks/harness_efficiency/bb081/run.mjs",
+      "benchmarks/harness_efficiency/bb081/report.mjs",
+      "benchmarks/harness_efficiency/bb081/heldout-profile.json",
+      "benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/decision.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/profile-capabilities.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/report.test.mjs",
+      "packages/core-harness/test/execution-profile.test.js",
+      "docs/living/system/core-harness/capabilities.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md",
+      "docs/living/system/core-harness/decisions.md",
+      "docs/living/system/core-harness/architecture.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/decision.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/profile-capabilities.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/report.test.mjs",
+      "packages/core-harness/test/execution-profile.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Held-out cohort and deterministic decision [C1, C2, N1]: 32-unit identity, DEV_REJECTED, drift detection, six-gate reducer determinism.",
+    "S2 -- Fault-ablation safety [C3, N2]: required D cells, duplicateEffects=0, undeclared cells N/A, fault evidence driving the verdict.",
+    "S3 -- Publication gating and dependency binding [C4, C5, N3, N4]: evidence binding, STALE, B/C diagnostic-only, mid-flight rollback refusal, manifest contradiction.",
+    "S4 -- Reporting integrity [C6, N5]: settlement-required reports, null/UNKNOWN unknowns, offline-fixture labeling.",
+    "S5 -- Test wiring + Living Docs: test:bb081 script wiring, BB-081 statements in state/workflow/decisions/architecture, H9 completion."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "registeredUnitIds()/assertRegisteredUnits yield exactly the 32 registered arm units (4 frozen digests x 2 repeats x A/B/C/D); assertHeldOut throws DEV_REJECTED for any non-held-out/DEV/replacement task id, bundle, or digest; assertCohortBinding throws SUBSTRATE_DRIFT/PROTOCOL_DRIFT on any substrate-manifest or protocol-hash change.",
+      "verificationIds": [
+        "bb081-focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "bb081 test output."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "decide() returns PROMOTE_ASYNC only on complete 32-unit cohort + complete required D fault evidence + all six primary gates passing; INCONCLUSIVE on missing unit, budget stop, unknown primary accounting, binding/drift invalidity, incomplete fault evidence, or all-eight-D-units zero-detachable; KEEP_SYNC_BASELINE on complete/known evidence with any primary gate conclusively failing; the outcome field asserts Jev cannot override.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "bb081 test output."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "dSafetySatisfied() is true only when every required D cell passes AND D duplicateEffects = 0; runFaultMatrix covers exactly the declared cells (assertMatrixComplete); undeclared cells are N/A and never count as pass; mutating a D fixture provably flips decide() to KEEP_SYNC_BASELINE.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "bb081 test output."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "getSupportedProfiles() returns only CORE_SYNC unless decision=PROMOTE_ASYNC; createEvidenceBinding throws BINDING for non-PROMOTE_ASYNC decisions or missing ablationProtocolHash/evaluatedSourceSha/dependencyDigest; assertProfilePublishable throws for arms B/C and for CORE_ASYNC_FIRST_V1 without the exact binding; assertEvidenceFresh throws STALE on field drift or digest mismatch; rollbackToSync refuses mid-flight; defaultProfile() stays CORE_SYNC; the public Core entry exposes the full profile contract without changing runtime defaults.",
+      "verificationIds": [
+        "bb081-focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "bb081 + core test output."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "assertDependencyContract throws PLAN_INPUT_CONTRADICTION (never approximates) on missing or mismatched BB-077/078/079/080 refs, accounting vocabulary, transition envelope, or store/checkpoint/coordinator APIs; assertComposableCore/assertAllComposable throw when the public Core entry lacks the required symbols.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "bb081 test output."
+      ]
+    },
+    {
+      "id": "C6",
+      "statement": "buildReport requires every registered attempt settled and fails closed otherwise; buildPairedViews produces exactly 8 matched D/A primary pairs plus A->B/B->C/C->D attribution; unknown provider cost/token/cache stays null/UNKNOWN (never zero-filled); B/C flagged diagnostic-only; offline fixtures labeled dataKind OFFLINE_SCRIPTED_FIXTURE and never become promotion evidence.",
+      "verificationIds": [
+        "bb081-focused",
+        "benchmark"
+      ],
+      "evidenceRequired": [
+        "bb081 + benchmark output."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "A task id, bundle, or digest outside the four reserved held-out digests submitted to the cohort -> assertHeldOut throws DEV_REJECTED; the 32-unit completeness check cannot be satisfied by substitution.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "A D cell mutated with duplicateEffects=1 or forceFail -> runFaultCell FAIL, dSafetySatisfied false -> decide() returns KEEP_SYNC_BASELINE (never PROMOTE_ASYNC) over otherwise-complete evidence.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "assertEvidenceFresh with a changed evaluatedSourceSha or tampered bindingDigest -> STALE; a subsequent assertProfilePublishable for CORE_ASYNC_FIRST_V1 against the drifted binding is rejected -> no silent async publication.",
+      "verificationIds": [
+        "bb081-focused",
+        "core"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N4",
+      "statement": "rollbackToSync with inFlight/unresolved/pendingTurns != 0 -> ROLLBACK refused; detachable-zero D units -> decide() returns INCONCLUSIVE (async path never exercised) rather than inferring promotion.",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N5",
+      "statement": "A D/A pair with null provider cost is recorded as unknown (not zero); unknownPairs>0 -> decide() returns INCONCLUSIVE (missing values stay UNKNOWN).",
+      "verificationIds": [
+        "bb081-focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "The held-out cohort is exactly the 32 registered arm units; DEV/replacement/mutated tasks are hard-rejected and never substitute",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "The decision reducer alone decides; a Jev verdict cannot override PROMOTE_ASYNC / KEEP_SYNC_BASELINE / INCONCLUSIVE",
+      "criterionIds": [
+        "C2"
+      ]
+    },
+    {
+      "invariant": "Unknown cost/token/timing stays null/UNKNOWN, never zero-filled; offline fixtures are never promotion evidence",
+      "criterionIds": [
+        "C6",
+        "N5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "bb081-focused",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/*.test.mjs"
+    },
+    {
+      "id": "bb081-wired",
+      "command": "npm run test:bb081"
+    },
+    {
+      "id": "core",
+      "command": "npm run test:core"
+    },
+    {
+      "id": "benchmark",
+      "command": "npm run test:benchmark"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/capabilities.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md",
+      "docs/living/system/core-harness/decisions.md",
+      "docs/living/system/core-harness/architecture.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The docs must establish that CORE_SYNC stays the default supported profile, CORE_ASYNC_FIRST_V1 publishes only after a PROMOTE_ASYNC decision with exact evidence binding and quiescent rollback, B/C arms are diagnostic-only, the four-task held-out set is reserved with DEV/replacement tasks rejected, and offline fixtures never become promotion evidence."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-065",
+      "BB-077",
+      "BB-078",
+      "BB-079",
+      "BB-080"
+    ],
+    "note": "Dependency manifest BB081_DEPENDENCY_MANIFEST_V1 pins BB-077/078/079/080 refs; cohort binding consumes the BB-065 sealed substrate manifest."
+  }
+}

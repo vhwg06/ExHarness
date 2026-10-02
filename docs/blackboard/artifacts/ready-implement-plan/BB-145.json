@@ -1,0 +1,337 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-145",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-145.json",
+    "hash": "15d5a66e9725a4116c1132287caaafc01d423b129c56cbc9d670cb832071470d"
+  },
+  "scope": [
+    "agentic-system.how-evolution.evaluation-protocol",
+    "agentic-system.how-evolution.promotion-currentness",
+    "agentic-system.how-evolution.jev-adapter",
+    "agentic-system.how-evolution.rollback-provenance",
+    "agentic-system.how-evolution.attempt-pinning"
+  ],
+  "outOfScope": [
+    "Rewriting BB-059 historical evidence, lineage or the invalid-merge PR record.",
+    "Changing the pinned Jev adapter identity (how-evolution-jev-adapter rev 1), model snapshot jev-1.13.0, or the SystemOne question schema.",
+    "Extending the evaluation or promotion contract beyond the currently-live v1 semantics.",
+    "Changing execution-policy currentness machinery delivered outside the how-evolution surface."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "A pinned protocol compares exactly one baseline and one candidate HOW against one fixed semantic/acceptance subject; missing or unknown observations yield INCONCLUSIVE, never coerced to PASS",
+    "Promotion requires independent authorization and full currentness proof; any drift between evaluation and promotion refuses promotion",
+    "The Jev adapter is evaluate-only and fails closed; a Jev PASS alone cannot mutate policy, history, or product currentness"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: rerun the six how-evolution-*.test.js suites verbatim on current main before writing any new test; new tests are added only for uncovered N1-N7 failure modes.",
+    "D2 -- Promotion racing proof: run publishHowEvolutionPromotion against an in-memory policy store with a concurrent head mutation and require the racing promotion to fail closed.",
+    "D3 -- Fresh-process provenance: exercise resolveHowEvolutionProvenance in a fresh Node process with no conversation history.",
+    "D4 -- Every N1-N7 negative case gets at least one named node:test case (e.g. an explicit test asserting createHowEvolutionJevEvaluator has no promotion/rollback methods, and an explicit promotion attempt on a RECOVERY_REQUIRED attempt), not prose-only assertions.",
+    "D5 -- Repair boundary: if a defect is found, repair stays inside how-evolution.js / how-evolution-jev-adapter.js plus the affected index re-export block, with regression evidence for the defect and the full N1-N7 set."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/how-evolution-*.test.js",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/living/system/agentic-application/evaluation.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/reference/architecture/trust-pipeline.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-059/**",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/how-evolution-evaluation.test.js",
+      "packages/agentic-system/test/how-evolution-promotion.test.js",
+      "packages/agentic-system/test/how-evolution-currentness.test.js",
+      "packages/agentic-system/test/how-evolution-jev-adapter.test.js",
+      "packages/agentic-system/test/how-evolution-rollback.test.js",
+      "packages/agentic-system/test/how-evolution-attempt-pinning.test.js",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/living/system/agentic-application/evaluation.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/reference/architecture/trust-pipeline.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agentic-system/test/how-evolution-evaluation.test.js",
+      "packages/agentic-system/test/how-evolution-promotion.test.js",
+      "packages/agentic-system/test/how-evolution-currentness.test.js",
+      "packages/agentic-system/test/how-evolution-jev-adapter.test.js",
+      "packages/agentic-system/test/how-evolution-rollback.test.js",
+      "packages/agentic-system/test/how-evolution-attempt-pinning.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Pinned protocol proof [C1, C6, N6]: evaluation A/B protocol, verdict rules, Jev adapter pinning and fail-closed behavior.",
+    "S2 -- Authority separation and attempt pinning [C2, C4, N3]: producer/evaluator/promoter separation, evaluate-only adapter capability, attempt binding retention.",
+    "S3 -- Promotion currentness and rollback [C3, C5, N2, N5, N7]: four-reader currentness, head racing fail-closed, history-preserving rollback, fresh-process provenance reconstruction.",
+    "S4 -- Negative cases [N1-N7]: semantic drift, producer-evaluator conflict, Jev failure modes, forged rollback lineage, case-set mismatch.",
+    "S5 -- Living Docs and evidence packaging: doc statements bound to exact tests and artifact refs, with no Blackboard ids in user-facing text."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "A pinned protocol compares exactly one baseline and one candidate HOW for one fixed semantic work/acceptance subject; evaluateHowEvolution returns PASS only when predeclared metric thresholds are met, no new critical-case failure is hidden by aggregate gain, and all case measurements are present (missing/unknown observations -> INCONCLUSIVE, never PASS).",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main. agentic-system package suite output."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "Authority separation holds: a candidate producer cannot evaluate or promote its own candidate, a Jev PASS alone cannot mutate ExecutionPolicy/ProductHistory/QualityAcceptance/ProductOutcome currentness, and createHowEvolutionJevEvaluator has no repository, product, policy-publisher, promotion or rollback capability.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main. agentic-system package suite output."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "publishHowEvolutionPromotion succeeds only after assertHowEvolutionPromotionCurrentness proves no drift in semantic subject, evaluator policy, scenario set, evidence snapshot and the expected policy head (head moved / evidence raced / semantics drifted -> promotion refused); accepted promotion creates a new immutable ExecutionPolicy/ExecutionStrategy generation for the exact domain/workload scope only.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main. agentic-system package suite output."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "ACTIVE/RECOVERY_REQUIRED attempts retain their original ExecutionAttemptBinding across promotion; a promoted HOW version affects only eligible new attempts and promotion never rebinds a RECOVERY_REQUIRED attempt.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "publishHowEvolutionRollback publishes a successor generation to the exact prior accepted strategy, rejects rollback to non-accepted strategies and forged reversed lineages, and never rewrites prior artifacts.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main."
+      ]
+    },
+    {
+      "id": "C6",
+      "statement": "The Jev receipt pins exact input/output/policy/evidence/freshness identity (model snapshot jev-1.13.0, canonical request hash, typed per-question outcomes); transport errors, malformed typed Choice responses, unexpected model, missing atomic outcomes or missing/negative authority verification all fail closed to INCONCLUSIVE/KEEP_BASELINE.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main."
+      ]
+    },
+    {
+      "id": "C7",
+      "statement": "A new Node process can reconstruct the durable ref+digest chain (baseline, candidate, evaluator/policy, evidence, decision, promotion/rollback authority, resulting current policy) via resolveHowEvolutionProvenance without conversation history.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Focused how-evolution suite output on current main. Fresh-process provenance log."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "Candidate changes WHAT/WorkContract/acceptance semantics mid-evaluation -> evaluation invalid / proposal non-actionable (semantic drift fails closed, re-evaluation required).",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "Semantic-subject, evaluator-policy, scenario-set, evidence-snapshot or head drift between evaluation and promotion -> promotion refused even if evaluation was PASS (including evidence racing after evaluation, before head mutation).",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "Producer == evaluator or producer == promoter; evaluator attempts to promote the candidate it judged -> authority mismatch fails closed, baseline stays current.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N4",
+      "statement": "Jev transport failure or malformed typed Choice response, or unexpected model identity -> INCONCLUSIVE/KEEP_BASELINE, never coerced to PASS.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N5",
+      "statement": "Rollback targeting a non-accepted strategy, a forged reversed promotion lineage, or rollback against a moved current head -> rejected.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N6",
+      "statement": "A/B case-set identity mismatch between baseline and candidate runs, or missing case measurement -> INCONCLUSIVE, never PASS.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N7",
+      "statement": "Promotion called with only a head check (missing one of the four freshness readers) -> refused.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "A pinned protocol compares exactly one baseline and one candidate HOW against one fixed semantic/acceptance subject; missing or unknown observations yield INCONCLUSIVE, never coerced to PASS",
+      "criterionIds": [
+        "C1",
+        "N6"
+      ]
+    },
+    {
+      "invariant": "Promotion requires independent authorization and full currentness proof; any drift between evaluation and promotion refuses promotion",
+      "criterionIds": [
+        "C3",
+        "N2",
+        "N7"
+      ]
+    },
+    {
+      "invariant": "The Jev adapter is evaluate-only and fails closed; a Jev PASS alone cannot mutate policy, history, or product currentness",
+      "criterionIds": [
+        "C2",
+        "C6",
+        "N4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "cd packages/agentic-system && node --test test/how-evolution-evaluation.test.js test/how-evolution-promotion.test.js test/how-evolution-currentness.test.js test/how-evolution-jev-adapter.test.js test/how-evolution-rollback.test.js test/how-evolution-attempt-pinning.test.js"
+    },
+    {
+      "id": "agentic",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/living/system/agentic-application/evaluation.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/reference/architecture/trust-pipeline.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The docs must establish that the currently-live HOW-evolution loop is a bounded, evidence-gated, evaluate-only-adapter pipeline that cannot mutate product truth or self-promote, and that every behavior claim C1-C7 and negative case N1-N7 is backed by an exact test and artifact ref."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-058"
+    ],
+    "note": "HOW_EVOLUTION_FINDING consumes the BB-058 causal projection as evidence-only input; no authority granted."
+  }
+}

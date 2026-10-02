@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // exharness-agent: run a CLI coding agent under ExHarness supervision.
 //   run   --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N]
-//         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
+//         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--env KEY=VALUE]
 //         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
+//         --env is repeatable; entries join the FAKE_AGENT_* overlay forwarded to the supervised child
 //   eval  --tool <id>[,<id>] --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N]
 //         [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]
 //         pre-registered DIRECT_SINGLE / DIRECT_RETRY / EXHARNESS_SUPERVISED evaluation on the owned suite
@@ -10,7 +11,7 @@
 //         run one local Backend-then-QA delivery slice with independent QA
 //   report <trace-dir>        verify the trace chain and print the DESCRIPTIVE AGENT_TOOL_RUN_REPORT_V1
 //   probe                     print the installed tool versions
-//   smoke --tool <t> [--command <path>] [--timeout-ms T]
+//   smoke --tool <t> [--command <path>] [--timeout-ms T] [--env KEY=VALUE]
 //         opt-in live check on a temporary repository with one failing test
 // The agent CLI is not sandboxed: it runs with the user's permissions, with cwd at a temporary
 // git worktree. ACCEPTED is printed only after every declared verification passed.
@@ -23,6 +24,7 @@ import {
   DeliverSliceStatus,
   InvocationStatus,
   PermissionProfile,
+  binOverlayEnv,
   commandDeliver,
   createRunTraceWriter,
   createSupervisedObservation,
@@ -35,7 +37,7 @@ import {
 } from "../src/index.js";
 import { EvalUsageError, runAgentToolsEval } from "../src/experiment/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--env KEY=VALUE] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T] [--env KEY=VALUE]";
 
 class UsageError extends Error {}
 
@@ -46,10 +48,31 @@ function parseOptions(args) {
     if (!flag.startsWith("--")) throw new UsageError(`unexpected argument: ${flag}`);
     const value = args[index + 1];
     if (value === undefined || value.startsWith("--")) throw new UsageError(`missing value for ${flag}`);
-    options[flag.slice(2)] = value;
+    const name = flag.slice(2);
+    // --env is repeatable: every occurrence appends one KEY=VALUE entry.
+    if (name === "env") {
+      if (!Array.isArray(options.env)) options.env = [];
+      options.env.push(value);
+    } else {
+      options[name] = value;
+    }
     index += 1;
   }
   return options;
+}
+
+/** Parses one --env KEY=VALUE flag; malformed entries are usage errors (exit 64). */
+function parseEnvFlag(entry) {
+  const separator = entry.indexOf("=");
+  if (separator <= 0) throw new UsageError(`--env must be KEY=VALUE, got: ${entry}`);
+  const name = entry.slice(0, separator);
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) throw new UsageError(`--env name must match [A-Za-z_][A-Za-z0-9_]*, got: ${name}`);
+  return { name, value: entry.slice(separator + 1) };
+}
+
+/** Parses the repeated --env flags into [{ name, value }] entries. */
+function runEnvFlags(options) {
+  return (options.env ?? []).map(parseEnvFlag);
 }
 
 function positiveInteger(value, flag, fallback) {
@@ -80,6 +103,7 @@ function unavailableResult(taskId, toolId) {
 
 async function commandRun(options) {
   if (!options.task) throw new UsageError("run requires --task");
+  const envFlags = runEnvFlags(options);
   const permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT;
   if (!Object.values(PermissionProfile).includes(permission)) throw new UsageError(`unknown --permission: ${permission}`);
   const task = JSON.parse(await readFile(options.task, "utf8"));
@@ -99,6 +123,7 @@ async function commandRun(options) {
     maxAttempts: positiveInteger(options["max-attempts"], "--max-attempts", 3),
     timeoutMs: positiveInteger(options["timeout-ms"], "--timeout-ms", 600000),
     permissionProfile: permission,
+    env: binOverlayEnv(process.env, envFlags),
     ...(observation === null ? {} : { invocationObserver: observation.invocationObserver, eventSinks: observation.eventSinks, tracer: observation.tracer })
   });
   if (observation !== null) await observation.finalize(result);
@@ -153,6 +178,7 @@ async function createSmokeRepository(root) {
 async function commandSmoke(options) {
   const toolId = options.tool;
   baseTool(toolId);
+  const envFlags = runEnvFlags(options);
   const tool = resolveTool(toolId, options.command);
   if (!tool) {
     print({ smoke: "SKIPPED", tool: toolId, reason: "NOT_INSTALLED" });
@@ -171,7 +197,8 @@ async function commandSmoke(options) {
         verifications: [{ name: "unit", command: process.execPath, args: ["--test", "sum.test.mjs"], timeoutMs: 60000 }]
       },
       maxAttempts: 2,
-      timeoutMs: positiveInteger(options["timeout-ms"], "--timeout-ms", 600000)
+      timeoutMs: positiveInteger(options["timeout-ms"], "--timeout-ms", 600000),
+      env: binOverlayEnv(process.env, envFlags)
     });
     if (result.status === AgentTaskStatus.TOOL_UNAVAILABLE) {
       print({ smoke: "SKIPPED", tool: toolId, reason: "NOT_INSTALLED", result });

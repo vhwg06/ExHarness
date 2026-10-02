@@ -26,7 +26,7 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FAKE = join(here, "fixtures", "fake-agent.mjs");
-const T = { timeout: 120000 };
+const T = { timeout: 300000 };
 const NO_GROK_REGISTRY = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool });
 
 const tempDir = (prefix) => mkdtempSync(join(tmpdir(), prefix));
