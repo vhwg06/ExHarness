@@ -41,9 +41,21 @@ function assertAdapter(tool) {
   if (typeof tool.command !== "string" || tool.command.length === 0) throw new TypeError("agent tool adapter requires command");
   assertStringArray(tool.prefixArgs, "agent tool prefixArgs");
   assertStringArray(tool.versionArgs, "agent tool versionArgs");
+  if (tool.authEnvNames !== undefined) assertStringArray(tool.authEnvNames, "agent tool authEnvNames");
   if (typeof tool.buildInvocation !== "function") throw new TypeError("agent tool adapter requires buildInvocation()");
   if (typeof tool.parseResult !== "function") throw new TypeError("agent tool adapter requires parseResult()");
   return tool;
+}
+
+/**
+ * Normalizes the declared per-tool auth env names to a frozen string array.
+ * Declared names are passed through from the host process.env into the tool's
+ * child; undeclared ambient names never are. Defaults to frozen [].
+ */
+function normalizeAuthEnvNames(value) {
+  if (value === undefined) return Object.freeze([]);
+  assertStringArray(value, "agent tool authEnvNames");
+  return Object.freeze([...value]);
 }
 
 /**
@@ -60,6 +72,7 @@ export function defineAgentTool(base, launch = undefined) {
     command: tuple.command,
     prefixArgs: Object.freeze(tuple.prefixArgs),
     versionArgs: Object.freeze([...base.versionArgs]),
+    authEnvNames: normalizeAuthEnvNames(base.authEnvNames),
     buildInvocation: base.buildInvocation,
     parseResult: base.parseResult
   };
@@ -91,6 +104,7 @@ export const codexTool = defineAgentTool({
   command: "codex",
   prefixArgs: [],
   versionArgs: ["--version"],
+  authEnvNames: [],
   buildInvocation(request) {
     const permissionProfile = assertInvocationRequest(request);
     const { prompt, resume = null, model = null } = request;
@@ -112,6 +126,7 @@ export const kiroTool = defineAgentTool({
   command: "kiro-cli",
   prefixArgs: [],
   versionArgs: ["--version"],
+  authEnvNames: [],
   buildInvocation(request) {
     const permissionProfile = assertInvocationRequest(request);
     const { prompt, resume = null, model = null } = request;
@@ -129,6 +144,7 @@ export const agyTool = defineAgentTool({
   command: "agy",
   prefixArgs: [],
   versionArgs: ["--version"],
+  authEnvNames: [],
   buildInvocation(request) {
     const permissionProfile = assertInvocationRequest(request);
     const { prompt, resume = null, model = null, logFile, timeoutMs } = request;
@@ -193,6 +209,7 @@ export const grokTool = defineAgentTool({
   command: "grok",
   prefixArgs: [],
   versionArgs: ["--version"],
+  authEnvNames: [],
   buildInvocation(request) {
     const permissionProfile = assertInvocationRequest(request);
     const { prompt, resume = null, model = null, promptFile, cwd } = request;
@@ -239,6 +256,7 @@ export const opencodeTool = defineAgentTool({
   command: "opencode",
   prefixArgs: [],
   versionArgs: ["--version"],
+  authEnvNames: [],
   buildInvocation(request) {
     const permissionProfile = assertInvocationRequest(request);
     const { prompt, resume = null, model = null, cwd = null } = request;

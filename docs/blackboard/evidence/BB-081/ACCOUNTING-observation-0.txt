@@ -1,0 +1,15 @@
+BB-081 ACCOUNTING: kernel AttemptLedger records per registered unit
+cohort=BB081-HELD-OUT-V1 experiment=BB081-HELD-OUT-ABLATION-V1
+ledger=kernel.AttemptLedger (shared @exharness/benchmark; BB-081 owns no second ledger; append-only).
+
+[1] BENCHMARK_ATTEMPT_RECORD_V1 for every registered unit: 32 units -> 32 settled records. All 32 attemptIds:
+git-leak-recovery--A--r0--attempt-1 git-leak-recovery--B--r0--attempt-1 git-leak-recovery--C--r0--attempt-1 git-leak-recovery--D--r0--attempt-1 git-leak-recovery--A--r1--attempt-1 git-leak-recovery--B--r1--attempt-1 git-leak-recovery--C--r1--attempt-1 git-leak-recovery--D--r1--attempt-1 pypi-server--A--r0--attempt-1 pypi-server--B--r0--attempt-1 pypi-server--C--r0--attempt-1 pypi-server--D--r0--attempt-1 pypi-server--A--r1--attempt-1 pypi-server--B--r1--attempt-1 pypi-server--C--r1--attempt-1 pypi-server--D--r1--attempt-1 kv-store-grpc--A--r0--attempt-1 kv-store-grpc--B--r0--attempt-1 kv-store-grpc--C--r0--attempt-1 kv-store-grpc--D--r0--attempt-1 kv-store-grpc--A--r1--attempt-1 kv-store-grpc--B--r1--attempt-1 kv-store-grpc--C--r1--attempt-1 kv-store-grpc--D--r1--attempt-1 sanitize-git-repo--A--r0--attempt-1 sanitize-git-repo--B--r0--attempt-1 sanitize-git-repo--C--r0--attempt-1 sanitize-git-repo--D--r0--attempt-1 sanitize-git-repo--A--r1--attempt-1 sanitize-git-repo--B--r1--attempt-1 sanitize-git-repo--C--r1--attempt-1 sanitize-git-repo--D--r1--attempt-1
+
+[2] provider token/cost fields or explicit UNKNOWN; [3] timing records.
+Record structure (identical for all units): attemptId|status|inTok|outTok|cachedTok|provCost|normCost|observedFields|turns|tools|elapsedMs
+example PARTIAL: git-leak-recovery--A--r0--attempt-1|PARTIAL|1629|301|UNK|UNK|UNK|inputTokens,outputTokens|UNK|UNK|UNK
+example PARTIAL: git-leak-recovery--B--r0--attempt-1|PARTIAL|1208|248|UNK|UNK|UNK|inputTokens,outputTokens|UNK|UNK|UNK
+counts: 27 PARTIAL, 5 UNKNOWN (missing values stay UNK, never zero).
+
+[4] denominator: 32 registered, 32 settled, retries=0, hidden=0, replaced=0.
+[5] budget: unitCost<=0.6 cohortCost<=25 turns<=16 calls<=64 elapsed<=900000 inTok<=180000 outTok<=12000 (overrun=BUDGET_STOP).

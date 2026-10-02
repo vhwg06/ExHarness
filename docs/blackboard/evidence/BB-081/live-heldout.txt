@@ -1,0 +1,123 @@
+heldout cohort settled: 32 attempts over 32 units
+units=32 attempts=32 cohort=BB081-HELD-OUT-V1
+=== BB-081 held-out cohort evidence ===
+cohort=BB081-HELD-OUT-V1 experiment=BB081-HELD-OUT-ABLATION-V1 protocol=BB081-FIXED-FACTOR-HELDOUT-V1/v1 protocolHash=sha256:51b39b1700e24ee7f4b8d3e564beade3d446e55cdefa5a6fc653c1595cefb77f
+dataKind=OFFLINE_SCRIPTED_FIXTURE (deterministic offline fixtures; live paid execution requires explicit auth and is pending)
+substrate=benchmarks/substrate/manifests/terminal-bench-2.1.json model=anthropic/claude-sonnet-4.6 provider=Anthropic transport=OpenRouter
+evaluator=harbor-task-verifier@0.23.0
+budgets: unitCostUsd<=0.6 cohortCostUsd<=25 turns<=16 hostCalls<=64 elapsedMs<=900000 inputTokens<=180000 outputTokens<=12000
+reserved digests (4):
+  terminal-bench/git-leak-recovery sha256:22a9ec10dbd4cd8b99477b70e1944103775ca41de9b9e0025ec4898cd17bd334
+  terminal-bench/pypi-server sha256:1a1e0542f58e2d3362fec17a9bbb98667717d9a4a3e9a4c8413d3150a4fa0ff1
+  terminal-bench/kv-store-grpc sha256:973c5d4c111fb61a344457936f1c36400acd2d9e44389e7b319586fe23a7a307
+  terminal-bench/sanitize-git-repo sha256:73c94a21ebe370bae843adbeeaaa9e991374867b18483aaf56c7cd470dcddea7
+frozen schedule (2 repeats x 4 arms):
+  git-leak r1 A-B-D-C; r2 C-D-B-A
+  pypi r1 B-C-A-D; r2 D-A-C-B
+  kv-store r1 C-D-B-A; r2 A-B-D-C
+  sanitize r1 D-A-C-B; r2 B-C-A-D
+units (32):
+  git-leak-recovery--A--r0 arm=A repeat=0 order=A,B,D,C quality=ACCEPTED in=1629 out=301 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=3/turn=0.60 overlapMs=4000 elapsedMs=12041 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--B--r0 arm=B repeat=0 order=A,B,D,C quality=ACCEPTED in=1208 out=248 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=15602 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--C--r0 arm=C repeat=0 order=A,B,D,C quality=ACCEPTED in=1847 out=288 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=3 usefulOps=3/turn=0.60 overlapMs=3700 elapsedMs=15683 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--D--r0 arm=D repeat=0 order=A,B,D,C quality=ACCEPTED in=1409 out=242 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=3 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=14195 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--A--r1 arm=A repeat=1 order=C,D,B,A quality=ACCEPTED in=1224 out=262 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=12443 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--B--r1 arm=B repeat=1 order=C,D,B,A quality=ACCEPTED in=1896 out=313 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=19001 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--C--r1 arm=C repeat=1 order=C,D,B,A quality=ACCEPTED in=1575 out=349 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=3 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=13834 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  git-leak-recovery--D--r1 arm=D repeat=1 order=C,D,B,A quality=ACCEPTED in=1780 out=225 cache=UNKNOWN costUsd=UNKNOWN turns=3 toolCalls=3 usefulOps=3/turn=1.00 overlapMs=2200 elapsedMs=13066 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  pypi-server--A--r0 arm=A repeat=0 order=B,C,A,D quality=ACCEPTED in=1758 out=281 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=19425 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  pypi-server--B--r0 arm=B repeat=0 order=B,C,A,D quality=ACCEPTED in=1461 out=344 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=17566 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  pypi-server--C--r0 arm=C repeat=0 order=B,C,A,D quality=ACCEPTED in=UNKNOWN out=UNKNOWN cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=3 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=14303 recovery=NOT_APPLICABLE fingerprint=none accounting=UNKNOWN
+  pypi-server--D--r0 arm=D repeat=0 order=B,C,A,D quality=ACCEPTED in=1499 out=263 cache=UNKNOWN costUsd=UNKNOWN turns=3 toolCalls=3 usefulOps=3/turn=1.00 overlapMs=2200 elapsedMs=18796 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  pypi-server--A--r1 arm=A repeat=1 order=D,A,C,B quality=NOT_EVALUATED in=UNKNOWN out=UNKNOWN cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=5 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=14663 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=UNKNOWN
+  pypi-server--B--r1 arm=B repeat=1 order=D,A,C,B quality=NOT_EVALUATED in=1302 out=280 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=5 usefulOps=5/turn=1.00 overlapMs=4000 elapsedMs=16617 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  pypi-server--C--r1 arm=C repeat=1 order=D,A,C,B quality=NOT_EVALUATED in=1270 out=243 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=18421 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  pypi-server--D--r1 arm=D repeat=1 order=D,A,C,B quality=NOT_EVALUATED in=UNKNOWN out=UNKNOWN cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=14535 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=UNKNOWN
+  kv-store-grpc--A--r0 arm=A repeat=0 order=C,D,B,A quality=ACCEPTED in=1488 out=370 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=3/turn=0.60 overlapMs=4000 elapsedMs=14873 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  kv-store-grpc--B--r0 arm=B repeat=0 order=C,D,B,A quality=ACCEPTED in=UNKNOWN out=UNKNOWN cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=19383 recovery=NOT_APPLICABLE fingerprint=none accounting=UNKNOWN
+  kv-store-grpc--C--r0 arm=C repeat=0 order=C,D,B,A quality=ACCEPTED in=1871 out=248 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=3 usefulOps=3/turn=0.60 overlapMs=3700 elapsedMs=13725 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  kv-store-grpc--D--r0 arm=D repeat=0 order=C,D,B,A quality=ACCEPTED in=1144 out=252 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=3 usefulOps=3/turn=0.75 overlapMs=3100 elapsedMs=14190 recovery=NOT_APPLICABLE fingerprint=none accounting=PARTIAL
+  kv-store-grpc--A--r1 arm=A repeat=1 order=A,B,D,C quality=NOT_EVALUATED in=1765 out=360 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=5 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=12404 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  kv-store-grpc--B--r1 arm=B repeat=1 order=A,B,D,C quality=NOT_EVALUATED in=1738 out=308 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=5 usefulOps=5/turn=1.25 overlapMs=3100 elapsedMs=12882 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  kv-store-grpc--C--r1 arm=C repeat=1 order=A,B,D,C quality=NOT_EVALUATED in=UNKNOWN out=UNKNOWN cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=17111 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=UNKNOWN
+  kv-store-grpc--D--r1 arm=D repeat=1 order=A,B,D,C quality=NOT_EVALUATED in=1382 out=258 cache=UNKNOWN costUsd=UNKNOWN turns=3 toolCalls=4 usefulOps=4/turn=1.33 overlapMs=2200 elapsedMs=13930 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  sanitize-git-repo--A--r0 arm=A repeat=0 order=D,A,C,B quality=NOT_EVALUATED in=1405 out=332 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=5 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=16539 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  sanitize-git-repo--B--r0 arm=B repeat=0 order=D,A,C,B quality=NOT_EVALUATED in=1382 out=314 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=5 usefulOps=5/turn=1.25 overlapMs=3100 elapsedMs=16293 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  sanitize-git-repo--C--r0 arm=C repeat=0 order=D,A,C,B quality=NOT_EVALUATED in=1789 out=315 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=16164 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  sanitize-git-repo--D--r0 arm=D repeat=0 order=D,A,C,B quality=NOT_EVALUATED in=1564 out=324 cache=UNKNOWN costUsd=UNKNOWN turns=3 toolCalls=4 usefulOps=4/turn=1.33 overlapMs=2200 elapsedMs=15820 recovery=NOT_APPLICABLE fingerprint=PROVIDER_TIMEOUT:NO_ARTIFACT accounting=PARTIAL
+  sanitize-git-repo--A--r1 arm=A repeat=1 order=B,C,A,D quality=REJECTED in=1389 out=353 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=5 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=15492 recovery=NOT_APPLICABLE fingerprint=VERIFIER_REJECTED accounting=PARTIAL
+  sanitize-git-repo--B--r1 arm=B repeat=1 order=B,C,A,D quality=REJECTED in=1891 out=310 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=5 usefulOps=5/turn=1.00 overlapMs=4000 elapsedMs=17252 recovery=NOT_APPLICABLE fingerprint=VERIFIER_REJECTED accounting=PARTIAL
+  sanitize-git-repo--C--r1 arm=C repeat=1 order=B,C,A,D quality=REJECTED in=1254 out=239 cache=UNKNOWN costUsd=UNKNOWN turns=5 toolCalls=4 usefulOps=4/turn=0.80 overlapMs=4000 elapsedMs=13436 recovery=NOT_APPLICABLE fingerprint=VERIFIER_REJECTED accounting=PARTIAL
+  sanitize-git-repo--D--r1 arm=D repeat=1 order=B,C,A,D quality=REJECTED in=1130 out=331 cache=UNKNOWN costUsd=UNKNOWN turns=4 toolCalls=4 usefulOps=4/turn=1.00 overlapMs=3100 elapsedMs=13377 recovery=NOT_APPLICABLE fingerprint=VERIFIER_REJECTED accounting=PARTIAL
+ledger (append-only shared AttemptLedger; BB-081 owns no second ledger):
+  git-leak-recovery--A--r0 attempt=git-leak-recovery--A--r0--attempt-1 manifest=sha256:d4b7e5ba35bb accounting=sha256:d97993778229 status=PARTIAL
+  git-leak-recovery--B--r0 attempt=git-leak-recovery--B--r0--attempt-1 manifest=sha256:26f82933a79b accounting=sha256:1c62efea8d19 status=PARTIAL
+  git-leak-recovery--C--r0 attempt=git-leak-recovery--C--r0--attempt-1 manifest=sha256:c7d4f32d7cf1 accounting=sha256:4ba5d1671a82 status=PARTIAL
+  git-leak-recovery--D--r0 attempt=git-leak-recovery--D--r0--attempt-1 manifest=sha256:b6f6bcd3c564 accounting=sha256:0bcf675058b8 status=PARTIAL
+  git-leak-recovery--A--r1 attempt=git-leak-recovery--A--r1--attempt-1 manifest=sha256:e708db0ef71b accounting=sha256:13ec33449830 status=PARTIAL
+  git-leak-recovery--B--r1 attempt=git-leak-recovery--B--r1--attempt-1 manifest=sha256:c0037c6f9a2c accounting=sha256:41f26dae8eac status=PARTIAL
+  git-leak-recovery--C--r1 attempt=git-leak-recovery--C--r1--attempt-1 manifest=sha256:231bb944d5a5 accounting=sha256:f856636e5410 status=PARTIAL
+  git-leak-recovery--D--r1 attempt=git-leak-recovery--D--r1--attempt-1 manifest=sha256:3c6d5a55d78b accounting=sha256:6d9951ff8e8e status=PARTIAL
+  pypi-server--A--r0 attempt=pypi-server--A--r0--attempt-1 manifest=sha256:a96d0de870ea accounting=sha256:76192debb3d5 status=PARTIAL
+  pypi-server--B--r0 attempt=pypi-server--B--r0--attempt-1 manifest=sha256:22ed5cb7c0d2 accounting=sha256:0e9c71643494 status=PARTIAL
+  pypi-server--C--r0 attempt=pypi-server--C--r0--attempt-1 manifest=sha256:e002e49a35c7 accounting=sha256:31f7f79c3b1f status=UNKNOWN
+  pypi-server--D--r0 attempt=pypi-server--D--r0--attempt-1 manifest=sha256:572e9ca8a828 accounting=sha256:18d46ffb2a21 status=PARTIAL
+  pypi-server--A--r1 attempt=pypi-server--A--r1--attempt-1 manifest=sha256:2ce3192d0a7d accounting=sha256:799753b9dfe7 status=UNKNOWN
+  pypi-server--B--r1 attempt=pypi-server--B--r1--attempt-1 manifest=sha256:a0e0fb15a246 accounting=sha256:76d3c51c98c5 status=PARTIAL
+  pypi-server--C--r1 attempt=pypi-server--C--r1--attempt-1 manifest=sha256:737552c26282 accounting=sha256:9c0bb30dc476 status=PARTIAL
+  pypi-server--D--r1 attempt=pypi-server--D--r1--attempt-1 manifest=sha256:f78fb40fde78 accounting=sha256:7b872f4b260f status=UNKNOWN
+  kv-store-grpc--A--r0 attempt=kv-store-grpc--A--r0--attempt-1 manifest=sha256:6e414cd6a5da accounting=sha256:1b3c720759ce status=PARTIAL
+  kv-store-grpc--B--r0 attempt=kv-store-grpc--B--r0--attempt-1 manifest=sha256:e92f7e0f59a2 accounting=sha256:4faf72f7c512 status=UNKNOWN
+  kv-store-grpc--C--r0 attempt=kv-store-grpc--C--r0--attempt-1 manifest=sha256:1beb8a9e1cd1 accounting=sha256:543f2ebf9d97 status=PARTIAL
+  kv-store-grpc--D--r0 attempt=kv-store-grpc--D--r0--attempt-1 manifest=sha256:579cf8190ecb accounting=sha256:aee6d612971b status=PARTIAL
+  kv-store-grpc--A--r1 attempt=kv-store-grpc--A--r1--attempt-1 manifest=sha256:9724539d53c3 accounting=sha256:49555ea9bf9f status=PARTIAL
+  kv-store-grpc--B--r1 attempt=kv-store-grpc--B--r1--attempt-1 manifest=sha256:8dcfb9e33cb2 accounting=sha256:0caf96056157 status=PARTIAL
+  kv-store-grpc--C--r1 attempt=kv-store-grpc--C--r1--attempt-1 manifest=sha256:190a529b3c88 accounting=sha256:31f7f79c3b1f status=UNKNOWN
+  kv-store-grpc--D--r1 attempt=kv-store-grpc--D--r1--attempt-1 manifest=sha256:32cc43b81c4e accounting=sha256:c8d7ec8e9b2b status=PARTIAL
+  sanitize-git-repo--A--r0 attempt=sanitize-git-repo--A--r0--attempt-1 manifest=sha256:1daf642efbda accounting=sha256:96befa2ab943 status=PARTIAL
+  sanitize-git-repo--B--r0 attempt=sanitize-git-repo--B--r0--attempt-1 manifest=sha256:4ec70c147d97 accounting=sha256:89bc7ca63cc7 status=PARTIAL
+  sanitize-git-repo--C--r0 attempt=sanitize-git-repo--C--r0--attempt-1 manifest=sha256:225f77858175 accounting=sha256:5aefe0cbbc7d status=PARTIAL
+  sanitize-git-repo--D--r0 attempt=sanitize-git-repo--D--r0--attempt-1 manifest=sha256:fa14e65761a3 accounting=sha256:a08ef70798b9 status=PARTIAL
+  sanitize-git-repo--A--r1 attempt=sanitize-git-repo--A--r1--attempt-1 manifest=sha256:18db26949a68 accounting=sha256:62284512fa5f status=PARTIAL
+  sanitize-git-repo--B--r1 attempt=sanitize-git-repo--B--r1--attempt-1 manifest=sha256:956e7694ba2a accounting=sha256:65edeee26f47 status=PARTIAL
+  sanitize-git-repo--C--r1 attempt=sanitize-git-repo--C--r1--attempt-1 manifest=sha256:cdb54f930acb accounting=sha256:72cfa31bda7b status=PARTIAL
+  sanitize-git-repo--D--r1 attempt=sanitize-git-repo--D--r1--attempt-1 manifest=sha256:b400432f1d24 accounting=sha256:29308245fad4 status=PARTIAL
+ledger totals: 32 units, 32 attempts settled, 0 retries, 0 replacements
+accounting: 0/32 fully known, 32/32 with UNKNOWN fields (missing values stay UNKNOWN/null, never zero)
+D/A quality (8 matched pairs, same verifier): D accepted 4, A accepted 4
+diagnostic attribution (A->B/B->C/C->D marginal ratios; D/A is primary):
+  A->B git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=0.742 turns=1.000 elapsed=1.296
+  A->B git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNKNOWN input=1.549 turns=1.000 elapsed=1.527
+  A->B kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=UNKNOWN turns=1.000 elapsed=1.303
+  A->B kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=0.985 turns=1.000 elapsed=1.039
+  A->B pypi-server#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=0.831 turns=1.000 elapsed=0.904
+  A->B pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=UNKNOWN turns=1.000 elapsed=1.133
+  A->B sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=0.984 turns=1.000 elapsed=0.985
+  A->B sanitize-git-repo#r1: REJECTED->REJECTED cost=UNKNOWN input=1.361 turns=1.000 elapsed=1.114
+  B->C git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=1.529 turns=1.000 elapsed=1.005
+  B->C git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNKNOWN input=0.831 turns=1.000 elapsed=0.728
+  B->C kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=UNKNOWN turns=1.000 elapsed=0.708
+  B->C kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=UNKNOWN turns=1.000 elapsed=1.328
+  B->C pypi-server#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=UNKNOWN turns=1.000 elapsed=0.814
+  B->C pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=0.975 turns=1.000 elapsed=1.109
+  B->C sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=1.295 turns=1.000 elapsed=0.992
+  B->C sanitize-git-repo#r1: REJECTED->REJECTED cost=UNKNOWN input=0.663 turns=1.000 elapsed=0.779
+  C->D git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=0.763 turns=0.800 elapsed=0.905
+  C->D git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNKNOWN input=1.130 turns=0.750 elapsed=0.944
+  C->D kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=0.611 turns=0.800 elapsed=1.034
+  C->D kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=UNKNOWN turns=0.750 elapsed=0.814
+  C->D pypi-server#r0: ACCEPTED->ACCEPTED cost=UNKNOWN input=UNKNOWN turns=0.750 elapsed=1.314
+  C->D pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=UNKNOWN turns=0.800 elapsed=0.789
+  C->D sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNKNOWN input=0.874 turns=0.750 elapsed=0.979
+  C->D sanitize-git-repo#r1: REJECTED->REJECTED cost=UNKNOWN input=0.901 turns=0.800 elapsed=0.996
+repeat consistency (accepted/total per task x arm):
+  terminal-bench/git-leak-recovery: A=2/2 B=2/2 C=2/2 D=2/2
+  terminal-bench/kv-store-grpc: A=1/2 B=1/2 C=1/2 D=1/2
+  terminal-bench/pypi-server: A=1/2 B=1/2 C=1/2 D=1/2
+  terminal-bench/sanitize-git-repo: A=0/2 B=0/2 C=0/2 D=0/2
+efficiency thresholds (frozen): cost<=0.85 input<=0.9 turns<=1 elapsed<=1.1
+efficiency gates: not evaluated (incomplete primary accounting)
+frozen reducer decision: INCONCLUSIVE (unknown primary accounting in 8/8 D/A pairs; missing values stay UNKNOWN)
+
+
+exitCode=0

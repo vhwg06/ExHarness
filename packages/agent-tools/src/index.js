@@ -11,7 +11,9 @@ export {
   opencodeTool
 } from "./tool-adapters.js";
 export {
+  AGENT_CHILD_INHERITED_ENV,
   InvocationStatus,
+  binOverlayEnv,
   killProcessTree,
   resolveExecutable,
   runAgentInvocation,
