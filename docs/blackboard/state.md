@@ -70,10 +70,6 @@ NONE
 - BB-145 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main
 - BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
 - BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
-- BB-148 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-083 application-owned feedback loop on current main
-- BB-149 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-085 application-owned feedback episode lifecycle on current main
-- BB-150 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-120 agent-tools child-environment trust boundary on current main
-- BB-151 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-123 observed-only grok cost guard and worktree-local context exclusion on current main
 
 ## Dependency graph
 
@@ -163,11 +159,11 @@ BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
 BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
 BB-145 [RESEARCH_SCHEDULABLE] <- BB-058
 BB-146 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
-BB-147 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080, BB-065
-BB-148 [RESEARCH_SCHEDULABLE] <- BB-059, BB-064, BB-065
-BB-149 [RESEARCH_SCHEDULABLE] <- BB-084
-BB-150 [RESEARCH_SCHEDULABLE] <- BB-097
-BB-151 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
+BB-147 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-148 [BLOCKED] <- BB-059, BB-064, BB-065
+BB-149 [BLOCKED] <- BB-084
+BB-150 [BLOCKED] <- BB-097
+BB-151 [BLOCKED] <- BB-105, BB-102
 ```
 
 ## Context semantics
