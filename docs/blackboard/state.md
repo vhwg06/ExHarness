@@ -43,6 +43,7 @@ NONE
 - BB-066 [WORKER/EXECUTION] — Integrate a real coding-agent execution strategy
 - BB-083 [WORKER/EXECUTION] — Research feedback lifecycle and cross-episode learning
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
+- BB-094 [WORKER/EXECUTION] — Verify Oracle on supported Core execution profiles
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
@@ -113,7 +114,7 @@ BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
 BB-092 [DONE] <- BB-091
 BB-093 [DONE] <- BB-092
-BB-094 [PLANNED] <- BB-093, BB-081
+BB-094 [WORKER_SCHEDULABLE] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
