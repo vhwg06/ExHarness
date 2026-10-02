@@ -38,7 +38,7 @@
     "D4: Do not adopt Schemathesis/Testcontainers. Inspected pinned source/tests support optional future adapters; Node avoids Python/container prerequisites. No external runtime or comparative cost/value claim.",
     "D5: Expose a callable factory via Product QA injection; no deliver manifest/CLI extension. Generic command checks remain usable. BB-071/074 own change/value and BB-129 owns handoff.",
     "D6: Keep DRAFT; only fresh independent Jev SATISFIED grants readiness. Calibration establishes prototype feasibility, not product implementation, dependency delivery or value.",
-    "D7 \u2014 Map each fault to exact verdict/reason and effect boundary in testContract. Focused tests directly exercise the new factory and Product QA injection; generic QA tests cannot stand in for adapter evidence. Retain deterministic single-request/single-seed-row reproducers for observed compatibility failures and bounded setup diagnostics for inconclusive failures."
+    "D7 — Map each fault to exact verdict/reason and effect boundary in testContract. Focused tests directly exercise the new factory and Product QA injection; generic QA tests cannot stand in for adapter evidence. Retain deterministic single-request/single-seed-row reproducers for observed compatibility failures and bounded setup diagnostics for inconclusive failures."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -85,10 +85,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 api-state-verifier.js, after dependencies DONE/exact READY: implement the exact profileContract factory/resolver schemas and protected hash validators. Independently bind QA snapshot/release/environment/components and candidate/tree/config before effects. Use the plan-owned previewShim over BB-131 startLocalPreview; optional injected lifecycle must implement the same phase/ownership protocol. Capture owned store realpath/token outside preview generation roots, reject foreign/symlink roots before mutation, pin actual Node24/Linuxx64/SQLite binary/version and rehash protected inputs pre/post. No new upstream export or acceptance publisher is assumed.",
-    "S2 \u2014 Execute the finite fixture oracle in profileContract.fixture through prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose. Record exact prior-client create/read/update and old/new row/schema assertions. Stop/reap each owned service before transition; migrate once and restart a new process on identical DB owner/path/seed generation. Never BB-131 reset/reseed. Pass DB path and phase as literal entry argv; controlled preview id/token replacement requires owned transition receipts with candidate/tree/runtime/config invariant. Recheck store/schema/rows after restart. Bound requests/phases with profileContract.budgets; retain first mismatch before owned teardown.",
-    "S3 \u2014 Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver. Return {verdict,evidenceRefs}; evidenceStore.put stores immutable API_STATE_CRITERION_EVIDENCE with exact criterion/QA/candidate/schema/data/evaluator/preview bindings and executed assertion IDs. FAIL means observed protected behavioral mismatch; setup/parse/timeout/missing identities/coverage/digest drift INCONCLUSIVE. PASS only after all required assertions, unchanged protected bytes, durable evidence and owned cleanup. Limits20requests/1s each, startup/migration/stop2s, total30s, response8KiB/evidence64KiB. Retain first mismatch before cleanup; evidenceStore or cleanup failure prevents PASS. Adapter has no acceptance publisher; actual ProductQA injection and runtimeObserver independently govern publication. Retain provisional observation before cleanup, then finalize receipt with observed cleanup after finally; PASS requires both stores and successful cleanup, as profileContract.result specifies.",
-    "S4 \u2014 Run declared focused/QA/regression/docs checks under Node24/Linux x64, retain exact bound Worker evidence and update Living limits. Before execution ensure dependencies DONE and delivered APIs match the explicit projections. Any mismatch invalidates READY and returns to research; no implementation authority follows from a shim or prototype."
+    "S1 — [API_COMPATIBILITY, PERSISTED_STATE, EVIDENCE_IDENTITY] api-state-verifier.js, after dependencies DONE/exact READY: implement the exact profileContract factory/resolver schemas and protected hash validators. Independently bind QA snapshot/release/environment/components and candidate/tree/config before effects. Use the plan-owned previewShim over BB-131 startLocalPreview; any injected lifecycle implements the same phase/ownership protocol per profileContract.previewShim. Capture owned store realpath/token outside preview generation roots, reject foreign/symlink roots before mutation, pin actual Node24/Linuxx64/SQLite binary/version and rehash protected inputs pre/post. No new upstream export or acceptance publisher is assumed.",
+    "S2 — [API_COMPATIBILITY, PERSISTED_STATE, FAIL_CLOSED, OWNED_RESOURCES] Execute the finite fixture oracle in profileContract.fixture through prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose. Record exact prior-client create/read/update and old/new row/schema assertions. Stop/reap each owned service before transition; migrate once and restart a new process on identical DB owner/path/seed generation. Never BB-131 reset/reseed. Pass DB path and phase as literal entry argv; controlled preview id/token replacement requires owned transition receipts with candidate/tree/runtime/config invariant. Recheck store/schema/rows after restart. Bound requests/phases with profileContract.budgets; retain first mismatch before owned teardown.",
+    "S3 — [FAIL_CLOSED, EVIDENCE_IDENTITY, NEW_BEHAVIOR] Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver. Return {verdict,evidenceRefs}; evidenceStore.put stores immutable API_STATE_CRITERION_EVIDENCE with exact criterion/QA/candidate/schema/data/evaluator/preview bindings and executed assertion IDs. FAIL means observed protected behavioral mismatch; setup/parse/timeout/missing identities/coverage/digest drift INCONCLUSIVE. PASS only after all required assertions, unchanged protected bytes, durable evidence and owned cleanup. Limits20requests/1s each, startup/migration/stop2s, total30s, response8KiB/evidence64KiB. Retain first mismatch before cleanup; evidenceStore or cleanup failure prevents PASS. Adapter has no acceptance publisher; actual ProductQA injection and runtimeObserver independently govern publication. Retain provisional observation before cleanup, then finalize receipt with observed cleanup after finally; PASS requires both stores and successful cleanup, as profileContract.result specifies.",
+    "S4 — [API_COMPATIBILITY, PERSISTED_STATE, FAIL_CLOSED, OWNED_RESOURCES, EVIDENCE_IDENTITY, NEW_BEHAVIOR] Run declared focused/QA/regression/docs checks under Node24/Linux x64, retain exact bound Worker evidence and update Living limits. Before execution, verify dependencies DONE and delivered APIs match the explicit projections defined in D1-D3 and profileContract; the check either confirms READY or fail-closes (no implementation authority follows from a shim or prototype)."
   ],
   "acceptanceCriteria": [
     {
@@ -742,7 +742,9 @@
           "match": "every pinned acceptance criterion must PASS"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "profileContract"
+      ]
     },
     {
       "objectiveCriterion": "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
@@ -818,10 +820,6 @@
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/evidence/BB-133/discovery.json",
-          "match": "\"experimentStatus\": \"NOT_RUN"
-        },
-        {
-          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
           "match": "\"plannedExperiment\": \"Run an initial accepted fixture"
         },
         {
@@ -829,7 +827,10 @@
           "match": "every pinned acceptance criterion must PASS"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchResolution",
+        "researchPrototype"
+      ]
     }
   ],
   "researchResolution": {
@@ -856,5 +857,6 @@
     "reproducer": "For an observed HTTP/assertion mismatch retain exactly the failing finite request method/path/body, expected/actual status/body projection and the single seed row involved, plus candidate/config/evaluator/preview/store/schema identities. This deterministic reduction of the fixed fixture is the minimized reproducer; unrelated requests/rows are excluded. Setup failures retain minimal setup diagnostics, not an invented HTTP mismatch. Retain before cleanup, within profile budgets.",
     "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases.",
     "prototypeBoundary": "The 13-case executed prototype uses synthetic candidate hashes/proposed shims and has non-minimized first-failure examples; it proves HTTP/SQLite discriminating feasibility only. Product-level exact Git/QA identities, durable evidenceStore and deterministic reduction are mandatory new focused tests, not existing generic QA coverage."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
