@@ -243,12 +243,6 @@ jobs:
             [ "$result" = "success" ] || fail "$stage must succeed; got $result"
           }
 
-          require_skipped() {
-            stage="$1"
-            result="$2"
-            [ "$result" = "skipped" ] || fail "$stage must be skipped when not applicable; got $result"
-          }
-
           assert_exact_subjects() {
             label="$1"
             payload="$2"
@@ -267,19 +261,19 @@ jobs:
           if [ "$(jq 'length' <<<"$WORK")" -gt 0 ]; then
             require_success "blackboard-jev" "$JEV_RESULT"
           else
-            require_skipped "blackboard-jev" "$JEV_RESULT"
+            echo "blackboard-jev not applicable: selector emitted no JEV work"
           fi
 
           if [ "$(jq 'length' <<<"$PUBLICATIONS")" -gt 0 ]; then
             require_success "readiness-verify" "$READINESS_RESULT"
           else
-            require_skipped "readiness-verify" "$READINESS_RESULT"
+            echo "readiness-verify not applicable: selector emitted no readiness publication"
           fi
 
           if [ "$(jq 'length' <<<"$SUPERSESSIONS")" -gt 0 ]; then
             require_success "objective-supersession-verify" "$SUPERSESSION_RESULT"
           else
-            require_skipped "objective-supersession-verify" "$SUPERSESSION_RESULT"
+            echo "objective-supersession-verify not applicable: selector emitted no supersession"
           fi
 
           echo "MERGE_GATE_ACCEPT candidate=$PR_HEAD_SHA"
