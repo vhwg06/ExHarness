@@ -83,7 +83,7 @@
   },
   "implementationSlices": [
     "S1 — packages/agentic-system/src/supervised-backend.js; ADAPTER_RECOVERY_PERSISTED. Add recoveryDir=null in the runSupervisedBackendWork destructured options, then pass recoveryDir unchanged as sibling of tool/task in the runSupervisedTask call. The persisted handle is the delivered BB-101 AGENT_TOOL_RUN_HANDLE_V1, written by writeAgentToolRunHandle to recoveryDir/handle.json via the supervisor's persistRecoverableHandle. Let delivered supervisor reject empty/non-string paths before dispatch. Leave subsequent acceptedSha validation, isolated re-ground verification, evidence/publication and finally disposal unchanged. No resume call or supervisor/recovery/worker edits. With opt-in the supervisor handle/worktree remains available to the caller even after adapter re-ground; without opt-in its owned run worktree is disposed. A repeated first-run on that same handle fails HANDLE_CURRENT before dispatch; adapter preserves handle bytes. Source-copy prototype demonstrates actual phases RUNNING at ACT_COMPLETED, ACCEPTED at ATTEMPT_COMPLETED, retained worktree and source preservation.",
-    "S2 — Fail-closed fixtures [ADAPTER_RECOVERY_FAIL_CLOSED]: implement D3–D4. N1 HANDLE_CURRENT second first-run; N2 omitted dispose. recover/resume stays BB-121. Add P2 driver-process interruption after verifier observes persisted ACT_COMPLETED/RUNNING; verify durable handle/worktree/session bytes survive the crash without calling resume. Parent fixture owns and reaps driver/verifier before matching test cleanup.",
+    "S2 — Fail-closed fixtures [ADAPTER_RECOVERY_FAIL_CLOSED]: implement D3–D4. N1 HANDLE_CURRENT second first-run; N2 omitted dispose. recover/resume stays BB-121. Add P2 driver-process interruption after verifier observes persisted ACT_COMPLETED/RUNNING; verify durable handle/worktree/session bytes survive the crash without calling resume. Parent fixture owns and reaps driver/verifier before matching test cleanup. Use separate literal P1 and P2 test titles: P1 checks retention after successful adapter return; P2 checks interrupted RUNNING persistence. Both retained and omitted cases compare identical source HEAD/refs/status snapshots.",
     "S3 — Living docs [ADAPTER_RECOVERY_PERSISTED]: implement D5. Application state.md and capabilities.md name recoveryDir persist, omitted dispose, HANDLE_CURRENT. No Blackboard ids."
   ],
   "acceptanceCriteria": [
@@ -155,13 +155,14 @@
       "verificationIds": [
         "focused"
       ],
-      "testTitle": "BB-142 P1 persisted execute and P2 interrupted verification",
-      "requiredObservations": "Verifier reads ACT_COMPLETED/RUNNING handle and signals external parent before an intentional pause. Kill adapter driver at that marker; assert handle bytes, candidate/session/worktree identity survive. Do not implement or invoke Board resume. Separate normal P1 returns APPLIED with ACCEPTED handle."
+      "testTitle": "BB-142 P1 persisted execute retains verified handle and worktree after return",
+      "requiredObservations": "Call actual runSupervisedBackendWork with recoveryDir. After APPLIED returns, verifyAgentToolRunHandle validates exact task/repository/base/candidate; stat retained worktree and compare HEAD to handle candidateSha. P2 separately interrupts after ACT_COMPLETED/RUNNING is persisted and checks crash retention without resume. Retention after successful return and retention after interruption are distinct observations."
     },
     {
       "invariant": "Both retained and omitted recovery paths leave source HEAD, all branch refs and source working-tree status unchanged.",
       "criterionIds": [
-        "ADAPTER_RECOVERY_PERSISTED"
+        "ADAPTER_RECOVERY_PERSISTED",
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
       ],
       "verificationIds": [
         "focused"
@@ -369,7 +370,8 @@
         }
       ],
       "supportingPlanFields": [
-        "invariantCoverage"
+        "testContract",
+        "prototypeEvidence"
       ]
     },
     {
@@ -407,7 +409,7 @@
         }
       ],
       "supportingPlanFields": [
-        "negativeCaseBindings"
+        "invariantCoverage"
       ]
     },
     {
