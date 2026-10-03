@@ -105,7 +105,7 @@
     "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes. The seed format is JSON array/object <=1MiB; service-specific owned data directory receives seed.json with exact protected bytes. No generic database seeding inference.",
     "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics. Inject reserved PREVIEW_CANDIDATE_SHA/TREE, PREVIEW_CONFIG_DIGEST/SEED_DIGEST as checked public identity inputs so the service can answer required health fields. Validate inherited env is absent and all internal overrides rejected. Node DATA_DIR is each service own generation directory; reset copies protected seed.json only after reaping prior groups. The sole new local-preview.js is both public API and private lease supervisor: fork fileURLToPath(import.meta.url) with literal --preview-supervisor; enter child mode only when executed directly with that exact flag. Parent sends one validated START packet; supervisor owns service forks/groups and replies over its own ChildProcess IPC. Schema-check IPC <=64KiB, max32 services; reject unknown messages, duplicate LISTENING, wrong sender and stale token. RESET is serialized, awaits old groups/data disposal, then creates a new generation and returns a new handle; old handle cannot observe/reset. DISPOSE is serialized/idempotent. Parent disconnect aborts startup and triggers the same owned teardown; response correlates owner/generation/request id. No additional undeclared supervisor source file or persisted PID adoption.",
     "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
-    "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority. Final research output is this DRAFT file-level plan with localPreviewContract APIs/wire protocol, embedded hash-bound prototype/reproduction and distinct negativeCaseBindings. Submit the unchanged complete plan for independent readiness; no Worker code or future runtime logs are prerequisites to this RESEARCH_SA judgment. Worker implementation checks remain gated by exact READY and dependencies DONE."
+    "S4 — local-preview.test.js and deliver-slice.test.js: implement all exact negativeCaseBindings plus three fixed Node/loopback positive profiles using localPreviewContract.api and wireProtocol. Each lifecycle test invokes prepare/reset/dispose through actual owner handle; assert exact receipt bindings/seed generation and foreign resource preservation. Integration uses existing fresh QA checkout and nested finally, no new acceptance authority. Update declared Living docs. This DRAFT already contains final API/schema/file scope, hash-bound executable prototype and labelled results; independent readiness judges this research output, while focused/regression/docs runtime logs are future Worker outputs after READY and dependencies DONE."
   ],
   "acceptanceCriteria": [
     {
@@ -212,21 +212,36 @@
         "PREVIEW_IDENTITY",
         "SEEDED_RESET",
         "RECEIPT_FAILURES"
-      ]
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Positive fixture starts exact candidate, validates each LISTENING sender/token/port and health candidate/tree/config/seed. Wrong or absent identity never OBSERVED_READY; compare reset generation and new exact seed receipt."
     },
     {
       "invariant": "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance. Acceptance coverage: QA_COMPOSITION, PREVIEW_IDENTITY.",
       "criterionIds": [
         "QA_COMPOSITION",
         "PREVIEW_IDENTITY"
-      ]
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Inject prepareLocalPreview into actual fresh-QA path: QA checks run only after matched readiness; receipt is setup evidence. Existing QA/publisher still require their independent criteria/runtime proofs."
     },
     {
       "invariant": "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers. Acceptance coverage: RESOURCE_LIFECYCLE, SEEDED_RESET.",
       "criterionIds": [
         "RESOURCE_LIFECYCLE",
         "SEEDED_RESET"
-      ]
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Occupied foreign port/server survives failed prepare. Owner reset/dispose/interrupted-start terminate only owned live groups and remove owned data; never kill persisted PID or foreign resource."
     },
     {
       "invariant": "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT. Acceptance coverage: PROFILE_ENV, RECEIPT_FAILURES, RESOURCE_LIFECYCLE.",
@@ -234,7 +249,12 @@
         "PROFILE_ENV",
         "RECEIPT_FAILURES",
         "RESOURCE_LIFECYCLE"
-      ]
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Missing runtime/unsupported descriptor/config drift/timeout return declared typed outcomes with bounded diagnostics. Filter child env and strip test channel. Simulated uncertain cleanup remains UNRESOLVED."
     }
   ],
   "negativeVerificationCases": [
@@ -569,7 +589,7 @@
         }
       ],
       "supportingPlanFields": [
-        "previewMechanism"
+        "localPreviewContract"
       ],
       "verificationIds": [
         "focused",
@@ -607,7 +627,7 @@
         }
       ],
       "supportingPlanFields": [
-        "previewMechanism"
+        "invariantCoverage"
       ],
       "verificationIds": [
         "focused"
