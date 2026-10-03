@@ -6865,10 +6865,53 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-154",
+      "featureId": null,
+      "title": "Reduce Outer Blackboard to value-bearing kernel",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-154.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-154.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Remove graph/context/component fields and layers with no independent routing, authority or context-value consumer.",
+        "Derive fresh-session context on demand without current.json/currentContextRef while preserving claim ownership and exact phase/source authority.",
+        "Retire legacy compatibility and committed projections without weakening Jev or exact delivery gates."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-154.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-154.json",
+        "researchBaselineSha": "3651e60b195b3c158a52311bbb375803486b91de"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-154",
+    "nextWorkId": "BB-155",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
