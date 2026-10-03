@@ -95,9 +95,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — [PROTECTED_ACCEPTANCE, QUALITY_BOUNDARY, RESUME_BINDING] local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions. Return pin includes verified raw manifest hash, frozen file/runtime pins, protected base tuples and stable snapshot paths. Pin before agent dispatch; executor is pinned absolute Node with evaluator first and candidate root last. runLocalAcceptance composes createLocalCommandVerifier at exact candidate revision with unchanged-tree guard; original/snapshot/runtime pre/post hash drift or protected tuple drift prevents PASS. Operator assertions must independently reject broken sum under no-op QA and protected-test deletion, then accept genuine sum fix. Explicit trusted-local boundary excludes malicious same-uid write-and-restore. For durable resume, pinLocalAcceptance first reads existing delivery sidecar, verifies caller contract and reuses its saved snapshot paths/bytes; do not create random replacement before equality checks. For first-run without handle, create owned snapshot then bind sidecar; partial pre-dispatch restart only on proven handle absence. Inputs recoveryDir/handleExists are explicit optional pin arguments, not inferred from an overridden manifest path. S1 builds only on DELIVERED contracts (BB-104 runSliceQa, createLocalCommandVerifier, createLocalGitWorkspace); BB-125/BB-130 are interface-compatibility checks at worker time, not implementation blockers.",
-    "S2 — [PROTECTED_ACCEPTANCE, RESUME_BINDING, QUALITY_BOUNDARY] deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only. For protected opt-in persist sidecar/stable snapshot before first dispatch; matching sidecar is required before every protected handle path including ACCEPTED replay. Legacy omission without sidecar preserves existing behavior; a protected sidecar with omitted acceptance rejects downgrade, and opt-in on a legacy handle without sidecar rejects upgrade before effects. Every fresh or resumed QA run executes the pinned evaluator again. Sidecar validation failure leaves all recovery bytes untouched; terminal cleanup runs only after final evaluation. Pass pin into private runQaOnFreshCheckout; inside its existing try run ordinary runSliceQa, then runLocalAcceptance on workspace.root and acceptedSha only when ordinary passed. Return combined passed/status plus acceptance record; finally dispose QA workspace after this gate. Every fresh finishBackend and ACCEPTED-handle branch uses this helper. Build acceptedSliceResult only when ordinary+protected PASS; other outcomes use QA_FAILED. Add acceptance:null to legacy sliceResult envelopes and propagate scoped protected failure bindings. Terminal disposal removes only the exact matching handle/sidecar/snapshot after completed gate; thrown gate still cleans QA, interrupted durable state remains available. Legacy omission has no new external evaluator dispatch. S2 modifies only deliver-slice.js and recovery.js against their delivered APIs; no BB-125/BB-130 schema changes.",
-    "S3 — [QUALITY_BOUNDARY, COMPATIBILITY_DOCS] local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment. Positive/negative oracle: external evaluator asserts sum(2,3)==5 and sum(-2,4)==2. Broken subtraction and assertion-free candidate test must fail independently even with ordinary QA exit0; deleting the separate pinned protected file fails tuple gate. Genuine addition preserves the protected tuple and passes. Focused checks run on fresh candidate checkout and re-run after complete-handle replay, preserving source refs/status."
+    "S1 — local-acceptance.js [PROTECTED_ACCEPTANCE, QUALITY_BOUNDARY, RESUME_BINDING]. Implement pinLocalAcceptance, bindSliceAcceptance and runLocalAcceptance exactly as D1-D8: strict operator manifest/objective/runtime/raw-file pins, snapshots outside every worktree, exact protected base/candidate tuples, bounded pinned Node invocation and pre/post provenance/HEAD/tree/status checks. Snapshot identity is stable across protected resume; every gate uses the fresh exact candidate. Result schema/reasons are D7; trusted-local exclusions are D6. No reverse package dependency or dependency schema changes.",
+    "S2 — deliver-slice.js/recovery.js/CLI [PROTECTED_ACCEPTANCE, RESUME_BINDING]. Validate/pin/bind before any Backend, resume, QA or disposal effect. All fresh and ACCEPTED-handle paths call the existing fresh-QA helper: ordinary QA then external gate on the same detached checkout, finally dispose QA. Only both PASS produce ACCEPTED; failures return QA_FAILED with available provenance. Match protected sidecar and reuse snapshot before every handle path; reject omission/config drift/legacy upgrade without effects. Preserve interrupted recovery; dispose only matching terminal state after a fresh evaluator run. Omission with no sidecar retains legacy behavior and acceptance:null. D5-D9 resolve lifecycle and ownership.",
+    "S3 — local-protected-acceptance.test.js and declared Living docs [QUALITY_BOUNDARY, COMPATIBILITY_DOCS]. Implement the distinct negativeCaseBindings tests invoking actual named product exports. External sum(2,3)==5 and sum(-2,4)==2 reject broken subtraction despite no-op ordinary QA and weakened unprotected tests; protected deletion fails tuple gate. Genuine addition with intact protected tuple passes. Add exact fresh replay, stable interrupted resume, config/evaluator/goal/runtime drift, complete-handle, CLI and legacy controls in D10. Capture candidate-bound focused/regression logs and unchanged source HEAD/refs/status. Update declared Living docs per D12. These are future Worker outputs; historical scratch experiment establishes feasibility and exact READY precedes Worker."
   ],
   "acceptanceCriteria": [
     {
@@ -616,9 +616,10 @@
         0,
         1,
         2,
+        3,
         4,
         5,
-        7
+        6
       ],
       "sourceRefs": [
         "packages/agentic-system/src/local-git-workspace.js",
@@ -645,7 +646,9 @@
           "match": "\"trustBoundary\": \"Trusted local commands do not protect test content"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "mechanismSummary"
+      ]
     },
     {
       "objectiveCriterion": "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
@@ -667,10 +670,11 @@
         "docs"
       ],
       "decisionIndexes": [
-        0,
+        2,
         4,
-        9,
-        10
+        5,
+        7,
+        9
       ],
       "sourceRefs": [
         "docs/blackboard/process/delivery-value-improvement-research.md",
@@ -695,7 +699,9 @@
           "match": "REVISION_MISMATCH: \"REVISION_MISMATCH\","
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "mechanismSummary"
+      ]
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
@@ -713,7 +719,7 @@
         "docs"
       ],
       "decisionIndexes": [
-        9,
+        8,
         10,
         11
       ],
@@ -735,5 +741,12 @@
     }
   ],
   "readinessBlockers": [],
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "mechanismSummary": {
+    "pin": "Before any Backend/QA/recovery effect, strict manifest validation pins raw manifest/evaluator/runtime bytes and objective digest, snapshots outside all Git worktrees, and records base protected path/mode/type/oid tuples. Expected digest comes from operator; candidate cannot supply acceptance authority.",
+    "verify": "On the existing fresh detached QA checkout at acceptedSha/tree, ordinary QA must pass, then runLocalAcceptance executes pinned absolute Node with external snapshot evaluator and exact candidate root. Pre/post source/snapshot/runtime digests and Git HEAD/tree/status/protected tuples must match. Only both gates PASS yield ACCEPTED; FAIL/INCONCLUSIVE yield QA_FAILED.",
+    "resume": "bindSliceAcceptance runs before every handle path, including complete-handle replay. Existing sidecar reuses stable snapshots; changed/omitted/added protected config fails before effects. Replays rerun evaluator. No cached PASS. Preserve interrupted state and dispose only matching terminal resources after fresh gate.",
+    "prototype": "Historical seven-case scratch prototype demonstrates no-op repository QA false acceptance and independent sum assertions rejecting broken/weakened candidates, changed protected path, swapped evaluator, missing pin and wrong revision; genuine addition passes. New export/durable integration remains Worker evidence.",
+    "files": "New local-acceptance.js and local-protected-acceptance.test.js; declared deliver-slice.js/recovery.js/CLI and Living writes only. D1-D12 fix schema, functions, trust, result reasons, lifecycle and dependency boundaries. All direct dependencies DONE plus independent READY are required before Worker."
+  }
 }
