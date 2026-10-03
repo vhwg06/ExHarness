@@ -6,7 +6,7 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-155.json",
-    "hash": "bfd0906428c6b7d490c85b5c7185f5c133f753b733532ae6c756f3e8eed2455b"
+    "hash": "760eee2c7982b331cbc1037ee24998ac926cebd80f0aad261a1e4e94ea4c7cea"
   },
   "scope": [
     "outer-blackboard.v2-control-authority",
@@ -196,6 +196,33 @@
       "criterionIds": [
         "LIFECYCLE",
         "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "Lease expiry and takeover safety are decided only from the ControlStore's authoritative clock; agent-provided time is never used for lease validity, expiry or takeover.",
+      "criterionIds": [
+        "AUTHORITY",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "Decision publication is a compare-and-swap mutation: a decision applies only when its observedGeneration exactly equals the current Work spec.generation at publish time; otherwise it is recorded/returned as SUPERSEDED and cannot mutate status or phase.",
+      "criterionIds": [
+        "LIFECYCLE",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "nextActions(work) is a pure deterministic function of the canonical `(spec, status, decisions)` snapshot. Given byte-equivalent inputs, independent controllers must compute byte-equivalent next actions, blockers and forbidden actions.",
+      "criterionIds": [
+        "LIFECYCLE"
+      ]
+    },
+    {
+      "invariant": "Fence validation is required only on mutating side effects owned by an Attempt—candidate/evidence publication and lifecycle/status transitions. Read-only inspection and context building never require a fence.",
+      "criterionIds": [
+        "ATTEMPT",
+        "CONTEXT"
       ]
     }
   ],
