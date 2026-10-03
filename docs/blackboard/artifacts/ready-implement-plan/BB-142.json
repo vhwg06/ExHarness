@@ -9,7 +9,7 @@
     "hash": "246c30bfeed8bd7ecfd105fbcd59287054d18b0b7c1e3bba183c271a373593b6"
   },
   "scope": [
-    "agentic.backend-qa-execution.adapter-recovery"
+    "Future Worker: optional recoveryDir forwarding in runSupervisedBackendWork; exact persistence, omission, duplicate-run and source-preservation fixtures; declared Application Living docs."
   ],
   "outOfScope": [
     "Implementing recover or resumeSupervisedTask on a durable Board factory; that remains BB-121.",
@@ -17,19 +17,27 @@
     "Sandbox, SCM push, MCP promote, or a second lineage format."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered BB-101 recovery handle. Forward recoveryDir only on execute persist. Do not implement recover or resumeSupervisedTask; BB-121 owns the durable Board factory recover path.",
-    "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path. Do not edit createBackendWorker or backend-worker.js.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "This RESEARCH_SA artifact describes future Worker changes. Current research changes plan data only. Product files listed in sourceScope.write become editable only after independent READY and every direct dependency DONE.",
+    "Use the delivered APIs exactly as architectureDecisions; expected test files are future Worker outputs, not evidence claimed to exist at this research baseline.",
+    "No supervisor.js/recovery.js/backend-worker.js edits, no adapter resumeSupervisedTask, no createBackendWorker change.",
+    "Independent Jev owns readiness and Worker acceptance; no live-value, sandbox, SCM publication or product delivery is inferred from scratch prototypes."
   ],
   "invariants": [
-    "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
-    "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "Optional recoveryDir is forwarded unchanged to the first runSupervisedTask call.",
+    "After successful APPLIED return, the opted-in handle and its exact candidate worktree remain available.",
+    "Opted-in, omitted and repeated execute calls preserve source HEAD, all branch refs and working-tree status.",
+    "A second first-run using an existing current handle rejects HANDLE_CURRENT before another dispatch and leaves handle bytes unchanged.",
+    "Omitting recoveryDir preserves ephemeral supervisor worktree disposal after adapter completion.",
+    "Empty string and non-string non-null recoveryDir reject TypeError before agent dispatch.",
+    "The adapter adds no recover/resume path and preserves the existing Board factory ownership."
   ],
   "architectureDecisions": [
-    "Accept optional recoveryDir on runSupervisedBackendWork and forward it to runSupervisedTask.recoveryDir. Persist only; do not add a recover() method on the adapter.",
-    "Keep default adapter execute without recoveryDir on the unique mkdtemp worktree disposed in finally. BB-121 remains the factory that calls resumeSupervisedTask."
+    "D1: Add recoveryDir=null to existing runSupervisedBackendWork options and pass that exact value to its first runSupervisedTask call. No other adapter control-flow or result-schema changes. Leave dynamic supervisor import intact to avoid package cycle.",
+    "D2: Delivered supervisor owns recoveryDir validation, handle writes and HANDLE_CURRENT rejection. Reuse AGENT_TOOL_RUN_HANDLE_V1; add no callback, handle format or resume call. With recoveryDir the first invocation persists ACT_COMPLETED/RUNNING before verification and terminal ACCEPTED before adapter re-grounding. The later adapter re-ground checkout is separately owned and still disposed in finally.",
+    "D3: Omitted recoveryDir remains null; delivered supervisor uses/disposes its mkdtemp run worktree. Existing adapter also disposes its separate re-ground worktree. Caller owns an opted-in retained handle/worktree after return; only fixture cleanup disposes a verified matching handle.",
+    "D4: Focused tests use real scratch Git plus delivered fake-agent, literal verifier argv and invocationObserver cwd capture. P1 reads handle during verifier and after return. N1 repeats the actual adapter call with same current handle; N2 omits the option. No first invocationObserver handle-existence assertion: handle persistence occurs later.",
+    "D5: Capture source HEAD, sorted refs/heads and porcelain including untracked files before each case; compare exact snapshots afterwards. Empty/string-invalid/non-string options reject before fake agent dispatch. Driver interruption after persisted ACT_COMPLETED is a separate persistence fixture, not a resume implementation.",
+    "D6: Update only Application state/capabilities descriptions of execute persistence, omitted cleanup and duplicate-run rejection; recover/resume stays the Board factory. Focused/regression/docs/repository checks and independent Worker judgment precede delivery."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -55,7 +63,9 @@
       "packages/agentic-system/test/**",
       "packages/agent-tools/test/fixtures/fake-agent.mjs",
       "docs/blackboard/process/application-adapter-composition.md",
-      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/agent-tools/recovery.md"
     ],
     "write": [
       "packages/agentic-system/src/supervised-backend.js",
@@ -74,36 +84,108 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin recoveryDir persist-only forwarding and second-first-run fail-closed in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only recoveryDir from runSupervisedBackendWork into runSupervisedTask and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — supervised-backend.js: add only recoveryDir=null option and recoveryDir property at runSupervisedTask call (D1). Keep all validation, acceptedSha mapping, re-grounding and finally cleanup unchanged. Delivered supervisor implements D2-D3 without edits. Covers RECOVERY_FORWARDING, RECOVERY_RETAINED, OMITTED_CLEANUP, INVALID_RECOVERY and EXECUTE_ONLY. Exact patch: append recoveryDir=null after invocationObserver=null in the existing options destructure; add recoveryDir as a sibling property in the existing runSupervisedTask object. Source-copy replay implements precisely these two edits and real delivered supervisor behavior; no hypothetical adapter API is used.",
+    "S2 — bb142-adapter-recovery.test.js: implement literal negativeCaseBindings titles N1/N2 and separate P1 persisted execute, P3 invalid directory, P4 execute-only checks as specified by acceptanceCriteria. Every dynamic case directly invokes runSupervisedBackendWork. P1 validates handle twice and retained candidate after return; N1 rejects duplicate before dispatch; N2 proves captured cwd removal. Compare unchanged source snapshots in P1/N1/N2. Optional driver interruption control asserts persisted RUNNING bytes survive; it never resumes.",
+    "S3 — declared Application Living docs: describe optional execute persistence and caller ownership, omitted disposal, HANDLE_CURRENT duplicate rejection and Board-only recovery. Run focused, agentic-regression, docs and repository checks. Future Worker records exact candidate/log hashes; current research binds objective, source baseline, prototype result and final plan for independent readiness."
   ],
   "acceptanceCriteria": [
     {
-      "id": "ADAPTER_RECOVERY_PERSISTED",
-      "statement": "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+      "id": "RECOVERY_FORWARDING",
+      "statement": "Optional recoveryDir is forwarded unchanged to the first runSupervisedTask call.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "Future focused test P1 actual persisted execute: Actual adapter call uses owned recoveryDir; verifier reads handle.json at ACT_COMPLETED/RUNNING. No additional adapter callback. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "RECOVERY_RETAINED",
+      "statement": "After successful APPLIED return, the opted-in handle and its exact candidate worktree remain available.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P1 actual persisted execute: verifyAgentToolRunHandle after return validates task/repository/base/candidate; handle status ACCEPTED, worktree exists and HEAD matches candidateSha. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "SOURCE_UNCHANGED",
+      "statement": "Opted-in, omitted and repeated execute calls preserve source HEAD, all branch refs and working-tree status.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P1/N1/N2 source preservation: Compare exact before/after HEAD, sorted refs/heads and porcelain snapshots; no source cleanup or checkout. Exact candidate/run/log bindings required."
       ]
     },
     {
       "id": "ADAPTER_RECOVERY_FAIL_CLOSED",
-      "statement": "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage.",
+      "statement": "A second first-run using an existing current handle rejects HANDLE_CURRENT before another dispatch and leaves handle bytes unchanged.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "Future focused test BB-142 N1 A second first-run against a current recovery handle must fail before spawn: First adapter call creates current handle; snapshot bytes and fake-dispatch counter. Second actual adapter call rejects HANDLE_CURRENT; exact bytes/counter unchanged. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "OMITTED_CLEANUP",
+      "statement": "Omitting recoveryDir preserves ephemeral supervisor worktree disposal after adapter completion.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test BB-142 N2 Omitted recoveryDir must dispose the temporary worktree: invocationObserver captures real first-run cwd; after adapter return stat reports ENOENT. No recovery handle appears in source; existing adapter re-ground finally remains intact. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "INVALID_RECOVERY",
+      "statement": "Empty string and non-string non-null recoveryDir reject TypeError before agent dispatch.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P3 invalid recovery directory: Actual adapter calls with empty string/number/object reject delivered TypeError; no fake-agent marker or new handle. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "EXECUTE_ONLY",
+      "statement": "The adapter adds no recover/resume path and preserves the existing Board factory ownership.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P4 execute-only ownership: Focused source-contract check on candidate adapter finds only forwarding, no resumeSupervisedTask import/call. Existing Backend/QA regressions remain green. Exact candidate/run/log bindings required."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/bb142-adapter-recovery.test.js"
+      "command": "node --test packages/agentic-system/test/bb142-adapter-recovery.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-142 N1 A second first-run against a current recovery handle must fail before spawn",
+          "subject": "runSupervisedBackendWork",
+          "criterionId": "ADAPTER_RECOVERY_FAIL_CLOSED"
+        },
+        {
+          "title": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
+          "subject": "runSupervisedBackendWork",
+          "criterionId": "OMITTED_CLEANUP"
+        }
+      ],
+      "criterionIds": [
+        "RECOVERY_FORWARDING",
+        "RECOVERY_RETAINED",
+        "SOURCE_UNCHANGED",
+        "ADAPTER_RECOVERY_FAIL_CLOSED",
+        "OMITTED_CLEANUP",
+        "INVALID_RECOVERY",
+        "EXECUTE_ONLY"
+      ],
+      "requiredTests": "All named positive controls and every exact negativeCaseBindings title; zero skips/cancellations. Record actual subject invocation and effects; generic regressions do not replace these assertions."
     },
     {
       "id": "agentic-regression",
@@ -112,27 +194,89 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
+      "invariant": "Optional recoveryDir is forwarded unchanged to the first runSupervisedTask call.",
       "criterionIds": [
-        "ADAPTER_RECOVERY_FAIL_CLOSED"
-      ]
+        "RECOVERY_FORWARDING"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P1 actual persisted execute",
+      "requiredObservations": "Actual adapter call uses owned recoveryDir; verifier reads handle.json at ACT_COMPLETED/RUNNING. No additional adapter callback."
     },
     {
-      "invariant": "Omitting recoveryDir keeps the delivered dispose-in-finally adapter path.",
+      "invariant": "After successful APPLIED return, the opted-in handle and its exact candidate worktree remain available.",
       "criterionIds": [
-        "ADAPTER_RECOVERY_FAIL_CLOSED"
-      ]
+        "RECOVERY_RETAINED"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P1 actual persisted execute",
+      "requiredObservations": "verifyAgentToolRunHandle after return validates task/repository/base/candidate; handle status ACCEPTED, worktree exists and HEAD matches candidateSha."
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "Opted-in, omitted and repeated execute calls preserve source HEAD, all branch refs and working-tree status.",
       "criterionIds": [
-        "ADAPTER_RECOVERY_PERSISTED",
+        "SOURCE_UNCHANGED"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P1/N1/N2 source preservation",
+      "requiredObservations": "Compare exact before/after HEAD, sorted refs/heads and porcelain snapshots; no source cleanup or checkout."
+    },
+    {
+      "invariant": "A second first-run using an existing current handle rejects HANDLE_CURRENT before another dispatch and leaves handle bytes unchanged.",
+      "criterionIds": [
         "ADAPTER_RECOVERY_FAIL_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-142 N1 A second first-run against a current recovery handle must fail before spawn",
+      "requiredObservations": "First adapter call creates current handle; snapshot bytes and fake-dispatch counter. Second actual adapter call rejects HANDLE_CURRENT; exact bytes/counter unchanged."
+    },
+    {
+      "invariant": "Omitting recoveryDir preserves ephemeral supervisor worktree disposal after adapter completion.",
+      "criterionIds": [
+        "OMITTED_CLEANUP"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
+      "requiredObservations": "invocationObserver captures real first-run cwd; after adapter return stat reports ENOENT. No recovery handle appears in source; existing adapter re-ground finally remains intact."
+    },
+    {
+      "invariant": "Empty string and non-string non-null recoveryDir reject TypeError before agent dispatch.",
+      "criterionIds": [
+        "INVALID_RECOVERY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P3 invalid recovery directory",
+      "requiredObservations": "Actual adapter calls with empty string/number/object reject delivered TypeError; no fake-agent marker or new handle."
+    },
+    {
+      "invariant": "The adapter adds no recover/resume path and preserves the existing Board factory ownership.",
+      "criterionIds": [
+        "EXECUTE_ONLY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P4 execute-only ownership",
+      "requiredObservations": "Focused source-contract check on candidate adapter finds only forwarding, no resumeSupervisedTask import/call. Existing Backend/QA regressions remain green."
     }
   ],
   "negativeVerificationCases": [
@@ -152,30 +296,441 @@
     {
       "id": "NEG_142_2",
       "negativeCaseIndex": 1,
-      "criterionId": "ADAPTER_RECOVERY_FAIL_CLOSED",
+      "criterionId": "OMITTED_CLEANUP",
       "verificationId": "focused",
       "testRef": "packages/agentic-system/test/bb142-adapter-recovery.test.js",
       "testTitle": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
       "subjectSymbol": "runSupervisedBackendWork"
     }
   ],
-  "researchGaps": [
-    "Ratify empty-string versus null recoveryDir fail-closed and whether the adapter must surface HANDLE_INVALID without calling resumeSupervisedTask, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agentic-application/state.md",
       "docs/living/system/agentic-application/capabilities.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living Application docs state that runSupervisedBackendWork accepts optional recoveryDir, that a set directory persists the delivered handle, that omitting it still disposes the temporary worktree, that a second first-run against a current handle fails HANDLE_CURRENT before spawn, and that recover/resume stays the Board factory. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: adapterMentionsRecoveryDir false, adapterCallsRunSupervisedTask true, supervisorAcceptsRecoveryDir true."
+    },
+    {
+      "ref": "packages/agentic-system/src/supervised-backend.js",
+      "finding": "DELIVERED_TRUTH: runSupervisedBackendWork already forwards model/maxAttempts/timeoutMs/permissionProfile/env/eventSinks/tracer/invocationObserver and does not mention recoveryDir. ACCEPTED re-grounds in a separate scratch worktree so source HEAD stays unchanged."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: Without recoveryDir the run still uses a unique mkdtemp. A second first-run against a current handle throws HANDLE_CURRENT."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-100",
+      "BB-101"
+    ],
+    "workerStart": "BB-100 and BB-101 must be DONE. Recheck delivered adapter/supervisor/recovery signatures; forwarding is execute-only and does not depend on BB-121 resume.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "runSupervisedTask.recoveryDir",
+        "HANDLE_CURRENT",
+        "mkdtemp when omitted",
+        "adapter re-ground scratch worktree"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "adapter recoveryDir persist",
+        "omitted dispose",
+        "no adapter resume"
+      ]
+    },
+    "contradiction": "None. Persist-only: the adapter forwards recoveryDir into runSupervisedTask and never calls resumeSupervisedTask. BB-121 remains the factory recover owner."
+  },
+  "deliveryContract": {
+    "precondition": "BB-100 and BB-101 DONE; exact independently READY plan.",
+    "completion": "focused + test:agentic + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No supervisor.js/recovery.js/backend-worker.js edits, no adapter resumeSupervisedTask, no createBackendWorker change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "agentic-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "adapter re-ground scratch worktree",
+      "source HEAD unchanged",
+      "createBackendWorker path",
+      "BB-121 recover owner"
+    ],
+    "add": [
+      "runSupervisedBackendWork recoveryDir",
+      "bb142-adapter-recovery tests"
+    ],
+    "rollback": "Remove recoveryDir from runSupervisedBackendWork; delete bb142-adapter-recovery.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-142 objective + adapter-composition-audit.json + delivered adapter/supervisor recovery",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "Exact READY plan and DONE BB-100/BB-101",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "supervisor/recovery/backend-worker edits, adapter resume."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Application execute can persist the same crash handle the supervisor already writes for operator run.",
-    "measurement": "Fake-CLI adapter fixture writes handle.json under recoveryDir; omitted recoveryDir leaves no handle and disposes the worktree.",
+    "expectedValue": "Application execute can persist the delivered recovery handle so a crash keeps the same worktree and candidate identity.",
+    "measurement": "Fake-CLI adapter fixture writes handle.json; a second first-run fails HANDLE_CURRENT before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-100 for the adapter; BB-101 for recovery; BB-074 for end-to-end value"
+    "valueOwner": "BB-100 for the supervised adapter; BB-101 for durable recovery"
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+      "criterionIds": [
+        "RECOVERY_FORWARDING",
+        "RECOVERY_RETAINED",
+        "SOURCE_UNCHANGED"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/supervised-backend.js",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/supervised-backend.js",
+          "match": "const supervised = await runSupervisedTask({\n    tool,\n    task,\n    model,\n    maxAttempts,"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "if (recoveryDir !== null) {\n    return runRecoverableTask({"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "const handle = await writeAgentToolRunHandle(recoveryDir, fields);"
+        },
+        {
+          "ref": "packages/agentic-system/src/supervised-backend.js",
+          "match": "const workspace = await createLocalGitWorkspace({\n    repositoryRoot,\n    baseRevision: acceptedSha,\n    worktreeRoot\n  });"
+        }
+      ],
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
+    },
+    {
+      "objectiveCriterion": "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage. recover/resume stays the BB-121 factory owner.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_FAIL_CLOSED",
+        "OMITTED_CLEANUP",
+        "INVALID_RECOVERY",
+        "EXECUTE_ONLY"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agentic-system/src/supervised-backend.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "Without recoveryDir the run still uses a unique mkdtemp"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "throw new RecoveryError(\"HANDLE_CURRENT\""
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export const HANDLE_FILE = \"handle.json\";"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariantCoverage"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "RECOVERY_FORWARDING",
+        "RECOVERY_RETAINED",
+        "SOURCE_UNCHANGED",
+        "ADAPTER_RECOVERY_FAIL_CLOSED",
+        "OMITTED_CLEANUP",
+        "INVALID_RECOVERY",
+        "EXECUTE_ONLY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/application-adapter-composition.md",
+        "docs/living/system/agentic-application/state.md",
+        "docs/living/system/agent-tools/recovery.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/application-adapter-composition.md",
+          "match": "| BB-142 | `runSupervisedBackendWork({ recoveryDir })` persists"
+        },
+        {
+          "ref": "docs/living/system/agentic-application/state.md",
+          "match": "## Opt-in supervised Backend adapter"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/recovery.md",
+          "match": "# Agent-tool durable recovery"
+        }
+      ],
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
+    }
+  ],
+  "testContract": [
+    {
+      "id": "RECOVERY_FORWARDING",
+      "testTitle": "P1 actual persisted execute",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "Actual adapter call uses owned recoveryDir; verifier reads handle.json at ACT_COMPLETED/RUNNING. No additional adapter callback."
+    },
+    {
+      "id": "RECOVERY_RETAINED",
+      "testTitle": "P1 actual persisted execute",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "verifyAgentToolRunHandle after return validates task/repository/base/candidate; handle status ACCEPTED, worktree exists and HEAD matches candidateSha."
+    },
+    {
+      "id": "SOURCE_UNCHANGED",
+      "testTitle": "P1/N1/N2 source preservation",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "Compare exact before/after HEAD, sorted refs/heads and porcelain snapshots; no source cleanup or checkout."
+    },
+    {
+      "id": "ADAPTER_RECOVERY_FAIL_CLOSED",
+      "testTitle": "BB-142 N1 A second first-run against a current recovery handle must fail before spawn",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "First adapter call creates current handle; snapshot bytes and fake-dispatch counter. Second actual adapter call rejects HANDLE_CURRENT; exact bytes/counter unchanged."
+    },
+    {
+      "id": "OMITTED_CLEANUP",
+      "testTitle": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "invocationObserver captures real first-run cwd; after adapter return stat reports ENOENT. No recovery handle appears in source; existing adapter re-ground finally remains intact."
+    },
+    {
+      "id": "INVALID_RECOVERY",
+      "testTitle": "P3 invalid recovery directory",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "Actual adapter calls with empty string/number/object reject delivered TypeError; no fake-agent marker or new handle."
+    },
+    {
+      "id": "EXECUTE_ONLY",
+      "testTitle": "P4 execute-only ownership",
+      "subjectSymbol": "runSupervisedBackendWork",
+      "observations": "Focused source-contract check on candidate adapter finds only forwarding, no resumeSupervisedTask import/call. Existing Backend/QA regressions remain green."
+    }
+  ],
+  "prototypeEvidence": {
+    "result": {
+      "classification": "EXECUTED_RESEARCH_ADAPTER_SOURCE_COPY_NOT_PRODUCT_DELIVERY",
+      "runtime": "v24.19.0",
+      "sourceSha256": "36f67524d4a6334c7f1b45957cfa2fe222f663bc7be0c28454a9c71a55dc96ad",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "terminalHandle": "ACCEPTED",
+      "retainedWorktree": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleUnchanged": true,
+      "omittedRun": "APPLIED",
+      "omittedWorktreeRemoved": true,
+      "sourceUnchanged": true,
+      "limits": "Only optional recoveryDir forwarding added in scratch copy; imports delivered supervisor, contracts and verification. No Board resume implementation or product source edit."
+    },
+    "method": "Research-only copy adds just recoveryDir parameter/forwarding; actual delivered supervisor and independent re-grounding execute, with no tracked product changes.",
+    "replay": "/workspace/research-plans/adapter-prototype-check.mjs",
+    "patch": "--- packages/agentic-system/src/supervised-backend.js\n+++ scratch/prototype-adapter.mjs\n@@ -22,5 +22,5 @@\n   subjectFromValue,\n   VerificationStatus\n-} from \"../../core-harness/src/index.js\";\n+} from \"/workspace/research-delivery/packages/core-harness/src/index.js\";\n import {\n   BackendEvidenceClaim,\n@@ -29,7 +29,7 @@\n   BackendContextSchema,\n   parseBackendWorkOrder\n-} from \"./contracts.js\";\n-import { createLocalGitWorkspace } from \"./local-git-workspace.js\";\n-import { createLocalCommandVerifier } from \"./local-command-verifier.js\";\n+} from \"/workspace/research-delivery/packages/agentic-system/src/contracts.js\";\n+import { createLocalGitWorkspace } from \"/workspace/research-delivery/packages/agentic-system/src/local-git-workspace.js\";\n+import { createLocalCommandVerifier } from \"/workspace/research-delivery/packages/agentic-system/src/local-command-verifier.js\";\n \n const run = promisify(execFile);\n@@ -183,5 +183,5 @@\n   eventSinks = [],\n   tracer = null,\n-  invocationObserver = null\n+  invocationObserver = null, recoveryDir = null\n } = {}) {\n   const parsedOrder = parseBackendWorkOrder(order);\n@@ -191,6 +191,6 @@\n   // Leaf-module dynamic imports only: supervisor.js statically imports\n   // agentic-system/src/index.js, so a static import here would cycle.\n-  const supervisor = await import(\"../../agent-tools/src/supervisor.js\");\n-  const adapters = await import(\"../../agent-tools/src/tool-adapters.js\");\n+  const supervisor = await import(\"/workspace/research-delivery/packages/agent-tools/src/supervisor.js\");\n+  const adapters = await import(\"/workspace/research-delivery/packages/agent-tools/src/tool-adapters.js\");\n   const { runSupervisedTask, AgentTaskStatus, AttemptOutcome } = supervisor;\n   const resolvedPermissionProfile = permissionProfile === undefined\n@@ -199,4 +199,5 @@\n \n   const supervised = await runSupervisedTask({\n+    recoveryDir,\n     tool,\n     task,\n",
+    "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "replayReproduction": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "07df9759d833e9320fce45f6bb68240b4bea91ba6cfa3416abc0a23f9863d419",
+    "sourceEncoding": "gzip+base64 UTF-8",
+    "sourceGzipBase64": "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",
+    "command": "python3 <decoded-script.py> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "904146565fa1c75f92cbe3a6e3abc08eb58f833e40f774ef8555a4417ba13102",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "retainedCandidateMatches": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleBytesUnchanged": true,
+      "sourceSnapshotsEqual": true,
+      "omittedCwdRemoved": true,
+      "invalidDirBeforeDispatch": true
+    }
+  },
+  "replayObservations": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "07df9759d833e9320fce45f6bb68240b4bea91ba6cfa3416abc0a23f9863d419",
+    "command": "python3 <decoded-script.py> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "904146565fa1c75f92cbe3a6e3abc08eb58f833e40f774ef8555a4417ba13102",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "retainedCandidateMatches": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleBytesUnchanged": true,
+      "sourceSnapshotsEqual": true,
+      "omittedCwdRemoved": true,
+      "invalidDirBeforeDispatch": true
+    },
+    "fixtureChecks": [
+      {
+        "id": "RECOVERY_FORWARDING",
+        "testTitle": "P1 actual persisted execute",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Actual adapter call uses owned recoveryDir; verifier reads handle.json at ACT_COMPLETED/RUNNING. No additional adapter callback."
+      },
+      {
+        "id": "RECOVERY_RETAINED",
+        "testTitle": "P1 actual persisted execute",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "verifyAgentToolRunHandle after return validates task/repository/base/candidate; handle status ACCEPTED, worktree exists and HEAD matches candidateSha."
+      },
+      {
+        "id": "SOURCE_UNCHANGED",
+        "testTitle": "P1/N1/N2 source preservation",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Compare exact before/after HEAD, sorted refs/heads and porcelain snapshots; no source cleanup or checkout."
+      },
+      {
+        "id": "ADAPTER_RECOVERY_FAIL_CLOSED",
+        "testTitle": "BB-142 N1 A second first-run against a current recovery handle must fail before spawn",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "First adapter call creates current handle; snapshot bytes and fake-dispatch counter. Second actual adapter call rejects HANDLE_CURRENT; exact bytes/counter unchanged."
+      },
+      {
+        "id": "OMITTED_CLEANUP",
+        "testTitle": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "invocationObserver captures real first-run cwd; after adapter return stat reports ENOENT. No recovery handle appears in source; existing adapter re-ground finally remains intact."
+      },
+      {
+        "id": "INVALID_RECOVERY",
+        "testTitle": "P3 invalid recovery directory",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Actual adapter calls with empty string/number/object reject delivered TypeError; no fake-agent marker or new handle."
+      },
+      {
+        "id": "EXECUTE_ONLY",
+        "testTitle": "P4 execute-only ownership",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Focused source-contract check on candidate adapter finds only forwarding, no resumeSupervisedTask import/call. Existing Backend/QA regressions remain green."
+      }
+    ]
   }
 }
