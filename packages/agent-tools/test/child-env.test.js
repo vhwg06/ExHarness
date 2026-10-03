@@ -275,6 +275,21 @@ test("EN6 bin forwards FAKE_AGENT_SCENARIO and --env into the supervised child",
   }
 });
 
+test("N4 malformed --env name violating the name pattern exits 64", T, async () => {
+  const badName = await runBin(["run", "--tool", "codex", "--task", "x", "--env", "1BAD=oops"], {});
+  assert.equal(badName.code, 64, `invalid --env name is a usage error: ${badName.stderr}`);
+  const emptyName = await runBin(["run", "--tool", "codex", "--task", "x", "--env", "=empty"], {});
+  assert.equal(emptyName.code, 64, `empty --env name is a usage error: ${emptyName.stderr}`);
+  const smoke = await runBin(["smoke", "--env", "NO_EQUALS"], {});
+  assert.equal(smoke.code, 64, `malformed --env on smoke is a usage error: ${smoke.stderr}`);
+});
+
+test("N5 overlay value beats an inherited allowlist value", T, async () => {
+  assert.ok(process.env.PATH !== undefined, "test host has PATH set");
+  const child = await childEnvViaRunProcess({ PATH: "/bb120-overlay-path" });
+  assert.equal(child.path, "/bb120-overlay-path", "caller overlay wins over the inherited allowlist value");
+});
+
 test("EN7 write scope excludes core-harness", T, () => {
   const doc = readFileSync(join(REPO_ROOT, "docs", "living", "system", "agent-tools", "state.md"), "utf8");
   assert.match(doc, /allowlist/i);
