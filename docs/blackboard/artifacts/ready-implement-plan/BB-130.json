@@ -268,7 +268,6 @@
       "invariant": "No verifier child process implicitly inherits parent keys outside the published 28-name allowlist (D1); parent-only planted secrets are absent from all verifier children including Git and platform helpers; NODE_TEST_CONTEXT cannot be restored by parent env or any overlay, including mixed-case Windows equivalents (D2).",
       "criterionIds": [
         "ENV_BOUNDARY",
-        "TEST_CHANNEL",
         "INTERNAL_ENV"
       ],
       "verificationIds": [
@@ -277,7 +276,7 @@
         "internal-env"
       ],
       "testTitle": "BB-130 env boundary: no parent leak, NODE_TEST_CONTEXT stripped",
-      "requiredObservations": "NEG test: plant SYNTH_SECRET=xyz in parent process.env; invoke createLocalCommandVerifier and run a child; capture child env; assert SYNTH_SECRET absent, NODE_TEST_CONTEXT absent, only 28 allowlisted names present. POS test: allowlisted PATH present."
+      "requiredObservations": "Plant only synthetic parent secret names in isolated driver; call actual createLocalCommandVerifier.verify on scratch candidate. Child asserts both secrets and NODE_TEST_CONTEXT absent, allowlisted PATH present. Capture booleans only. Injected helper instrumentation separately proves Git and termination helpers receive filtered base and no grants. Builder tests establish exact 28-name policy; arbitrary explicit grants are permitted for the command."
     },
     {
       "invariant": "An explicit caller env overlay grants non-allowlisted keys per command and overrides inherited values (D3); the overlay is copied at factory construction, rejects malformed entries before verification, cannot override verifier-owned Git identity checks or Windows termination utilities, and cannot grant NODE_TEST_CONTEXT (D3, D4).",
@@ -290,7 +289,7 @@
         "internal-env"
       ],
       "testTitle": "BB-130 overlay: explicit grant works, cannot override owned checks",
-      "requiredObservations": "NEG test: overlay {NODE_TEST_CONTEXT: 'x'} rejected with TypeError before spawn; overlay cannot set GIT_CONFIG_NOSYSTEM for helpers. POS test: overlay {MY_KEY: 'v'} appears in child env; factory copies it."
+      "requiredObservations": "Valid string overlay NODE_TEST_CONTEXT is accepted at construction, then stripped after merging; real verifier command and nested node:test observe no marker. Win32 mixed-case aliases are also stripped. Malformed marker values reject under ordinary overlay validation. Explicit MY_KEY grant reaches command only; helper environments never receive caller overlay, and Git forces GIT_CONFIG_NOSYSTEM=1. Mutating caller env after factory construction cannot change copied grants."
     },
     {
       "invariant": "Every command result stays bound to the evaluated candidate revision via requireUnchangedTree/fresh-revision checks (D5); revision mismatch stops before the verification command and post-run HEAD/tree changes fail closed; existing argument-array, shell:false, bounded-capture, digest, timeout and process-tree termination behavior is unchanged by filtering (D5).",
@@ -303,7 +302,7 @@
         "platform"
       ],
       "testTitle": "BB-130 integrity: revision binding and behavior preserved",
-      "requiredObservations": "NEG test: mutate worktree file after before-head captured; assert TREE_MUTATED FAIL. POS test: clean tree yields PASS with revision == before.head; shell:false and timeouts unchanged."
+      "requiredObservations": "Distinct direct verifier fixtures prove wrong candidate rejects REVISION_MISMATCH before sentinel creation; exit-zero fixture mutation returns TREE_MUTATED with original revision binding. Clean candidate PASS includes exact revision, stream digests and bounds; nonzero/spawn errors FAIL and timeout INCONCLUSIVE with owned process-tree teardown."
     },
     {
       "invariant": "Required PATH, HOME and platform/config variables remain available in verifier children after filtering, with deterministic Windows casing and POSIX case sensitivity (D2); filtering never invents missing values; the package exports exactly the frozen allowlist and the environment builder (D1).",
@@ -487,7 +486,8 @@
         }
       ],
       "supportingPlanFields": [
-        "invariantCoverage"
+        "environmentContract",
+        "testContract"
       ]
     },
     {
