@@ -44,7 +44,7 @@
     "D5 — Persist compact SUPERVISION_STATE_V1 on the current task contract: lastFailedEvaluationRef, failedCandidateSha, failedCandidateTree, failedEvidenceHash, findingSignature, repeatCount, lookbackRef, lookbackHash and mode. No session transcript or generic history chain is introduced.",
     "D6 — Before any subsequent Worker JEV provider dispatch, assert material progress against SUPERVISION_STATE_V1. IMPLEMENTATION_DEFECT requires candidate-tree delta; INSUFFICIENT_EVIDENCE requires implementation-result/evidence-hash delta; mixed failures require both. Lookback prose/control-only changes never count. PLAN_INPUT_CONTRADICTION still returns directly to RESEARCH_SA.",
     "D7 — findingSignature is hash(sorted(nonSatisfied questionId + ':' + choice)). A different signature resets repeatCount and uses DIAGNOSIS. The same signature on the next failed cycle increments repeatCount and selects STRATEGY_RECONSIDERATION, which must reference the prior strategy and state why it failed plus an alternative strategy class. Repeat count alone never declares plan contradiction.",
-    "D8 — Add pure trusted scripts/blackboard-supervision.mjs as the canonical supervision primitive. blackboard-jev.mjs imports it for finding/material-progress validation used by BOTH local CLI and CI evaluation; blackboard-delivery.mjs imports it for trusted state transitions; delivery-context/bootstrap project LOOKBACK authority from it. blackboard-jev-ci.mjs remains a thin trusted-base, data-only adapter that delegates to blackboard-jev.mjs and never imports/executes candidate modules or owns a second failure-to-repair policy.",
+    "D8 — Add pure scripts/blackboard-supervision.mjs. blackboard-jev.mjs uses it for finding/material-progress validation reached by local CLI and trusted-base CI; blackboard-delivery.mjs uses it for transitions. blackboard-jev-ci.mjs stays a thin data-only adapter and owns no separate supervision policy.",
     "D9 — BB-152 becomes a direct Worker dependency. BB-153 extends the delivered phase-local delivery envelope with LOOKBACK instead of creating a parallel bootstrap policy. Worker start binds exact DONE BB-152; incompatible delivered seams are PLAN_INPUT_CONTRADICTION before writes.",
     "D10 — Evidence truth remains observation-first. JEV choice + exact criterion/evidence identify what must be reconsidered, actor diagnosis guides strategy, but only fresh candidate/evidence plus the next JEV judgment determine resolution."
   ],
@@ -64,8 +64,7 @@
       "docs/blackboard/jev.md",
       "docs/blackboard/pipelines.md",
       "docs/living/system/state.md",
-      ".github/workflows/test.yml",
-      ".github/workflows/blackboard-jev.yml"
+      ".github/workflows/test.yml"
     ],
     "expectedNew": [
       "scripts/blackboard-supervision.mjs",
@@ -122,73 +121,73 @@
     "S2 — Control transition [SUPERVISORY_LOOP, LOOKBACK_BINDING]: publish Worker REPAIR_REQUIRED into LOOKBACK; derive read-only LOOKBACK delivery/bootstrap intent; add publish-lookback transition into REPAIR with stale-binding/forbidden-authority failures.",
     "S3 — Anti-spam progress [MATERIAL_DELTA, EVIDENCE_TRUTH]: enforce failure-class-specific candidate/evidence material delta before Worker JEV provider dispatch and ignore lookback/control-only churn.",
     "S4 — Repeated-failure supervision [MATERIAL_DELTA]: compute findingSignature/repeatCount and route repeated identical failures to STRATEGY_RECONSIDERATION with prior-strategy binding.",
-    "S5 — Shared local/CI semantics + migration [SHARED_SEMANTICS, BB152_INTEGRATION]: wire blackboard-supervision through blackboard-jev.mjs and blackboard-delivery.mjs; prove local CLI and trusted-base CI both reach supervision validation through blackboard-jev.mjs while blackboard-jev-ci.mjs stays thin/data-only; extend delivered BB-152 phase envelope; update tests and Living/Blackboard docs."
+    "S5 — Shared local/CI semantics + BB-152 migration [SHARED_SEMANTICS, BB152_INTEGRATION]: route both evaluator entry paths through blackboard-jev.mjs -> blackboard-supervision.mjs; keep CI adapter data-only; extend BB-152 LOOKBACK onboarding; update tests/docs."
   ],
   "acceptanceCriteria": [
     {
       "id": "SUPERVISORY_LOOP",
-      "statement": "A Worker evaluation containing IMPLEMENTATION_DEFECT or INSUFFICIENT_EVIDENCE publishes to PLANNED/WORKER/LOOKBACK, not REPAIR; LOOKBACK derives a non-IMPLEMENT read-only source context and only exact publication of SUPERVISION_LOOKBACK_V1 can transition to REPAIR.",
+      "statement": "Worker IMPLEMENTATION_DEFECT/INSUFFICIENT_EVIDENCE publishes to read-only WORKER/LOOKBACK; only an exact SUPERVISION_LOOKBACK_V1 publication can grant REPAIR.",
       "verificationIds": [
         "focused",
         "blackboard-context",
         "jev-regression"
       ],
       "evidenceRequired": [
-        "Focused transition fixture from bound Worker evaluation through LOOKBACK context and lookback publication, asserting phase, action and empty source write scope."
+        "Transition test: failed JEV -> LOOKBACK, no writes; valid lookback -> REPAIR."
       ]
     },
     {
       "id": "LOOKBACK_BINDING",
-      "statement": "SUPERVISION_FINDING_SET_V1 and SUPERVISION_LOOKBACK_V1 bind exact plan/evaluation/candidate/evidence/findingSignature; every failed question is diagnosed exactly once, acceptance-authority fields are rejected, and stale or mismatched bindings cannot grant REPAIR.",
+      "statement": "Finding/lookback contracts bind exact plan, evaluation, candidate, evidence and findingSignature; every failed question is diagnosed once; stale or authority-bearing lookback fails closed.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Exact-subject positive fixture plus stale evaluation, stale candidate/evidence, missing failed-question diagnosis and forbidden acceptance-field negative fixtures."
+        "Positive exact-binding fixture plus stale, incomplete and forbidden-authority negatives."
       ]
     },
     {
       "id": "MATERIAL_DELTA",
-      "statement": "After a failed cycle, Worker JEV dispatch is denied before provider call unless material progress addresses the typed failure classes: candidate-tree delta for IMPLEMENTATION_DEFECT, evidence-hash delta for INSUFFICIENT_EVIDENCE, and both for mixed failures; repeated same findingSignature selects STRATEGY_RECONSIDERATION.",
+      "statement": "Before another Worker JEV call, IMPLEMENTATION_DEFECT requires candidate-tree delta, INSUFFICIENT_EVIDENCE requires evidence-hash delta, mixed failures require both; repeated signature selects STRATEGY_RECONSIDERATION.",
       "verificationIds": [
         "focused",
         "jev-regression"
       ],
       "evidenceRequired": [
-        "Provider-call-count fixtures proving unchanged/cosmetic retries make zero provider calls and repeated identical findings select reconsideration mode."
+        "Zero-provider-call unchanged/cosmetic fixtures plus repeated-signature reconsideration fixture."
       ]
     },
     {
       "id": "SHARED_SEMANTICS",
-      "statement": "Local CLI evaluation and trusted-base CI evaluation both obtain material-progress/finding validity through blackboard-jev.mjs -> blackboard-supervision.mjs; trusted publication obtains failure disposition through blackboard-delivery.mjs -> the same supervision module. blackboard-jev-ci.mjs remains a thin data-only adapter and CI workflow continues pinning controller_sha to the PR base rather than executing candidate controller modules.",
+      "statement": "Local CLI and trusted-base CI both reach supervision validation through blackboard-jev.mjs -> blackboard-supervision.mjs; publication uses the same primitive through blackboard-delivery.mjs; CI adapter stays data-only.",
       "verificationIds": [
         "focused",
         "jev-regression"
       ],
       "evidenceRequired": [
-        "Source/probe assertions for local CLI -> blackboard-jev materialize/evaluate, CI adapter -> the same blackboard-jev materialize/evaluate, workflow controller_sha == PR base, and no direct supervision policy/candidate-module execution in blackboard-jev-ci.mjs."
+        "Source/probe assertions for local/CI delegation, data-only CI adapter and PR-base controller pin."
       ]
     },
     {
       "id": "EVIDENCE_TRUTH",
-      "statement": "Actor-authored lookback text and Blackboard control changes are never material implementation progress or correctness evidence; only exact candidate/evidence deltas and a fresh independent JEV judgment can resolve prior findings.",
+      "statement": "Lookback prose/control changes are neither material implementation progress nor correctness evidence; fresh candidate/evidence plus independent JEV resolve findings.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Negative fixtures changing only lookback prose/control metadata while candidate/evidence bindings stay fixed, plus fresh-delta positive fixtures."
+        "Prose/control-only negative and fresh candidate/evidence positive fixtures."
       ]
     },
     {
       "id": "BB152_INTEGRATION",
-      "statement": "Worker preflight requires DONE BB-152 and extends its delivered phase-local onboarding contract with LOOKBACK without duplicating a second phase policy; incompatible delivered BB-152 seams fail PLAN_INPUT_CONTRADICTION before product writes.",
+      "statement": "Worker requires DONE BB-152 and extends its delivered phase onboarding with LOOKBACK; incompatible seams fail PLAN_INPUT_CONTRADICTION before writes.",
       "verificationIds": [
         "focused",
         "blackboard-context",
         "docs"
       ],
       "evidenceRequired": [
-        "Dependency/preflight fixture, phase-envelope assertion and Living/Blackboard documentation."
+        "Dependency/preflight, phase-envelope and docs assertions."
       ]
     }
   ],
@@ -470,18 +469,16 @@
     "forbidden": "No third lane, no free-text JEV authority, no source writes during LOOKBACK, no provider retry without material delta."
   },
   "ciContract": {
-    "selector": "Existing trusted PR-base selection remains; no workflow YAML business-rule fork.",
-    "supervision": "Do not add candidate supervision logic to blackboard-jev-ci.mjs. The trusted-base CI adapter keeps calling blackboard-jev.mjs materialize/evaluate; after BB-153 is delivered, that trusted module imports blackboard-supervision.mjs. Candidate kernel tests prove the new module before merge, while the independent JEV controller itself remains pinned to PR base.",
-    "provider": "TYPESAFE_API_KEY is available only to JEV evaluation as before; blocked material progress fails before provider dispatch."
+    "selector": "Keep exact-head trusted selector.",
+    "supervision": "CI adapter delegates to trusted-base blackboard-jev.mjs; shared semantics live in blackboard-supervision.mjs below local/CI adapters.",
+    "provider": "Material-progress failure occurs before JEV provider dispatch."
   },
   "migrationContract": {
     "preserve": [
-      "two-lane Research/Worker model",
-      "typed JEV outcomes",
-      "no-provider-text response trust boundary",
+      "two lanes",
+      "typed/no-provider-text JEV",
       "exact candidate/evidence/merge binding",
-      "existing EXECUTION/JUDGMENT/MERGE_PENDING semantics",
-      "trusted-base CI controller never imports or executes candidate modules"
+      "trusted-base CI controller"
     ],
     "add": [
       "WORKER/LOOKBACK",
@@ -490,8 +487,8 @@
       "SUPERVISION_STATE_V1",
       "blackboard-supervision.mjs"
     ],
-    "bb152": "Extend delivered BB-152 phase envelope/bootstrap table with LOOKBACK; do not duplicate it.",
-    "rollback": "Remove LOOKBACK/controller/lookback artifact handling and restore REPAIR_REQUIRED -> REPAIR only if the feature is explicitly rolled back before dependent work relies on supervision state."
+    "bb152": "Extend delivered BB-152 phase envelope/bootstrap with LOOKBACK.",
+    "rollback": "Remove LOOKBACK/controller handling before dependents rely on supervision state."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
@@ -651,8 +648,7 @@
         "scripts/blackboard-jev-cli.mjs",
         "scripts/blackboard-jev-ci.mjs",
         "scripts/blackboard-jev.mjs",
-        ".github/workflows/test.yml",
-        ".github/workflows/blackboard-jev.yml"
+        ".github/workflows/test.yml"
       ],
       "sourceAnchors": [
         {
@@ -673,9 +669,7 @@
         }
       ],
       "supportingPlanFields": [
-        "sharedSemanticsEvidence",
-        "ciContract",
-        "migrationContract"
+        "ciContract"
       ]
     },
     {
@@ -722,12 +716,5 @@
         "benchmarkContract"
       ]
     }
-  ],
-  "sharedSemanticsEvidence": {
-    "currentLocalPath": "blackboard-jev-cli.mjs imports materialize/evaluate from blackboard-jev.mjs and publishEvaluation from blackboard-delivery.mjs.",
-    "currentCiPath": "blackboard-jev-ci.mjs imports materialize/evaluate/validateEvaluation from blackboard-jev.mjs; its evaluate path states that it only reads candidate data and never imports or executes candidate modules.",
-    "controllerTrust": "test.yml passes controller_sha and trusted_sha as github.event.pull_request.base.sha; blackboard-jev.yml executes controller/scripts/blackboard-jev-ci.mjs.",
-    "implementationConsequence": "blackboard-supervision.mjs is imported by blackboard-jev.mjs for shared validation and by blackboard-delivery.mjs for transition publication. blackboard-jev-ci.mjs requires no supervision-specific write.",
-    "selfEvaluationBoundary": "During the BB-153 implementation PR, independent CI/JEV remains on the trusted base; candidate kernel tests execute the proposed shared module. After merge, subsequent PR CI uses the delivered module as trusted controller code."
-  }
+  ]
 }
