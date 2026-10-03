@@ -24,10 +24,11 @@
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
-    "No verifier child process implicitly inherits parent keys outside the published 28-name allowlist (D1); parent-only planted secrets are absent from all verifier children including Git and platform helpers; NODE_TEST_CONTEXT cannot be restored by parent env or any overlay, including mixed-case Windows equivalents (D2).",
-    "An explicit caller env overlay grants non-allowlisted keys per command and overrides inherited values (D3); the overlay is copied at factory construction, rejects malformed entries before verification, cannot override verifier-owned Git identity checks or Windows termination utilities, and cannot grant NODE_TEST_CONTEXT (D3, D4).",
-    "Every command result stays bound to the evaluated candidate revision via requireUnchangedTree/fresh-revision checks (D5); revision mismatch stops before the verification command and post-run HEAD/tree changes fail closed; existing argument-array, shell:false, bounded-capture, digest, timeout and process-tree termination behavior is unchanged by filtering (D5).",
-    "Required PATH, HOME and platform/config variables remain available in verifier children after filtering, with deterministic Windows casing and POSIX case sensitivity (D2); filtering never invents missing values; the package exports exactly the frozen allowlist and the environment builder (D1)."
+    "Default command environment inherits only own string data values from the exact published 28-name list; missing values are omitted.",
+    "Valid NODE_TEST_CONTEXT overlay values never reach command or helper children; strip after merge, including Windows aliases.",
+    "Command grants are validated and copied at factory construction; only the command gets grants and helper children get filtered base.",
+    "Revision mismatch prevents command effects, tree mutation cannot PASS, and filtering preserves existing verifier result/termination semantics.",
+    "Builder exports a frozen exact list and handles native process.env without invoking getters or reading non-allowlisted values."
   ],
   "architectureDecisions": [
     "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle. Literal allowlist: PATH, HOME, USER, LOGNAME, SHELL, TMPDIR, TEMP, TMP, LANG, LC_ALL, LC_CTYPE, TERM, TERM_PROGRAM, COLORTERM, XDG_CONFIG_HOME, XDG_CACHE_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR, XDG_STATE_HOME, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, PATHEXT, SYSTEMROOT, COMSPEC, WINDIR.",
@@ -265,22 +266,33 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "No verifier child process implicitly inherits parent keys outside the published 28-name allowlist (D1); parent-only planted secrets are absent from all verifier children including Git and platform helpers; NODE_TEST_CONTEXT cannot be restored by parent env or any overlay, including mixed-case Windows equivalents (D2).",
+      "invariant": "Default command environment inherits only own string data values from the exact published 28-name list; missing values are omitted.",
       "criterionIds": [
         "ENV_BOUNDARY",
+        "PLATFORM"
+      ],
+      "verificationIds": [
+        "env-boundary",
+        "platform"
+      ],
+      "testTitle": "BB-130 N1 parent-only synthetic secrets are absent",
+      "requiredObservations": "Call actual verifier on scratch Git with planted synthetic secrets; real child records secret-absence/PATH booleans. Pure POSIX/win32 maps prove membership, casing, missing names and own-property selection."
+    },
+    {
+      "invariant": "Valid NODE_TEST_CONTEXT overlay values never reach command or helper children; strip after merge, including Windows aliases.",
+      "criterionIds": [
         "TEST_CHANNEL",
         "INTERNAL_ENV"
       ],
       "verificationIds": [
-        "env-boundary",
         "test-channel",
         "internal-env"
       ],
-      "testTitle": "BB-130 env boundary: no parent leak, NODE_TEST_CONTEXT stripped",
-      "requiredObservations": "Plant only synthetic parent secret names in isolated driver; call actual createLocalCommandVerifier.verify on scratch candidate. Child asserts both secrets and NODE_TEST_CONTEXT absent, allowlisted PATH present. Capture booleans only. Injected helper instrumentation separately proves Git and termination helpers receive filtered base and no grants. Builder tests establish exact 28-name policy; arbitrary explicit grants are permitted for the command."
+      "testTitle": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
+      "requiredObservations": "Valid marker construction succeeds; real child/nested node:test cannot observe it. Pure win32 test strips case aliases. Ordinary malformed overlay validation still rejects invalid marker values."
     },
     {
-      "invariant": "An explicit caller env overlay grants non-allowlisted keys per command and overrides inherited values (D3); the overlay is copied at factory construction, rejects malformed entries before verification, cannot override verifier-owned Git identity checks or Windows termination utilities, and cannot grant NODE_TEST_CONTEXT (D3, D4).",
+      "invariant": "Command grants are validated and copied at factory construction; only the command gets grants and helper children get filtered base.",
       "criterionIds": [
         "OVERLAY",
         "INTERNAL_ENV"
@@ -289,34 +301,33 @@
         "overlay",
         "internal-env"
       ],
-      "testTitle": "BB-130 overlay: explicit grant works, cannot override owned checks",
-      "requiredObservations": "Valid string overlay NODE_TEST_CONTEXT is accepted at construction, then stripped after merging; real verifier command and nested node:test observe no marker. Win32 mixed-case aliases are also stripped. Malformed marker values reject under ordinary overlay validation. Explicit MY_KEY grant reaches command only; helper environments never receive caller overlay, and Git forces GIT_CONFIG_NOSYSTEM=1. Mutating caller env after factory construction cannot change copied grants."
+      "testTitle": "BB-130 N4 command overlay cannot redirect Git identity checks",
+      "requiredObservations": "Actual command sees explicit grant; actual native-backed Git instrumentation sees no grant/secret/test channel and forced GIT_CONFIG_NOSYSTEM=1. Caller mutation cannot change copied values. Win32 taskkill is separately labelled simulated coverage."
     },
     {
-      "invariant": "Every command result stays bound to the evaluated candidate revision via requireUnchangedTree/fresh-revision checks (D5); revision mismatch stops before the verification command and post-run HEAD/tree changes fail closed; existing argument-array, shell:false, bounded-capture, digest, timeout and process-tree termination behavior is unchanged by filtering (D5).",
+      "invariant": "Revision mismatch prevents command effects, tree mutation cannot PASS, and filtering preserves existing verifier result/termination semantics.",
       "criterionIds": [
-        "INTEGRITY",
-        "PLATFORM"
+        "INTEGRITY"
       ],
       "verificationIds": [
         "integrity",
-        "platform"
+        "agentic-regression"
       ],
-      "testTitle": "BB-130 integrity: revision binding and behavior preserved",
-      "requiredObservations": "Distinct direct verifier fixtures prove wrong candidate rejects REVISION_MISMATCH before sentinel creation; exit-zero fixture mutation returns TREE_MUTATED with original revision binding. Clean candidate PASS includes exact revision, stream digests and bounds; nonzero/spawn errors FAIL and timeout INCONCLUSIVE with owned process-tree teardown."
+      "testTitle": "BB-130 N5 revision mismatch fails before command side effects",
+      "requiredObservations": "N5 wrong candidate fails before sentinel. N6 real command mutates fixture and returns TREE_MUTATED. Clean/nonzero/spawn-error/timeout controls preserve PASS/FAIL/INCONCLUSIVE, original revision/digests and owned teardown."
     },
     {
-      "invariant": "Required PATH, HOME and platform/config variables remain available in verifier children after filtering, with deterministic Windows casing and POSIX case sensitivity (D2); filtering never invents missing values; the package exports exactly the frozen allowlist and the environment builder (D1).",
+      "invariant": "Builder exports a frozen exact list and handles native process.env without invoking getters or reading non-allowlisted values.",
       "criterionIds": [
-        "PLATFORM",
-        "EXPORTS_DOCS"
+        "EXPORTS_DOCS",
+        "PLATFORM"
       ],
       "verificationIds": [
-        "platform",
-        "exports"
+        "exports",
+        "platform"
       ],
-      "testTitle": "BB-130 platform: PATH/HOME available, exports frozen",
-      "requiredObservations": "POS test: child env contains PATH, HOME with exact values; Windows uppercases deterministically. NEG test: absent FOO_BAR not synthesized. Exports test: frozen 28 names."
+      "testTitle": "BB-130 E8 descriptor validation cannot execute accessors",
+      "requiredObservations": "Index/module share exact frozen exports; actual native process.env builds successfully. Selected allowlisted accessors/non-string values reject without getter call; non-allowlisted parent values are never read. Plain/null-prototype injected maps pass."
     }
   ],
   "negativeVerificationCases": [
