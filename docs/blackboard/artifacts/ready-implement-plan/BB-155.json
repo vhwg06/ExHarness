@@ -120,7 +120,7 @@
       "evidenceRequired": [
         "Two checkout fixtures read the same control ref; stale CAS write is rejected.",
         "Competing claims produce one winner; takeover before store-clock expiry is rejected; takeover after store-clock expiry advances the fence.",
-        "Exact candidate-bound focused log with direct calls to actual product symbols; SQLite/process/CLI observations must be asserted, not inferred from narrative. Full schema/auth/lifecycle/receipt tests and synthetic coexistence fixture required."
+        "Actual candidate-bound focused symbol/CLI checks and exact log hash/exit; all N1-N6 titles and positive schema/auth/receipt/table controls pass without skip."
       ]
     },
     {
@@ -131,7 +131,7 @@
       ],
       "evidenceRequired": [
         "Create fixture proves no legacy graph/artifact write and returns a valid Work generation.",
-        "Exact candidate-bound focused log with direct calls to actual product symbols; SQLite/process/CLI observations must be asserted, not inferred from narrative. Full schema/auth/lifecycle/receipt tests and synthetic coexistence fixture required."
+        "Actual candidate-bound focused symbol/CLI checks and exact log hash/exit; all N1-N6 titles and positive schema/auth/receipt/table controls pass without skip."
       ]
     },
     {
@@ -144,7 +144,7 @@
         "Table-driven transition tests cover research, judgment, execution, repair, merge-pending and delivered boundaries.",
         "Independent controller instances over identical snapshots produce byte-equivalent next actions.",
         "A decision whose observedGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase.",
-        "Exact candidate-bound focused log with direct calls to actual product symbols; SQLite/process/CLI observations must be asserted, not inferred from narrative. Full schema/auth/lifecycle/receipt tests and synthetic coexistence fixture required."
+        "Actual candidate-bound focused symbol/CLI checks and exact log hash/exit; all N1-N6 titles and positive schema/auth/receipt/table controls pass without skip."
       ]
     },
     {
@@ -155,7 +155,7 @@
       ],
       "evidenceRequired": [
         "Repeated build is byte-equivalent and creates no context file; read-only phases expose no write scope.",
-        "Exact candidate-bound focused log with direct calls to actual product symbols; SQLite/process/CLI observations must be asserted, not inferred from narrative. Full schema/auth/lifecycle/receipt tests and synthetic coexistence fixture required."
+        "Actual candidate-bound focused symbol/CLI checks and exact log hash/exit; all N1-N6 titles and positive schema/auth/receipt/table controls pass without skip."
       ]
     },
     {
@@ -167,7 +167,7 @@
       "evidenceRequired": [
         "Mismatched generation/candidate/receipt bindings fail closed.",
         "Stale fence cannot publish candidate/evidence or transition state, while read-only show/context operations succeed without a fence.",
-        "Exact candidate-bound focused log with direct calls to actual product symbols; SQLite/process/CLI observations must be asserted, not inferred from narrative. Full schema/auth/lifecycle/receipt tests and synthetic coexistence fixture required."
+        "Actual candidate-bound focused symbol/CLI checks and exact log hash/exit; all N1-N6 titles and positive schema/auth/receipt/table controls pass without skip."
       ]
     }
   ],
@@ -180,7 +180,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "N1 actual cli/client two checked-out branches share configured service; canonical Work bytes/RV equal; fake local graph and wrong authorityId cannot select a different authority."
     },
     {
       "invariant": "Work.generation increments only on semantic spec changes; resourceVersion covers every status/spec mutation and stale decisions never apply.",
@@ -190,7 +190,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "Create generation1/RV1; semantic update generation2 clears readiness/Attempt but preserves fence counter. Status changes RV only; N3 stale Decision leaves phase/conditions unchanged."
     },
     {
       "invariant": "Store-clock leases and persistent monotonic fences reject stale mutations; actor time cannot authorize takeover; read-only operations need no Attempt fence.",
@@ -200,7 +200,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "N2 eight process claim race one winner; store time equality expires; actor future time ignored; restart rollback rejected. N5 stale/expired/taken-over token causes zero record/status effects."
     },
     {
       "invariant": "All lifecycle actions have executable guards, and pure nextActions/context consume only explicit immutable snapshot facts.",
@@ -210,7 +210,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "N4 every declared phase/action table edge and blocker matrix invokes actual nextActions/apply; illegal actions rejected. Equal immutable snapshots produce equal bytes with no clock/I/O."
     },
     {
       "invariant": "Actor-authored candidate/evidence records cannot alter spec, judge correctness or publish delivery; exact trusted Decision/receipt binding is required.",
@@ -220,7 +220,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "N5 rejects unknown actor payload spec/generation/fence keys; independent judge capability and exact current receipt subject required; synthetic fake allSAT and wrong merge tree cannot grant DELIVERED."
     },
     {
       "invariant": "BB-155 creates only new synthetic V2 Work and leaves legacy current-work authority and all task records unchanged.",
@@ -230,7 +230,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "Actual create/start from no source branch/PR; compare all legacy graph/artifact/source HEAD/status bytes unchanged; existing legacy id cannot be imported and no dual-write occurs."
     },
     {
       "invariant": "Contexts are derived values without stored identity/history; read-only phases grant zero product-source write authority.",
@@ -240,17 +240,51 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual product export/CLI invoked at exact candidate; assert stated positive boundary and rejected counterpart, store bytes/ref effects, exit outcome and log hash; include named negatives and declared focused checks."
+      "requiredObservations": "N6 actual buildContext and reader CLI work without Attempt fence; all read-only phases have writeScope=[]; repeated builds create zero files and equal canonical output."
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test test/blackboard-v2-control.test.mjs"
+      "command": "node --test test/blackboard-v2-control.test.mjs",
+      "preconditions": "Node24+ with node:sqlite; actual candidate modules and isolated trusted test-role fixtures; owned scratch databases/checkout roots only",
+      "criterionIds": [
+        "AUTHORITY",
+        "BOOTSTRAP",
+        "LIFECYCLE",
+        "CONTEXT",
+        "ATTEMPT"
+      ],
+      "requiredTestTitles": [
+        "BB-155 N1 configured client returns same Work across source checkouts",
+        "BB-155 N2 store-clock CAS permits one live owner",
+        "BB-155 N3 stale Decision cannot mutate current Work",
+        "BB-155 N4 pure nextActions is byte deterministic",
+        "BB-155 N5 stale fence cannot publish Attempt effects",
+        "BB-155 N6 read-only context needs no mutation fence"
+      ],
+      "subjects": [
+        "SqliteBlackboardControlStore",
+        "createControlClient",
+        "nextActions",
+        "buildContext"
+      ],
+      "mustPass": "Every named negative title and positive table/schema/auth/receipt control passes with zero skipped/TODO; actual product symbols must execute; subprocess capture reports winner/error/exit and store effects, not mock narrative",
+      "timeoutMs": 120000,
+      "requiredOutputs": "Exact candidate-bound exit0 log/hash, N1-N6 binding extraction, schema/guard/phase matrix and no-legacy-effect snapshots"
     },
     {
       "id": "repository",
-      "command": "npm run verify"
+      "command": "npm run verify",
+      "criterionIds": [
+        "AUTHORITY",
+        "BOOTSTRAP",
+        "LIFECYCLE",
+        "CONTEXT",
+        "ATTEMPT"
+      ],
+      "mustPass": "Existing package/kernel/artifact/context/docs checks pass; do not remove legacy verification or alter legacy authority for BB-155",
+      "requiredOutputs": "Exact candidate-bound repository log/hash/exit0 including changed declared Living state"
     }
   ],
   "negativeVerificationCases": [
@@ -341,14 +375,14 @@
       "GET /v2/works/:id",
       "GET /v2/works/:id/next",
       "GET /v2/works/:id/context",
-      "POST /v2/works {id?,spec} operator allocation/create",
+      "POST /v2/works {id?:V2-opaque in isolated mode,spec} operator allocation/create; BB-n allowed only after cutover",
       "POST /v2/works/:id/actions {action,expectedResourceVersion,expectedGeneration,attemptToken?,payload}"
     ],
     "result": "canonical Work show contains no read timestamp/cwd/connection-local data. Quiescent reads have identical bytes. Error codes distinguish NOT_FOUND, WRONG_AUTHORITY, UNAUTHORIZED, CAS_CONFLICT, LEASE_HELD, STALE_FENCE, CLOCK_REGRESSION, PHASE_FORBIDDEN and RETRYABLE_BUSY. Mutations never accept full actor-authored Work replacement."
   },
   "resourceContract": {
-    "Work": "{id:BB-n,resourceVersion:positiveInteger,generation:positiveInteger,spec:{objective:{ref,hash,body},plan:{ref,semanticHash,body}|null,dependencies:[{workId,requires,source:WORK|LIVING,binding?}],components:[id],writeScope:[path],forbiddenWrite:[path]},status:{phase,observedGeneration,activeAttemptRef|null,readinessDecisionRef|null,latestCandidateDecisionRef|null,conditions:[{type,observedGeneration,subjectRef,subjectHash,reason}],dependencyFacts:[{workId,state,refs,hash}],leaseState:NONE|LIVE|EXPIRED,blockers:[code]}}. Strict keys/types; stable sort by ids; uniqueness and acyclicity checked in store transaction.",
-    "generation": "create=1. Only operator/research authorized REVISE_SPEC mutates semantic desired state: compare RV, increment generation, set RESEARCHING, clear applicable readiness/conditions/activeAttempt, fenceCounter remains durable. Updating candidate/status or recording superseded Decision increments RV only when Work changes; it cannot bump generation to evade findings.",
+    "Work": "{id:BB-n after cutover or V2-opaque in isolated mode,resourceVersion:positiveInteger,generation:positiveInteger,spec:{labels?:{title,kind,complexity,featureId,expectedOutputs},provenance?:{legacySnapshotSha,legacyTaskHash,importReceiptRef},objective:{ref,hash,body},plan:{ref,semanticHash,body}|null,dependencies:[{workId,requires,source:WORK|LIVING,binding?}],components:[id],writeScope:[path],forbiddenWrite:[path]},status:{phase,observedGeneration,activeAttemptRef|null,readinessDecisionRef|null,latestCandidateDecisionRef|null,conditions:[{type,observedGeneration,subjectRef,subjectHash,reason}],dependencyFacts:[{workId,state,refs,hash}],leaseState:NONE|LIVE|EXPIRED,blockers:[code]}}. Strict keys/types; stable sort by ids; uniqueness and acyclicity checked in store transaction.",
+    "generation": "create=1. Only operator/research authorized REVISE_SPEC mutates semantic desired state: compare RV, increment generation, set RESEARCHING, clear applicable readiness/conditions/activeAttempt, fenceCounter remains durable. Updating candidate/status or recording superseded Decision increments RV only when Work changes; it cannot bump generation to evade findings. Optional labels/provenance have strict declared keys; migration provenance is immutable operator import evidence, not actor lifecycle authority.",
     "records": "Attempt/Decision/DeliveryReceipt bodies live in the same store. Immutable refs use {kind,id,hash}; raw evidence blobs retain exact immutable external refs/hashes. Candidate/evidence versions are append-only records, while status contains only current refs. No context state. Record insertion conflicting existing id/hash rejects; equal insertion is idempotent."
   },
   "lifecycleContract": {
@@ -386,7 +420,7 @@
     "limits": "Prototype synthetic Decisions test binding/control safety only; no new real SATISFIED result is claimed by this plan. Trusted receipts, real Jev and exact merge verification remain required in Worker evidence."
   },
   "coexistenceContract": {
-    "mode": "BB-155 authorityMode=ISOLATED_NEW_WORK; legacy ids cannot be imported/claimed/dual-written. New synthetic V2 ids allocate independently with authority namespace and collision checks; Work ids that already exist in legacy are denied until explicit BB-156 import transaction. No legacy graph/context/artifact/CI changes. Service endpoint config is operator supplied, not checked into candidate branches.",
+    "mode": "BB-155 authorityMode=ISOLATED_NEW_WORK accepts V2-opaque ids in its authority namespace only. It cannot create/import/claim BB-n legacy ids; no legacy graph reader or dual-write is needed. After BB-156 atomic import/cutover, allocator switches to BB-n using validated legacy next-id plus all stored-id uniqueness. Existing isolated V2 Work remain separate non-colliding ids.",
     "deliveryBoundary": "BB-155 Worker proves synthetic mode only. BB-156 owns authority selector/cutover and removal of legacy readers. BB-157 owns failed-candidate LOOKBACK/reflection policy. Both consume the exact published base API; delivered divergence reopens research instead of compatibility guessing."
   },
   "researchSummary": {
@@ -432,7 +466,8 @@
         }
       ],
       "supportingPlanFields": [
-        "authorityContract"
+        "authorityContract",
+        "authorityProbe"
       ]
     },
     {
@@ -448,15 +483,8 @@
         "focused"
       ],
       "decisionIndexes": [],
-      "sourceRefs": [
-        "scripts/blackboard-work-graph.mjs"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-work-graph.mjs",
-          "match": "export function taskReadiness(graph,taskId){"
-        }
-      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
       "supportingPlanFields": [
         "bootstrapContract"
       ]
@@ -499,15 +527,8 @@
         "focused"
       ],
       "decisionIndexes": [],
-      "sourceRefs": [
-        "scripts/blackboard-work-graph.mjs"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-work-graph.mjs",
-          "match": "export function taskReadiness(graph,taskId){"
-        }
-      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
       "supportingPlanFields": [
         "lifecycleContract"
       ]
@@ -524,15 +545,8 @@
         "focused"
       ],
       "decisionIndexes": [],
-      "sourceRefs": [
-        "scripts/blackboard-work-graph.mjs"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-work-graph.mjs",
-          "match": "export function taskReadiness(graph,taskId){"
-        }
-      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
       "supportingPlanFields": [
         "contextContract"
       ]
@@ -576,15 +590,8 @@
         "focused"
       ],
       "decisionIndexes": [],
-      "sourceRefs": [
-        "scripts/blackboard-work-graph.mjs"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-work-graph.mjs",
-          "match": "export function taskReadiness(graph,taskId){"
-        }
-      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
       "supportingPlanFields": [
         "coexistenceContract",
         "researchSummary",
@@ -636,5 +643,10 @@
     "N4": "Call actual nextActions on frozen and independently parsed identical snapshots across every phase/table row and blocker combination. Compare canonical output bytes; assert input unchanged, no Date/random/fs/store call; illegal action rejected by apply.",
     "N5": "Actual apply(PUBLISH_CANDIDATE/PUBLISH_EVIDENCE/PUBLISH_DECISION) with expired/taken-over token must reject before records/status effects. Unknown source payload keys cannot mutate spec/generation/fence/owner. Valid owner can publish exact version facts only.",
     "N6": "Call actual pure buildContext and reader CLI show/context without Attempt token; include every read-only phase and failed-judgment BLOCKED. Empty product write scope, identical immutable projection and no file writes. Reader capability is still required; no public unauthenticated authority."
+  },
+  "authorityProbe": {
+    "classification": "EXECUTED_RESEARCH_MODEL_NOT_DELIVERY",
+    "observed": "Node24.19/node:sqlite3.53.3: eight independent OS clients on same WAL DB yielded WON=1,CAS_CONFLICT=7; two HTTP client processes with different cwd read identical canonical Work bytes; actor future clock denied takeover and server clock at expiry admitted it; restart backward clock rejected. 28 prototype checks pass/0skip.",
+    "reproduction": "Complete source/tests/log gzip and SHA256 bindings are in researchReproduction; model omits production full auth/schema/provider but selected transaction/clock/branch-independence mechanism was exercised."
   }
 }
