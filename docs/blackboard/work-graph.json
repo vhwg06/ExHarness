@@ -6993,10 +6993,54 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-157",
+      "featureId": null,
+      "title": "Add JEV supervisory lookback and anti-spam loop to Blackboard V2",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-157.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Read-only V2 LOOKBACK phase before writable repair after failed JEV.",
+        "Exact workGeneration/Attempt/Decision-bound RepairReflection publication.",
+        "Failure-class-specific material-delta guard before another JEV call.",
+        "Repeated identical finding signature routes to strategy reconsideration without duplicate authoritative supervision state."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-157.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
+        "researchBaselineSha": "7599ef5a1395af36b0f86a6f940f059b28edb343"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-157",
+    "nextWorkId": "BB-158",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
