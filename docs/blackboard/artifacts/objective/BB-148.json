@@ -1,0 +1,43 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-148",
+  "recoversTrustFor": "BB-083",
+  "outcome": "Trusted evidence that the currently-live application-owned feedback loop in @exharness/agentic-system (typed observation/context/episode contracts, application-owned response lifecycle, deterministic cross-episode pattern projection, independent HOW improvement handoff, offline GEPA bridge) behaves as specified.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-083) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/agentic-system/src/feedback-contracts.js, feedback-controller.js, feedback-projection.js, feedback-improvement.js, feedback-dependencies.js and scripts/feedback/gepa-bridge.mjs (+ gepa_adapter.py). Boundary: feedback-outcome.js and feedback-lifecycle-*.js belong to BB-085, excluded. Dependency note: BB-059 is itself LIVE_UNTRUSTED; this recovery verifies its pinned exports at worker start and does not wait on BB-145.",
+  "scope": [
+    "agentic-system.feedback.application-ownership",
+    "agentic-system.feedback.context-binding",
+    "agentic-system.feedback.response-lifecycle",
+    "agentic-system.feedback.cross-episode-projection",
+    "agentic-system.feedback.improvement-handoff",
+    "agentic-system.feedback.gepa-bridge"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-083's historical evidence and invalid-merge lineage stay as fact.",
+    "No .github/** changes; no trusted JEV/controller changes; no changes to BB-085 territory.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C6 (application-only response authority, fail-closed context binding with typed UNRESOLVED reasons, CAS response lifecycle with append-only journal, deterministic projection with support>=2 plus mechanism evidence, frozen improvement handoff with holdout-sealed partitions, GEPA bridge orchestration with crash reconciliation).",
+    "Specify negative cases N1-N6 (forged authority, stale/duplicate revise, corrupt resolution, holdout leak, budget/reservation failure without spawning python, crash-after-commit reconciliation without duplicate dispatch).",
+    "Specify exact file-level recovery tests (feedback-contracts/controller/improvement/projection tests, feedback-dependency-contract.test.mjs, feedback-gepa-bridge.test.mjs), the agentic-system package suite and npm run verify.",
+    "Specify the Living Doc statement (agentic-application/feedback.md) covering contracts, authority boundaries, fail-closed semantics and explicit v1 limitations."
+  ],
+  "currentSourceRefs": [
+    "packages/agentic-system/src/feedback-contracts.js",
+    "packages/agentic-system/src/feedback-controller.js",
+    "packages/agentic-system/src/feedback-projection.js",
+    "packages/agentic-system/src/feedback-improvement.js",
+    "packages/agentic-system/src/feedback-dependencies.js",
+    "scripts/feedback/gepa-bridge.mjs",
+    "packages/agentic-system/test/feedback-controller.test.js",
+    "packages/agentic-system/test/feedback-improvement.test.js",
+    "packages/agentic-system/test/feedback-projection.test.js",
+    "test/feedback-gepa-bridge.test.mjs",
+    "docs/living/system/agentic-application/feedback.md"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-145",
+  "recoversTrustFor": "BB-059",
+  "outcome": "Trusted evidence that the currently-live evidence-gated HOW-evolution loop in @exharness/agentic-system evaluates HOW changes against a pinned baseline/candidate protocol and only independently-authorized, currentness-fenced promotions mutate the execution policy.",
+  "currentProblem": "Incident BB-INC-01: the original delivery (BB-059) was merged through an invalid CI gate (blackboard-jev skipped / candidate SHA mismatch) during 2026-10-01 13:00 +07 through the #523 gate fix. Its implementation is LIVE on current main but carries no trusted delivery chain, so it is classified LIVE_UNTRUSTED. The original task remains a historical fact; this recovery establishes fresh trust. Research must not assume the implementation has bugs: the default route is verification-first (tests + negative cases + Living Docs); implementation repair only if behavior fails. Live surface: packages/agentic-system/src/how-evolution.js (982 lines: defineHowEvolutionFinding, defineHowEvolutionEvaluationProtocol/Run, evaluateHowEvolution, createHowEvolutionPromotionProposal, assertHowEvolutionPromotionCurrentness, publishHowEvolutionPromotion/Rollback, resolveHowEvolutionProvenance) and packages/agentic-system/src/how-evolution-jev-adapter.js (createHowEvolutionJevEvaluator, pinned identity how-evolution-jev-adapter rev 1, model snapshot jev-1.13.0, fail-closed to INCONCLUSIVE/KEEP_BASELINE).",
+  "scope": [
+    "agentic-system.how-evolution.evaluation-protocol",
+    "agentic-system.how-evolution.promotion-currentness",
+    "agentic-system.how-evolution.jev-adapter",
+    "agentic-system.how-evolution.rollback-provenance",
+    "agentic-system.how-evolution.attempt-pinning"
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation writes only if a behavior in behaviorsToProve fails.",
+    "No history rewrite: BB-059's historical evidence and invalid-merge lineage stay as fact.",
+    "No .github/** changes; no trusted JEV/controller changes.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify executable verification for C1-C7 (pinned A/B protocol, authority separation, currentness-fenced promotion, attempt pinning, history-preserving rollback, Jev adapter pinning/fail-closed, fresh-process provenance reconstruction).",
+    "Specify negative cases N1-N7 (semantic drift, currentness drift incl. evidence racing, producer==evaluator/promoter, Jev transport/malformed responses, forged rollback lineage, case-set mismatch, head-only promotion).",
+    "Specify exact file-level recovery tests (the six how-evolution-*.test.js suites plus gap-covering negative tests), the agentic-system package suite and npm run verify.",
+    "Specify Living Docs statements (self-upgrade.md, evaluation.md, contracts.md, state.md, trust-pipeline.md) binding every claim to an exact test and artifact ref, with no Blackboard ids in user-facing text."
+  ],
+  "currentSourceRefs": [
+    "packages/agentic-system/src/how-evolution.js",
+    "packages/agentic-system/src/how-evolution-jev-adapter.js",
+    "packages/agentic-system/test/how-evolution-evaluation.test.js",
+    "packages/agentic-system/test/how-evolution-promotion.test.js",
+    "packages/agentic-system/test/how-evolution-currentness.test.js",
+    "packages/agentic-system/test/how-evolution-jev-adapter.test.js",
+    "packages/agentic-system/test/how-evolution-rollback.test.js",
+    "packages/agentic-system/test/how-evolution-attempt-pinning.test.js",
+    "docs/living/system/agentic-application/self-upgrade.md",
+    "docs/living/system/agentic-application/evaluation.md",
+    "docs/living/reference/architecture/trust-pipeline.md"
+  ]
+}

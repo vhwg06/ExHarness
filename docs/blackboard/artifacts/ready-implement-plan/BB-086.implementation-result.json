@@ -1,0 +1,94 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-086-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-086.json",
+    "hash": "94f42d47b66e58d2ce4db243b50a10a33d2f2e201b1fcb2dbd26f03577af230c"
+  },
+  "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+  "baselineSha": "9b765c6ea1ef66a604e589def17e295be6448e08",
+  "candidateTree": "444bcd1f5dcd0d349f0f6eea5aa26e6accdebc42",
+  "verificationRuns": [
+    {
+      "id": "dependency",
+      "command": "node --test test/self-improve-dependency-contract.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+      "logRef": "docs/blackboard/evidence/BB-086/dependency.txt",
+      "logHash": "b91c8532bb1cdfdb7b41024bfd94b6f14ee07765bd5073c3bd8f2585b6457453"
+    },
+    {
+      "id": "pattern",
+      "command": "node --test packages/agentic-system/test/improvement-pattern.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+      "logRef": "docs/blackboard/evidence/BB-086/pattern.txt",
+      "logHash": "7b6d44ced1717592777d5c1cb27a94f851f3c1ea98d783c049691f7d22c1d6c0"
+    },
+    {
+      "id": "proposal",
+      "command": "node --test packages/agentic-system/test/improvement-proposal.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+      "logRef": "docs/blackboard/evidence/BB-086/proposal.txt",
+      "logHash": "a7cbfe72dba16df68c2d9468975e9948a3ad016972280a34f76107b6a78dd716"
+    },
+    {
+      "id": "handoff",
+      "command": "node --test packages/agentic-system/test/improvement-handoff.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+      "logRef": "docs/blackboard/evidence/BB-086/handoff.txt",
+      "logHash": "9c183bc5f3e01e79dd40ee349018398f84dc5844e5cc1aec083475fa6dc383a4"
+    },
+    {
+      "id": "bridge",
+      "command": "node --test test/self-improve-gepa-bridge.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "94a7665dcbd6a46258e419db87edb0e384a7f95a",
+      "logRef": "docs/blackboard/evidence/BB-086/bridge.txt",
+      "logHash": "6444c18aa2d986effcc687e797a9c0a577a2767d11a1a4628386ac85ef43d03b"
+    }
+  ],
+  "claims": [
+    {
+      "id": "SI1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-086/pattern.txt"
+      ]
+    },
+    {
+      "id": "SI2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-086/proposal.txt"
+      ]
+    },
+    {
+      "id": "SI3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-086/bridge.txt",
+        "docs/blackboard/evidence/BB-086/dependency.txt"
+      ]
+    },
+    {
+      "id": "SI4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-086/handoff.txt",
+        "docs/blackboard/evidence/BB-086/bridge.txt"
+      ]
+    },
+    {
+      "id": "SI5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-086/dependency.txt"
+      ]
+    }
+  ]
+}

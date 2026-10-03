@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-145
+next-work-id: BB-158
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -45,7 +45,6 @@ NONE
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-094 [WORKER/EXECUTION] — Verify Oracle on supported Core execution profiles
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
-- BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
 - BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 - BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
@@ -60,13 +59,19 @@ NONE
 - BB-135 [RESEARCH_SA/RESEARCH] — Expose durable recovery on the operator run command
 - BB-136 [RESEARCH_SA/RESEARCH] — Wire observation traces through the local deliver slice
 - BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
-- BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
+- BB-138 [WORKER/EXECUTION] — Forward run permission and model options through deliver
 - BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
 - BB-140 [WORKER/EXECUTION] — Pin eval permission and timeout factors from the operator CLI
 - BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
 - BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
 - BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
 - BB-144 [RESEARCH_SA/RESEARCH] — Expose deliver CLI tool override
+- BB-145 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main
+- BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
+- BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
+- BB-155 [RESEARCH_SA/RESEARCH] — Build Blackboard V2 control plane
+- BB-156 [RESEARCH_SA/RESEARCH] — Migrate unfinished work to Blackboard V2 and cut over
+- BB-157 [RESEARCH_SA/RESEARCH] — Add JEV supervisory lookback and anti-spam loop to Blackboard V2
 
 ## Dependency graph
 
@@ -129,7 +134,7 @@ BB-105 [DONE] <- BB-097, BB-098
 BB-106 [DONE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
-BB-120 [WORKER_SCHEDULABLE] <- BB-097
+BB-120 [PLANNED] <- BB-097
 BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
 BB-122 [DONE] <- BB-097, BB-098
 BB-123 [WORKER_SCHEDULABLE] <- BB-105, BB-102
@@ -147,13 +152,26 @@ BB-134 [DONE] <- BB-056
 BB-135 [RESEARCH_SCHEDULABLE] <- BB-101
 BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
 BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
-BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-138 [WORKER_SCHEDULABLE] <- BB-104
 BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
 BB-140 [WORKER_SCHEDULABLE] <- BB-099
 BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
 BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
 BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-145 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-146 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-147 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079
+BB-148 [BLOCKED] <- BB-059, BB-064, BB-065
+BB-149 [BLOCKED] <- BB-084
+BB-150 [BLOCKED] <- BB-097
+BB-151 [BLOCKED] <- BB-105, BB-102
+BB-152 [BLOCKED] <- BB-056
+BB-153 [BLOCKED] <- BB-056, BB-059
+BB-154 [BLOCKED] <- BB-056
+BB-155 [RESEARCH_SCHEDULABLE] <- BB-056
+BB-156 [RESEARCH_SCHEDULABLE] <- BB-155
+BB-157 [RESEARCH_SCHEDULABLE] <- BB-155
 ```
 
 ## Context semantics

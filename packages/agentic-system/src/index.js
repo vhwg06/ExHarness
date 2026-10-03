@@ -366,7 +366,17 @@ export {
   feedbackEpisodeHeadKeyFor
 } from "./feedback-lifecycle-controller.js";
 export {
-  FEEDBACK_OBSERVATION_KIND,
+  PATTERN_POLICY_V1,
+  projectImprovementPatterns
+} from "./improvement-pattern.js";
+export {
+  IMPROVEMENT_EVALUATION_HANDOFF_KIND,
+  PINNED_OPTIMIZER_IDENTITY,
+  defineImprovementEvaluationHandoff,
+  buildHowEvolutionHandoff,
+  evaluateHandoffOutcome
+} from "./improvement-proposal.js";
+export {  FEEDBACK_OBSERVATION_KIND,
   FEEDBACK_OBSERVATION_VERSION,
   FEEDBACK_CONTEXT_BINDING_KIND,
   FEEDBACK_CONTEXT_BINDING_VERSION,

@@ -1,0 +1,24 @@
+▶ PATTERN_POLICY_V1
+  ✔ is frozen with version 1, minSupport 2, and an initial finding-kind map (1.02676ms)
+  ✔ exposes no write port: module surface is exactly the two read-only exports (3.429494ms)
+✔ PATTERN_POLICY_V1 (8.114532ms)
+▶ projectImprovementPatterns
+  ✔ rejects a digest-mismatched resolution ref but still projects the rest (6.904316ms)
+  ✔ counts a retried episode (same observation-ref set) as one support unit (1.179489ms)
+  ✔ lets a SUPERSEDED resolution contribute only through its successor (2.863565ms)
+  ✔ excludes an unmapped finding kind with UNMAPPED_AXIS and never guesses an axis (1.272208ms)
+  ✔ never classifies SYSTEMIC from frequency alone or partial mechanism coverage (5.778177ms)
+  ✔ retains NO_CHANGE/REGRESSED episodes and episode contrary refs in contraryEvidenceRefs (3.336715ms)
+  ✔ reinforcement changes only support metadata and projectionId, never escalates authority (2.464547ms)
+  ✔ is deterministic: two runs over the same inputs are identical (2.906459ms)
+  ✔ skips and records an artifact that fails FEEDBACK_RESOLUTION_V1 validation (2.367682ms)
+  ✔ returns a deeply frozen, read-only projection (1.788253ms)
+✔ projectImprovementPatterns (31.998698ms)
+ℹ tests 12
+ℹ suites 2
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 644.708447

@@ -3355,9 +3355,8 @@
         "researchBaselineSha": "4563c86bf5809a1e03a74a157479b4725a37a008",
         "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-085.readiness-jev-evaluation.json",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-085.implementation-result.json",
-        "lastEvaluatedInput": "d89c87755e45d31634314d4d353bdedf1a01e55cad7fcb0f99a0f9b83aacb086",
-        "baselineSha": "97452e4c5ac3e2aac89d60d1b6b987cca33cfaf1",
-        "candidateSha": "29e06f387ec07e3657ebf9b472864d2eeb769228"
+        "baselineSha": "7bc4de8e24cad4f6cf7e74fb2b2c77fbb42269cc",
+        "candidateSha": "e909ef047a093360c9fde36098cb8526dccaacdf"
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
@@ -4749,14 +4748,14 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-120.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
         "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "610efba13f28d063f555ab3cc4ec6b22eb5a0971d0d3258b424e828020c2c18c",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.candidate-jev-evaluation.json",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.implementation-result.json",
-        "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-        "baselineSha": "cff5ef95fd69f8eef05ac3104c5a845ab76d550a"
+        "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+        "baselineSha": "71c66bce780d4b712e4a36d5832893bc21de45be",
+        "lastEvaluatedInput": "ecb70924e256df2e4f46467edc07f0649529196a16a5c16af1762df886ec1e58"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "MERGE_PENDING"
     },
     {
       "id": "BB-121",
@@ -4938,10 +4937,9 @@
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
         "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
         "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "a635637b47c81abad2a7c069b9ff8b556de4ea6686f731341970334d36a889d6",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.implementation-result.json",
-        "candidateSha": "42e54e9b8b035428a73301eb3ed79de3530e9629",
-        "baselineSha": "c79e5fc6d50d6fda0ffd43b42631864391dd9037"
+        "candidateSha": "2c5d2effd421c7aef948e6935d92deb8e9f05a90",
+        "baselineSha": "a729825319553abd62b60b33f70a67625442c691"
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
@@ -5662,7 +5660,7 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-133.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-133.json",
-        "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1"
+        "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb"
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
@@ -5983,10 +5981,13 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-138.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-138.json",
-        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+        "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-138.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-138.implementation-result.json",
+        "lastEvaluatedInput": "5ef99b99d5472418b6ace018c20401da0ed5890569d17f02d79fa3fdd42825b2"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-139",
@@ -6398,10 +6399,648 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-145",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/domain-execution-control",
+        "agentic/causal-observation",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-058",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-145.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-145/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-145/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/self-upgrade.md",
+          "docs/living/system/agentic-application/evaluation.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/reference/architecture/trust-pipeline.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live HOW-evolution loop evaluates HOW changes against a pinned baseline/candidate protocol before independent promotion.",
+        "Negative-case evidence for semantic drift, currentness drift, authority mismatch, Jev fail-closed, rollback rejection and attempt-pinning.",
+        "Living Docs statements binding every behavior claim C1-C7 and negative case N1-N7 to exact tests and artifact refs."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-145.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-145.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-146",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-146.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-146/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-146/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live async agent coordinator performs durable steering, bounded coalescing, explicit cancellation and crash recovery over at most one active model generation as non-authority.",
+        "Negative-case evidence for crash-before-abort, wakeup loss and non-cooperating ABORT_SIGNAL providers.",
+        "Living Docs statements scoping the recovered trust claim to behavior, not history."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-146.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-146.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-147",
+      "featureId": null,
+      "title": "Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-147.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-147/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-147/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/capabilities.md",
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md",
+          "docs/living/system/core-harness/decisions.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live held-out profile acceptance (32-unit cohort, frozen deterministic decision reducer) and fault-ablation protocol behave as specified.",
+        "The six bb081/*.test.mjs suites wired into an npm script (package.json only, no .github/** changes) with N1-N5 negative cases.",
+        "Living Docs statements: CORE_SYNC default, CORE_ASYNC_FIRST_V1 publication gating, B/C diagnostic-only, held-out reservation, offline fixtures never promotion evidence."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-147.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-147.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-148",
+      "featureId": null,
+      "title": "[WITHDRAWN by BB-INC-01 review] Recovery: re-establish trusted evidence for BB-083 application-owned feedback loop on current main -- withdrawn: BB-083 is PLANNED/WORKER/EXECUTION (unfinished), so trust is re-established by revalidating BB-083 directly with a fresh candidate; this duplicate must never be claimed.",
+      "kind": "RESEARCH",
+      "status": "BLOCKED",
+      "complexity": "XL",
+      "components": [
+        "agentic/causal-observation",
+        "agentic/how-evolution",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-064",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-148.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-148/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-148/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live application-owned feedback loop (typed contracts, application-owned response lifecycle, deterministic cross-episode projection, independent HOW improvement handoff, offline GEPA bridge) behaves as specified.",
+        "Negative-case evidence for forged authority, stale revise, corrupt resolution, holdout leak, budget/reservation failure and crash reconciliation.",
+        "Living Docs statements covering contracts, authority boundaries, fail-closed semantics and v1 limitations."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-148.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-148.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-149",
+      "featureId": null,
+      "title": "[WITHDRAWN by BB-INC-01 review] Recovery: re-establish trusted evidence for BB-085 application-owned feedback episode lifecycle on current main -- withdrawn: BB-085 is PLANNED/WORKER/EXECUTION (unfinished), so trust is re-established by revalidating BB-085 directly with a fresh candidate; this duplicate must never be claimed.",
+      "kind": "RESEARCH",
+      "status": "BLOCKED",
+      "complexity": "L",
+      "components": [
+        "agentic/feedback-lifecycle"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-084",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-149.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-149/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-149/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback-lifecycle.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live feedback episode lifecycle (episode immutability, application-owned response transitions, fresh measured outcomes against a frozen policy, derived terminal resolutions) behaves as specified.",
+        "Negative-case evidence for authority smuggling/spoofed principals and freshness/honesty violations.",
+        "Living Docs statements binding every behavior claim to exact tests with no cross-episode dependency."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-149.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-149.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-150",
+      "featureId": null,
+      "title": "[WITHDRAWN by BB-INC-01 review] Recovery: re-establish trusted evidence for BB-120 agent-tools child-environment trust boundary on current main -- withdrawn: BB-120 is PLANNED/WORKER/EXECUTION (unfinished), so trust is re-established by revalidating BB-120 directly with a fresh candidate; this duplicate must never be claimed.",
+      "kind": "RESEARCH",
+      "status": "BLOCKED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-150.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-150/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-150/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live child-environment trust boundary (AGENT_CHILD_INHERITED_ENV allowlist, declared per-tool auth passthrough, bin-forwarded caller overlay) keeps host secrets out of agent children.",
+        "Negative-case evidence for planted-secret leak, NODE_TEST_CONTEXT smuggling, undeclared auth leak, malformed --env and overlay precedence.",
+        "Living Docs trust-boundary statement kept accurate; package explicitly not a sandbox."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-150.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-150.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-151",
+      "featureId": null,
+      "title": "[WITHDRAWN by BB-INC-01 review] Recovery: re-establish trusted evidence for BB-123 observed-only grok cost guard and worktree-local context exclusion on current main -- withdrawn: BB-123 is PLANNED/WORKER/EXECUTION (unfinished), so trust is re-established by revalidating BB-123 directly with a fresh candidate; this duplicate must never be claimed.",
+      "kind": "RESEARCH",
+      "status": "BLOCKED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-151.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-151/recovery-probe-result.json",
+          "docs/blackboard/evidence/BB-151/negative-cases-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/agent-tools/context.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Trusted evidence that the currently-live grok cost guard reports totalCostUsd only for finite numbers >= 0 (never coerced) and that grounded-context exclusion is worktree-local with the source repository never written.",
+        "Negative-case evidence for null/empty/boolean/string/NaN/negative/Infinity costs and write-outside-worktree attempts.",
+        "Living Docs statements for observed-only cost and worktree-local exclusion with no Blackboard ids."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-151.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-151.json",
+        "researchBaselineSha": "fc5af0dc8ef8ca825c39d5117fa92ceb042c711f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-152",
+      "featureId": null,
+      "title": "[WITHDRAWN by Blackboard V2 redesign] Make fresh-agent Outer Blackboard delivery onboarding phase-complete",
+      "kind": "BUGFIX",
+      "status": "BLOCKED",
+      "complexity": "M",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-152.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-152.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A deterministic phase-local delivery envelope tells a fresh agent, without prior conversation context, its exact immediate goal, entry/exit conditions, required outputs, legal next actions and forbidden claims.",
+        "Bootstrap distinguishes EXECUTION, REPAIR, JUDGMENT and explicit MERGE_PENDING finalization instead of collapsing every Worker phase into implementation.",
+        "A fresh explicit MERGE_PENDING session can resume verify/publish delivery without reclaiming work or receiving source-write authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-152.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-152.json",
+        "researchBaselineSha": "afb27059e9981da4ce4842be27205ccc5b72ef13"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-153",
+      "featureId": null,
+      "title": "[WITHDRAWN by Blackboard V2 redesign] Make JEV findings drive mandatory lookback before repair",
+      "kind": "RESEARCH",
+      "status": "BLOCKED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-153.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-153.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An audited control-flow map showing every current path from Worker JEV findings to local repair/re-evaluation and CI enforcement.",
+        "A judgment-bound lookback/reconsideration contract that changes worker epistemic state before repair source-write authority is granted.",
+        "Material-delta and repeated-failure rules that reject cosmetic/prose-only retry spam and require strategy reconsideration when findings persist.",
+        "One canonical supervision transition policy shared by local execution and CI projection, with focused negative tests and Living truth."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-153.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-153.json",
+        "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-154",
+      "featureId": null,
+      "title": "[WITHDRAWN by Blackboard V2 split] Reduce Outer Blackboard to value-bearing kernel",
+      "kind": "BUGFIX",
+      "status": "BLOCKED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-154.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-154.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Remove graph/context/component fields and layers with no independent routing, authority or context-value consumer.",
+        "Derive fresh-session context on demand without current.json/currentContextRef while preserving claim ownership and exact phase/source authority.",
+        "Retire legacy compatibility and committed projections without weakening Jev or exact delivery gates."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-154.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-154.json",
+        "researchBaselineSha": "3651e60b195b3c158a52311bbb375803486b91de"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-155",
+      "featureId": null,
+      "title": "Build Blackboard V2 control plane",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-155.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One source-branch-independent V2 control authority with one Work resource per work id.",
+        "Executable lifecycle and `next` action derivation rather than prose-inferred workflow.",
+        "Pure context builder plus Attempt bindings that keep source branches/worktrees outside Blackboard authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-155.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-156",
+      "featureId": null,
+      "title": "Migrate unfinished work to Blackboard V2 and cut over",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-156.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-156.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One exact manifest of current unfinished non-withdrawn legacy work; DONE work is excluded.",
+        "One V2 Work per manifest item with semantic/dependency/authority parity.",
+        "Atomic authority cutover to V2 with no dual-write or long-lived legacy current-work reader."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-156.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-156.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-157",
+      "featureId": null,
+      "title": "Add JEV supervisory lookback and anti-spam loop to Blackboard V2",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-157.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Read-only V2 LOOKBACK phase before writable repair after failed JEV.",
+        "Exact workGeneration/Attempt/Decision-bound RepairReflection publication.",
+        "Failure-class-specific material-delta guard before another JEV call.",
+        "Repeated identical finding signature routes to strategy reconsideration without duplicate authoritative supervision state."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-157.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
+        "researchBaselineSha": "7599ef5a1395af36b0f86a6f940f059b28edb343"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-145",
+    "nextWorkId": "BB-158",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

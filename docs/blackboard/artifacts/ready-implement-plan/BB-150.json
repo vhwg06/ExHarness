@@ -1,0 +1,291 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-150",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-150.json",
+    "hash": "58cec018fc5d14093340fef04fbd0b90aa02841c294783a675a7d3e6850cae60"
+  },
+  "scope": [
+    "agent-tools.child-env.allowlist",
+    "agent-tools.child-env.auth-passthrough",
+    "agent-tools.child-env.bin-overlay"
+  ],
+  "outOfScope": [
+    "Rewriting BB-120 historical evidence, lineage or the invalid-merge PR record.",
+    "The BB-123 surface (parseGrokJson cost guard, projectAgentTaskContext exclusion) — a separate recovery (BB-151).",
+    "The BB-122 opencode guard (parseOpencodeJsonl).",
+    "Trace redaction (observation.js mergedEnv) and Codex/Kiro/agy argv or parsers.",
+    "Turning agent-tools into a sandbox; the package is explicitly still not a sandbox."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "The child env is built only from the frozen allowlist plus declared per-tool auth passthrough plus caller overlay; process.env is never spread wholesale",
+    "Caller overlay always wins over inherited and auth-passthrough values for the same name",
+    "NODE_TEST_CONTEXT is absent from the child in all routes"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: run packages/agent-tools/test/child-env.test.js (EN1-EN7) directly on current main; add the N1-N5 negative probes as named tests in the same file only if the implementation proves correct.",
+    "D2 -- Bin end-to-end regression: the EN6 test spawns bin/exharness-agent.mjs with FAKE_AGENT_* + --env into a temp git repo child; the delivered AT4 x2 (agent-tools.test.js) and GR3 (grok-adapter.test.js) bin-driven tests must pass unmodified.",
+    "D3 -- EN7 scope audit: the ready-implement-plan sourceScope is the audit target for write-scope exclusion of core-harness; no scope outside sourceScope.write is touched.",
+    "D4 -- Repair boundary: a defect found (allowlist gap, overlay precedence bug, auth-passthrough leak, --env parsing defect) is repaired minimally in the four implementation refs, with regression evidence EN1-EN7 green, AT4 x2 + GR3 green unmodified, test:agent-tools green, npm run verify green."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/child-env.test.js",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-120/**",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/test/followup-correctness.test.js",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "packages/benchmark/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/child-env.test.js",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agent-tools/test/child-env.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Host-secret non-leakage [C1, C7, N1]: allowlist-only child keys, frozen exports, planted-secret absence.",
+    "S2 -- Inheritance and stripping [C2, C3, N2]: PATH/HOME inheritance, NODE_TEST_CONTEXT absence in all routes.",
+    "S3 -- Overlay and auth precedence [C4, C5, N3, N5]: caller overlay wins, declared-only auth passthrough, frozen empty adapter authEnvNames.",
+    "S4 -- Bin end-to-end [C6, N4]: FAKE_AGENT_* + repeated --env reach the supervised child; malformed --env exits 64; planted secrets do not cross.",
+    "S5 -- Living Docs: state.md trust-boundary section bound to EN1-EN7 with the explicit not-a-sandbox statement."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "With EXHARNESS_PLANTED_SECRET and AWS_SECRET_ACCESS_KEY planted on the parent and absent from overlay/auth, the child env dump contains neither, and every key present in the child is a member of AGENT_CHILD_INHERITED_ENV.",
+      "verificationIds": [
+        "focused",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "PATH and HOME inherit from the parent when set (CLI binary resolution and homedir config keep working), exactly as listed in the allowlist.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "NODE_TEST_CONTEXT is absent from the child in both routes: inherited from the parent AND smuggled through the caller overlay.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "Caller overlay wins: overlay keys are present in the child even when not on the allowlist, and an overlay value beats both an inherited allowlist value and an auth-passthrough value for the same name.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "A name declared in a tool's authEnvNames and set on the parent reaches that tool's child; an ambient name NOT declared reaches no tool's child; all five delivered adapters declare frozen empty authEnvNames.",
+      "verificationIds": [
+        "focused",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "C6",
+      "statement": "FAKE_AGENT_* variables of the bin process plus repeated --env KEY=VALUE flags reach the supervised child via binOverlayEnv (--env applied last, so it wins); planted host secrets do not.",
+      "verificationIds": [
+        "focused",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7). Bin end-to-end test output."
+      ]
+    },
+    {
+      "id": "C7",
+      "statement": "AGENT_CHILD_INHERITED_ENV and binOverlayEnv exported from both src/process-runner.js and src/index.js are deep-equal and Object.isFrozen; delivered adapters' authEnvNames are frozen.",
+      "verificationIds": [
+        "focused",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "child-env suite output on current main (EN1-EN7)."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "Planted-secret leak: EXHARNESS_PLANTED_SECRET and AWS_SECRET_ACCESS_KEY present on the parent are absent from a runProcess child with empty overlay.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "NODE_TEST_CONTEXT smuggling: planted on the parent and passed via overlay are both absent from the child.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "Undeclared ambient auth leak: EXHARNESS_UNDECLARED on the parent does not reach the child of a tool that did not declare it; a tool declaring [] drops a planted EXHARNESS_AUTH_PROBE.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N4",
+      "statement": "Malformed --env: `exharness-agent run ... --env NO_EQUALS` and a name violating [A-Za-z_][A-Za-z0-9_]* exits 64 as a usage error before any agent process starts.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N5",
+      "statement": "Overlay wins over passthrough: with EXHARNESS_AUTH_PROBE both declared on the tool and present in the overlay, the child sees the overlay value (verifies precedence, not just presence).",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "The child env is built only from the frozen allowlist plus declared per-tool auth passthrough plus caller overlay; process.env is never spread wholesale",
+      "criterionIds": [
+        "C1",
+        "C5",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "Caller overlay always wins over inherited and auth-passthrough values for the same name",
+      "criterionIds": [
+        "C4",
+        "N5"
+      ]
+    },
+    {
+      "invariant": "NODE_TEST_CONTEXT is absent from the child in all routes",
+      "criterionIds": [
+        "C3",
+        "N2"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "cd packages/agent-tools && node --test test/child-env.test.js"
+    },
+    {
+      "id": "tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The docs must establish the child-env trust boundary -- child inherits only the explicit AGENT_CHILD_INHERITED_ENV allowlist plus declared per-tool auth passthrough plus the caller overlay (FAKE_AGENT_* and --env through the bin), host secrets never cross, NODE_TEST_CONTEXT is always stripped, and the package is still explicitly not a sandbox."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-097"
+    ],
+    "note": "TASK_OUTPUT of the supervised run loop (runSupervisedTask / runAgentInvocation / bin) that BB-120's allowlist, auth passthrough and bin overlay attach to (DONE, DELIVERED, WORKER lane). No other direct dependencies; BB-098/BB-067 are adjacent, not required."
+  }
+}

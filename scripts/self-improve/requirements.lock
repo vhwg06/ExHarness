@@ -1,0 +1,27 @@
+# requirements.lock — pinned optimizer identity for the BB-086 offline GEPA bridge.
+#
+# This file is a pip-compile style lock. It pins the EXACT optimizer identity
+# consumed by scripts/self-improve/gepa_adapter.py:
+#
+#   Optimizer identity: engine=gepa, version=0.1.4,
+#                       commit=d771eb21b5dd3228bc3f567293d2ccfc423fc900
+#
+# any change creates a new optimizer identity (BB-086 optimizerContract).
+#
+# Target interpreter: python>=3.10,<3.15
+# Optional dependency groups: none. The adapter imports gepa lazily and only
+# when explicitly requested; the default CI path uses the deterministic stub
+# and never imports gepa at all.
+#
+# Install with:
+#     pip install -r scripts/self-improve/requirements.lock
+#
+# Compiled from a requirements.in containing:
+#     gepa @ git+https://github.com/gepa-ai/gepa@d771eb21b5dd3228bc3f567293d2ccfc423fc900 ; python_version >= "3.10" and python_version < "3.15"
+#
+# No hashes are recorded: the exact VCS commit above is the integrity anchor
+# (pip-compile --generate-hashes was intentionally not run because the pin is
+# a commit hash, not a registry artifact).
+
+gepa @ git+https://github.com/gepa-ai/gepa@d771eb21b5dd3228bc3f567293d2ccfc423fc900 ; python_version >= "3.10" and python_version < "3.15"
+    # via -r requirements.in
