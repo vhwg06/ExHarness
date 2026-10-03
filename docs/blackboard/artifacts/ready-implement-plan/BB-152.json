@@ -28,19 +28,20 @@
     "Do not add session-history generations, a second workflow engine, repository-wide default discovery, or generic context-body retrieval in this task."
   ],
   "invariants": [
-    "The envelope is derived from canonical task/plan/evaluation state and grants no authority beyond the existing lane/phase/source scope.",
-    "Only ACTIVE claimed work may be auto-selected; PLANNED/MERGE_PENDING is readable only by explicit exact work id and remains source-read-only.",
-    "Jev remains the semantic judge; candidate acceptance, merge verification and delivery publication stay separate trusted transitions.",
-    "Current-only context remains rebuildable and carries no history chain, previous-session transcript or implicit repository-wide discovery."
+    "For every OBJECTIVE_PLAN_DELIVERY context, deliveryEnvelope.workId/lane/phase/subject must match the canonical derived context; the envelope is descriptive data and never mutates graph, claim, evaluation, merge or delivery state.",
+    "Implicit bootstrap selection remains ACTIVE-only. The only non-ACTIVE explicit bootstrap exception is exactly PLANNED/WORKER/MERGE_PENDING with an explicit work id; it creates no claim and no current.json.",
+    "JUDGMENT and MERGE_PENDING always materialize sourceScope.write=[] and forbiddenWrite=['**']; their bootstrap currentGoal/rules cannot advertise implementation, repair or self-acceptance authority.",
+    "DONE/DELIVERED is never a delivery-envelope next action. Existing verifyDelivery -> publishDelivery remains the only finalization path, with exact evaluated candidate ancestry/tree checks unchanged."
   ],
   "architectureDecisions": [
-    "D1 — Add DELIVERY_ENVELOPE_V1 as a deterministic field of contracted deriveDeliveryContext output. The envelope contains kind/workId/lane/phase, exact subject bindings, currentGoal, entryConditions, requiredOutputs, exitConditions, nextActions and forbiddenActions.",
-    "D2 — Encode the phase table once in the delivery-context layer and project bootstrap intent/rules from the envelope rather than maintaining a second WORKER-wide intent table. Unknown lane/phase combinations fail closed.",
-    "D3 — RESEARCH/EXECUTION/REPAIR/JUDGMENT/MERGE_PENDING receive distinct goals and transitions. EXECUTION and REPAIR lead only to candidate/evidence collection; JUDGMENT is read-only and leads through materialize/evaluate/publish judgment; MERGE_PENDING is read-only and names merge preservation, verify:blackboard-delivery and publish:blackboard-delivery as separate steps.",
-    "D4 — Extend bootstrap selection so an explicitly supplied contracted PLANNED/WORKER/MERGE_PENDING task can be derived and materialized without a claim/current.json. Implicit bootstrap selection remains ACTIVE-only, so this read path cannot become a scheduler or claim bypass.",
-    "D5 — Materialized interactive context exposes the delivery envelope verbatim. It does not duplicate full control-plane docs or expand generic dependency bodies; progressive discovery remains bounded by the existing context contract.",
-    "D6 — The envelope subject includes only already-bound identifiers (semanticArtifactRef, planRef/planHash and phase-relevant candidate/evaluation/evidence/merge refs). Missing required phase identity fails closed rather than being represented as success.",
-    "D7 — AGENTS.md and Living system state explain that fresh agents follow the envelope for immediate delivery obligation while canonical graph/plan/Jev/merge artifacts remain authority."
+    "D1 — `scripts/blackboard-delivery-context.mjs`: derive one `DELIVERY_ENVELOPE_V1` inside `deriveDeliveryContext` from the canonical task/plan/contract only. Use `phaseMatrix` verbatim for phase-local goal/conditions/actions, copy only already-bound subject identity, fail closed when JUDGMENT/MERGE_PENDING lacks its required identity, set `action.kind` from the phase row, and set `expectedOutputs` from `deliveryEnvelope.requiredOutputs` instead of the current WORKER-wide `DELIVERED_FEATURE` end-state.",
+    "D2 — `scripts/blackboard-context-contract.mjs`: for every `OBJECTIVE_PLAN_DELIVERY` spec require and validate `deliveryEnvelopeContract`: exact workId/lane/phase/semantic/plan identity, non-empty string arrays for entryConditions/requiredOutputs/exitConditions/nextActions/forbiddenActions, no `DONE`/`DELIVERED` next action, and read-only JUDGMENT/MERGE_PENDING. Keep the existing execution write-scope rule unchanged.",
+    "D3 — `scripts/blackboard-context-materialize.mjs`: copy `spec.deliveryEnvelope` verbatim into the common materialized context for all profiles. No resolver/history scan, no duplicated workflow state and no mutation are added.",
+    "D4 — `scripts/blackboard-implementation-bootstrap.mjs`: keep implicit selection exactly ACTIVE-only. When `itemId` is explicit, additionally allow exactly `status=PLANNED && lane=WORKER && phase=MERGE_PENDING && contract!=null`. ACTIVE tasks still verify/materialize canonical `current.json`; explicit MERGE_PENDING calls `deriveTaskContext` directly and never writes graph/current.json or claims work. Return `intent=context.deliveryEnvelope.currentGoal`, `rules=context.deliveryEnvelope.forbiddenActions`, `phase=context.deliveryEnvelope.phase`.",
+    "D5 — Exact phase semantics are the `phaseMatrix` field: RESEARCH builds a plan; EXECUTION implements; REPAIR repairs exact findings; JUDGMENT is independent read-only candidate judgment; MERGE_PENDING is read-only exact-candidate finalization. The MERGE_PENDING action order is merge exact evaluated candidate -> fetch main/exact mergeSha -> `verify:blackboard-delivery` -> `publish:blackboard-delivery`; no direct DONE transition exists.",
+    "D6 — `test/blackboard-context-delivery-onboarding.test.mjs` implements `coldStartTestContract`. Use `RICH_CODING_HARNESS` for bootstrap fixtures, assert graph bytes/claim/currentContextRef are unchanged by explicit merge resume, and bind NEG_152_1..3 to the exact existing negativeCaseBindings titles and subject symbols.",
+    "D7 — `test/blackboard-context-bootstrap.test.mjs` changes its contracted-WORKER expectation from the single `IMPLEMENT_EXACT_READY_PLAN` intent to the phase row's `currentGoal`, while preserving legacy non-contract behavior. `test/blackboard-task-context-resolver.test.mjs` adds envelope identity assertions for one runnable contracted task.",
+    "D8 — `AGENTS.md` and `docs/living/system/state.md` document only delivered semantics: fresh agents follow the phase-local envelope for the immediate obligation; the envelope is non-authority; explicit MERGE_PENDING resume is read-only; graph/plan/Jev/evidence/merge receipt remain canonical authority. No Blackboard id or research status appears in Living Docs."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -101,10 +102,11 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Delivery envelope contract [PHASE_CONTEXT, AUTHORITY]: define and validate DELIVERY_ENVELOPE_V1 from canonical delivery state; add per-phase goals, exact subject bindings, entry/exit conditions, legal next actions and forbidden actions with fail-closed unknown/missing identities.",
-    "S2 — Bootstrap projection and merge-pending resume [BOOTSTRAP, MERGE_RESUME]: project intent/rules from the envelope; allow explicit read-only PLANNED/MERGE_PENDING bootstrap without current.json while preserving ACTIVE-only implicit selection and no claim mutation.",
-    "S3 — Cold-start negative coverage [PHASE_CONTEXT, BOOTSTRAP, MERGE_RESUME, AUTHORITY]: add a focused context test that constructs phase fixtures and proves judgment/merge-pending cannot advertise implementation authority, no implicit PLANNED selection occurs and direct DONE is never a legal action.",
-    "S4 — Operator truth [PHASE_CONTEXT]: update AGENTS.md and Living system state to describe the envelope as non-authority onboarding context and retain graph/plan/Jev/merge receipts as canonical truth."
+    "S1 — Delivery envelope derivation [PHASE_CONTEXT, AUTHORITY]: edit `deriveDeliveryContext` exactly per D1/D5, including the five phase rows, phase-required identity checks, phase-local `action.kind`, read-only JUDGMENT/MERGE_PENDING scope and `expectedOutputs = deliveryEnvelope.requiredOutputs`. No delivery/Jev/work-graph mutation code is touched.",
+    "S2 — Contract + materialization [PHASE_CONTEXT, AUTHORITY]: edit `assertWorkContext` to validate the exact envelope identity/array/read-only/no-direct-DONE rules from `deliveryEnvelopeContract`; edit `materializeContext` common output to expose the envelope verbatim for RICH/GENERIC/WEAK profiles.",
+    "S3 — Bootstrap + explicit finalization resume [BOOTSTRAP, MERGE_RESUME]: implement D4 exactly: implicit ACTIVE-only selection; explicit-only PLANNED/WORKER/MERGE_PENDING branch via `deriveTaskContext`; no claim/current.json writes; intent/rules/phase projected from the envelope. All other non-ACTIVE tasks fail closed.",
+    "S4 — Cold-start tests [PHASE_CONTEXT, BOOTSTRAP, MERGE_RESUME, AUTHORITY]: add the two positive tests plus NEG_152_1..3 exactly as `coldStartTestContract`; update the existing bootstrap/resolver assertions per D7. The merge-resume test snapshots graph JSON before/after the call and asserts byte-equivalent task claim/currentContextRef.",
+    "S5 — Operator truth + regression [PHASE_CONTEXT, AUTHORITY]: update AGENTS.md and `docs/living/system/state.md` per D8; run focused test, `npm run verify:blackboard-context`, and `npm run verify:current-docs`. Worker Jev and exact merge/delivery remain later independent gates."
   ],
   "acceptanceCriteria": [
     {
@@ -154,32 +156,31 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "The envelope is derived from canonical task/plan/evaluation state and grants no authority beyond the existing lane/phase/source scope.",
+      "invariant": "For every OBJECTIVE_PLAN_DELIVERY context, deliveryEnvelope.workId/lane/phase/subject must match the canonical derived context; the envelope is descriptive data and never mutates graph, claim, evaluation, merge or delivery state.",
       "criterionIds": [
         "PHASE_CONTEXT",
         "AUTHORITY"
       ]
     },
     {
-      "invariant": "Only ACTIVE claimed work may be auto-selected; PLANNED/MERGE_PENDING is readable only by explicit exact work id and remains source-read-only.",
+      "invariant": "Implicit bootstrap selection remains ACTIVE-only. The only non-ACTIVE explicit bootstrap exception is exactly PLANNED/WORKER/MERGE_PENDING with an explicit work id; it creates no claim and no current.json.",
       "criterionIds": [
         "MERGE_RESUME",
         "AUTHORITY"
       ]
     },
     {
-      "invariant": "Jev remains the semantic judge; candidate acceptance, merge verification and delivery publication stay separate trusted transitions.",
+      "invariant": "JUDGMENT and MERGE_PENDING always materialize sourceScope.write=[] and forbiddenWrite=['**']; their bootstrap currentGoal/rules cannot advertise implementation, repair or self-acceptance authority.",
       "criterionIds": [
         "BOOTSTRAP",
-        "MERGE_RESUME",
-        "AUTHORITY"
+        "MERGE_RESUME"
       ]
     },
     {
-      "invariant": "Current-only context remains rebuildable and carries no history chain, previous-session transcript or implicit repository-wide discovery.",
+      "invariant": "DONE/DELIVERED is never a delivery-envelope next action. Existing verifyDelivery -> publishDelivery remains the only finalization path, with exact evaluated candidate ancestry/tree checks unchanged.",
       "criterionIds": [
-        "PHASE_CONTEXT",
-        "BOOTSTRAP"
+        "AUTHORITY",
+        "MERGE_RESUME"
       ]
     }
   ],
@@ -291,8 +292,9 @@
       ],
       "planElements": [
         "S1",
-        "S3",
-        "S4"
+        "S2",
+        "S4",
+        "S5"
       ],
       "verificationIds": [
         "focused",
@@ -302,8 +304,9 @@
         0,
         1,
         2,
+        4,
         5,
-        6
+        7
       ],
       "sourceRefs": [
         "scripts/blackboard-delivery-context.mjs",
@@ -320,8 +323,9 @@
         }
       ],
       "supportingPlanFields": [
-        "architectureDecisions",
-        "sourceScope",
+        "deliveryEnvelopeContract",
+        "phaseMatrix",
+        "coldStartTestContract",
         "invariantCoverage"
       ]
     },
@@ -332,17 +336,19 @@
       ],
       "planElements": [
         "S1",
-        "S2",
-        "S3"
+        "S3",
+        "S4"
       ],
       "verificationIds": [
         "focused",
         "blackboard-context"
       ],
       "decisionIndexes": [
-        1,
-        2,
-        3
+        0,
+        3,
+        4,
+        5,
+        6
       ],
       "sourceRefs": [
         "scripts/blackboard-implementation-bootstrap.mjs"
@@ -358,7 +364,9 @@
         }
       ],
       "supportingPlanFields": [
-        "architectureDecisions",
+        "phaseMatrix",
+        "bootstrapResumeContract",
+        "coldStartTestContract",
         "negativeCaseBindings"
       ]
     },
@@ -368,16 +376,17 @@
         "MERGE_RESUME"
       ],
       "planElements": [
-        "S2",
-        "S3"
+        "S1",
+        "S3",
+        "S4"
       ],
       "verificationIds": [
         "focused",
         "blackboard-context"
       ],
       "decisionIndexes": [
-        2,
         3,
+        4,
         5
       ],
       "sourceRefs": [
@@ -403,9 +412,10 @@
         }
       ],
       "supportingPlanFields": [
-        "architectureDecisions",
-        "deliveryContract",
-        "negativeCaseBindings"
+        "phaseMatrix",
+        "bootstrapResumeContract",
+        "coldStartTestContract",
+        "deliveryContract"
       ]
     },
     {
@@ -416,17 +426,20 @@
         "MERGE_RESUME"
       ],
       "planElements": [
-        "S1",
-        "S3"
+        "S2",
+        "S3",
+        "S4"
       ],
       "verificationIds": [
         "focused",
         "blackboard-context"
       ],
       "decisionIndexes": [
-        0,
-        2,
-        5
+        1,
+        3,
+        4,
+        5,
+        6
       ],
       "sourceRefs": [
         "scripts/blackboard-delivery.mjs",
@@ -447,10 +460,259 @@
         }
       ],
       "supportingPlanFields": [
+        "deliveryEnvelopeContract",
+        "phaseMatrix",
+        "coldStartTestContract",
         "negativeCaseBindings",
         "verificationPlan",
         "deliveryContract"
       ]
     }
-  ]
+  ],
+  "deliveryEnvelopeContract": {
+    "kind": "DELIVERY_ENVELOPE_V1",
+    "location": "WORK_CONTEXT_SPEC.deliveryEnvelope",
+    "requiredFields": [
+      "kind",
+      "workId",
+      "lane",
+      "phase",
+      "subject",
+      "currentGoal",
+      "entryConditions",
+      "requiredOutputs",
+      "exitConditions",
+      "nextActions",
+      "forbiddenActions"
+    ],
+    "subjectFields": [
+      "semanticArtifactRef",
+      "planRef",
+      "planHash",
+      "candidateSha?",
+      "evaluationRef?",
+      "evidenceRef?",
+      "mergeSha?"
+    ],
+    "validation": [
+      "workId === context.itemId === context.taskId",
+      "lane === context.lane and phase === context.phase",
+      "subject.semanticArtifactRef === context.semanticArtifactRef",
+      "subject.planRef === context.planRef and subject.planHash === context.planHash",
+      "nextActions never contains DONE or DELIVERED",
+      "JUDGMENT and MERGE_PENDING require context.sourceScope.write=[] and forbiddenWrite=['**']"
+    ],
+    "authority": "Projection only. nextActions describe the existing commands/transitions a human/controller may execute; the envelope itself cannot claim, evaluate, merge, verify or publish."
+  },
+  "phaseMatrix": [
+    {
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "actionKind": "RESEARCH",
+      "currentGoal": "BUILD_READY_IMPLEMENT_PLAN",
+      "requiredIdentity": [
+        "objectiveRef",
+        "planRef",
+        "researchBaselineSha"
+      ],
+      "entryConditions": [
+        "task is unfinished RESEARCH_SA/RESEARCH",
+        "objective + DRAFT plan bindings are current"
+      ],
+      "requiredOutputs": [
+        "READY_IMPLEMENT_PLAN candidate for independent readiness judgment"
+      ],
+      "exitConditions": [
+        "researchGaps=[]",
+        "fresh independent Jev readiness is SATISFIED",
+        "canonical readiness publication advances task to WORKER/EXECUTION"
+      ],
+      "nextActions": [
+        "npm run materialize:blackboard-evaluation -- <WORK_ID>",
+        "npm run eval:blackboard-jev -- <WORK_ID>",
+        "npm run publish:blackboard-evaluation -- <WORK_ID> <READINESS_EVALUATION>"
+      ],
+      "forbiddenActions": [
+        "mutate product source",
+        "self-issue READY",
+        "claim implementation delivery"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "actionKind": "IMPLEMENT",
+      "currentGoal": "IMPLEMENT_EXACT_READY_PLAN",
+      "requiredIdentity": [
+        "planRef",
+        "planHash",
+        "baselineSha?",
+        "candidateSha?"
+      ],
+      "entryConditions": [
+        "exact plan status is READY",
+        "all direct dependencies are DONE"
+      ],
+      "requiredOutputs": [
+        "committed exact candidate",
+        "candidate-bound verification evidence"
+      ],
+      "exitConditions": [
+        "candidateSha and baselineSha are exact",
+        "collect:blackboard-evidence succeeds and advances phase to JUDGMENT"
+      ],
+      "nextActions": [
+        "implement only sourceScope.write",
+        "bind exact baselineSha/candidateSha",
+        "npm run collect:blackboard-evidence -- <WORK_ID>"
+      ],
+      "forbiddenActions": [
+        "redefine objective or READY plan",
+        "self-accept candidate",
+        "merge before independent judgment"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "phase": "REPAIR",
+      "actionKind": "IMPLEMENT",
+      "currentGoal": "REPAIR_EXACT_JEV_FINDINGS",
+      "requiredIdentity": [
+        "planRef",
+        "planHash",
+        "evaluationRef"
+      ],
+      "entryConditions": [
+        "current evaluationRef validates against current subject",
+        "evaluation verdict is REPAIR_REQUIRED"
+      ],
+      "requiredOutputs": [
+        "repaired committed candidate",
+        "fresh candidate-bound verification evidence"
+      ],
+      "exitConditions": [
+        "fresh collect:blackboard-evidence succeeds and returns to JUDGMENT"
+      ],
+      "nextActions": [
+        "repair only grounded findings within sourceScope.write",
+        "bind fresh exact candidateSha",
+        "npm run collect:blackboard-evidence -- <WORK_ID>"
+      ],
+      "forbiddenActions": [
+        "expand scope beyond grounded findings",
+        "rewrite READY plan",
+        "reuse stale evaluation/evidence"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "phase": "JUDGMENT",
+      "actionKind": "REVIEW",
+      "currentGoal": "INDEPENDENTLY_JUDGE_EXACT_CANDIDATE",
+      "requiredIdentity": [
+        "planRef",
+        "planHash",
+        "candidateSha",
+        "baselineSha",
+        "evidenceRef"
+      ],
+      "entryConditions": [
+        "candidate and evidence are exact and current",
+        "sourceScope.write is empty"
+      ],
+      "requiredOutputs": [
+        "typed Jev candidate evaluation bound to exact candidate/evidence"
+      ],
+      "exitConditions": [
+        "publish:blackboard-evaluation routes SATISFIED to MERGE_PENDING, repair findings to REPAIR, or contradiction to RESEARCH_SA"
+      ],
+      "nextActions": [
+        "npm run materialize:blackboard-evaluation -- <WORK_ID>",
+        "npm run eval:blackboard-jev -- <WORK_ID>",
+        "npm run publish:blackboard-evaluation -- <WORK_ID> <CANDIDATE_EVALUATION>"
+      ],
+      "forbiddenActions": [
+        "mutate product source",
+        "implement or repair code",
+        "self-accept or merge candidate"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "phase": "MERGE_PENDING",
+      "actionKind": "REVIEW",
+      "currentGoal": "FINALIZE_EXACT_EVALUATED_CANDIDATE",
+      "requiredIdentity": [
+        "planRef",
+        "planHash",
+        "candidateSha",
+        "evaluationRef",
+        "evidenceRef"
+      ],
+      "entryConditions": [
+        "current worker evaluation is SATISFIED",
+        "task is PLANNED/unclaimed",
+        "sourceScope.write is empty"
+      ],
+      "requiredOutputs": [
+        "exact evaluated candidate merged without tree drift",
+        "verified DELIVERED_FEATURE receipt"
+      ],
+      "exitConditions": [
+        "verify:blackboard-delivery succeeds for exact mergeSha",
+        "publish:blackboard-delivery writes canonical receipt and alone advances DONE/DELIVERED"
+      ],
+      "nextActions": [
+        "merge the exact evaluated candidate while preserving its evaluated tree",
+        "fetch main and obtain exact mergeSha",
+        "npm run verify:blackboard-delivery -- <WORK_ID> <MERGE_SHA>",
+        "npm run publish:blackboard-delivery -- <WORK_ID> <MERGE_SHA>"
+      ],
+      "forbiddenActions": [
+        "edit implementation source",
+        "reclaim task",
+        "change candidate after evaluation",
+        "publish DONE without verifyDelivery"
+      ]
+    }
+  ],
+  "bootstrapResumeContract": {
+    "implicitSelection": "Filter exactly the existing ACTIVE contracted tasks; unchanged behavior when itemId is omitted.",
+    "explicitSelection": [
+      "ACTIVE contracted task with exact itemId remains valid and uses verifyCurrentContext/current.json.",
+      "PLANNED/WORKER/MERGE_PENDING contracted task is valid only when itemId is explicitly supplied.",
+      "Any other PLANNED/BLOCKED/DONE task remains invalid for bootstrap."
+    ],
+    "mergePendingMaterialization": [
+      "Do not call claim and do not write graph/current.json.",
+      "Call deriveTaskContext(itemId,{root,graph,registry}) directly, then materializeContext on that derived spec.",
+      "Require resulting deliveryEnvelope.currentGoal === FINALIZE_EXACT_EVALUATED_CANDIDATE and sourceScope.write.length === 0."
+    ],
+    "bootstrapProjection": [
+      "intent = context.deliveryEnvelope.currentGoal",
+      "rules = context.deliveryEnvelope.forbiddenActions",
+      "phase = context.deliveryEnvelope.phase"
+    ]
+  },
+  "coldStartTestContract": {
+    "fixture": "Use mkdtempSync with a structuredClone of the canonical graph/registry. Copy only BB-152 objective/plan plus phase-required evaluation/evidence JSON and registry; use RICH_CODING_HARNESS so tests do not depend on unrelated resolved-ref file bodies.",
+    "positiveTests": [
+      "BB-152 phase matrix exposes exact immediate obligation for RESEARCH, EXECUTION, REPAIR, JUDGMENT and MERGE_PENDING",
+      "BB-152 explicit merge-pending resume materializes without claim or current-context mutation"
+    ],
+    "negativeTests": [
+      {
+        "title": "BB-152 N1 judgment onboarding cannot advertise implementation authority",
+        "oracle": "bootstrapImplementationSession returns intent INDEPENDENTLY_JUDGE_EXACT_CANDIDATE, context.sourceScope.write=[], forbiddenWrite=['**']; neither intent nor rules contains implement/repair/self-accept authority."
+      },
+      {
+        "title": "BB-152 N2 merge-pending onboarding requires exact id and remains read-only",
+        "oracle": "bootstrapImplementationSession() without itemId ignores the PLANNED MERGE_PENDING task; with exact itemId it returns FINALIZE_EXACT_EVALUATED_CANDIDATE, leaves graph claim/currentContextRef byte-identical/null, and exposes sourceScope.write=[]."
+      },
+      {
+        "title": "BB-152 N3 delivery envelope never exposes direct DONE without verified merge",
+        "oracle": "deriveDeliveryContext for MERGE_PENDING contains verify:blackboard-delivery before publish:blackboard-delivery, contains no DONE/DELIVERED action, and sourceScope is read-only."
+      }
+    ]
+  }
 }
