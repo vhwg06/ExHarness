@@ -1,0 +1,43 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-153",
+  "outcome": "A failed JEV judgment changes the worker's understanding before it can mutate or re-submit the candidate: the exact finding is converted into a bound lookback, diagnosis and strategy revision, making JEV a supervisory control input rather than a pass/fail gate.",
+  "currentProblem": "Current Outer Blackboard publication sends a non-satisfied Worker judgment directly to WORKER/REPAIR, while delivery context treats both EXECUTION and REPAIR as action.kind=IMPLEMENT with source-write scope. This allows the actor to respond to JEV findings by immediately editing/resubmitting artifacts until the evaluator passes, without a mandatory lookback that explains what claim failed, why prior reasoning was wrong, which assumption changed, or what materially different strategy will be tried.",
+  "scope": [
+    "outer-blackboard.jev-supervisory-loop",
+    "outer-blackboard.lookback-before-repair",
+    "outer-blackboard.material-delta-re-evaluation",
+    "outer-blackboard.local-ci-supervision-semantics"
+  ],
+  "constraints": [
+    "RESEARCH_SA only until a fresh JEV readiness judgment accepts the exact plan; this registration does not authorize implementation changes.",
+    "Preserve the two-lane Research/Worker model; do not create a third lane for supervision.",
+    "JEV remains an independent semantic judge and must not become the actor or prescribe code edits; supervisory control consumes its structured findings.",
+    "A failed judgment must not grant source-write repair authority until the actor has produced a judgment-bound lookback/reconsideration that changes epistemic state.",
+    "Agent-authored prose or artifact existence alone is not implementation evidence and must not satisfy a finding or material-delta check.",
+    "CI remains an enforcement/projection surface; local and CI paths must consume one canonical supervision/transition policy rather than separate gate semantics."
+  ],
+  "successCriteria": [
+    "A non-satisfied Worker judgment cannot transition directly into an IMPLEMENT action; the next obligation is an explicit read-only lookback/reconsideration bound to the exact judgment, candidate and generation.",
+    "The lookback records failed claims, expected versus observed evidence, invalidated assumptions, causal diagnosis, strategy revision and the evidence expected from the next attempt before repair authority is granted.",
+    "Re-evaluation requires a material candidate/evidence/strategy delta that addresses prior findings; unchanged or cosmetic resubmission cannot create semantic progress.",
+    "Repeated unresolved findings trigger strategy reconsideration/escalation instead of unlimited JEV retry spam.",
+    "Local execution and CI enforcement use the same canonical supervisory transition semantics, while CI remains the final projection/gate rather than the owner of the feedback loop.",
+    "Focused negative tests prove that prose-only lookback, unchanged candidates and repeated identical repair strategies cannot advance to another accepted evaluation."
+  ],
+  "currentSourceRefs": [
+    "scripts/blackboard-delivery.mjs",
+    "scripts/blackboard-delivery-context.mjs",
+    "scripts/blackboard-implementation-bootstrap.mjs",
+    "scripts/blackboard-jev.mjs",
+    "scripts/blackboard-jev-cli.mjs",
+    "scripts/blackboard-jev-ci.mjs",
+    "docs/blackboard/jev.md",
+    "docs/blackboard/pipelines.md",
+    "docs/living/system/state.md",
+    "test/blackboard-context-bootstrap.test.mjs",
+    "test/blackboard-jev.test.mjs"
+  ]
+}
