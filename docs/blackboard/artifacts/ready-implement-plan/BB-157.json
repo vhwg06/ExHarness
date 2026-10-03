@@ -1,0 +1,275 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-157",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-157.json",
+    "hash": "ea465538aa897a403cbbd15d872df57b490ea5b589f78bbd58d2fe842fef0233"
+  },
+  "scope": [
+    "blackboard-v2.jev-supervision",
+    "blackboard-v2.lookback-phase",
+    "blackboard-v2.repair-reflection",
+    "blackboard-v2.material-progress",
+    "blackboard-v2.repeated-finding-reconsideration"
+  ],
+  "outOfScope": [
+    "Legacy Blackboard WORKER/LOOKBACK fields, currentContextRef, state.md routing, delivery-context/bootstrap compatibility or task-contract supervision state.",
+    "Changing JEV provider/model/verdict semantics.",
+    "Changing Blackboard V2 claim/CAS/lease/fence primitives delivered by BB-155.",
+    "Migrating unfinished legacy work; BB-156 owns migration/cutover.",
+    "Treating actor-authored reflection as correctness evidence."
+  ],
+  "constraints": [
+    "BB-155 must be DELIVERED before Worker implementation begins; this task extends V2 rather than adding compatibility behavior to legacy Blackboard.",
+    "JEV remains an independent judge. A RepairReflection is epistemic state and may authorize a repair attempt, but it cannot assert correctness, readiness, mergeability or delivery.",
+    "LOOKBACK is a first-class read-only V2 lifecycle phase, not a hidden boolean inside REPAIRING.",
+    "All supervision subjects bind exact workId, workGeneration, Attempt and JevDecision/candidate/evidence identities. Any stale generation or stale attempt/decision binding is SUPERSEDED and cannot advance state.",
+    "Decision/reflection publication follows V2 CAS semantics. Mutating side effects require the current Attempt fence; reads/context/nextActions do not.",
+    "Material-progress checks happen before another JEV provider dispatch. Control/prose-only changes never count as implementation or evidence progress.",
+    "nextActions remains pure/deterministic over the canonical V2 snapshot; supervision cannot introduce controller-local clocks, mutable hidden state or prose-inferred routing."
+  ],
+  "invariants": [
+    "A non-satisfied candidate judgment never grants source-write repair authority directly.",
+    "LOOKBACK is read-only; only an exactly bound current RepairReflection can authorize LOOKBACK -> REPAIRING.",
+    "A JevDecision/RepairReflection whose workGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase.",
+    "Supervision retry eligibility is derived from immutable Decisions plus current Attempt candidate/evidence identity; no duplicate authoritative SUPERVISION_STATE is introduced.",
+    "Material-delta guards run before provider dispatch and ignore Blackboard/control/prose-only churn.",
+    "nextActions remains pure/deterministic over `(spec,status,decisions)` and exposes LOOKBACK/repair blockers without hidden state."
+  ],
+  "architectureDecisions": [
+    "D1 — Extend the BB-155 executable lifecycle with first-class LOOKBACK between failed candidate JUDGING and REPAIRING. IMPLEMENTATION_DEFECT and/or INSUFFICIENT_EVIDENCE route to LOOKBACK; PLAN_INPUT_CONTRADICTION returns to research; SATISFIED routes to MERGE_PENDING.",
+    "D2 — Model actor lookback as REPAIR_REFLECTION_V1 owned by the current Attempt, not as a Decision and not as correctness Evidence. It binds `{workId,workGeneration,failedDecisionRef,attemptId,candidateSha,candidateTree,evidenceRef,evidenceHash,findingSignature}` plus one diagnosis per failed finding and a strategyRevision.",
+    "D3 — Publishing a RepairReflection is a V2 CAS mutation. Publish rereads current Work/Attempt/Decision, requires exact workGeneration and failed-decision/attempt/candidate/evidence bindings plus current Attempt fence, then transitions LOOKBACK -> REPAIRING. Any mismatch returns SUPERSEDED or STALE_FENCE and leaves state unchanged.",
+    "D4 — Keep JEV as the independent judge. RepairReflection may authorize one repair attempt because the actor explicitly revised its understanding, but it cannot mark any criterion satisfied. Only fresh candidate/evidence followed by a new valid JevDecision can resolve findings.",
+    "D5 — Derive findingSignature deterministically from the immutable failed JevDecision as hash(sorted(nonSatisfied questionId + ':' + choice)). Compare with the previous failed candidate Decision for the same Work generation: a changed signature selects DIAGNOSIS; the same signature selects STRATEGY_RECONSIDERATION. Do not persist duplicate repeatCount/finding-summary authority when it can be derived.",
+    "D6 — Put material-progress semantics into the V2 lifecycle/next-action guard for JUDGE_CANDIDATE. IMPLEMENTATION_DEFECT requires candidate-tree delta from the failed Attempt; INSUFFICIENT_EVIDENCE requires evidence-hash delta; mixed failures require both. RepairReflection/control metadata never counts toward these deltas.",
+    "D7 — `nextActions(spec,status,decisions)` remains pure. In LOOKBACK it exposes only read/reflect/publish-reflection actions and no product-source mutation. In REPAIRING it exposes repair mutation under the current Attempt fence. Before JUDGING it returns JUDGE_CANDIDATE blocked with NO_MATERIAL_DELTA until the required candidate/evidence change exists.",
+    "D8 — ContextBuilder consumes lifecycle output rather than defining supervision policy: LOOKBACK context includes the exact failed Decision, candidate/evidence refs, diagnosis obligation and empty write scope; REPAIRING context includes the accepted RepairReflection and current repair scope.",
+    "D9 — BB-157 depends directly on BB-155. At Worker start bind exact delivered V2 lifecycle/control-store/decision APIs; if delivered seams contradict this plan, return to RESEARCH_SA instead of adding a legacy compatibility path."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-v2/control-store.mjs",
+      "scripts/blackboard-v2/work-resource.mjs",
+      "scripts/blackboard-v2/lifecycle.mjs",
+      "scripts/blackboard-v2/context-builder.mjs",
+      "scripts/blackboard-v2/cli.mjs"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-v2/supervision.mjs",
+      "test/blackboard-v2-supervision.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-v2-supervision.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-v2/**",
+      "test/blackboard-v2-*.test.mjs",
+      "docs/living/system/state.md",
+      "docs/blackboard/artifacts/objective/BB-153.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-153.json",
+      "package.json"
+    ],
+    "write": [
+      "scripts/blackboard-v2/supervision.mjs",
+      "scripts/blackboard-v2/lifecycle.mjs",
+      "scripts/blackboard-v2/context-builder.mjs",
+      "scripts/blackboard-v2/cli.mjs",
+      "test/blackboard-v2-supervision.test.mjs",
+      "docs/living/system/state.md",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/state.md",
+      "docs/blackboard/context/**",
+      "docs/blackboard/artifacts/ready-implement-plan/*.lookback.json",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-state-project.mjs",
+      ".github/**",
+      "packages/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — V2 supervision model: implement finding projection/signature plus REPAIR_REFLECTION_V1 validation with exact Work generation/Attempt/Decision/candidate/evidence binding.",
+    "S2 — Lifecycle integration: add read-only LOOKBACK and exact CAS/fence-governed LOOKBACK -> REPAIRING publication.",
+    "S3 — Anti-spam guard: derive material-progress requirements from failed JevDecision and block JUDGE_CANDIDATE before provider dispatch until candidate/evidence deltas exist.",
+    "S4 — Repeated-finding supervision: derive DIAGNOSIS vs STRATEGY_RECONSIDERATION from immutable decision history without duplicate supervision state.",
+    "S5 — Context/operator integration: expose correct LOOKBACK/REPAIRING contexts and next actions, then prove stale generation/fence/no-delta behavior fail closed."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "LOOKBACK",
+      "statement": "Failed candidate judgment enters read-only LOOKBACK and never directly grants REPAIRING/source-write authority.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Transition tests for IMPLEMENTATION_DEFECT, INSUFFICIENT_EVIDENCE, mixed failure, SATISFIED and PLAN_INPUT_CONTRADICTION."
+      ]
+    },
+    {
+      "id": "REFLECTION_BINDING",
+      "statement": "Only an exact current REPAIR_REFLECTION_V1 bound to workGeneration, failed Decision, Attempt, candidate and evidence can transition LOOKBACK -> REPAIRING.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Positive publication fixture plus stale generation, stale decision, stale attempt and stale-fence negatives."
+      ]
+    },
+    {
+      "id": "MATERIAL_DELTA",
+      "statement": "A new JUDGE_CANDIDATE action is blocked until failure-class-specific candidate/evidence material progress exists; prose/control-only changes never satisfy the guard.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Candidate-only, evidence-only, mixed and control-only delta fixtures."
+      ]
+    },
+    {
+      "id": "RECONSIDERATION",
+      "statement": "Repeated identical failed finding signature selects STRATEGY_RECONSIDERATION from immutable Decisions; changed findings select DIAGNOSIS without duplicate authoritative repeat state.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Decision-history fixtures proving same/different signature behavior."
+      ]
+    },
+    {
+      "id": "JUDGE_AUTHORITY",
+      "statement": "RepairReflection never satisfies correctness; only a new valid JevDecision over fresh candidate/evidence may transition to MERGE_PENDING.",
+      "verificationIds": [
+        "focused",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Negative fixture where reflection exists but no fresh judged candidate cannot advance."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A non-satisfied candidate judgment never grants source-write repair authority directly.",
+      "criterionIds": [
+        "LOOKBACK"
+      ]
+    },
+    {
+      "invariant": "LOOKBACK is read-only; only an exactly bound current RepairReflection can authorize LOOKBACK -> REPAIRING.",
+      "criterionIds": [
+        "LOOKBACK",
+        "REFLECTION_BINDING"
+      ]
+    },
+    {
+      "invariant": "A JevDecision/RepairReflection whose workGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase.",
+      "criterionIds": [
+        "REFLECTION_BINDING"
+      ]
+    },
+    {
+      "invariant": "Supervision retry eligibility is derived from immutable Decisions plus current Attempt candidate/evidence identity; no duplicate authoritative SUPERVISION_STATE is introduced.",
+      "criterionIds": [
+        "MATERIAL_DELTA",
+        "RECONSIDERATION"
+      ]
+    },
+    {
+      "invariant": "Material-delta guards run before provider dispatch and ignore Blackboard/control/prose-only churn.",
+      "criterionIds": [
+        "MATERIAL_DELTA"
+      ]
+    },
+    {
+      "invariant": "nextActions remains pure/deterministic over `(spec,status,decisions)` and exposes LOOKBACK/repair blockers without hidden state.",
+      "criterionIds": [
+        "LOOKBACK",
+        "MATERIAL_DELTA"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test test/blackboard-v2-supervision.test.mjs test/blackboard-v2-control.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "negativeVerificationCases": [
+    "A failed JevDecision jumps directly from JUDGING to writable REPAIRING.",
+    "A stale-generation, stale-decision, stale-attempt or stale-fence RepairReflection authorizes repair.",
+    "Candidate/evidence unchanged but reflection/control prose changes make JUDGE_CANDIDATE actionable.",
+    "The same failed finding signature returns to ordinary DIAGNOSIS instead of STRATEGY_RECONSIDERATION.",
+    "RepairReflection itself causes SATISFIED/MERGE_PENDING without a fresh independent JevDecision."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_157_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "LOOKBACK",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-supervision.test.mjs",
+      "testTitle": "BB-157 N1 failed JEV enters read-only LOOKBACK before repair",
+      "subjectSymbol": "nextActions"
+    },
+    {
+      "id": "NEG_157_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "REFLECTION_BINDING",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-supervision.test.mjs",
+      "testTitle": "BB-157 N2 stale reflection bindings cannot authorize repair",
+      "subjectSymbol": "publishRepairReflection"
+    },
+    {
+      "id": "NEG_157_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "MATERIAL_DELTA",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-supervision.test.mjs",
+      "testTitle": "BB-157 N3 control-only churn cannot unlock another JEV judgment",
+      "subjectSymbol": "assertMaterialProgress"
+    },
+    {
+      "id": "NEG_157_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "RECONSIDERATION",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-supervision.test.mjs",
+      "testTitle": "BB-157 N4 repeated finding signature requires strategy reconsideration",
+      "subjectSymbol": "deriveReflectionMode"
+    },
+    {
+      "id": "NEG_157_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "JUDGE_AUTHORITY",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-supervision.test.mjs",
+      "testTitle": "BB-157 N5 reflection cannot self-authorize correctness",
+      "subjectSymbol": "publishRepairReflection"
+    }
+  ],
+  "researchGaps": [
+    "At BB-155 delivery, bind the exact delivered V2 lifecycle/control-store/Decision APIs before readiness publication; no legacy seam may be substituted if the delivered API differs."
+  ],
+  "researchBaselineSha": "7599ef5a1395af36b0f86a6f940f059b28edb343",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living system state describes V2 JEV supervision as failed judgment -> read-only LOOKBACK -> exact reflection -> fenced repair -> fresh independent judgment, including material-progress and repeated-finding guards."
+  }
+}

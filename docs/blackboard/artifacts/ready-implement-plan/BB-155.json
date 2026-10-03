@@ -1,0 +1,282 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-155",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-155.json",
+    "hash": "bfd0906428c6b7d490c85b5c7185f5c133f753b733532ae6c756f3e8eed2455b"
+  },
+  "scope": [
+    "outer-blackboard.v2-control-authority",
+    "outer-blackboard.work-resource",
+    "outer-blackboard.executable-lifecycle",
+    "outer-blackboard.context-builder",
+    "outer-blackboard.source-attempt-binding",
+    "outer-blackboard.operator-next-action"
+  ],
+  "outOfScope": [
+    "Migrating, deleting or cutting over any current unfinished legacy Blackboard task.",
+    "Rewriting DONE task history or Living Docs.",
+    "Changing Jev provider/model/verdict semantics.",
+    "Pruning existing process/evidence/artifact storage.",
+    "Product/runtime Blackboard under packages/agentic-system."
+  ],
+  "constraints": [
+    "Task 1 builds the new control plane only. It must not migrate or cut over any current unfinished legacy work.",
+    "Blackboard authority must be readable identically from any checkout/worktree and must not depend on whichever source branch is currently checked out.",
+    "A new Work must be creatable directly in the control plane before any source PR or branch exists.",
+    "Context is derived output, not authority: no context generation/history/currentContextRef persistence in the V2 model.",
+    "Source branches, worktrees and candidate SHAs are attempt bindings only and never become Blackboard truth.",
+    "Independent Jev judgment, exact candidate/evidence/merge binding, negative-case verification and Living Docs delivery truth remain trust primitives; V2 may adapt them but must not weaken them.",
+    "The lifecycle and legal next actions must be executable state-machine data/code; operator docs may explain semantics but cannot be required to infer what action is legal next."
+  ],
+  "invariants": [
+    "Exactly one V2 control authority owns a Work's semantic/lifecycle state; source branches and worktrees cannot override it.",
+    "Work creation and research entry do not require a source-code commit or PR.",
+    "Context is always derived from Work + current system truth + exact decisions/attempt bindings and is never persisted as authority.",
+    "Every state transition is explicit, guarded and enumerable; no operator or agent infers lifecycle from prose.",
+    "Jev/evidence/delivery decisions remain external trusted receipts bound back to the exact Work generation and Attempt.",
+    "Lease expiry and takeover safety are decided only from the ControlStore's authoritative clock; agent-provided time is never used for lease validity, expiry or takeover.",
+    "Decision publication is a compare-and-swap mutation: a decision applies only when its observedGeneration exactly equals the current Work spec.generation at publish time; otherwise it is recorded/returned as SUPERSEDED and cannot mutate status or phase.",
+    "nextActions(work) is a pure deterministic function of the canonical `(spec, status, decisions)` snapshot. Given byte-equivalent inputs, independent controllers must compute byte-equivalent next actions, blockers and forbidden actions.",
+    "Fence validation is required only on mutating side effects owned by an Attempt—candidate/evidence publication and lifecycle/status transitions. Read-only inspection and context building never require a fence."
+  ],
+  "architectureDecisions": [
+    "D1 — Introduce an isolated V2 control-plane module under scripts/blackboard-v2/**. Task 1 does not mutate legacy work-graph/artifact lifecycle beyond registering this task. The V2 module can coexist with legacy until BB-156 cutover.",
+    "D2 — Store V2 authority behind a BlackboardControlStore abstraction. The production implementation uses a dedicated Git control ref (preferred `refs/exharness/blackboard`) whose tree contains one Work resource per id plus allocation metadata. Every mutation uses compare-and-swap against the current resourceVersion. The ControlStore owns the authoritative clock used for leases; agent clocks/timestamps are informational only and can never decide expiry or takeover.",
+    "D3 — Define WORK_RESOURCE_V2 as `{id,generation,spec,status}`. `spec` owns objective, current plan, dependencies and components. `status` owns lifecycle phase, conditions, activeAttempt and observedGeneration bindings. Updating semantic desired state increments generation; judgments/conditions bind the generation they observed.",
+    "D4 — Define an executable lifecycle table/function as the only source of legal transitions. Minimum phases: PROPOSED, RESEARCHING, PLAN_JUDGMENT, READY, EXECUTING, JUDGING, REPAIRING, MERGE_PENDING, DELIVERED, BLOCKED. `nextActions(work)` is pure/deterministic over the canonical `(spec,status,decisions)` snapshot and performs no I/O, clock reads or mutation. Guards consume only explicit snapshot facts; docs are descriptive only.",
+    "D5 — `nextActions(work)` returns bounded machine-readable actions with required inputs/blockers/forbidden actions. The CLI `bb-v2 next <id>` renders that result; `show` renders canonical Work state; `create` atomically allocates/publishes a new Work without touching a source branch.",
+    "D6 — `buildContext(work)` is a pure projection from canonical Work, component/current-system routing and the lifecycle's next-action contract. It returns goal, input refs/subjects, read/write scope, forbidden actions and required output. It has no generation, parent context, currentContextRef or persisted context file.",
+    "D7 — Source work is represented by ATTEMPT_V2 bound to `{workId,workGeneration,baseSha,sourceRef?,candidateSha?,owner,leaseUntil,fence}`. Claim/takeover is a ControlStore CAS using the store clock; exactly one active attempt wins. Fence checks are enforced only on mutating Attempt side effects (candidate/evidence publication and lifecycle/status transitions), not reads. Jev readiness/candidate evaluations and delivery receipts are immutable decisions/receipts bound to exact workGeneration and attempt/candidate identity.",
+    "D8 — Task 1 proves branch independence and lifecycle usability with new synthetic V2 work only. It must not import current legacy tasks or write a compatibility/dual-write bridge; BB-156 owns one-shot migration/cutover.",
+    "D9 — Decision publication is itself a CAS transaction. A JevDecision carries `observedGeneration`; publish rereads the current Work and applies the decision only when `observedGeneration === spec.generation` and the subject/attempt binding still matches. Otherwise publish returns `SUPERSEDED`, leaves phase/status unchanged, and never converts stale judgment into a current condition."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/jev.md",
+      "package.json"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-v2/control-store.mjs",
+      "scripts/blackboard-v2/work-resource.mjs",
+      "scripts/blackboard-v2/lifecycle.mjs",
+      "scripts/blackboard-v2/context-builder.mjs",
+      "scripts/blackboard-v2/cli.mjs",
+      "test/blackboard-v2-control.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-v2-control.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-*.mjs",
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      "package.json",
+      "AGENTS.md",
+      "test/blackboard-*.test.mjs"
+    ],
+    "write": [
+      "scripts/blackboard-v2/**",
+      "test/blackboard-v2-control.test.mjs",
+      "package.json",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/artifacts/**",
+      "docs/blackboard/evidence/**",
+      "docs/blackboard/process/**",
+      ".github/**",
+      "packages/**",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Control authority + Work resource: implement CAS-backed dedicated-ref store and WORK_RESOURCE_V2 validation/generation semantics.",
+    "S2 — Executable lifecycle: implement phase/transition table, guards and deterministic `nextActions(work)`.",
+    "S3 — Pure context builder: derive phase-local agent context from Work/Attempt/decision facts with no persisted helper context.",
+    "S4 — Operator surface: add `bb-v2 create/show/next` commands that work identically from different source branches/worktrees.",
+    "S5 — Trust adapters/tests: bind synthetic Jev/Attempt/receipt facts to workGeneration and prove stale-generation/branch-split failures fail closed; document V2 as parallel, not yet authoritative for legacy work."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AUTHORITY",
+      "statement": "One dedicated control authority returns identical Work state from different source checkouts and uses compare-and-swap publication. Claim/takeover lease expiry is decided by the ControlStore clock, never the agent clock.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Two checkout fixtures read the same control ref; stale CAS write is rejected.",
+        "Competing claims produce one winner; takeover before store-clock expiry is rejected; takeover after store-clock expiry advances the fence."
+      ]
+    },
+    {
+      "id": "BOOTSTRAP",
+      "statement": "A new Work is created directly in V2 and can enter RESEARCHING without a source PR, legacy graph registration or source branch.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Create fixture proves no legacy graph/artifact write and returns a valid Work generation."
+      ]
+    },
+    {
+      "id": "LIFECYCLE",
+      "statement": "Current Work state deterministically yields legal next actions/blockers; `nextActions` is pure over `(spec,status,decisions)`; illegal transitions, stale observed generations and stale decision publication fail closed.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Table-driven transition tests cover research, judgment, execution, repair, merge-pending and delivered boundaries.",
+        "Independent controller instances over identical snapshots produce byte-equivalent next actions.",
+        "A decision whose observedGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase."
+      ]
+    },
+    {
+      "id": "CONTEXT",
+      "statement": "The V2 context builder is pure derived output with no persisted identity/history and exposes exact phase-local source authority and forbidden actions.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Repeated build is byte-equivalent and creates no context file; read-only phases expose no write scope."
+      ]
+    },
+    {
+      "id": "ATTEMPT",
+      "statement": "Source branch/worktree/candidate state is only an Attempt bound to exact workId/workGeneration; claim/takeover uses store-clock CAS leases; fences protect only mutating attempt side effects and cannot redefine Work semantics.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Mismatched generation/candidate/receipt bindings fail closed.",
+        "Stale fence cannot publish candidate/evidence or transition state, while read-only show/context operations succeed without a fence."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Exactly one V2 control authority owns a Work's semantic/lifecycle state; source branches and worktrees cannot override it.",
+      "criterionIds": [
+        "AUTHORITY",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "Work creation and research entry do not require a source-code commit or PR.",
+      "criterionIds": [
+        "BOOTSTRAP"
+      ]
+    },
+    {
+      "invariant": "Context is always derived from Work + current system truth + exact decisions/attempt bindings and is never persisted as authority.",
+      "criterionIds": [
+        "CONTEXT"
+      ]
+    },
+    {
+      "invariant": "Every state transition is explicit, guarded and enumerable; no operator or agent infers lifecycle from prose.",
+      "criterionIds": [
+        "LIFECYCLE"
+      ]
+    },
+    {
+      "invariant": "Jev/evidence/delivery decisions remain external trusted receipts bound back to the exact Work generation and Attempt.",
+      "criterionIds": [
+        "LIFECYCLE",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "Lease expiry and takeover safety are decided only from the ControlStore's authoritative clock; agent-provided time is never used for lease validity, expiry or takeover.",
+      "criterionIds": [
+        "AUTHORITY",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "Decision publication is a compare-and-swap mutation: a decision applies only when its observedGeneration exactly equals the current Work spec.generation at publish time; otherwise it is recorded/returned as SUPERSEDED and cannot mutate status or phase.",
+      "criterionIds": [
+        "LIFECYCLE",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "invariant": "nextActions(work) is a pure deterministic function of the canonical `(spec, status, decisions)` snapshot. Given byte-equivalent inputs, independent controllers must compute byte-equivalent next actions, blockers and forbidden actions.",
+      "criterionIds": [
+        "LIFECYCLE"
+      ]
+    },
+    {
+      "invariant": "Fence validation is required only on mutating side effects owned by an Attempt—candidate/evidence publication and lifecycle/status transitions. Read-only inspection and context building never require a fence.",
+      "criterionIds": [
+        "ATTEMPT",
+        "CONTEXT"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test test/blackboard-v2-control.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "negativeVerificationCases": [
+    "Changing the checked-out source branch changes `bb-v2 show` state for the same Work id, or competing agents both acquire the same live lease because agent clocks decide expiry.",
+    "A stale judgment/attempt bound to an older Work generation is published as current instead of returning SUPERSEDED, or two controllers derive different nextActions from the same canonical snapshot.",
+    "A stale fence mutates candidate/evidence/status, or read-only inspection/context building incorrectly requires a fence."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_155_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "AUTHORITY",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N1 ControlStore clock and CAS allow only one live attempt owner",
+      "subjectSymbol": "GitRefBlackboardControlStore"
+    },
+    {
+      "id": "NEG_155_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N2 stale decision is superseded and nextActions stays deterministic",
+      "subjectSymbol": "nextActions"
+    },
+    {
+      "id": "NEG_155_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "ATTEMPT",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N3 fences guard mutations but never reads",
+      "subjectSymbol": "buildContext"
+    }
+  ],
+  "researchGaps": [],
+  "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living system state records the delivered V2 Blackboard control-plane boundary, dedicated authority, executable lifecycle and pure context-builder semantics while legacy work remains uncutover."
+  }
+}
