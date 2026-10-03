@@ -1,0 +1,279 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-151",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-151.json",
+    "hash": "ccc563afba3b4e71be7aa8fba6a045f9cb77d8ab38ca2911961f6eb6bc09d40b"
+  },
+  "scope": [
+    "agent-tools.grok-cost-guard.observed-only",
+    "agent-tools.task-context.worktree-local-exclusion"
+  ],
+  "outOfScope": [
+    "Rewriting BB-123 historical evidence, lineage or the invalid-merge PR record.",
+    "The BB-120 child-env surface (process-runner.js, tool-adapters.js, child-env.test.js) — a separate recovery (BB-150).",
+    "The BB-122 opencode guard (parseOpencodeJsonl).",
+    "Changing grok usage-token parsing beyond preserving the BB-105 behavior."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "Only a finite number >= 0 total_cost_usd becomes an observed totalCostUsd; everything else stays null with the existing unavailable reason, never zero-filled",
+    "Grounded-context projection writes only inside worktreeRoot; the source repository is never written"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: re-run FU1/FU2/FU3 on a clean worktree of exact origin/main (parseGrokJson / projectAgentTaskContext called directly; hermetic tmpdir, linked worktree via createLocalGitWorkspace -- no network, no credentials).",
+    "D2 -- BB-105 grok, BB-102 task-context and BB-120 child-env tests are regression-only: npm run test:agent-tools must pass unchanged on the recovery branch.",
+    "D3 -- FU3 is the docs gate: auditPaths rejects agentic-system and blackboard writes; Living Docs statements carry no Blackboard ids.",
+    "D4 -- Repair boundary: a defect found is repaired minimally inside parseGrokJson (cost guard only) or projectAgentTaskContext (exclusion only); re-run FU1-FU3 + full test:agent-tools + verify:current-docs + npm run verify and prove C1-C6 and N1-N4 after repair."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/followup-correctness.test.js",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-123/**",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/test/child-env.test.js",
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/followup-correctness.test.js",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agent-tools/test/followup-correctness.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Observed-only cost guard [C1, C2, C3, C6, N1, N2]: typeof-number && finite && >= 0 gating, null/unavailable reasons preserved, BB-105 token regression.",
+    "S2 -- Worktree-local exclusion [C4, C5, N3, N4]: .exharness/.gitignore inside worktreeRoot only, source info/exclude byte-identical, grounded copies out of the candidate commit.",
+    "S3 -- Docs gate and Living statements [fu3]: observed-only cost + worktree-local exclusion statements, no Blackboard ids, auditPaths scope check."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "A grok JSON with a finite total_cost_usd number >= 0 reports it as usage.totalCostUsd, including numeric 0 staying an observed 0.",
+      "verificationIds": [
+        "fu1",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "grok JSON with total_cost_usd null / \"\" / boolean / numeric-string / NaN / Infinity / negative reports usage.totalCostUsd null -- never a coerced number (no fabricated $0 cost).",
+      "verificationIds": [
+        "fu1",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "Usage-bearing grok JSON with a numeric cost still reports that exact cost, and integer usage-token parsing (input_tokens/output_tokens) is unchanged (BB-105 regression).",
+      "verificationIds": [
+        "fu1",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "projectAgentTaskContext on a linked worktree writes .exharness/.gitignore (\"*\\n\") inside worktreeRoot only, and the source repository .git/info/exclude stays byte-identical.",
+      "verificationIds": [
+        "fu2",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "Projected grounded copies under .exharness/context/ keep git status clean and never enter the candidate commit.",
+      "verificationIds": [
+        "fu2",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "C6",
+      "statement": "Truncated/malformed grok JSON still yields the existing GROK_USAGE_NOT_REPORTED / GROK_JSON_TRUNCATED unavailable reasons (no behavior change).",
+      "verificationIds": [
+        "fu1",
+        "tools"
+      ],
+      "evidenceRequired": [
+        "FU1-FU3 test output on a clean worktree of exact origin/main."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "grok JSON with total_cost_usd null is recorded as totalCostUsd null, not 0.",
+      "verificationIds": [
+        "fu1"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "grok JSON with total_cost_usd \"\" records null (not 0); true records null (not 1); \"0.5\" records null (not 0.5); NaN, -1, Infinity all record null.",
+      "verificationIds": [
+        "fu1"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N3",
+      "statement": "Projecting grounded context into a linked worktree must not alter the source repository info/exclude by even one byte (write-outside-worktree failure mode).",
+      "verificationIds": [
+        "fu2"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N4",
+      "statement": "Grounded copies must not appear in the candidate commit (exclusion failure mode).",
+      "verificationIds": [
+        "fu2",
+        "fu3"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "Only a finite number >= 0 total_cost_usd becomes an observed totalCostUsd; everything else stays null with the existing unavailable reason, never zero-filled",
+      "criterionIds": [
+        "C1",
+        "C2",
+        "N1",
+        "N2"
+      ]
+    },
+    {
+      "invariant": "Grounded-context projection writes only inside worktreeRoot; the source repository is never written",
+      "criterionIds": [
+        "C4",
+        "C5",
+        "N3",
+        "N4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "fu1",
+      "command": "node --test --test-name-pattern=\"^FU1 \" packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "fu2",
+      "command": "node --test --test-name-pattern=\"^FU2 \" packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "fu3",
+      "command": "node --test --test-name-pattern=\"^FU3 \" packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The docs must establish that grok totalCostUsd is observed only when total_cost_usd is a finite number >= 0 (never zero-filled or coerced) and that grounded-context exclusion is worktree-local via .exharness/.gitignore with the source repository never written, with no Blackboard ids."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-105",
+      "BB-102"
+    ],
+    "note": "BB-105 grok usage/token parsing the observed-only guard builds on; BB-102 grounded task-context the worktree-local exclusion builds on (both DONE, DELIVERED, WORKER lane; exact direct dependencies from work-graph.json). BB-097/BB-098 are transitive only. BB-120/BB-122 excluded -- no behavioral dependency."
+  }
+}

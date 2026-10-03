@@ -1,0 +1,234 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-149",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-149.json",
+    "hash": "f123953fe3e1e58db1944154053bd9707440d37421f453b63e382b223cea47af"
+  },
+  "scope": [
+    "agentic-system.feedback-lifecycle.episode",
+    "agentic-system.feedback-lifecycle.response-transitions",
+    "agentic-system.feedback-lifecycle.outcome",
+    "agentic-system.feedback-lifecycle.resolution"
+  ],
+  "outOfScope": [
+    "Rewriting BB-085 historical evidence, lineage or the invalid-merge PR record.",
+    "The BB-083 feedback surface (feedback-contracts/controller/projection/improvement) — a separate recovery (BB-148).",
+    "Changing the grounded-finding-input seam contract (BB-084)."
+  ],
+  "constraints": [
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Prove-first: the implementation is not assumed buggy; implementation files in sourceScope.write stay read-only unless a behavior in behaviorsToProve fails.",
+    "Status DRAFT: recovery verification has not been executed; nothing in this plan claims readiness or a Jev verdict.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered.",
+    "No writes outside sourceScope.write; no writes to sourceScope.forbiddenWrite for any reason."
+  ],
+  "invariants": [
+    "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+    "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+    "No .github/** or trusted JEV/controller mutation",
+    "Episode ids are content-addressed (sha256 over canonical content); exact replay converges with no second mutation",
+    "UNKNOWN outcome never advances the episode head; RESOLVED is terminal",
+    "Authority fields smuggled into episode/response payloads are rejected at every depth"
+  ],
+  "architectureDecisions": [
+    "D1 -- Verification-first: run the four lifecycle suites plus the dependency contract test on current main; C1-C3 and N1-N2 each need at least one executable check, added only where a passing test is missing.",
+    "D2 -- End-to-end proof runs through real JSON artifact + CAS head stores (openEpisode -> respond ACTED -> recordOutcome IMPROVED -> resolve) plus crash-recovery replay convergence in a fresh process.",
+    "D3 -- Seam isolation regression: the lifecycle seam consumes only the delivered grounded-finding-input root exports and imports nothing from evolution/benchmark/optimizer/pattern code.",
+    "D4 -- Repair boundary: a defect found in feedback-lifecycle-contracts.js / feedback-lifecycle-controller.js / feedback-outcome.js is repaired minimally on the exact ref, with regression evidence covering the defect and N1-N2."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "packages/agentic-system/test/feedback-outcome.test.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "docs/blackboard/evidence/BB-085/**",
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "packages/agentic-system/test/feedback-outcome.test.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "packages/agentic-system/test/feedback-outcome.test.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "S1 -- Episode immutability and authority separation [C1, N1]: grounded input pins, content-addressed ids, smuggled-authority rejection, CONVERGED replay.",
+    "S2 -- Application-owned response transitions [C2, N1]: legal transition graph, verified principals, per-disposition field rules, CAS heads, idempotent replay, crash-recovery.",
+    "S3 -- Fresh outcome and terminal resolution [C3, N2]: frozen policy digest, UNKNOWN never advancing the head, signed-delta classification, derived terminal resolution.",
+    "S4 -- Living Docs: feedback-lifecycle.md with one verifiable statement per behavior and no benchmark/optimizer/promotion/pattern/cross-episode dependency."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "defineFeedbackEpisode binds exact grounded finding input pins (ref+digest match), computes episodeId as sha256 over canonical content, rejects authority fields smuggled at any depth (principal, authority, disposition, verdict, etc.), requires MEASURED impact to have finite numeric measurements with all inputs GROUNDED and consumption CURRENT, and exact replay of the same content converges with no second mutation (CONVERGED).",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Lifecycle suite output on current main."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "respond allows only legal transitions (OPEN->any disposition, RESPONDED_DEFERRED->any, RESPONDED_ACTED->DEFERRED/SUPERSEDED; RESOLVED/OUTCOME_RECORDED/RESPONDED_REJECTED/RESPONDED_SUPERSEDED accept none), verifies the principal as an explicit argument through the injected authority (rejecting OBSERVER/EVALUATOR/PROVIDER/OPTIMIZER kinds), enforces per-disposition field rules (ACTED requires non-empty actionRefs + frozen outcome policy; REJECTED requires rationaleRef; DEFERRED requires revisitCondition; SUPERSEDED requires successorEpisodeRef), and every transition is a CAS on the expected head revision with idempotent replay and crash-recovery (put-then-CAS leaving exactly one transition).",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Lifecycle suite output on current main."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "recordOutcome uses only the frozen policy digest stored in the current ACTED response (never a later policy), yields UNKNOWN (never advancing the head) for unresolved fresh input, reused inputs/attempts, non-strictly-later boundaries, or missing/null required measurements (never coercing missing values to zero), classifies IMPROVED/REGRESSED/NO_CHANGE by signed delta against minEffect/noChangeBand with the direction factor; resolve derives the terminal FeedbackResolution from head state (measured resolutions carry an outcomeRef, REJECTED_ACKNOWLEDGED/SUPERSEDED carry none), rejects caller-supplied values that differ from the derived value, and RESOLVED is terminal.",
+      "verificationIds": [
+        "focused",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "Lifecycle suite output on current main."
+      ]
+    },
+    {
+      "id": "N1",
+      "statement": "An episode/response carrying principal/authority/disposition fields inside finding, impact, observation or provider payloads is rejected; a call with an OBSERVER/EVALUATOR/PROVIDER/OPTIMIZER principal, or a principal the injected authority does not verify, fails the respond/resolve transition.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    },
+    {
+      "id": "N2",
+      "statement": "Recording an outcome against a non-current response, reusing an episode input as fresh evidence, reusing a baseline execution attempt, or relying on a fresh boundary not strictly after the latest baseline boundary yields UNKNOWN with explicit reasons (e.g. NON_CURRENT_RESPONSE, ATTEMPT_REUSED, BOUNDARY_NOT_AFTER_RESPONSE) and leaves the head at RESPONDED_ACTED; resolving from an UNKNOWN outcome or a DEFERRED state fails.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative-case test output."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Research performs no product-code mutation; implementation files are read-only unless verification proves a behavior defect",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "No history rewrite: the original delivery's historical evidence and invalid-merge lineage remain facts",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "No .github/** or trusted JEV/controller mutation",
+      "criterionIds": [
+        "C1"
+      ]
+    },
+    {
+      "invariant": "Episode ids are content-addressed (sha256 over canonical content); exact replay converges with no second mutation",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    },
+    {
+      "invariant": "UNKNOWN outcome never advances the episode head; RESOLVED is terminal",
+      "criterionIds": [
+        "C3",
+        "N2"
+      ]
+    },
+    {
+      "invariant": "Authority fields smuggled into episode/response payloads are rejected at every depth",
+      "criterionIds": [
+        "C1",
+        "N1"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-contracts.test.js packages/agentic-system/test/feedback-lifecycle-controller.test.js packages/agentic-system/test/feedback-lifecycle-recovery.test.js packages/agentic-system/test/feedback-outcome.test.js test/feedback-lifecycle-dependency-contract.test.mjs"
+    },
+    {
+      "id": "agentic",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Living doc must establish, in one verifiable statement per behavior, that the currently-live feedback lifecycle enforces episode immutability with authority separation, application-owned response transitions under verified principals, fresh measured outcomes against a frozen policy with UNKNOWN never advancing the head, and derived terminal resolutions -- with no benchmark, optimizer, promotion, pattern or cross-episode dependency."
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-084"
+    ],
+    "note": "The only direct work-graph dependency: defineGroundedFindingInput / assertGroundedFindingInputCurrent seam consumed at episode open and outcome time (DONE, DELIVERED on WORKER lane, candidate 0e152c955a84). No other work-graph dependency exists for BB-085."
+  }
+}

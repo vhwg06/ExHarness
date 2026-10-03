@@ -365,7 +365,12 @@ test("RB2 a timeout kills the whole process tree and is INCONCLUSIVE", TIMEOUT, 
       `require('node:fs').writeFileSync(${JSON.stringify(pidFile)}, JSON.stringify([process.pid, child.pid]));`,
       "setInterval(() => {}, 1000);"
     ].join("\n");
-    const result = await nodeVerifier("hang", "c.hang", repo, ["-e", script], { timeoutMs: 300, requireUnchangedTree: false })
+    // The timeout must comfortably exceed worst-case node startup latency under
+    // CI load. If the timer fires before the script writes pids.json, the
+    // process is killed before reporting its PIDs and the test flakes with
+    // ENOENT. 10s guarantees the script is hanging (and pids.json exists)
+    // long before the kill, without changing any assertion.
+    const result = await nodeVerifier("hang", "c.hang", repo, ["-e", script], { timeoutMs: 10000, requireUnchangedTree: false })
       .verify({ candidate: { id: "repo://bb096-probe", version: base } });
     assert.equal(result.status, VerificationStatus.INCONCLUSIVE);
     assert.ok(result.evidence.includes("hang:reason=TIMEOUT"));
