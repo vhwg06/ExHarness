@@ -250,3 +250,208 @@ console.log(JSON.stringify({ revision: head.revision, episodeRef: head.value.epi
   assert.equal(seen.episodeId, opened.episodeId);
   assert.equal(seen.state, "RESOLVED");
 });
+
+// Recovery coverage for R4 BB-085 negative case N2: every freshness/honesty
+// violation must yield UNKNOWN with an explicit reason code and leave the
+// head at RESPONDED_ACTED (never advancing the lifecycle).
+
+function memoryArtifactStore() {
+  const artifacts = new Map();
+  return Object.freeze({
+    async put(kind, value) {
+      const artifact = structuredClone(value);
+      const ref = `${kind}:sha256:${digestOf(artifact)}`;
+      const existing = artifacts.get(ref);
+      if (existing !== undefined) assert.deepEqual(existing, artifact);
+      artifacts.set(ref, artifact);
+      return ref;
+    },
+    async resolve(ref) {
+      const found = artifacts.get(ref) ?? null;
+      return found === null ? null : structuredClone(found);
+    },
+  });
+}
+
+function memoryHeadStore() {
+  const heads = new Map();
+  const revisionFor = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  return Object.freeze({
+    async current(key) {
+      const entry = heads.get(key) ?? null;
+      return entry === null ? null : structuredClone(entry);
+    },
+    async compareAndSwap(key, expectedRevision, nextValue) {
+      const current = heads.get(key) ?? null;
+      if ((current?.revision ?? null) !== expectedRevision) return false;
+      const value = structuredClone(nextValue);
+      heads.set(key, { revision: revisionFor(value), value });
+      return true;
+    },
+  });
+}
+
+function strictAuthority() {
+  return Object.freeze({
+    async verifyFeedbackPrincipal({ principal }) {
+      if (principal?.kind !== "APPLICATION" || principal?.id === "unverified") throw new Error("unknown principal");
+      return { authorityRef: `authority:${principal.id}` };
+    },
+  });
+}
+
+async function putFreshGroundedInput(store, { groundingStatus = "GROUNDED", attemptId, at }) {
+  const id = hex();
+  const receipt = { receiptId: hex(), requirementId: `req-${id.slice(0, 8)}`, resolutionId: `res-${id.slice(0, 8)}` };
+  const receiptRef = await store.put("context-resolution-receipt", receipt);
+  const binding = { requirementId: receipt.requirementId, resolutionId: receipt.resolutionId, receiptRef, receiptDigest: receipt.receiptId };
+  const bindingRef = await store.put("observation-context-binding", binding);
+  const observation = {
+    kind: "GROUNDED_OBSERVATION_V1",
+    execution: { executionAttemptId: attemptId },
+    executionAttemptId: attemptId,
+    observedAtBoundaries: [{ boundaryKind: "RUNTIME_INVOCATION", at, ref: receiptRef }],
+  };
+  const observationRef = await store.put("grounded-observation", observation);
+  const digest = observationRef.match(/:sha256:([a-f0-9]{64})$/)?.[1];
+  const { input, inputRef } = await buildGroundedFindingInput(
+    {
+      observationRefs: [{ ref: observationRef, digest }],
+      contextBindingRef: bindingRef,
+      groundingStatus,
+      unresolvedReasons: groundingStatus === "GROUNDED" ? [] : ["STALE_CONTEXT"],
+      uncertainty: { missingProvenanceFactIds: [], unresolvedEvidenceIds: [], optionalUnresolvedEvidenceIds: [] },
+    },
+    { artifactStore: store },
+  );
+  return { input, inputRef, attempt: attemptId, at };
+}
+
+async function actedWorld() {
+  const store = memoryArtifactStore();
+  const heads = memoryHeadStore();
+  const controller = createFeedbackLifecycleController({
+    artifactStore: store,
+    headStore: heads,
+    principalAuthority: strictAuthority(),
+    receiptCurrentness: async () => ({ status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test" }),
+  });
+  const base = await putFreshGroundedInput(store, { attemptId: "execution-attempt-id:base-1", at: "2026-01-01T00:00:00.000Z" });
+  const opened = await controller.openEpisode({
+    groundedInputRefs: [{ ref: base.inputRef, digest: base.inputRef.match(/:sha256:([a-f0-9]{64})$/)?.[1] }],
+    finding: {
+      kind: "LATENCY",
+      statement: "latency regressed",
+      evidenceRefs: [{ ref: base.inputRef, digest: base.inputRef.match(/:sha256:([a-f0-9]{64})$/)?.[1] }],
+      producer: { kind: "OBSERVER", id: "observer-1" },
+    },
+    impact: { basis: "MEASURED", measurements: [{ key: "p99_ms", value: 200 }] },
+    scopeKey: "checkout",
+    contraryEvidenceRefs: [],
+  });
+  const responded = await controller.respond({
+    episodeId: opened.episodeId,
+    expectedRevision: opened.head.revision,
+    principal: APP,
+    disposition: "ACTED",
+    actionRefs: ["work:1"],
+    outcomePolicy: policy(),
+  });
+  return { store, heads, controller, base, opened, responded };
+}
+
+function assertUnknownKeepsActed(result, ctx) {
+  assert.equal(result.status, "UNKNOWN");
+  assert.equal(result.outcome.outcome, "UNKNOWN");
+  assert.ok(Array.isArray(result.outcome.reasons) && result.outcome.reasons.length > 0, "explicit reasons required");
+  assert.equal(result.head.value.state, "RESPONDED_ACTED");
+  assert.equal(result.head.value.responseRef, ctx.responded.head.value.responseRef);
+}
+
+test("NON_CURRENT_RESPONSE is reported when the response is stale", async () => {
+  const ctx = await actedWorld();
+  const fresh = await putFreshGroundedInput(ctx.store, { attemptId: "execution-attempt-id:fresh-1", at: "2026-01-02T00:00:00.000Z" });
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: fresh.inputRef,
+    freshMeasurements: [{ key: "p99_ms", value: 100 }],
+    responseRef: `feedback-response:sha256:${"0".repeat(64)}`,
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.deepEqual(result.outcome.reasons, ["NON_CURRENT_RESPONSE"]);
+});
+
+test("INPUT_ALREADY_IN_EPISODE is reported when fresh evidence is an episode input", async () => {
+  const ctx = await actedWorld();
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: ctx.base.inputRef,
+    freshMeasurements: [{ key: "p99_ms", value: 100 }],
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.ok(result.outcome.reasons.includes("INPUT_ALREADY_IN_EPISODE"), `got ${JSON.stringify(result.outcome.reasons)}`);
+});
+
+test("ATTEMPT_REUSED is reported when the fresh input reuses a baseline attempt", async () => {
+  const ctx = await actedWorld();
+  const fresh = await putFreshGroundedInput(ctx.store, { attemptId: "execution-attempt-id:base-1", at: "2026-01-02T00:00:00.000Z" });
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: fresh.inputRef,
+    freshMeasurements: [{ key: "p99_ms", value: 100 }],
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.deepEqual(result.outcome.reasons, ["ATTEMPT_REUSED"]);
+});
+
+test("BOUNDARY_NOT_AFTER_RESPONSE is reported when the fresh boundary is not strictly later", async () => {
+  const ctx = await actedWorld();
+  const fresh = await putFreshGroundedInput(ctx.store, { attemptId: "execution-attempt-id:fresh-2", at: "2026-01-01T00:00:00.000Z" });
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: fresh.inputRef,
+    freshMeasurements: [{ key: "p99_ms", value: 100 }],
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.deepEqual(result.outcome.reasons, ["BOUNDARY_NOT_AFTER_RESPONSE"]);
+});
+
+test("UNRESOLVED_FRESH_INPUT is reported when fresh evidence cannot be grounded", async () => {
+  const ctx = await actedWorld();
+  const fresh = await putFreshGroundedInput(ctx.store, {
+    groundingStatus: "UNRESOLVED",
+    attemptId: "execution-attempt-id:fresh-unres",
+    at: "2026-01-02T00:00:00.000Z",
+  });
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: fresh.inputRef,
+    freshMeasurements: [{ key: "p99_ms", value: 100 }],
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.ok(
+    result.outcome.reasons.some((r) => r.startsWith("UNRESOLVED_FRESH_INPUT:")),
+    `got ${JSON.stringify(result.outcome.reasons)}`,
+  );
+});
+
+test("MISSING_MEASUREMENT is reported when required measurements are absent", async () => {
+  const ctx = await actedWorld();
+  const fresh = await putFreshGroundedInput(ctx.store, { attemptId: "execution-attempt-id:fresh-3", at: "2026-01-02T00:00:00.000Z" });
+  const result = await ctx.controller.recordOutcome({
+    episodeId: ctx.opened.episodeId,
+    expectedRevision: ctx.responded.head.revision,
+    freshInputRef: fresh.inputRef,
+    freshMeasurements: [],
+  });
+  assertUnknownKeepsActed(result, ctx);
+  assert.ok(
+    result.outcome.reasons.some((r) => r.startsWith("MISSING_MEASUREMENT:")),
+    `got ${JSON.stringify(result.outcome.reasons)}`,
+  );
+});

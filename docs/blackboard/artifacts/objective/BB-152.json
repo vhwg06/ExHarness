@@ -1,0 +1,38 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-152",
+  "outcome": "A fresh agent can reconstruct the exact immediate Outer Blackboard delivery obligation for the current lane/phase, including merge-pending finalization, without relying on prior conversation context or inventing a legal transition.",
+  "currentProblem": "Current main exposes lane/phase and the exact plan, but bootstrap collapses every contracted WORKER phase to IMPLEMENT_EXACT_READY_PLAN and accepts only ACTIVE tasks. After a SATISFIED Worker judgment the publisher deliberately clears the claim and leaves the task PLANNED/MERGE_PENDING, so a fresh agent cannot use the bootstrap to resume final delivery. The materialized context also lacks an explicit phase-local delivery contract naming the current goal, entry/exit conditions, required outputs, legal next actions and forbidden claims.",
+  "scope": [
+    "outer-blackboard.delivery-onboarding",
+    "outer-blackboard.phase-specific-bootstrap",
+    "outer-blackboard.merge-pending-resume"
+  ],
+  "constraints": [
+    "RESEARCH_SA only until a fresh Jev readiness judgment accepts the exact plan; this task may not mutate implementation source in its research PR.",
+    "The envelope is a non-authority projection over canonical graph/plan/evaluation state; it may explain legal transitions but cannot create claims, judgments, merge evidence or delivery receipts.",
+    "Preserve the two-lane model, current-only context semantics, exact candidate/evaluation/merge binding and independent Jev judgment.",
+    "An unclaimed MERGE_PENDING task may be materialized only when its exact work id is supplied; bootstrap must not auto-select PLANNED work or grant source-write authority.",
+    "Do not add session-history generations, a second workflow engine, repository-wide default discovery, or generic context-body retrieval in this task."
+  ],
+  "successCriteria": [
+    "Every contracted nonterminal lane/phase has one deterministic phase-local delivery envelope with current goal, entry conditions, required outputs, exit conditions, legal next actions and forbidden actions bound to the exact work id and semantic subject.",
+    "Bootstrap intent/rules come from that envelope so REPAIR, JUDGMENT and MERGE_PENDING cannot be presented as ordinary implementation execution.",
+    "A fresh session given an exact PLANNED/MERGE_PENDING work id can materialize read-only finalization context and the exact verify/publish delivery sequence without reclaiming the task; auto-selection still considers only ACTIVE work.",
+    "Focused negative tests prove judgment cannot advertise source mutation or self-acceptance, merge-pending cannot grant implementation authority, and no direct transition to DONE exists without verified merge identity."
+  ],
+  "currentSourceRefs": [
+    "AGENTS.md",
+    "scripts/blackboard-delivery-context.mjs",
+    "scripts/blackboard-implementation-bootstrap.mjs",
+    "scripts/blackboard-context-materialize.mjs",
+    "scripts/blackboard-delivery.mjs",
+    "scripts/blackboard-work-graph.mjs",
+    "test/blackboard-context-bootstrap.test.mjs",
+    "test/blackboard-task-context-resolver.test.mjs",
+    "docs/blackboard/jev.md",
+    "docs/living/system/state.md"
+  ]
+}

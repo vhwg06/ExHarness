@@ -1,0 +1,265 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-153",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-153.json",
+    "hash": "3812551c2a4a1f4e12b518cdba6c4d5cee3b96e8f6611d0f39205035c0ec8290"
+  },
+  "scope": [
+    "outer-blackboard.jev-supervisory-loop",
+    "outer-blackboard.lookback-before-repair",
+    "outer-blackboard.material-delta-re-evaluation",
+    "outer-blackboard.local-ci-supervision-semantics"
+  ],
+  "outOfScope": [
+    "Creating a third Blackboard lane or replacing the existing Research/Worker ownership model.",
+    "Making JEV prescribe implementation patches, execute repairs, or become the authority that mutates candidate source.",
+    "Changing provider/model selection, JEV scoring prompts, branch protection, or unrelated CI selection behavior.",
+    "Treating agent-authored explanation, plans, or proof documents as sufficient evidence of implementation correctness.",
+    "Product-runtime feedback/self-improvement semantics inside packages/agentic-system unless research proves a shared primitive is required."
+  ],
+  "constraints": [
+    "RESEARCH_SA only until a fresh JEV readiness judgment accepts the exact plan; this registration does not authorize implementation changes.",
+    "Preserve the two-lane Research/Worker model; do not create a third lane for supervision.",
+    "JEV remains an independent semantic judge and must not become the actor or prescribe code edits; supervisory control consumes its structured findings.",
+    "A failed judgment must not grant source-write repair authority until the actor has produced a judgment-bound lookback/reconsideration that changes epistemic state.",
+    "Agent-authored prose or artifact existence alone is not implementation evidence and must not satisfy a finding or material-delta check.",
+    "CI remains an enforcement/projection surface; local and CI paths must consume one canonical supervision/transition policy rather than separate gate semantics."
+  ],
+  "invariants": [
+    "A failed Worker judgment changes epistemic/control state before it can grant source-write repair authority.",
+    "Every lookback and subsequent repair is bound to the exact prior judgment, candidate and plan; stale feedback cannot supervise a new subject.",
+    "JEV judges claims/evidence independently; the actor owns diagnosis and repair strategy, and self-authored prose cannot substitute for observed evidence.",
+    "Re-evaluation requires material progress against prior findings; repeated unchanged failure cannot be converted into progress by retry count.",
+    "Local runtime and CI consume one canonical supervision transition policy while CI remains enforcement/projection rather than the feedback-loop owner."
+  ],
+  "architectureDecisions": [
+    "D1 — Treat the missing capability as a supervisor-controller problem between JEV judgment publication and Worker repair, not as a stronger evaluator prompt. JEV produces semantic findings; a control contract decides the next cognitive/action obligation.",
+    "D2 — Preserve two lanes. Research must decide whether LOOKBACK is represented as a distinct Worker phase or as a mandatory, read-only precondition inside REPAIR; either representation must prevent source-write IMPLEMENT authority before lookback completion.",
+    "D3 — A lookback contract must bind the exact evaluation and candidate and capture failed claims, expected-versus-observed evidence, invalidated assumptions, causal diagnosis, strategy revision and expected new evidence. It is an epistemic artifact, not proof of correctness.",
+    "D4 — Re-evaluation must require a material delta linked to unresolved findings: candidate/evidence/strategy changes must be explicit and freshness-bound. Cosmetic artifact churn or prose-only changes are no semantic progress.",
+    "D5 — Repeated unresolved findings with no material strategy delta must route to strategy reconsideration/escalation rather than unlimited evaluate-repair retries.",
+    "D6 — Local execution and CI must share the same transition/validity semantics. CI may project or enforce the resulting supervision state, but should not own a separate decision about what failure means.",
+    "D7 — Evidence weighting remains observation-first: exact candidate, executed verification, runtime/test outcomes and grounded evidence dominate actor-authored explanations."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "test/blackboard-context-bootstrap.test.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "test/blackboard-jev-supervision.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-state-project.mjs",
+      "test/blackboard-*.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/blackboard/pipelines.md",
+      "docs/living/system/state.md",
+      "package.json"
+    ],
+    "write": [
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "test/blackboard-jev-supervision.test.mjs",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "packages/**",
+      "docs/blackboard/artifacts/**",
+      "docs/blackboard/evidence/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Current-loop audit: trace Worker FINDINGS/REPAIR_REQUIRED from JEV publication through delivery context/bootstrap/local execution and CI projection; identify every point that currently turns findings directly back into IMPLEMENT authority.",
+    "S2 — Supervisory contract: specify judgment-bound lookback/reconsideration data, next-state mapping for implementation defect / insufficient evidence / plan contradiction, and the exact authority boundary before repair.",
+    "S3 — Material-progress contract: specify finding resolution lineage, material-delta rules and repeated-failure escalation so unchanged/cosmetic resubmission cannot advance evaluation.",
+    "S4 — Shared local/CI semantics: select one canonical controller/transition seam consumed by local execution and CI projection, then define focused negative tests and Living truth."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "SUPERVISORY_LOOP",
+      "statement": "A non-satisfied Worker JEV judgment cannot immediately expose source-write IMPLEMENT authority; the next required obligation is a read-only judgment-bound lookback/reconsideration, after which an explicit control decision may authorize repair.",
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "evidenceRequired": [
+        "Focused transition tests covering Worker findings publication through derived delivery/bootstrap context and proving no direct FINDINGS→IMPLEMENT path."
+      ]
+    },
+    {
+      "id": "LOOKBACK_BINDING",
+      "statement": "The supervisory lookback is bound to the exact prior judgment, candidate and plan and records failed claims, expected-versus-observed evidence, invalidated assumptions, causal diagnosis, strategy revision and expected fresh evidence; stale or self-authored lookback cannot supervise another candidate.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Exact-subject fixtures for valid lookback plus stale-judgment/candidate and prose-only negative cases."
+      ]
+    },
+    {
+      "id": "MATERIAL_DELTA",
+      "statement": "A new JEV evaluation after failure requires material progress linked to the unresolved findings; unchanged candidate/evidence or a repeated strategy without new causal/evidence basis is rejected as no semantic progress and repeated failure triggers strategy reconsideration.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Attempt-lineage fixtures proving unchanged/cosmetic resubmission and repeated identical strategy cannot create a new valid supervision cycle."
+      ]
+    },
+    {
+      "id": "SHARED_SEMANTICS",
+      "statement": "Local execution and CI enforcement derive failure/next-state semantics from one canonical supervision policy; CI only projects/enforces the bound state and does not own a separate pass/fail feedback-loop interpretation.",
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "evidenceRequired": [
+        "Tests or source-level assertions showing both entry paths consume the same controller/transition contract."
+      ]
+    },
+    {
+      "id": "EVIDENCE_TRUTH",
+      "statement": "Agent-authored explanations and generated artifacts are supervisory context only; they cannot independently satisfy a JEV finding or material-delta requirement without fresh observed evidence bound to the candidate.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Negative fixture where explanation/metadata changes but candidate and observed evidence do not, which must remain unresolved."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A failed Worker judgment changes epistemic/control state before it can grant source-write repair authority.",
+      "criterionIds": [
+        "SUPERVISORY_LOOP",
+        "LOOKBACK_BINDING"
+      ]
+    },
+    {
+      "invariant": "Every lookback and subsequent repair is bound to the exact prior judgment, candidate and plan; stale feedback cannot supervise a new subject.",
+      "criterionIds": [
+        "LOOKBACK_BINDING",
+        "MATERIAL_DELTA"
+      ]
+    },
+    {
+      "invariant": "JEV judges claims/evidence independently; the actor owns diagnosis and repair strategy, and self-authored prose cannot substitute for observed evidence.",
+      "criterionIds": [
+        "LOOKBACK_BINDING",
+        "EVIDENCE_TRUTH"
+      ]
+    },
+    {
+      "invariant": "Re-evaluation requires material progress against prior findings; repeated unchanged failure cannot be converted into progress by retry count.",
+      "criterionIds": [
+        "MATERIAL_DELTA",
+        "EVIDENCE_TRUTH"
+      ]
+    },
+    {
+      "invariant": "Local runtime and CI consume one canonical supervision transition policy while CI remains enforcement/projection rather than the feedback-loop owner.",
+      "criterionIds": [
+        "SHARED_SEMANTICS"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test test/blackboard-jev-supervision.test.mjs"
+    },
+    {
+      "id": "blackboard-context",
+      "command": "npm run verify:blackboard-context"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "negativeVerificationCases": [
+    "A Worker REPAIR_REQUIRED judgment immediately produces an IMPLEMENT action with source-write authority and no lookback.",
+    "A prose-only lookback or unchanged candidate/evidence is accepted as material progress and allowed to re-enter JEV.",
+    "The same unresolved finding and repair strategy can be retried repeatedly without strategy reconsideration.",
+    "Local and CI paths derive different next-state semantics for the same bound JEV judgment."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_153_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "SUPERVISORY_LOOP",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N1 failed JEV cannot return directly to source-write IMPLEMENT",
+      "subjectSymbol": "publishEvaluation"
+    },
+    {
+      "id": "NEG_153_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "MATERIAL_DELTA",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N2 prose-only or unchanged resubmission is not material progress",
+      "subjectSymbol": "deriveDeliveryContext"
+    },
+    {
+      "id": "NEG_153_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "MATERIAL_DELTA",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N3 repeated unresolved strategy requires reconsideration",
+      "subjectSymbol": "publishEvaluation"
+    },
+    {
+      "id": "NEG_153_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "SHARED_SEMANTICS",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N4 local and CI consume one supervision transition contract",
+      "subjectSymbol": "publishEvaluation"
+    }
+  ],
+  "researchGaps": [
+    "Audit the exact local runner/bootstrap path after WORKER/REPAIR and identify whether the cleanest representation is a new LOOKBACK phase or a mandatory pre-repair substate/receipt without expanding the two-lane model.",
+    "Define the smallest structured lookback contract and failure taxonomy that adds supervisory value without letting JEV prescribe repairs or letting actor-authored diagnosis become proof.",
+    "Define material-delta and repeated-failure semantics that are deterministic enough to enforce without rewarding artifact churn or blocking legitimate evidence-only fixes.",
+    "Pin the canonical controller seam shared by local execution and CI projection, including how existing REPAIR/JUDGMENT/merge transitions migrate without breaking current delivered tasks."
+  ],
+  "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living system state describes JEV as a semantic supervisor whose failed judgments require a bound lookback/reconsideration before repair, while CI remains an enforcement projection and generated explanation is not correctness evidence."
+  }
+}
