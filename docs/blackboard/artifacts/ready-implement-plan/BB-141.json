@@ -13,7 +13,8 @@
   ],
   "outOfScope": [
     "Durable recovery on the ephemeral smoke repository.",
-    "Changing SKIPPED reasons for missing tools or pre-edit failures."
+    "Changing SKIPPED reasons for missing tools or pre-edit failures.",
+    "Adding a public commandSmoke export or modifying option parser, report, supervisor, observation or permission definitions; smoke-specific wiring only."
   ],
   "constraints": [
     "This RESEARCH_SA artifact describes future Worker changes. Current research changes plan data only. Product files listed in sourceScope.write become editable only after independent READY and every direct dependency DONE.",
@@ -82,7 +83,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — bin/exharness-agent.mjs: edit only commandSmoke and smoke help/header text. Implement D1-D4 using delivered exports: preflight permission/arm, forward model and permission, conditional observation construction/forwarding, await finalize before existing SKIPPED/result branches. Leave current task, retries, timeout, env mapping and finally scratch disposal unchanged. No run/report/supervisor/observation edits.",
+    "S1 — bin/exharness-agent.mjs: edit only commandSmoke and smoke help/header text. Implement D1-D4 using delivered exports: preflight permission/arm, forward model and permission, conditional observation construction/forwarding, await finalize before existing SKIPPED/result branches. Leave current task, retries, timeout, env mapping and finally scratch disposal unchanged. No run/report/supervisor/observation edits. Finalize uses delivered observation API. Actual smoke JSON is smoke:ACCEPTED on successful result, not smoke:PASS. Trace fields use arm/taskId/tool and argvRedacted. Invalid permission and arm reject UsageError/64 before the fake launcher. Existing parsed model/permission/trace-dir/arm keys are reused; no parser extension or new permission semantics.",
     "S2 — smoke-cli-options.test.js: actual BIN fixtures P1 argv forwarding, P2 valid trace/report/corrupt-copy/arm controls, literal N1 invalid-input and N2 omitted-default titles, P3 SKIPPED controls and P4 cleanup. Every dynamic test invokes commandSmoke through BIN; trace schema assertions use argvRedacted. Call-site assertion supplements unexposed maxAttempts/timeout values; it does not replace real child dispatch checks.",
     "S3 — declared agent-tools Living state/observation: document smoke model/permission/trace-dir, SMOKE default label, optional arm modifier, omitted defaults and SKIPPED/cleanup compatibility. Run focused, agent-tools-regression, docs and repository checks with candidate-bound logs after exact READY. Research publishes only exact independent readiness, without product edits or fabricated verification."
   ],
@@ -422,7 +423,7 @@
         }
       ],
       "supportingPlanFields": [
-        "prototypeEvidence"
+        "replayObservations"
       ]
     },
     {
@@ -468,7 +469,7 @@
         }
       ],
       "supportingPlanFields": [
-        "testContract"
+        "invariantCoverage"
       ]
     },
     {
@@ -519,7 +520,9 @@
           "match": "## Digest chain"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
     }
   ],
   "testContract": [
@@ -591,5 +594,97 @@
     "method": "Executed task-specific source copy changes only this CLI command; imports delivered modules, uses real Git and fake agent. Other commands are baseline. Worker still implements source and executes the bound focused tests after exact READY.",
     "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "replayReproduction": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "d4dec96c99b8c03ea0d0450c61e07ff5ded145e213cb68f1facdb7bd171409b2",
+    "sourceEncoding": "gzip+base64 UTF-8",
+    "sourceGzipBase64": "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",
+    "command": "node <decoded-script.mjs> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "1851c5be587a870c7d5c696d6c3921f49fbacc69f9e1c866076a664c66031ded",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "patchedSourceSha256": "0d14e46736f57243b43a1776e56d85ca599a8a8a0c93475df92b9642d8c82779",
+      "modelForwarded": true,
+      "permissionForwarded": true,
+      "traceArm": "SMOKE",
+      "traceCount": 1,
+      "reportExit": 0,
+      "corruptReportExit": 1,
+      "invalidInputExit": 64,
+      "invalidDispatches": 0,
+      "omittedSandbox": "workspace-write",
+      "omittedModelArgument": false,
+      "ownedScratchRemoved": true,
+      "callerTracesRetained": true
+    }
+  },
+  "replayObservations": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "d4dec96c99b8c03ea0d0450c61e07ff5ded145e213cb68f1facdb7bd171409b2",
+    "command": "node <decoded-script.mjs> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "1851c5be587a870c7d5c696d6c3921f49fbacc69f9e1c866076a664c66031ded",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "patchedSourceSha256": "0d14e46736f57243b43a1776e56d85ca599a8a8a0c93475df92b9642d8c82779",
+      "modelForwarded": true,
+      "permissionForwarded": true,
+      "traceArm": "SMOKE",
+      "traceCount": 1,
+      "reportExit": 0,
+      "corruptReportExit": 1,
+      "invalidInputExit": 64,
+      "invalidDispatches": 0,
+      "omittedSandbox": "workspace-write",
+      "omittedModelArgument": false,
+      "ownedScratchRemoved": true,
+      "callerTracesRetained": true
+    },
+    "fixtureChecks": [
+      {
+        "id": "SMOKE_OPTIONS_FORWARDED",
+        "testTitle": "P1 actual model and permission forwarding",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Actual BIN smoke --model model-x --permission FULL_AUTO with capture launcher shows --model model-x and Codex --sandbox danger-full-access; FIX_FIRST supplies genuine change."
+      },
+      {
+        "id": "SMOKE_TRACE",
+        "testTitle": "P2 actual trace and report",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Use readTraces and verifyTraceFile; exact invocation count/tool/smoke task/SMOKE arm; compare argvRedacted against captured argv. Actual report exit0; corrupt owned copy report exit1. Separate explicit-arm control uses supplied label."
+      },
+      {
+        "id": "SMOKE_FAIL_CLOSED",
+        "testTitle": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Run actual BIN smoke with invalid permission, then arm without trace-dir; UsageError/exit64 and capture marker absent in each."
+      },
+      {
+        "id": "SMOKE_DEFAULTS",
+        "testTitle": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Actual omitted smoke invocation has workspace-write/no model and creates no trace artifact. Candidate call-site remains maxAttempts2 and existing positiveInteger timeout default600000; do not infer unexposed request fields from trace."
+      },
+      {
+        "id": "SMOKE_SKIPPED",
+        "testTitle": "P3 missing and pre-edit tool controls",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Separate actual BIN controls use missing executable and fake pre-edit failure. Assert exact NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT JSON plus baseline exit codes."
+      },
+      {
+        "id": "SMOKE_CLEANUP",
+        "testTitle": "P4 scratch cleanup and trace ownership",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Capture actual invocation cwd; after completion scratch no longer exists while requested trace files remain readable. No recovery directory is added."
+      }
+    ]
+  }
 }
