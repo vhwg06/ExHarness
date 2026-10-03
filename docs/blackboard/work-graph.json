@@ -6814,10 +6814,61 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-153",
+      "featureId": null,
+      "title": "Make JEV findings drive mandatory lookback before repair",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-153.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-153.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An audited control-flow map showing every current path from Worker JEV findings to local repair/re-evaluation and CI enforcement.",
+        "A judgment-bound lookback/reconsideration contract that changes worker epistemic state before repair source-write authority is granted.",
+        "Material-delta and repeated-failure rules that reject cosmetic/prose-only retry spam and require strategy reconsideration when findings persist.",
+        "One canonical supervision transition policy shared by local execution and CI projection, with focused negative tests and Living truth."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-153.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-153.json",
+        "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-153",
+    "nextWorkId": "BB-154",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
