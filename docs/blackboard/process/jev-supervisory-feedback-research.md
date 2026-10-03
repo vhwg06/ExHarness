@@ -291,3 +291,29 @@ Worker start rule: bind exact delivered BB-152 surface first. If its phase-envel
 ## Research publication hygiene
 
 The registration PR and the research-closure PR use different branches. A branch that has already been merged must not be reused as evidence that a later research head passed CI/JEV: checks are accepted only when their subject SHA is the exact current PR head. This section records that BB-153 research closure is intentionally published from a fresh branch and must receive a fresh exact-head workflow result before merge.
+
+
+## JEV R1 lookback — shared local/CI seam
+
+Fresh readiness on exact PR head `99a06d29c29cc772fa15446733ef7af453471cf1` returned only one non-satisfied objective: the local/CI shared-semantics criterion was `INSUFFICIENT_EVIDENCE` (0.49) versus `SATISFIED` (0.48). All other objective and readiness questions were SATISFIED. The response contains no provider prose by design, so the research action is derived from the exact failed criterion and current source evidence rather than guessed repair instructions.
+
+The first design overreached by saying `blackboard-jev-ci.mjs` should directly consume the new supervisor module. Current CI proves that this is the wrong trust seam:
+
+- local `blackboard-jev-cli.mjs` imports `materialize/evaluate` from `blackboard-jev.mjs` and publication from `blackboard-delivery.mjs`;
+- CI `blackboard-jev-ci.mjs` also imports `materialize/evaluate/validateEvaluation` from `blackboard-jev.mjs`;
+- the CI evaluate branch explicitly states that it only reads candidate data and never imports or executes candidate modules;
+- `.github/workflows/test.yml` pins both `trusted_sha` and `controller_sha` to the PR base;
+- the reusable workflow executes `controller/scripts/blackboard-jev-ci.mjs`.
+
+Therefore the shared seam is **below the adapters**, not inside the CI adapter:
+
+```text
+local CLI --------------------> blackboard-jev.mjs ----                                                        -> blackboard-supervision.mjs
+trusted-base CI adapter ------> blackboard-jev.mjs ----/
+
+local publish ----------------> blackboard-delivery.mjs -> blackboard-supervision.mjs
+```
+
+`blackboard-jev-ci.mjs` remains thin/data-only and does not need a BB-153 implementation write. During the BB-153 implementation PR, candidate kernel tests execute the new module, while JEV itself remains pinned to the old trusted base. Once merged, later PRs naturally execute the delivered supervision module from their trusted base controller.
+
+This resolves the evidence gap without weakening the CI trust boundary or adding a second policy.
