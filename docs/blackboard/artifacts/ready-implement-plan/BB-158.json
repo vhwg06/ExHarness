@@ -1,0 +1,330 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-158",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-158.json",
+    "hash": "028326e5f57de7b21f12f6c1369677867f1a36d29555a29fb233744fcc7dd717"
+  },
+  "scope": [
+    "ci.agent-native-feedback-contract",
+    "ci.candidate-bound-verification-observations",
+    "ci.failure-taxonomy-and-retry-policy",
+    "ci.progressive-and-selective-verification",
+    "ci.jev-semantic-supervision-integration",
+    "ci.github-actions-execution-adapter",
+    "ci.delivery-readiness-projection"
+  ],
+  "outOfScope": [
+    "Treating GitHub branch protection, required checks, PR approval or check-run naming as the ExHarness delivery state machine.",
+    "Rewriting Blackboard V2 Work/Attempt/CAS/lease/fence primitives owned by BB-155.",
+    "Changing JEV provider/model/verdict semantics or duplicating BB-157 LOOKBACK/material-delta supervision logic.",
+    "Migrating unfinished legacy tasks to V2; BB-156 owns cutover/migration.",
+    "Optimizing CI duration or parallelism without a measured verification dependency/latency baseline.",
+    "Implementing a vendor-specific CI platform abstraction beyond the minimal GitHub Actions adapter required to prove the canonical contract."
+  ],
+  "constraints": [
+    "RESEARCH_SA first: opening BB-158 grants no CI implementation authority. Research must close with a fresh exact READY plan and independent JEV satisfaction before Worker mutation.",
+    "Blackboard V2 Work generation, Attempt, candidate/evidence identities and Decisions are canonical control authority; PR numbers, workflow names, check conclusions and branch-protection state are adapter metadata only.",
+    "CI is an execution and feedback plane, not an independent source of Work lifecycle truth or correctness authority.",
+    "Deterministic verifiers and semantic supervisors may publish into one typed observation/evidence model, but their authority classes remain distinct; JEV stays independent semantic supervision.",
+    "Every observation must bind the exact Work generation, Attempt and candidate/evidence subject it evaluated. Stale or superseded results fail closed and cannot advance delivery.",
+    "Retry is driven by failure class, material candidate/evidence delta and explicit retry policy, never by blind rerun-until-green behavior.",
+    "Progressive/early failure may cancel irrelevant downstream execution, but emitted evidence and accounting must remain truthful about completed, partial, cancelled and unavailable work.",
+    "GitHub Actions is one execution adapter. The contract must remain usable by local or future CI runtimes without re-defining delivery semantics."
+  ],
+  "invariants": [
+    "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
+    "Verification observations are immutable and exact-subject-bound; stale generation/Attempt/candidate/evidence results are non-authoritative.",
+    "Deterministic verification failure, verifier failure, infrastructure failure, suspected flake, cancellation and insufficient evidence remain distinct states.",
+    "A retry that can change delivery conclusions requires an allowed retry class or material candidate/evidence progress; control/prose-only churn cannot unlock product re-evaluation.",
+    "Early termination/cancellation preserves truthful partial execution and evidence accounting.",
+    "Local verification and CI execution consume the same canonical verification contract even when their transport/runtime differs.",
+    "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state."
+  ],
+  "architectureDecisions": [
+    "DRAFT D1 — Model CI as Verification Execution + Observation Publication, not a PR gate. Canonical lifecycle authority remains Blackboard V2.",
+    "DRAFT D2 — Introduce one candidate-bound verification observation family carrying workId, workGeneration, attemptId, candidate identity, verifier identity/class, subject, outcome, evidence refs/hashes, freshness, failure class and execution/accounting state.",
+    "DRAFT D3 — Keep deterministic verifiers and JEV as different authority classes behind the same evidence-routing boundary: deterministic observations prove executable checks; JEV publishes independent semantic Decisions.",
+    "DRAFT D4 — Add a verification planner that can order cheap/high-information checks first, publish terminally-known failures early and cancel dependent work while preserving truthful partial state.",
+    "DRAFT D5 — Route findings back through the delivery agent/Blackboard nextActions loop. Repair/retry eligibility derives from failure class plus material delta or an explicit bounded infra/flaky retry policy.",
+    "DRAFT D6 — Define selective re-verification from declared verification dependencies/affected subjects. Full repository verification remains a policy decision, not the only feedback primitive.",
+    "DRAFT D7 — Treat GitHub Actions as an adapter that executes planned verification and projects canonical state to checks/statuses. PR head/check-name/skip semantics cannot be canonical selectors.",
+    "DRAFT D8 — Delivery/merge projection consumes canonical current readiness/evidence and exact candidate binding; transport gates may block actuation but cannot manufacture readiness."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      ".github/workflows/test.yml",
+      ".github/workflows/push-test.yml",
+      ".github/workflows/blackboard-jev.yml",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-v2/**",
+      "packages/agentic-system/src/local-command-verifier.js"
+    ],
+    "expectedNew": [
+      "docs/blackboard/process/agent-native-ci-feedback-research.md",
+      "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+      "test/agent-native-ci-feedback.test.mjs"
+    ],
+    "expectedTests": [
+      "test/agent-native-ci-feedback.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      ".github/workflows/**",
+      "scripts/**",
+      "test/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      "package.json"
+    ],
+    "write": [
+      "docs/blackboard/process/agent-native-ci-feedback-research.md",
+      "docs/blackboard/evidence/BB-158/**",
+      ".github/workflows/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/agent-native-ci/**",
+      "test/agent-native-ci-feedback.test.mjs",
+      "docs/living/system/state.md",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "scripts/blackboard-v2/work-resource.mjs",
+      "scripts/blackboard-v2/control-store.mjs",
+      "scripts/blackboard-v2/lifecycle.mjs",
+      "scripts/blackboard-v2/supervision.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-156.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+    ]
+  },
+  "implementationSlices": [
+    "R1 — Current-state audit: map workflow/script/local-verifier/delivery/JEV surfaces, current selectors, outputs, waits, retries and authority leaks; measure baseline latency and failure feedback timing.",
+    "R2 — Contract research: compare agent-native CI/execution patterns and ratify exact VerificationObservation/Evidence/failure taxonomy plus freshness and authority semantics.",
+    "R3 — Control-loop design: specify progressive execution, early terminal failure, cancellation, diagnosis/repair, bounded retry, selective re-verification, JEV handoff and convergence.",
+    "R4 — Adapter boundary: specify GitHub Actions input/output mapping and status projection without GitHub transport facts becoming canonical domain state.",
+    "R5 — Evaluation/decomposition: define adversarial fixtures and benchmark scenarios, then publish a fresh implementation plan only after research gaps are closed."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "CURRENT_STATE_AUDIT",
+      "statement": "The current CI/JEV/delivery execution graph is fully mapped, including selectors, authority sources, feedback timing, retry behavior and transport/domain coupling.",
+      "verificationIds": [
+        "research-audit"
+      ],
+      "evidenceRequired": [
+        "Machine-readable surface audit plus narrative causal map with no unknown execution/authority edge for current main."
+      ]
+    },
+    {
+      "id": "CANONICAL_FEEDBACK_CONTRACT",
+      "statement": "One exact-subject-bound verification observation/evidence contract represents deterministic execution results without depending on GitHub PR/check semantics.",
+      "verificationIds": [
+        "contract-fixtures"
+      ],
+      "evidenceRequired": [
+        "Positive and stale/mismatched fixture matrix covering Work generation, Attempt, candidate, verifier, evidence and execution state bindings."
+      ]
+    },
+    {
+      "id": "AGENT_CONTROL_LOOP",
+      "statement": "The delivery agent can consume published observations to choose diagnose, repair, bounded retry, selective re-verify, JEV or delivery without polling human-oriented check semantics.",
+      "verificationIds": [
+        "control-loop-fixtures"
+      ],
+      "evidenceRequired": [
+        "Scenario fixtures for early product failure, infra retry, suspected flake, stale result, insufficient evidence, material repair and semantic JEV failure."
+      ]
+    },
+    {
+      "id": "ADAPTER_BOUNDARY",
+      "statement": "GitHub Actions executes and projects canonical verification/delivery state but cannot create readiness or alter lifecycle semantics through skip/check/head behavior.",
+      "verificationIds": [
+        "adapter-negatives"
+      ],
+      "evidenceRequired": [
+        "Negative cases showing skipped/missing/stale/wrong-SHA GitHub checks cannot manufacture canonical readiness and exact canonical readiness can be projected consistently."
+      ]
+    },
+    {
+      "id": "RESEARCH_CLOSURE",
+      "statement": "Research closes with measured baseline, primary-source evidence, explicit trade-offs, implementation decomposition and a fresh JEV-reviewable READY plan.",
+      "verificationIds": [
+        "research-audit"
+      ],
+      "evidenceRequired": [
+        "Research brief, benchmark/eval protocol, resolved researchGaps and Living Docs impact statement."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "research-audit",
+      "command": "node --test test/blackboard-work-graph.test.mjs"
+    },
+    {
+      "id": "contract-fixtures",
+      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+    },
+    {
+      "id": "control-loop-fixtures",
+      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+    },
+    {
+      "id": "adapter-negatives",
+      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
+      "criterionIds": [
+        "ADAPTER_BOUNDARY"
+      ]
+    },
+    {
+      "invariant": "Verification observations are immutable and exact-subject-bound; stale generation/Attempt/candidate/evidence results are non-authoritative.",
+      "criterionIds": [
+        "CANONICAL_FEEDBACK_CONTRACT"
+      ]
+    },
+    {
+      "invariant": "Deterministic verification failure, verifier failure, infrastructure failure, suspected flake, cancellation and insufficient evidence remain distinct states.",
+      "criterionIds": [
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "AGENT_CONTROL_LOOP"
+      ]
+    },
+    {
+      "invariant": "A retry that can change delivery conclusions requires an allowed retry class or material candidate/evidence progress; control/prose-only churn cannot unlock product re-evaluation.",
+      "criterionIds": [
+        "AGENT_CONTROL_LOOP"
+      ]
+    },
+    {
+      "invariant": "Early termination/cancellation preserves truthful partial execution and evidence accounting.",
+      "criterionIds": [
+        "AGENT_CONTROL_LOOP"
+      ]
+    },
+    {
+      "invariant": "Local verification and CI execution consume the same canonical verification contract even when their transport/runtime differs.",
+      "criterionIds": [
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "ADAPTER_BOUNDARY"
+      ]
+    },
+    {
+      "invariant": "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state.",
+      "criterionIds": [
+        "AGENT_CONTROL_LOOP",
+        "ADAPTER_BOUNDARY"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A green/skipped GitHub required check marks a candidate delivery-ready without canonical current verification evidence.",
+    "A verification result from a stale Work generation, Attempt or candidate is accepted after head/candidate movement.",
+    "A product-test failure, runner outage and suspected flaky failure collapse to the same retry behavior.",
+    "Control/prose-only changes cause another product/JEV evaluation despite no required material delta.",
+    "Early failure cancels downstream jobs but the published run is falsely reported as fully executed.",
+    "Selective re-verification reuses evidence whose declared subject/dependencies were invalidated by the candidate delta.",
+    "JEV derives semantic judgment from GitHub check status instead of exact candidate/evidence context."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_158_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "ADAPTER_BOUNDARY",
+      "verificationId": "adapter-negatives",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N1 GitHub status cannot manufacture canonical readiness",
+      "subjectSymbol": "projectGitHubStatus"
+    },
+    {
+      "id": "NEG_158_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "CANONICAL_FEEDBACK_CONTRACT",
+      "verificationId": "contract-fixtures",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N2 stale verification subject binding fails closed",
+      "subjectSymbol": "acceptVerificationObservation"
+    },
+    {
+      "id": "NEG_158_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "AGENT_CONTROL_LOOP",
+      "verificationId": "control-loop-fixtures",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N3 failure classes drive distinct bounded actions",
+      "subjectSymbol": "deriveVerificationAction"
+    },
+    {
+      "id": "NEG_158_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "AGENT_CONTROL_LOOP",
+      "verificationId": "control-loop-fixtures",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N4 control churn cannot unlock re-evaluation",
+      "subjectSymbol": "deriveVerificationAction"
+    },
+    {
+      "id": "NEG_158_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "AGENT_CONTROL_LOOP",
+      "verificationId": "control-loop-fixtures",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N5 early cancellation remains truthful partial execution",
+      "subjectSymbol": "publishVerificationRun"
+    },
+    {
+      "id": "NEG_158_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "AGENT_CONTROL_LOOP",
+      "verificationId": "control-loop-fixtures",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N6 invalidated evidence cannot satisfy selective re-verification",
+      "subjectSymbol": "planReverification"
+    },
+    {
+      "id": "NEG_158_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "ADAPTER_BOUNDARY",
+      "verificationId": "adapter-negatives",
+      "testRef": "test/agent-native-ci-feedback.test.mjs",
+      "testTitle": "BB-158 N7 JEV consumes canonical evidence not GitHub status",
+      "subjectSymbol": "buildJevInput"
+    }
+  ],
+  "researchGaps": [
+    "Audit current main end to end: every workflow trigger/condition, verification script, JEV dispatch, local verifier, delivery finalizer, status projection and retry path.",
+    "Ratify the minimal typed VerificationObservation/ExecutionRun contract and failure taxonomy from primary-source agent-native CI/runtime patterns; public repository examples must meet the existing >=1000-star research rule.",
+    "Measure current feedback latency and identify which checks support early terminal failure, dependency cancellation and safe selective re-verification.",
+    "Define evidence invalidation/dependency semantics so selective re-verification cannot reuse stale proof.",
+    "Define how canonical V2 nextActions consume verification outcomes without adding a second hidden CI state machine.",
+    "Resolve the exact GitHub Actions projection contract and required-check behavior after BB-155 and BB-157 APIs are delivered.",
+    "Account for GitHub Actions event snapshot semantics: PR metadata changes after a run is triggered are not retroactively visible to that run, so transport metadata must never be canonical delivery state."
+  ],
+  "researchBaselineSha": "87244662e8d2b992e4a15232e9acb2bfd41fb1c1",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living system state must describe CI as an agent-facing verification execution/feedback plane with exact candidate-bound evidence, explicit authority boundaries, progressive failure semantics and GitHub Actions as an adapter only after the contract is actually delivered."
+  },
+  "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization."
+}

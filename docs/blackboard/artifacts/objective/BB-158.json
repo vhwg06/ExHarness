@@ -1,0 +1,46 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-158",
+  "outcome": "Refactor ExHarness CI into an agent-native delivery feedback plane: verification execution must produce exact candidate-bound observations and evidence that delivery agents can consume for repair, selective re-verification, semantic supervision and delivery, while GitHub checks remain transport projections rather than domain authority.",
+  "currentProblem": "The current CI surface is split across GitHub workflow conditions, JEV-specific scripts, repository verification commands and delivery scripts. PR/check status, skip semantics and commit/head identity can leak into control decisions, which makes CI behave like a human merge gate instead of an execution/feedback substrate for autonomous delivery. ExHarness needs one delivery-loop contract from Work/Attempt/Candidate through verification observations, failure classification, repair/retry and JEV to delivery.",
+  "scope": [
+    "ci.agent-native-feedback-contract",
+    "ci.candidate-bound-verification-observations",
+    "ci.failure-taxonomy-and-retry-policy",
+    "ci.progressive-and-selective-verification",
+    "ci.jev-semantic-supervision-integration",
+    "ci.github-actions-execution-adapter",
+    "ci.delivery-readiness-projection"
+  ],
+  "constraints": [
+    "RESEARCH_SA first: opening BB-158 grants no CI implementation authority. Research must close with a fresh exact READY plan and independent JEV satisfaction before Worker mutation.",
+    "Blackboard V2 Work generation, Attempt, candidate/evidence identities and Decisions are canonical control authority; PR numbers, workflow names, check conclusions and branch-protection state are adapter metadata only.",
+    "CI is an execution and feedback plane, not an independent source of Work lifecycle truth or correctness authority.",
+    "Deterministic verifiers and semantic supervisors may publish into one typed observation/evidence model, but their authority classes remain distinct; JEV stays independent semantic supervision.",
+    "Every observation must bind the exact Work generation, Attempt and candidate/evidence subject it evaluated. Stale or superseded results fail closed and cannot advance delivery.",
+    "Retry is driven by failure class, material candidate/evidence delta and explicit retry policy, never by blind rerun-until-green behavior.",
+    "Progressive/early failure may cancel irrelevant downstream execution, but emitted evidence and accounting must remain truthful about completed, partial, cancelled and unavailable work.",
+    "GitHub Actions is one execution adapter. The contract must remain usable by local or future CI runtimes without re-defining delivery semantics."
+  ],
+  "successCriteria": [
+    "Audit every current CI/delivery verification path and identify where GitHub transport state, JEV state, deterministic verification and Blackboard lifecycle currently overlap or contradict.",
+    "Define one typed, immutable verification observation/evidence contract bound to exact Work generation, Attempt, candidate and verifier subject, including failure classification and freshness.",
+    "Define an agent control loop for progressive verification, early failure, diagnosis/repair, material-delta retry, selective re-verification, JEV supervision and convergence to delivery readiness.",
+    "Define fail-closed semantics for stale observations, verifier/infra failure, flaky suspicion, partial/cancelled runs and insufficient evidence without converting those states into product correctness claims.",
+    "Define the GitHub Actions adapter boundary so required checks/statuses are projections of canonical delivery state rather than inputs that create canonical state.",
+    "Produce a bounded implementation decomposition, negative cases, benchmark/evaluation plan and Living Docs impact ready for independent JEV review."
+  ],
+  "currentSourceRefs": [
+    ".github/workflows/test.yml",
+    ".github/workflows/push-test.yml",
+    ".github/workflows/blackboard-jev.yml",
+    "scripts/blackboard-jev-ci.mjs",
+    "scripts/blackboard-jev.mjs",
+    "scripts/blackboard-delivery.mjs",
+    "scripts/blackboard-v2/**",
+    "packages/agentic-system/src/local-command-verifier.js",
+    "docs/living/system/state.md"
+  ]
+}

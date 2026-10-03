@@ -7037,10 +7037,65 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-158",
+      "featureId": null,
+      "title": "Refactor CI into an agent-native delivery feedback plane",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard",
+        "agentic/how-evolution",
+        "agentic/backend-qa-execution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-157",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-158.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-158.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/process/agent-native-ci-feedback-research.md",
+          "docs/blackboard/evidence/BB-158/ci-surface-audit.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A complete current-main audit of CI, local verification, JEV and delivery feedback/control paths with transport-vs-domain authority leaks identified.",
+        "One exact candidate-bound typed verification observation/evidence contract and explicit failure taxonomy usable by delivery agents independent of GitHub status semantics.",
+        "A progressive verification and repair loop covering early failure, bounded retry, material delta, selective re-verification, JEV supervision and convergence to delivery.",
+        "A GitHub Actions adapter contract plus adversarial evaluation/benchmark plan and bounded implementation decomposition."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-158.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-158.json",
+        "researchBaselineSha": "87244662e8d2b992e4a15232e9acb2bfd41fb1c1"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-158",
+    "nextWorkId": "BB-159",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
