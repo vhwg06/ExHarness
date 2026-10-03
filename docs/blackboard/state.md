@@ -71,7 +71,6 @@ NONE
 - BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
 - BB-155 [WORKER/EXECUTION] — Build Blackboard V2 control plane
 - BB-156 [RESEARCH_SA/RESEARCH] — Migrate unfinished work to Blackboard V2 and cut over
-- BB-157 [RESEARCH_SA/RESEARCH] — Add JEV supervisory lookback and anti-spam loop to Blackboard V2
 - BB-158 [RESEARCH_SA/RESEARCH] — Refactor CI into an agent-native delivery feedback plane
 
 ## Dependency graph
@@ -172,7 +171,7 @@ BB-153 [BLOCKED] <- BB-056, BB-059
 BB-154 [BLOCKED] <- BB-056
 BB-155 [WORKER_SCHEDULABLE] <- BB-056
 BB-156 [RESEARCH_SCHEDULABLE] <- BB-155
-BB-157 [RESEARCH_SCHEDULABLE] <- BB-155
+BB-157 [BLOCKED_BY BB-155] <- BB-155
 BB-158 [RESEARCH_SCHEDULABLE] <- BB-155, BB-157
 ```
 
