@@ -43,7 +43,7 @@
   ],
   "architectureDecisions": [
     "D1 — Implement an isolated Node 24+ control service under scripts/blackboard-v2. Select a single configured service and server-owned SQLite database outside all source checkouts. Git control refs were considered but rejected: remote Git CAS does not supply a trusted lease clock. No legacy task import or cutover in BB-155.",
-    "D2 — ControlStore uses node:sqlite, WAL, synchronous=FULL, foreign_keys=ON and bounded busy_timeout=5000 on a local disk; no NFS or multi-host direct SQLite writers. All mutations acquire BEGIN IMMEDIATE, check expected resourceVersion and complete with one COMMIT. Clients access the same service; actor clients never access SQL or authoritative files. Service authorityId/database/controller digest are pinned in out-of-checkout client configuration. Missing/unreachable/wrong authority fails closed; no checkout-local fallback.",
+    "D2 — Export SqliteBlackboardControlStore implements the declared ControlStore methods and uses node:sqlite, WAL, synchronous=FULL, foreign_keys=ON and bounded busy_timeout=5000 on a local disk; no NFS or multi-host direct SQLite writers. All mutations acquire BEGIN IMMEDIATE, check expected resourceVersion and complete with one COMMIT. Clients access the same service; actor clients never access SQL or authoritative files. Service authorityId/database/controller digest are pinned in out-of-checkout client configuration. Missing/unreachable/wrong authority fails closed; no checkout-local fallback.",
     "D3 — Work is {id,resourceVersion,generation,spec,status}. generation is on Work, never spec.generation. spec owns immutable-by-actor objective/plan/dependencies/components and authorized future write scope. A semantic spec update increments generation and revokes prior readiness/active Attempt; status-only mutations increment resourceVersion only. Decisions bind observedGeneration to Work.generation. Returned records are canonical JSON with sorted keys/collections, finite safe integers, strict schemas, no contexts.",
     "D4 — Store time is sampled inside the serialized transaction from the service host clock. Persist lastCommittedTime. Reject CLOCK_REGRESSION when sampled time is earlier, including after restart, instead of trusting actor timestamps or silently clamping. Lease interval is [issuedAt,leaseUntil); equality expires. Claim/renew/takeover use this clock. A persistent per-Work fenceCounter increases on every new ownership, including after semantic generation changes. Expired tokens fail every Attempt mutation even if status has not yet observed expiry.",
     "D5 — lifecycle.mjs owns a closed action/phase table and pure nextActions({spec,status,decisions}); blockers use explicit validated snapshot facts. Store-owned reconciliation publishes observed dependency and lease-expiry facts; controller time never enters the pure function. Every apply transaction repeats all guards, so a stale next result grants no write. Base failed candidate judgment is BLOCKED/SUPERVISION_REQUIRED; BB-157 adds LOOKBACK/reflection semantics through the declared lifecycle extension. Base never grants direct repair from failed judgment.",
@@ -51,7 +51,7 @@
     "D7 — Attempts are immutable-identity records plus append-only candidate/evidence versions owned by the current lease token. They bind workId,workGeneration,specHash,kind,owner,attemptId,fence,lease,baseSha/sourceRef/worktree and exact candidate SHA/tree/evidence set. Semantic input cannot be overwritten through source payloads. Read/show/context require reader identity only; candidate/evidence/lifecycle effects require matching live fence and action guards. Existing source processes cannot be physically undone by a lease; stale outputs are rejected at authority and publication boundaries.",
     "D8 — Independent judge capability alone publishes Jev Decisions. Trusted adapter materializes exact state/questions and validates model/policy, all required typed answers, canonical subject hashes, stateHash/specHash/cacheKey, negative-case and evidence bindings using delivered validators. No actor can synthesize SATISFIED. Decision insert plus status application is one CAS transaction; stale generation/Attempt/candidate/evidence/phase is retained as immutable SUPERSEDED without Work mutation. Identity-id retries are idempotent only for exact same canonical bytes; changed bytes under same id reject.",
     "D9 — Delivery remains trusted receipt verification after evaluated candidate is in main with exact evaluated tree and unchanged required sources/Living refs. MERGE_PENDING is not DELIVERED. DeliveryReceipt binds Work generation/spec, Attempt, Decision, candidate SHA/tree, actual merge/main SHAs and consolidated Living refs. No service merge or provider dispatch is inferred from reflection/status text. Controller code/runtime are independently pinned; source branch scripts cannot replace them.",
-    "D10 — Provide an authenticated loopback HTTP service for one host (0600 operator token file outside checkout), with reader/actor/judge/operator capabilities and bounded strict JSON. CLI uses explicit BB_CONTROL_URL plus expected authorityId or an absolute external config; neither cwd nor source remote discovers authority. Future remote clients require a trusted TLS transport before exposure; BB-155 does not deploy a public service. Start/create/show/next/context/apply work for synthetic new V2 ids without any source PR or legacy writes."
+    "D10 — Provide an authenticated loopback HTTP service for one host (0600 operator token file outside checkout), with reader/actor/judge/operator capabilities and bounded strict JSON. CLI uses explicit BB_CONTROL_URL plus expected authorityId or an absolute external config; neither cwd nor source remote discovers authority. Future remote clients require a trusted TLS transport before exposure; BB-155 does not deploy a public service. Start/create/show/next/context/apply work for synthetic new V2 ids without any source PR or legacy writes. cli.mjs exports createControlClient({url,authorityId,token}) returning show/next/context/create/apply HTTP methods; importing it has no CLI execution side effect."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -108,7 +108,7 @@
     "S2 — lifecycle.mjs: implement the eight explicit transition rows D5 and declared pure nextActions contract. Guards cover phase, spec/plan completeness, current independent readiness, direct Work/Living dependency facts, exact current Attempt, candidate/evidence/Decision/receipt binding. Failed candidate -> BLOCKED/SUPERVISION_REQUIRED; no direct repair. All effects go through apply and repeat guards with store clock/fence. Store-owned dependency/lease reconciliation produces canonical observed facts; pure next has no clock/I/O. Reserve LOOKBACK/reflection extension for BB-157 without implementing supervision here.",
     "S3 — context-builder.mjs: implement pure buildContext(snapshot,systemFacts), immutable binding projection and phase-local scopes D6. Read-only judgment/block/merge contexts expose no product writes; research permits only current plan data; executable Worker requires exact plan/readiness/dependency/lease facts. No context file/currentContextRef/history or source-directory discovery. Reader resolves component/Living blobs before projection.",
     "S4 — server.mjs/cli.mjs: start Node24+ authenticated loopback authority from an external absolute local-disk DB/token/config. Pin authorityId/controller digest; create/show/next/context and POST guarded action surface D10. Canonical show output contains no cwd/read timestamp, and wrong/missing authority never falls back to branch graph. New Work create/start research needs no Git branch or PR. Bound sizes/timeouts and role separation; do not deploy remote/public service.",
-    "S5 — trust-adapter.mjs/test/blackboard-v2-control.test.mjs: use existing pinned validators for exact independent Jev and delivery receipts; immutable Decision insert/status CAS is atomic, stale subjects SUPERSEDED with unchanged Work. Test actual SQLite multi-process CAS, restart clock rollback, takeover/fence, actor-field injection, two different checkout CLI reads, complete table transitions, pure no-I/O contexts, forged/stale decision/receipt and no source/legacy mutation. Update only declared Living state and package scripts. Prototype scratch model is feasibility evidence, not product implementation or real Jev authority."
+    "S5 — trust-adapter.mjs/test/blackboard-v2-control.test.mjs: use existing pinned validators for exact independent Jev and delivery receipts; immutable Decision insert/status CAS is atomic, stale subjects SUPERSEDED with unchanged Work. Test actual SQLite multi-process CAS, restart clock rollback, takeover/fence, actor-field injection, two different checkout CLI reads, complete table transitions, pure no-I/O contexts, forged/stale decision/receipt and no source/legacy mutation. Update only declared Living state and package scripts. Prototype scratch model is feasibility evidence, not product implementation or real Jev authority. Implement the six literal N1-N6 titles with the actual exported symbols and direct observations in testContract. No GitRefBlackboardControlStore exists in the selected architecture."
   ],
   "acceptanceCriteria": [
     {
@@ -254,9 +254,12 @@
     }
   ],
   "negativeVerificationCases": [
-    "Changing the checked-out source branch changes `bb-v2 show` state for the same Work id, or competing agents both acquire the same live lease because agent clocks decide expiry.",
-    "A stale judgment/attempt bound to an older Work generation is published as current instead of returning SUPERSEDED, or two controllers derive different nextActions from the same canonical snapshot.",
-    "A stale fence mutates candidate/evidence/status, or read-only inspection/context building incorrectly requires a fence."
+    "Different source checkout or branch supplies a different authoritative Work for the same configured service/id.",
+    "Two concurrent claims win, actor time expires a lease, or takeover reuses a fence.",
+    "Old-generation or mismatched-subject Decision applies to current Work status instead of SUPERSEDED.",
+    "Independent pure nextActions over identical canonical snapshots yields different actions or mutates input.",
+    "Expired/stale Attempt token publishes candidate/evidence or lifecycle effects.",
+    "Reader show/context incorrectly requires an Attempt mutation fence or read-only context exposes product writes."
   ],
   "negativeCaseBindings": [
     {
@@ -265,25 +268,52 @@
       "criterionId": "AUTHORITY",
       "verificationId": "focused",
       "testRef": "test/blackboard-v2-control.test.mjs",
-      "testTitle": "BB-155 N1 ControlStore clock and CAS allow only one live attempt owner",
-      "subjectSymbol": "GitRefBlackboardControlStore"
+      "testTitle": "BB-155 N1 configured client returns same Work across source checkouts",
+      "subjectSymbol": "createControlClient"
     },
     {
       "id": "NEG_155_2",
       "negativeCaseIndex": 1,
-      "criterionId": "LIFECYCLE",
+      "criterionId": "AUTHORITY",
       "verificationId": "focused",
       "testRef": "test/blackboard-v2-control.test.mjs",
-      "testTitle": "BB-155 N2 stale decision is superseded and nextActions stays deterministic",
-      "subjectSymbol": "nextActions"
+      "testTitle": "BB-155 N2 store-clock CAS permits one live owner",
+      "subjectSymbol": "SqliteBlackboardControlStore"
     },
     {
       "id": "NEG_155_3",
       "negativeCaseIndex": 2,
+      "criterionId": "LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N3 stale Decision cannot mutate current Work",
+      "subjectSymbol": "SqliteBlackboardControlStore"
+    },
+    {
+      "id": "NEG_155_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N4 pure nextActions is byte deterministic",
+      "subjectSymbol": "nextActions"
+    },
+    {
+      "id": "NEG_155_5",
+      "negativeCaseIndex": 4,
       "criterionId": "ATTEMPT",
       "verificationId": "focused",
       "testRef": "test/blackboard-v2-control.test.mjs",
-      "testTitle": "BB-155 N3 fences guard mutations but never reads",
+      "testTitle": "BB-155 N5 stale fence cannot publish Attempt effects",
+      "subjectSymbol": "SqliteBlackboardControlStore"
+    },
+    {
+      "id": "NEG_155_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "CONTEXT",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-v2-control.test.mjs",
+      "testTitle": "BB-155 N6 read-only context needs no mutation fence",
       "subjectSymbol": "buildContext"
     }
   ],
@@ -322,7 +352,7 @@
     "records": "Attempt/Decision/DeliveryReceipt bodies live in the same store. Immutable refs use {kind,id,hash}; raw evidence blobs retain exact immutable external refs/hashes. Candidate/evidence versions are append-only records, while status contains only current refs. No context state. Record insertion conflicting existing id/hash rejects; equal insertion is idempotent."
   },
   "lifecycleContract": {
-    "pureSignature": "nextActions({spec,status,decisions}) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}; canonical ordering; no random ids, clock, I/O or hidden controller state. Decisions/records resolved into explicit status facts in one authoritative read snapshot. apply repeats pure table guards and transaction-owned fences/clock.",
+    "pureSignature": "nextActions(snapshot) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}; snapshot includes exact Work id/generation/resourceVersion/spec/status and resolved immutable Decisions/record facts. Canonical ordering; no random ids, clock, I/O or hidden controller state. apply repeats table guards and transaction-owned fences/clock.",
     "transitions": [
       "PROPOSED + START_RESEARCH -> RESEARCHING; valid objective/components/spec; no source branch required.",
       "RESEARCHING + PUBLISH_PLAN -> PLAN_JUDGMENT; current objective-bound complete plan and research Attempt.",
@@ -343,7 +373,7 @@
     "leaseReconciliation": "Service controller observes expiry and direct dependency delivery into canonical status using a guarded store transaction. It uses store time and no actor fence because it owns control observation, not Attempt outputs. Spec/generation never change. Before reconciliation an action may be blocked; mutation guards always reject expired tokens independently."
   },
   "contextContract": {
-    "signature": "buildContext({spec,status,decisions},systemFacts) -> {goal,inputs,readScope,writeScope,forbidden,requiredOutput,bindings}. Caller resolves records, Living docs/component profiles and source refs beforehand; builder never reads disk, scans directories, mutates store or persists output.",
+    "signature": "buildContext(snapshot,systemFacts) -> {goal,inputs,readScope,writeScope,forbidden,requiredOutput,bindings}; snapshot includes Work id/generation/RV/spec/status plus resolved immutable records/Decisions. Caller resolves Living/component/source facts beforehand; builder never reads disk, scans directories, mutates store or persists output.",
     "routing": "PROPOSED/RESEARCHING uses current objective/current plan only and output READY_IMPLEMENT_PLAN; writes only research plan. PLAN_JUDGMENT/JUDGING/MERGE_PENDING/BLOCKED has empty product writeScope and exact judgment/evidence/merge inputs. EXECUTING/REPAIRING yields exact plan scope only when current readiness, dependencies and live Attempt status facts hold; server rechecks live fence on effects. DELIVERED has only Living truth and no writable action.",
     "binding": "Output includes exact Work spec/generation, resolved record hashes and system-fact hashes as evidence binding, not a Context identity/generation. It contains no createdAt, parent context, currentContextRef or history chain. Repeated builds on immutable inputs are byte-equivalent."
   },
@@ -391,14 +421,16 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        0,
-        1,
-        3,
-        9
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "authorityContract"
       ]
@@ -415,15 +447,18 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        0,
-        1,
-        9
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
-        "authorityContract"
+        "bootstrapContract"
       ]
     },
     {
@@ -438,12 +473,16 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        2,
-        7
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "resourceContract"
       ]
@@ -459,11 +498,16 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        4
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "lifecycleContract"
       ]
@@ -479,11 +523,16 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        5
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "contextContract"
       ]
@@ -500,13 +549,16 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        6,
-        7,
-        8
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "trustContract"
       ]
@@ -523,15 +575,20 @@
       "verificationIds": [
         "focused"
       ],
-      "decisionIndexes": [
-        0,
-        9
+      "decisionIndexes": [],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs"
       ],
-      "sourceRefs": [],
-      "sourceAnchors": [],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "export function taskReadiness(graph,taskId){"
+        }
+      ],
       "supportingPlanFields": [
         "coexistenceContract",
-        "researchSummary"
+        "researchSummary",
+        "testContract"
       ]
     }
   ],
@@ -566,5 +623,18 @@
         "gzipBase64": "H4sIAAAAAAACA8WW30+DMBDH3/dXNDxrsjLoYG8wmoU4mWFoXIwhhRZXs4G24IvxfxdqomZxMTHqvTQp37v7XH8c1+cRQla5Y1rLSpaslU1tzZCV0iDKV8lyk2fp5TqjUX4VLOMoyOJVkierLD+PF6mZWSdDBN10qhTrLRuc+dR3i5KNBfaISzyXkwLjghAusG3bDvGx4xDPn765KqG7Xat7x5t+itCzGXtB8iFYGJ6OCTGm5uvDlmkxCPSazi/fMzCaEozLWughmGUS/tBKVnPJWWt8g3BNk8wy2svJUewUBuvBYH0Q7HQMg8UwWBsGO4HBOjBYFwYL85fyYM7W+81Npko1ykReBvOzcBWkUR7RZXxF000eJ8ZthsQT23WmRSHdFfeibNFe6j1ry+1BLql47GTfWOaf1lWxnRbfLQrmCH2YOvFB6gSPQdoqtr9qNOc0XdD8giZRnCx+gD7Qjl6+VnXiu/wm/15Q7+aIy6oSSqNKNXtUdkqJukVhwxRHheyN6rvfqTBsg1QYnoC8qbDzp4+bfrwdvYxeAaJNM+HDCwAA"
       }
     }
+  },
+  "bootstrapContract": {
+    "create": "POST /v2/works operator capability atomically validates supplied objective/components/dependency ids and allocates new id from durable allocation row or validates explicit unoccupied id. Insert Work generation1/resourceVersion1/PROPOSED and allocation advance in the same SQLite transaction; failure rolls back both. No sourceRef/baseSha/PR is required.",
+    "researchEntry": "ControlStore.apply action START_RESEARCH checks expected RV/generation and current PROPOSED/objective completeness, creates the RESEARCH Attempt under store-clock lease/fence, enters RESEARCHING and increments RV only. Pure next names that action from PROPOSED without dependency-DONE requirements. It permits only current plan research publication, not source mutation or READY selfacceptance.",
+    "controls": "Actual product create+start fixture must snapshot legacy graph/artifact refs, source HEAD/status before/after and assert byte equality. New Work is readable by a second configured client with no checkout/PR. Invalid components, cyclic dependencies, duplicate id and competing allocation reject atomically."
+  },
+  "testContract": {
+    "N1": "Call createControlClient for one service/authority; spawn actual cli.mjs show from two Git checkouts on different branches. Assert canonical show bytes identical; wrong authorityId and local fake work-graph cannot affect result.",
+    "N2": "Invoke SqliteBlackboardControlStore.apply(CLAIM/RENEW/TAKE_OVER) through eight separate clients; one claim winner, seven CAS failures. Test actor forged time ignored, service test clock before/equal expiry, durable increasing fence after generation/restart and rollback clock rejection.",
+    "N3": "Publish exact test-trust Decision via actual apply; race semantic edit against publication. Old generation/spec/Attempt/candidate/evidence => SUPERSEDED with unchanged phase/conditions/Work bytes; current trusted allSAT applies. A synthetic judge fixture is isolated test data, not production acceptance.",
+    "N4": "Call actual nextActions on frozen and independently parsed identical snapshots across every phase/table row and blocker combination. Compare canonical output bytes; assert input unchanged, no Date/random/fs/store call; illegal action rejected by apply.",
+    "N5": "Actual apply(PUBLISH_CANDIDATE/PUBLISH_EVIDENCE/PUBLISH_DECISION) with expired/taken-over token must reject before records/status effects. Unknown source payload keys cannot mutate spec/generation/fence/owner. Valid owner can publish exact version facts only.",
+    "N6": "Call actual pure buildContext and reader CLI show/context without Attempt token; include every read-only phase and failed-judgment BLOCKED. Empty product write scope, identical immutable projection and no file writes. Reader capability is still required; no public unauthenticated authority."
   }
 }
