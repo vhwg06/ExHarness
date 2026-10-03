@@ -44,7 +44,7 @@
     "D5 — Persist compact SUPERVISION_STATE_V1 on the current task contract: lastFailedEvaluationRef, failedCandidateSha, failedCandidateTree, failedEvidenceHash, findingSignature, repeatCount, lookbackRef, lookbackHash and mode. No session transcript or generic history chain is introduced.",
     "D6 — Before any subsequent Worker JEV provider dispatch, assert material progress against SUPERVISION_STATE_V1. IMPLEMENTATION_DEFECT requires candidate-tree delta; INSUFFICIENT_EVIDENCE requires implementation-result/evidence-hash delta; mixed failures require both. Lookback prose/control-only changes never count. PLAN_INPUT_CONTRADICTION still returns directly to RESEARCH_SA.",
     "D7 — findingSignature is hash(sorted(nonSatisfied questionId + ':' + choice)). A different signature resets repeatCount and uses DIAGNOSIS. The same signature on the next failed cycle increments repeatCount and selects STRATEGY_RECONSIDERATION, which must reference the prior strategy and state why it failed plus an alternative strategy class. Repeat count alone never declares plan contradiction.",
-    "D8 — Add pure trusted scripts/blackboard-supervision.mjs as the canonical controller seam for finding projection, signature/repeat semantics, lookback validation, material-progress validation and LOOKBACK action/authority projection. blackboard-delivery, delivery-context, implementation-bootstrap, blackboard-jev and blackboard-jev-ci consume it; CI workflow YAML remains enforcement plumbing.",
+    "D8 — Add pure trusted scripts/blackboard-supervision.mjs as the canonical supervision primitive. blackboard-jev.mjs imports it for finding/material-progress validation used by BOTH local CLI and CI evaluation; blackboard-delivery.mjs imports it for trusted state transitions; delivery-context/bootstrap project LOOKBACK authority from it. blackboard-jev-ci.mjs remains a thin trusted-base, data-only adapter that delegates to blackboard-jev.mjs and never imports/executes candidate modules or owns a second failure-to-repair policy.",
     "D9 — BB-152 becomes a direct Worker dependency. BB-153 extends the delivered phase-local delivery envelope with LOOKBACK instead of creating a parallel bootstrap policy. Worker start binds exact DONE BB-152; incompatible delivered seams are PLAN_INPUT_CONTRADICTION before writes.",
     "D10 — Evidence truth remains observation-first. JEV choice + exact criterion/evidence identify what must be reconsidered, actor diagnosis guides strategy, but only fresh candidate/evidence plus the next JEV judgment determine resolution."
   ],
@@ -63,7 +63,9 @@
       "test/blackboard-jev.test.mjs",
       "docs/blackboard/jev.md",
       "docs/blackboard/pipelines.md",
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      ".github/workflows/test.yml",
+      ".github/workflows/blackboard-jev.yml"
     ],
     "expectedNew": [
       "scripts/blackboard-supervision.mjs",
@@ -100,7 +102,6 @@
       "scripts/blackboard-implementation-bootstrap.mjs",
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-jev-cli.mjs",
-      "scripts/blackboard-jev-ci.mjs",
       "scripts/blackboard-state-project.mjs",
       "test/blackboard-jev-supervision.test.mjs",
       "test/blackboard-context-bootstrap.test.mjs",
@@ -121,7 +122,7 @@
     "S2 — Control transition [SUPERVISORY_LOOP, LOOKBACK_BINDING]: publish Worker REPAIR_REQUIRED into LOOKBACK; derive read-only LOOKBACK delivery/bootstrap intent; add publish-lookback transition into REPAIR with stale-binding/forbidden-authority failures.",
     "S3 — Anti-spam progress [MATERIAL_DELTA, EVIDENCE_TRUTH]: enforce failure-class-specific candidate/evidence material delta before Worker JEV provider dispatch and ignore lookback/control-only churn.",
     "S4 — Repeated-failure supervision [MATERIAL_DELTA]: compute findingSignature/repeatCount and route repeated identical failures to STRATEGY_RECONSIDERATION with prior-strategy binding.",
-    "S5 — Shared local/CI semantics + migration [SHARED_SEMANTICS]: make local publication/context/JEV and blackboard-jev-ci consume the same supervisor module; extend delivered BB-152 phase envelope; update tests and Living/Blackboard docs."
+    "S5 — Shared local/CI semantics + migration [SHARED_SEMANTICS, BB152_INTEGRATION]: wire blackboard-supervision through blackboard-jev.mjs and blackboard-delivery.mjs; prove local CLI and trusted-base CI both reach supervision validation through blackboard-jev.mjs while blackboard-jev-ci.mjs stays thin/data-only; extend delivered BB-152 phase envelope; update tests and Living/Blackboard docs."
   ],
   "acceptanceCriteria": [
     {
@@ -159,13 +160,13 @@
     },
     {
       "id": "SHARED_SEMANTICS",
-      "statement": "Local delivery/context/JEV and blackboard-jev-ci use scripts/blackboard-supervision.mjs for supervision state/validity; CI workflow YAML contains no separate failure-to-repair business rule.",
+      "statement": "Local CLI evaluation and trusted-base CI evaluation both obtain material-progress/finding validity through blackboard-jev.mjs -> blackboard-supervision.mjs; trusted publication obtains failure disposition through blackboard-delivery.mjs -> the same supervision module. blackboard-jev-ci.mjs remains a thin data-only adapter and CI workflow continues pinning controller_sha to the PR base rather than executing candidate controller modules.",
       "verificationIds": [
         "focused",
         "jev-regression"
       ],
       "evidenceRequired": [
-        "Import/source assertions and equivalent local/CI fixtures over one bound failed evaluation."
+        "Source/probe assertions for local CLI -> blackboard-jev materialize/evaluate, CI adapter -> the same blackboard-jev materialize/evaluate, workflow controller_sha == PR base, and no direct supervision policy/candidate-module execution in blackboard-jev-ci.mjs."
       ]
     },
     {
@@ -301,8 +302,8 @@
       "criterionId": "SHARED_SEMANTICS",
       "verificationId": "focused",
       "testRef": "test/blackboard-jev-supervision.test.mjs",
-      "testTitle": "BB-153 N5 local and CI consume one supervision controller",
-      "subjectSymbol": "deriveSupervisionState"
+      "testTitle": "BB-153 N5 local and trusted-base CI delegate supervision through blackboard-jev",
+      "subjectSymbol": "materialize"
     },
     {
       "id": "NEG_153_6",
@@ -470,7 +471,7 @@
   },
   "ciContract": {
     "selector": "Existing trusted PR-base selection remains; no workflow YAML business-rule fork.",
-    "supervision": "blackboard-jev-ci imports the same blackboard-supervision.mjs validity/material-progress primitives used locally.",
+    "supervision": "Do not add candidate supervision logic to blackboard-jev-ci.mjs. The trusted-base CI adapter keeps calling blackboard-jev.mjs materialize/evaluate; after BB-153 is delivered, that trusted module imports blackboard-supervision.mjs. Candidate kernel tests prove the new module before merge, while the independent JEV controller itself remains pinned to PR base.",
     "provider": "TYPESAFE_API_KEY is available only to JEV evaluation as before; blocked material progress fails before provider dispatch."
   },
   "migrationContract": {
@@ -479,7 +480,8 @@
       "typed JEV outcomes",
       "no-provider-text response trust boundary",
       "exact candidate/evidence/merge binding",
-      "existing EXECUTION/JUDGMENT/MERGE_PENDING semantics"
+      "existing EXECUTION/JUDGMENT/MERGE_PENDING semantics",
+      "trusted-base CI controller never imports or executes candidate modules"
     ],
     "add": [
       "WORKER/LOOKBACK",
@@ -646,21 +648,36 @@
         8
       ],
       "sourceRefs": [
+        "scripts/blackboard-jev-cli.mjs",
         "scripts/blackboard-jev-ci.mjs",
-        "scripts/blackboard-implementation-bootstrap.mjs"
+        "scripts/blackboard-jev.mjs",
+        ".github/workflows/test.yml",
+        ".github/workflows/blackboard-jev.yml"
       ],
       "sourceAnchors": [
         {
-          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
-          "match": "'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN'"
+          "ref": "scripts/blackboard-jev-cli.mjs",
+          "match": "import { materialize, evaluate } from './blackboard-jev.mjs';"
         },
         {
           "ref": "scripts/blackboard-jev-ci.mjs",
           "match": "import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';"
+        },
+        {
+          "ref": "scripts/blackboard-jev-ci.mjs",
+          "match": "// This process only reads candidate data. It never imports or executes candidate modules."
+        },
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "controller_sha: ${{ github.event.pull_request.base.sha }}"
+        },
+        {
+          "ref": ".github/workflows/blackboard-jev.yml",
+          "match": "run: node controller/scripts/blackboard-jev-ci.mjs evaluate"
         }
       ],
       "supportingPlanFields": [
-        "dependencyResolution",
+        "sharedSemanticsEvidence",
         "ciContract",
         "migrationContract"
       ]
@@ -709,5 +726,12 @@
         "benchmarkContract"
       ]
     }
-  ]
+  ],
+  "sharedSemanticsEvidence": {
+    "currentLocalPath": "blackboard-jev-cli.mjs imports materialize/evaluate from blackboard-jev.mjs and publishEvaluation from blackboard-delivery.mjs.",
+    "currentCiPath": "blackboard-jev-ci.mjs imports materialize/evaluate/validateEvaluation from blackboard-jev.mjs; its evaluate path states that it only reads candidate data and never imports or executes candidate modules.",
+    "controllerTrust": "test.yml passes controller_sha and trusted_sha as github.event.pull_request.base.sha; blackboard-jev.yml executes controller/scripts/blackboard-jev-ci.mjs.",
+    "implementationConsequence": "blackboard-supervision.mjs is imported by blackboard-jev.mjs for shared validation and by blackboard-delivery.mjs for transition publication. blackboard-jev-ci.mjs requires no supervision-specific write.",
+    "selfEvaluationBoundary": "During the BB-153 implementation PR, independent CI/JEV remains on the trusted base; candidate kernel tests execute the proposed shared module. After merge, subsequent PR CI uses the delivered module as trusted controller code."
+  }
 }
