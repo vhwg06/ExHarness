@@ -32,31 +32,32 @@
     "nextActions remains pure/deterministic over the canonical V2 snapshot; supervision cannot introduce controller-local clocks, mutable hidden state or prose-inferred routing."
   ],
   "invariants": [
-    "A non-satisfied candidate judgment never grants source-write repair authority directly.",
-    "LOOKBACK is read-only; only an exactly bound current RepairReflection can authorize LOOKBACK -> REPAIRING.",
-    "A JevDecision/RepairReflection whose workGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase.",
-    "Supervision retry eligibility is derived from immutable Decisions plus current Attempt candidate/evidence identity; no duplicate authoritative SUPERVISION_STATE is introduced.",
-    "Material-delta guards run before provider dispatch and ignore Blackboard/control/prose-only churn.",
-    "nextActions remains pure/deterministic over `(spec,status,decisions)` and exposes LOOKBACK/repair blockers without hidden state."
+    "Failed candidate judgment never directly grants source-write repair authority; LOOKBACK is a real read-only phase.",
+    "Only exact current Work generation/spec/Attempt/failed Decision/candidate/evidence-bound reflection plus live fence and CAS can enter REPAIRING.",
+    "Stale/superseded Decision/reflection cannot mutate phase, status or applicable conditions.",
+    "Defect requires native tree+implementation projection delta; evidence gap requires trusted material evidence delta; mixed requires both before provider dispatch.",
+    "Identical failed finding signatures derive STRATEGY_RECONSIDERATION from immutable comparable Decisions; no second supervision authority.",
+    "Pure next/context have no clock/I/O or source writes in LOOKBACK; reflection remains epistemic and independent Jev alone grants correctness."
   ],
   "architectureDecisions": [
-    "D1 — Extend the BB-155 executable lifecycle with first-class LOOKBACK between failed candidate JUDGING and REPAIRING. IMPLEMENTATION_DEFECT and/or INSUFFICIENT_EVIDENCE route to LOOKBACK; PLAN_INPUT_CONTRADICTION returns to research; SATISFIED routes to MERGE_PENDING.",
-    "D2 — Model actor lookback as REPAIR_REFLECTION_V1 owned by the current Attempt, not as a Decision and not as correctness Evidence. It binds `{workId,workGeneration,failedDecisionRef,attemptId,candidateSha,candidateTree,evidenceRef,evidenceHash,findingSignature}` plus one diagnosis per failed finding and a strategyRevision.",
-    "D3 — Publishing a RepairReflection is a V2 CAS mutation. Publish rereads current Work/Attempt/Decision, requires exact workGeneration and failed-decision/attempt/candidate/evidence bindings plus current Attempt fence, then transitions LOOKBACK -> REPAIRING. Any mismatch returns SUPERSEDED or STALE_FENCE and leaves state unchanged.",
-    "D4 — Keep JEV as the independent judge. RepairReflection may authorize one repair attempt because the actor explicitly revised its understanding, but it cannot mark any criterion satisfied. Only fresh candidate/evidence followed by a new valid JevDecision can resolve findings.",
-    "D5 — Derive findingSignature deterministically from the immutable failed JevDecision as hash(sorted(nonSatisfied questionId + ':' + choice)). Compare with the previous failed candidate Decision for the same Work generation: a changed signature selects DIAGNOSIS; the same signature selects STRATEGY_RECONSIDERATION. Do not persist duplicate repeatCount/finding-summary authority when it can be derived.",
-    "D6 — Put material-progress semantics into the V2 lifecycle/next-action guard for JUDGE_CANDIDATE. IMPLEMENTATION_DEFECT requires candidate-tree delta from the failed Attempt; INSUFFICIENT_EVIDENCE requires evidence-hash delta; mixed failures require both. RepairReflection/control metadata never counts toward these deltas.",
-    "D7 — `nextActions(spec,status,decisions)` remains pure. In LOOKBACK it exposes only read/reflect/publish-reflection actions and no product-source mutation. In REPAIRING it exposes repair mutation under the current Attempt fence. Before JUDGING it returns JUDGE_CANDIDATE blocked with NO_MATERIAL_DELTA until the required candidate/evidence change exists.",
-    "D8 — ContextBuilder consumes lifecycle output rather than defining supervision policy: LOOKBACK context includes the exact failed Decision, candidate/evidence refs, diagnosis obligation and empty write scope; REPAIRING context includes the accepted RepairReflection and current repair scope.",
-    "D9 — BB-157 depends directly on BB-155. At Worker start bind exact delivered V2 lifecycle/control-store/decision APIs; if delivered seams contradict this plan, return to RESEARCH_SA instead of adding a legacy compatibility path."
+    "D1 — Extend the resolved BB-155 Node/SQLite controller API, never legacy lifecycle. Work.generation is the semantic revision; resourceVersion is CAS. Controller calls ControlStore.apply({workId,action,expectedResourceVersion,expectedGeneration,attemptToken,payload}) and reads readSnapshot/readRecord; trusted pure lifecycle reducer owns phase changes. BB-155 core failed candidate BLOCKED/SUPERVISION_REQUIRED edge is replaced by first-class LOOKBACK. No changes to CAS/clock/fence primitives.",
+    "D2 — Validate independent candidate Decision first, with exact current generation/spec/Attempt/fence/candidate/evidence. Apply all-SATISFIED -> MERGE_PENDING; PLAN_INPUT_CONTRADICTION has precedence -> RESEARCHING and invalidates readiness; IMPLEMENTATION_DEFECT/INSUFFICIENT_EVIDENCE or mixed -> LOOKBACK. PLAN_JUDGMENT remains readiness research routing; this task does not treat failed readiness as candidate repair.",
+    "D3 — LOOKBACK gives zero product-source/evidence/spec write authority. It permits read, derive reflection and one guarded PUBLISH_REFLECTION control action. No arbitrary status writes or provider call. Record REPAIR_REFLECTION_V1 is actor epistemic state; it may authorize repair through the store, cannot become independent correctness evidence or mark any answer SATISFIED.",
+    "D4 — PublishRepairReflection validates exact current Work generation/spec hash, latest APPLIED failed candidate Decision ref/hash, failed immutable Attempt/candidate/evidence version refs, current same Attempt/fence/lease and derived findingSignature/mode. All checks and immutable record insert + LOOKBACK -> REPAIRING occur in one BB-155 apply CAS. Stale identity returns SUPERSEDED with no Work mutation; stale fence/lease rejects STALE_FENCE. No first-read/second-write gap, no actor timestamp.",
+    "D5 — Canonical findingSignature=sha256(canonical(sorted([questionId,choice] for non-SATISFIED required answers))). StoreSequence orders APPLIED candidate Decisions within the same Work generation/spec and comparable evaluator question specification. Ignore superseded/readiness/satisfied/incomparable decisions. Compare immediate previous comparable failed candidate Decision: equal signature => STRATEGY_RECONSIDERATION; otherwise DIAGNOSIS. Sorting and duplicate question validation prevent order tricks; confidence/probability/text does not affect signature.",
+    "D6 — Candidate material progress requires both different actual Git candidate tree and different normalized implementation projection over authorized product/test code paths. Exclude Blackboard/control records, Living/operator prose and unrelated/out-of-scope files. Evidence progress requires a new trusted collected candidate-bound evidence set and different normalized material run/coverage/stream projection; omit run ids/timestamps/durations/reflection/control metadata. Hashes are recomputed by pinned controller; actor-supplied changed hash alone cannot unlock dispatch.",
+    "D7 — Derive guard from immutable failed Decision: IMPLEMENTATION_DEFECT requires candidate material delta; INSUFFICIENT_EVIDENCE requires evidence material delta; mixed requires both. Compare to failed subject versions, not mutable pointers. Missing objects, invalid provenance or metadata-only churn gives NO_MATERIAL_DELTA. Before provider dispatch, store CAS rechecks subject and material guard and reserves exact current cacheKey once. Identical in-flight/completed subject reuses trusted result/status, never a new paid call. Failed provider transport uses bounded existing transport policy, not a repair judgment loop.",
+    "D8 — Reflection contains one exact finding diagnosis with observed evidence refs, old assumption, revised hypothesis, minimal intervention and discriminating verification. Reconsideration additionally explains why prior approach repeated, supplies an alternative strategy and falsification condition; normalized strategy projection must differ from prior accepted reflection. Structural validation cannot certify diagnosis quality. It forces explicit epistemic revision while fresh independent Jev alone determines correctness.",
+    "D9 — ContextBuilder consumes pure nextActions output. LOOKBACK includes exact failed Decision/Attempt/subject refs, all failed findings and required mode with empty source writeScope. REPAIRING includes accepted reflection and the existing exact plan scope under current readiness/dependency/lease facts. Immutable reflection is referenced through records, not copied into a second SUPERVISION_STATE or mutable finding summary. nextActions has no I/O/clock/history scan outside supplied canonical snapshot.",
+    "D10 — Research binds the final BB-155 plan API now; lack of future product source is not an unresolved design choice. Worker starts only after BB-155 DELIVERED, checks actual exported interface/schema/controller against this declared contract and reopens research if divergent. BB-157 owns supervision module/lifecycle/context/CLI integration only; BB-156 may optionally require its delivered capability for the recommended 155 ->157 ->156 operational order."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "scripts/blackboard-v2/control-store.mjs",
-      "scripts/blackboard-v2/work-resource.mjs",
-      "scripts/blackboard-v2/lifecycle.mjs",
-      "scripts/blackboard-v2/context-builder.mjs",
-      "scripts/blackboard-v2/cli.mjs"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+      "docs/blackboard/artifacts/objective/BB-155.json",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-contract.mjs"
     ],
     "expectedNew": [
       "scripts/blackboard-v2/supervision.mjs",
@@ -97,11 +98,11 @@
     ]
   },
   "implementationSlices": [
-    "S1 — V2 supervision model: implement finding projection/signature plus REPAIR_REFLECTION_V1 validation with exact Work generation/Attempt/Decision/candidate/evidence binding.",
-    "S2 — Lifecycle integration: add read-only LOOKBACK and exact CAS/fence-governed LOOKBACK -> REPAIRING publication.",
-    "S3 — Anti-spam guard: derive material-progress requirements from failed JevDecision and block JUDGE_CANDIDATE before provider dispatch until candidate/evidence deltas exist.",
-    "S4 — Repeated-finding supervision: derive DIAGNOSIS vs STRATEGY_RECONSIDERATION from immutable decision history without duplicate supervision state.",
-    "S5 — Context/operator integration: expose correct LOOKBACK/REPAIRING contexts and next actions, then prove stale generation/fence/no-delta behavior fail closed."
+    "S1 — supervision.mjs: implement strict REPAIR_REFLECTION_V1 validation, findingSignature and deriveReflectionMode with D3-D5/D8; resolve exact immutable failed Decision/Attempt/candidate/evidence refs from store snapshot and reject duplicate/missing diagnoses, authority-verdict fields and stale generation/subject. Export publishRepairReflection wrapper over BB-155 apply PUBLISH_REFLECTION; no direct SQL or duplicate supervision state.",
+    "S2 — lifecycle.mjs: extend actual phase table with LOOKBACK and replace base failed candidate BLOCKED edge. Failed candidate typed outcomes route by D2; independent exact Decision publication is required. LOOKBACK has no source/evidence mutation or provider action. One exact reflection publication transaction validates current lease/fence/CAS and record refs then enters REPAIRING; stale Decision/reflection stays SUPERSEDED with unchanged Work. No CAS/store-clock/fence changes.",
+    "S3 — supervision.mjs/lifecycle.mjs/CLI: derive candidate/evidence material projections from trusted object/check facts per D6-D7, compare against immutable failed subject and apply failure-class matrix before dispatch. Wire the pure guard into nextActions and repeat it in store apply/reservation; unchanged/metadata-only subject blocks provider invocation. Unique reservation/cache reuse prevents concurrent repeated calls. No actor hash, reflection text or prose churn unlocks JEV.",
+    "S4 — supervision.mjs/context-builder.mjs: derive same/changed signature mode from comparable APPLIED candidate Decisions using storeSequence; require explicit reconsidered strategy/falsification fields for repeats. LOOKBACK context supplies failed facts/mode and zero source writes; REPAIRING supplies accepted reflection/exact plan scope only. Context projection remains pure and produces no persisted Context artifact.",
+    "S5 — blackboard-v2-supervision.test.mjs: invoke actual nextActions, publishRepairReflection, assertMaterialProgress and deriveReflectionMode for every N1-N5 title; cover defects/evidence/mixed/contradiction/allSAT, each stale identity/fence/lease, reordered decisions, ignored superseded history, same-tree new commits, doc/control-only changes, invalid evidence provenance, reservation race and repeated strategy fields. Assert zero provider calls before all guards; only fresh independent Jev can reach MERGE_PENDING. Run core regression/repository/docs; update Living state. Worker requires BB-155 DELIVERED and exact planned API; research model code is not delivery."
   ],
   "acceptanceCriteria": [
     {
@@ -111,7 +112,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Transition tests for IMPLEMENTATION_DEFECT, INSUFFICIENT_EVIDENCE, mixed failure, SATISFIED and PLAN_INPUT_CONTRADICTION."
+        "Transition tests for IMPLEMENTATION_DEFECT, INSUFFICIENT_EVIDENCE, mixed failure, SATISFIED and PLAN_INPUT_CONTRADICTION.",
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
       ]
     },
     {
@@ -121,7 +123,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Positive publication fixture plus stale generation, stale decision, stale attempt and stale-fence negatives."
+        "Positive publication fixture plus stale generation, stale decision, stale attempt and stale-fence negatives.",
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
       ]
     },
     {
@@ -131,7 +134,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Candidate-only, evidence-only, mixed and control-only delta fixtures."
+        "Candidate-only, evidence-only, mixed and control-only delta fixtures.",
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
       ]
     },
     {
@@ -141,7 +145,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Decision-history fixtures proving same/different signature behavior."
+        "Decision-history fixtures proving same/different signature behavior.",
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
       ]
     },
     {
@@ -152,49 +157,72 @@
         "repository"
       ],
       "evidenceRequired": [
-        "Negative fixture where reflection exists but no fresh judged candidate cannot advance."
+        "Negative fixture where reflection exists but no fresh judged candidate cannot advance.",
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "A non-satisfied candidate judgment never grants source-write repair authority directly.",
+      "invariant": "Failed candidate judgment never directly grants source-write repair authority; LOOKBACK is a real read-only phase.",
       "criterionIds": [
         "LOOKBACK"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
     },
     {
-      "invariant": "LOOKBACK is read-only; only an exactly bound current RepairReflection can authorize LOOKBACK -> REPAIRING.",
-      "criterionIds": [
-        "LOOKBACK",
-        "REFLECTION_BINDING"
-      ]
-    },
-    {
-      "invariant": "A JevDecision/RepairReflection whose workGeneration differs from current spec.generation is SUPERSEDED and cannot mutate status/phase.",
+      "invariant": "Only exact current Work generation/spec/Attempt/failed Decision/candidate/evidence-bound reflection plus live fence and CAS can enter REPAIRING.",
       "criterionIds": [
         "REFLECTION_BINDING"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
     },
     {
-      "invariant": "Supervision retry eligibility is derived from immutable Decisions plus current Attempt candidate/evidence identity; no duplicate authoritative SUPERVISION_STATE is introduced.",
+      "invariant": "Stale/superseded Decision/reflection cannot mutate phase, status or applicable conditions.",
       "criterionIds": [
-        "MATERIAL_DELTA",
+        "REFLECTION_BINDING"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
+    },
+    {
+      "invariant": "Defect requires native tree+implementation projection delta; evidence gap requires trusted material evidence delta; mixed requires both before provider dispatch.",
+      "criterionIds": [
+        "MATERIAL_DELTA"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
+    },
+    {
+      "invariant": "Identical failed finding signatures derive STRATEGY_RECONSIDERATION from immutable comparable Decisions; no second supervision authority.",
+      "criterionIds": [
         "RECONSIDERATION"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
     },
     {
-      "invariant": "Material-delta guards run before provider dispatch and ignore Blackboard/control/prose-only churn.",
-      "criterionIds": [
-        "MATERIAL_DELTA"
-      ]
-    },
-    {
-      "invariant": "nextActions remains pure/deterministic over `(spec,status,decisions)` and exposes LOOKBACK/repair blockers without hidden state.",
+      "invariant": "Pure next/context have no clock/I/O or source writes in LOOKBACK; reflection remains epistemic and independent Jev alone grants correctness.",
       "criterionIds": [
         "LOOKBACK",
-        "MATERIAL_DELTA"
-      ]
+        "JUDGE_AUTHORITY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual planned product symbol/CLI test must assert phase/actions/scopes and unchanged store bytes on rejection, with provider dispatch counter and exact candidate-bound log evidence."
     }
   ],
   "verificationPlan": [
@@ -261,15 +289,242 @@
       "subjectSymbol": "publishRepairReflection"
     }
   ],
-  "researchGaps": [
-    "At BB-155 delivery, bind the exact delivered V2 lifecycle/control-store/Decision APIs before readiness publication; no legacy seam may be substituted if the delivered API differs."
-  ],
-  "researchBaselineSha": "7599ef5a1395af36b0f86a6f940f059b28edb343",
+  "researchGaps": [],
+  "researchBaselineSha": "d795bca0e1865685d6b11b66de12224691446897",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living system state describes V2 JEV supervision as failed judgment -> read-only LOOKBACK -> exact reflection -> fenced repair -> fresh independent judgment, including material-progress and repeated-finding guards."
+  },
+  "supervisionContract": {
+    "dispatch": "Trusted publish candidate Decision uses a single store action transaction. For candidate judgments PLAN_INPUT_CONTRADICTION takes precedence over repairable failures; allSAT iff every required question is present/valid and SATISFIED. Rejected/stale Decision cannot change phase, even if SATISFIED. LOOKBACK is a real enum/table phase and never a boolean in REPAIRING.",
+    "reflectionSchema": "{kind:REPAIR_REFLECTION_V1,id,workId,workGeneration,specHash,attemptRef:{id,hash},failedDecisionRef:{id,hash},candidate:{sha,tree,versionRef,implementationDigest},evidence:{setRef,setHash,materialDigest},findingSignature,mode:DIAGNOSIS|STRATEGY_RECONSIDERATION,diagnoses:[{questionId,choice,observedRefs,oldAssumption,revisedHypothesis,minimalIntervention,verificationIds,expectedCounterexample}],strategy:{revision,approach,alternatives?,whyPreviousRepeated?,falsificationCondition?}}. No correctness/ready/accepted/delivery verdict field. Strict known keys; nonempty diagnosis per failed question exactly once; required refs resolve to immutable failed subject or declared plan.",
+    "publication": "publishRepairReflection(store,{workId,expectedResourceVersion,expectedGeneration,attemptToken,reflection}) delegates action PUBLISH_REFLECTION. The pinned server resolves records from the same transaction and invokes validateRepairReflection(reflection,snapshot), derives mode and checks live fence/lease. Accepted record plus phase/reference update is atomic. Malformed schema/forged authority rejects; stale but typed subject is SUPERSEDED. Superseded reflection never becomes current pointer/condition. Retries of same id/body are idempotent; changed bytes with same id reject.",
+    "ownership": "The same current Attempt may append candidate/evidence version records after reflection, but failed Decision versions remain immutable. Lease takeover allocates a new Attempt/fence; prior reflection is then stale. It cannot grant the new owner repair unless a new exact failed subject is applicable or operator research resolves the situation. Spec revision increments Work.generation and clears current applicability, never patches reflection to a new generation.",
+    "readOnly": "LOOKBACK source/evidence/spec writeScope=[]; context lists read and derive reflection only. The sole actor control publication is the typed reflection action; store owns its lifecycle transition. No candidate publish, shell repair or JEV_CANDIDATE dispatch during LOOKBACK.",
+    "baseAPI": "BB-155 readSnapshot/createWork/apply/readRecord; canonical Work fields id/resourceVersion/generation/spec/status; strict record refs {kind,id,hash}; status latestCandidateDecisionRef and activeAttemptRef; lifecycle exported nextActions/reduceLifecycle; context exported buildContext. BB-157 edits lifecycle/context/CLI and adds supervision.mjs, imports existing store API without modifying store primitives."
+  },
+  "materialProgressContract": {
+    "candidateProjection": "Compute from immutable Git objects: for each authorized product/test path in plan scope (not forbidden), sorted {path,mode,blobSha}; resolve tree at candidateSha and fail unavailable objects. Native tree hash and this projection hash must both differ from failed Decision. Pure doc/control changes, commit message/author changes and identical tree commits cannot pass. Product candidate still must satisfy exact plan scope and required negative checks.",
+    "evidenceProjection": "Trusted verification collector validates command/exit/log hash, exact candidate identity and negative-case/criterion bindings. Project sorted {verificationId,commandHash,candidateTree,exitCode,stdoutHash,stderrHash,criterionCoverage,negativeCaseBindingsHash}. Include only declared check outputs. Exclude control artifact body/reflection text, run id, timestamp, duration and receipt location. Both exact setHash and normalized materialDigest must differ for evidence failure. Different path or timestamp alone is not progress; missing/incomplete/truncated/unverified records remain blocker.",
+    "guardSignature": "assertMaterialProgress(failedDecision,currentSubject,{candidateProjection,evidenceProjection}) -> {eligible,requiredDeltas,blockers}; pure over validated facts. Type-specific required deltas from failed answers. Missing failed/current fields fails closed. It neither calls provider nor alters status. Lifecycle repeats guard before entering actionable JUDGING, server repeats within dispatch reservation transaction.",
+    "reservation": "unique {workId,workGeneration,attemptId,candidateTree,evidenceSetHash,questionSpecHash,model,policy,cacheKey}; provider call happens only after successful reservation+exact action guard. Concurrent controllers dispatch at most once; reuse in-flight or completed record. A failed independent judgment returns LOOKBACK again. No generation bump or record-name churn evades material comparison."
+  },
+  "findingContract": {
+    "signature": "sha256(canonical sorted [questionId,typedChoice] for all required non-SATISFIED candidate answers). Unique IDs and valid response coverage required beforehand; confidence/producer text excluded.",
+    "previous": "Highest storeSequence less than current in supplied immutable Decisions with same workId/generation/specHash, APPLIED candidate kind, nonSatisfied and comparable questionSpecHash. Store sequence is authoritative. Superseded/readiness results do not increment a hidden count or reset a repeated finding.",
+    "mode": "First/changed finding DIAGNOSIS; identical prior signature STRATEGY_RECONSIDERATION. Current status stores only exact reflection ref and Decision ref; mode/signature are deterministically recomputed and checked, never a separate authoritative repeatCount/finding-summary resource.",
+    "authority": "Reflection validates coverage/binding/required epistemic fields; it does not choose SATISFIED. Candidate material + evidence + a new independently validated JevDecision are still required for MERGE_PENDING."
+  },
+  "dependencyContract": {
+    "workId": "BB-155",
+    "implementationPrecondition": "DELIVERED plus actual exports/schema/controller match resolved contract above; no legacy substitution",
+    "plannedAPIs": [
+      "ControlStore.readSnapshot/createWork/apply/readRecord",
+      "Work.generation/resourceVersion/spec/status",
+      "nextActions/reduceLifecycle",
+      "buildContext"
+    ],
+    "researchBasis": "The exact selected base interfaces are resolved plan-owned inputs. The materialized research state includes this complete contract; future source existence is not claimed."
+  },
+  "researchSummary": {
+    "classification": "EXECUTED_RESEARCH_MODEL_NOT_DELIVERY",
+    "run": "33 Node/SQLite prototype controls passed,0 failed/skip; includes exact reflection,5 stale binding negatives,stale fence,read-only LOOKBACK,mixed delta,repeated finding,pure dispatch blocker",
+    "limits": "Model confirms feasibility/control invariants. It omits production full auth/schema, trusted material normalization and provider reservation; required future product tests target these directly. No real independent SATISFIED result is inferred.",
+    "sourceSha256": "dd1509bb34a7ed7ca3db2f62c669452811f52be89ea094aad178b1a5cca24022",
+    "testSha256": "f2bd5304f888cebd19c14363d389af6b52aab2db43fd5575f95fbe3c8baa2c60",
+    "logSha256": "d7fd7e6d5476d81652205f1295bcc593f40a3d50bf5e638b6f4c3ea7cbaf6256"
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A failed candidate JevDecision with IMPLEMENTATION_DEFECT and/or INSUFFICIENT_EVIDENCE transitions JUDGING to read-only LOOKBACK rather than directly granting REPAIRING/source-write authority.",
+      "criterionIds": [
+        "LOOKBACK"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        2
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "supervisionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A valid RepairReflection binds the current workGeneration, failed JevDecision, Attempt, candidate and evidence and is the only semantic input that can authorize LOOKBACK -> REPAIRING.",
+      "criterionIds": [
+        "REFLECTION_BINDING"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "supervisionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A stale/superseded JevDecision or RepairReflection cannot change Work status, phase or conditions.",
+      "criterionIds": [
+        "REFLECTION_BINDING"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "supervisionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Before JUDGE_CANDIDATE can become actionable again, IMPLEMENTATION_DEFECT requires candidate-tree delta, INSUFFICIENT_EVIDENCE requires evidence delta, and mixed failures require both relevant deltas.",
+      "criterionIds": [
+        "MATERIAL_DELTA"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        5,
+        6
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "materialProgressContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Repeated identical non-satisfied finding signatures select STRATEGY_RECONSIDERATION rather than ordinary DIAGNOSIS; the rule is derived from immutable Decisions and does not require duplicate authoritative supervision state.",
+      "criterionIds": [
+        "RECONSIDERATION"
+      ],
+      "planElements": [
+        "S4"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        4,
+        7
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "findingContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "JEV remains the final independent judge after repair; RepairReflection text or metadata cannot satisfy the failed finding by itself.",
+      "criterionIds": [
+        "JUDGE_AUTHORITY"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3,
+        6,
+        7
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "findingContract",
+        "dependencyContract",
+        "researchSummary",
+        "foundationInterface"
+      ]
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchReproduction": {
+    "classification": "EXECUTED_RESEARCH_MODEL_NOT_DELIVERY",
+    "extract": "Decode each gzipBase64 into named files under an owned scratch directory. Set V2_RESEARCH_SOURCE_ROOT to a Git repository containing exact d795bca0e1865685d6b11b66de12224691446897 objects; execute node --test probe.test.mjs. Legacy graph and routing source are read with git show at that immutable SHA, not from current checkout. All service databases/config/Git worktrees are owned scratch and disposed.",
+    "files": {
+      "control-probe.mjs": {
+        "sha256": "dd1509bb34a7ed7ca3db2f62c669452811f52be89ea094aad178b1a5cca24022",
+        "bytes": 9871,
+        "gzipBase64": "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"
+      },
+      "control-client-probe.mjs": {
+        "sha256": "d7c9a82dc1f98527efb8e61d3a1823b46d45dd04fce1f25b4536ba67e35dbfab",
+        "bytes": 1240,
+        "gzipBase64": "H4sIAAAAAAACA3VTXW/aQBB851e4LzmfMIfap8rIjQglEW1kUj7aSFGEDnsdnBifdXcOoZb/e/d8IbileQGtd2dmd3Yv3RZCaidRTiLF1iG5iMFPFBl0UpspuN60cyY+ZisTLsRlmsFydl23C0uZteoinos8jXh2qGH9SORaiqxXSLEGtn00ovBi2ynzSKcidyIJXMONqRhlKeTarZDX46XeCJnq/ST2tHiCvKZO1XG42udRC8yzzN0ClsaeFKUGby3iPa1QWGlHBnzHU9QCHW1cZO3amuoVsQEeg1R+NbRiv7kh9ckFcAnSId1G2CO3veGhm94kJn67NzLCGbHr3mJfAPEJL4oMTTBE/UclclJ7jDHXtHVemV//zafmI639qqY1HdiWNbzo164lM4FLB2nifpBMPFG9kWLn5LBzxlIK6Zo8HUjQpcwbZN1xXqPK2uq7aeypAiIafGm8IjfT+YJ4pP/8qb8T8kkRr3otqamnNJe6weCWINIQz0CJUkbwE33Ckd6l6ZNuGndJv2FAznfwRmMjdn4aH4iuxqc8tB506g6OjXcTgVKMy4fnu4/3Z2f21hjujzPcZxAEf12nayImUTN7hn/RlLKNhITiFVmv7/AvSR8M1uPNPXnN5Fry+6ANZgpXCu4nOug4ZhmNSqqGa9TBe3KPPPRkR2R4MZ9eLxfj1fh2MZ6Fw+vVaBpeTq5Ws/GP5WQ2/koMre0oCk5fw7f5NGQFlwrcROFsPDZCc3wGLV2PlDr5TCg9cuGlB3YqdIlYXnJuTytiNjabbvE3o1PqH2F2nW+oJjSgsNyuQf4PgNtt1WOE5dTPyyyz5pm2gsDEp1Ytw+/h9Fe4Go4Wk2mIvhyWoHSMOLbDNweGgZr7+ANNF5gW2AQAAA=="
+      },
+      "probe.test.mjs": {
+        "sha256": "f2bd5304f888cebd19c14363d389af6b52aab2db43fd5575f95fbe3c8baa2c60",
+        "bytes": 19472,
+        "gzipBase64": "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"
+      },
+      "probe.log": {
+        "sha256": "d7fd7e6d5476d81652205f1295bcc593f40a3d50bf5e638b6f4c3ea7cbaf6256",
+        "bytes": 2878,
+        "gzipBase64": "H4sIAAAAAAACA51Wy3LbRhC8+yv26FRJMh7Eq3ySJdpWWZGcWHGOriUwJDcCdpHdBSXmnE/IMT+S3/GXpAcAKcBJdMiFEghO70zPdM9+/fMPESaJ+PTDtfIkLs4/CUu/UOmdcF7WJHZknTLaCakr0VpyZHfkxGrv8fkyPkuTRbiIGvfdi68jFKnN1gulK2oJH9ojzJTknChrqRon9orqShhN4kFpTVa8DOPkLArjMFhMgeSGg8valPeilFobL+ixVZZETdLRa2Ro8HD8wWuxJl2SkNVO4i/SC8+KIA6iZIo6DbKmrlcS/6ylqjk/46gScu2RFEr10nrxMjjLF3m6yGcg1EjtVYlf7RTzg3p3slaVZFoMyquoVANxD8pvTedFrdZU7ktwSut1zzDyi9MsS4sZtOksilgzSWAduZ57T03rkSQHcR9GNiw9WO6aWXHH1I4YMQ3CIp01pO24YKM9Pfo+HDh9ZhWh0EZp5bgUFLG25jfiWtrOnwBeVqdG1/uR1w7N4j5Ku+eDgjQMwmx6ELf0/d3dRyE7lIzU9sDwndXDvJzSr50CS9zVn4295+Ma4R+MKLdU3jNHZa3wFswUMQYiCosJNZm4+v7j9fL75c3d+d3V7c2Xy+Xb5cWdQABmVFzf3n54c37xoedbaHMgcqDoKSNkvoiivIhmyDeffnr79uriCuBflp+vLpc3F8v/gRxmURwnU2R6BNugYV1Tz7qQNdO0sZLrtNRKZcWKSx966qRXbr1Hv6xFhGbdcMpBEaezlAd5ToAfQOk7gp5k/wiNsFDxM8+tK7dSbzDc3Lg4LYLwWSw5jNxV9Z8wwVmWF3GRPwvDsqLqcpTCj7R+Bq5Y5NHieThQVPUSu7NEz2VW5HH0PFmQbcVD/V667TNIeRoF/1bjUZK9MA6OOcHvY4tkMQ094JamaRR3uiHhuZLBWuE9g9oOufXiX7FRDcmkRZxkM8RGPeLVGl6r9IbPh8A4xmBOLdUEH/RQee2l63lJMZ/pFADzRyi6Ek5ttPRsFBVZNbCBQaINSxje4ZDSMFivRwo4aUvG4nua2h2AjB37kGVFNBu03oo0+1BfFyxIuVb6cjto64n7BmdbJeu+7nyR5ROYFBqqRdlBICiv02t2sC2CtNGnjFNZ+QAXg30qXdZdRdWJuLy9Wb56eilXjoOBHqZxHKffoJ+ymMRhg5X7E25aC+FqPxYuQTm0+WrwUtHKgwVkwaLIsxne4M01bWS572U63zfgdYuF41E6XqysKvuWNGozSnliMdFZHBZZEE3xlebx48GyPM281GC4vNaYJ4W8Lb/tLbe3/yOcI55XY3uH4R2XT3HHmjhXbhuW/64350k8CEXvuEdBEn7TI28abJWy8wZ3CNHyPcIhmomssXhwuJ+v2sNkHUIGWfEoRWdJnKTJLDtu6FOHFPH4O1OD6Gu1gxyGdXkynY9vft1IpQdWqNpQrxDshSKZ7bRB4aXp9JApBznRGHi10ahvqOCf94FeblmYz+4eRwODEFY193m0NXb+oY3CtYRdbMeDG/ISAbI3lCxaRIspB1Cf0ryO31zfXnxYXgoI/V6op7k/rqzDyucLwiJIZvP+OZpMOjAl31EqA0Y4rdK0+8PsHsceFmPgmgNgGMRJMbtxwDDWatOxDVxcX2Euqb8X9VyvaM0XsHGHrrAHMUEHTbnBFYfb5fF6gOQ7WME7mCarhz0TB0dJwZfGvBiK+f0vgSAMWBz3D65TDBL0D610xxc8z+PXJd8Ta6yo8dndq7Y9PnlTmfHfqhuk+AXX1zTKcC42aPHib5pJEX4+CwAA"
+      },
+      "migration-probe-report.json": {
+        "sha256": "7e56e5ce5ca4486a4faea173226ddedd46bc8f873f2a18c7c08e88bc732e5203",
+        "bytes": 1918,
+        "gzipBase64": "H4sIAAAAAAACA2WVXW/TMBSG7/crrFxvkr99PK7YFmkgxqRtDBBClb9CI6XJSNLBhPjvpN0m9RVX7ZvY5zm2Hsd/jhirUhemqW3aFOZ26KtTVtVf6vNPd/XF6qa+rd/enF+urq4v6g+rj9d3q+X33X1987U63s2dhu2Yyu067KZl501MgRdB1lgy2UYhorW5CCmltl5obcm756k/xvCwvgzTejeVE7kSeCNjbFTgPqpkUkpBBk7RZR3JGJ2taLIKkpyOSoTkDadkjbbOPJds+9Rtc8lLxW9LXp6cnZ1wa/dvX5ODRJD8YXIckoAkISlIGpKBBL0QzCMYSTDSQ01/OFLwwxUJySEJSAqShgQ1pYWEBIJ0uGdCAV0BXUlI0IsCugK6AroCugK6BroGuga6BrqGndDQi4ZeNPRiYKSBkcZVS/i+97L8fvbyYugLuqnBPwNWGbDDgAFA5kDmBgw3SADDLRhuwXALvVjoxUIvFg0HugO6AzoBnYBOQCfgERAICAQEDwQPBA8ED+vzePaA54HnwT8O/nHwj4N/HPzj4B/H0w1WcTx7eKL0/8Z9bud1HsOvHrQToJ3QsAgDizCwCBBUgKDCHODnMfRTM4ybkl+/8GQpNd6HvOxSEilZV7LVLnhynvPCtXSxxGSyIJ1lUrsbYJHQC5eUd+nlC78JfduUaX6tqnTJzkXpG3KNc17aQLkhClKLwpU0mtvlQlruDhOyU0aoFEOUulFyOVEvJ70K23k9jO38dDXk0u3q9suf0+ln186FTWFTTtbDNLOpjI9tKmy/vJB21+X0hvUDy+WhG542pZ+Pl5fbaS6Zva/vWXkM3XZ/rbJhZGMJHUvbeXgsY3X09+gfdipdm34HAAA="
+      },
+      "legacy-authority-probe.json": {
+        "sha256": "faf299f9979601d13b55f5319ae969562c4752488f221c40a5c731b321464326",
+        "bytes": 3011,
+        "gzipBase64": "H4sIAAAAAAACA8WW30+DMBDH3/dXNDxrsjLoYG8wmoU4mWFoXIwhhRZXs4G24IvxfxdqomZxMTHqvTQp37v7XH8c1+cRQla5Y1rLSpaslU1tzZCV0iDKV8lyk2fp5TqjUX4VLOMoyOJVkierLD+PF6mZWSdDBN10qhTrLRuc+dR3i5KNBfaISzyXkwLjghAusG3bDvGx4xDPn765KqG7Xat7x5t+itCzGXtB8iFYGJ6OCTGm5uvDlmkxCPSazi/fMzCaEozLWughmGUS/tBKVnPJWWt8g3BNk8wy2svJUewUBuvBYH0Q7HQMg8UwWBsGO4HBOjBYFwYL85fyYM7W+81Npko1ykReBvOzcBWkUR7RZXxF000eJ8ZthsQT23WmRSHdFfeibNFe6j1ry+1BLql47GTfWOaf1lWxnRbfLQrmCH2YOvFB6gSPQdoqtr9qNOc0XdD8giZRnCx+gD7Qjl6+VnXiu/wm/15Q7+aIy6oSSqNKNXtUdkqJukVhwxRHheyN6rvfqTBsg1QYnoC8qbDzp4+bfrwdvYxeAaJNM+HDCwAA"
+      },
+      "authority-e2e-report.json": {
+        "sha256": "eb31501c7ab129c07c76758b6c49be40c381395935f1bfbea65e0e106a479ca5",
+        "bytes": 557,
+        "gzipBase64": "H4sIAAAAAAACA1WRzW7bMBCE736Kha4xWv1YtpScGptwXbhJKyVOehJochURkUmVXCUwir57KRkunNOSXPLbmeGfCUAgWu6cqpXgpIwOriFgz2z5+MBWVcFK9qVYfq1KVuw2S1Z9v1+xbXV3/1D5utmx4lcwHRkWOaF8UtSYnkrTW4G3lmvReB7ZHi9vrVGjPQ+Lxg5qQouyQIfcjo+C8+zN3fo0QypHSgtaK1pb3jW3R0L3Ac+10d5GWzbmnf3ueXvZdf6wbHiczgd6Vqd5PsNMCJynYc7jCBfRPl/EsciS2X7uV0m9mGd5HvJEJlkSzRb7OEwxScIoDZOTJHdhtMDaPfrK9QvKy8G896FYRccfLRd48FYHAeXPrSL8LIyu1Qv40JySCHtDDZyo8G7sK1n0HkdMqw6K3PhU+PREAwPY04aPQwkO7ZsSeLXcbqCzhgwdO7wBbYad7AXBwZcW3RRa9YZA3L3Cf21T+MZ2wH0cHXk3CMaCxK41x0Hwp2Dyd/IP/De/Gi0CAAA="
+      }
+    }
+  },
+  "foundationInterface": {
+    "classification": "CURRENT_SYSTEM_NOT_CHANGED",
+    "workId": "BB-155",
+    "planHash": "9212a4d1dfeb411a01314c04338927fa7ae3745ff094f9af751006b05b732ab5",
+    "proposedRef": "https://github.com/vhwg06/ExHarness/pull/543",
+    "publicMethods": [
+      "readSnapshot",
+      "createWork",
+      "apply",
+      "readRecord"
+    ],
+    "Work": "id/resourceVersion/generation/spec/status",
+    "controller": "single Node24 SQLite service",
+    "version": 1
   }
 }
