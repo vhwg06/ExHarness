@@ -6771,10 +6771,147 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-152",
+      "featureId": null,
+      "title": "Make fresh-agent Outer Blackboard delivery onboarding phase-complete",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-152.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-152.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A deterministic phase-local delivery envelope tells a fresh agent, without prior conversation context, its exact immediate goal, entry/exit conditions, required outputs, legal next actions and forbidden claims.",
+        "Bootstrap distinguishes EXECUTION, REPAIR, JUDGMENT and explicit MERGE_PENDING finalization instead of collapsing every Worker phase into implementation.",
+        "A fresh explicit MERGE_PENDING session can resume verify/publish delivery without reclaiming work or receiving source-write authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-152.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-152.json",
+        "researchBaselineSha": "afb27059e9981da4ce4842be27205ccc5b72ef13"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-153",
+      "featureId": null,
+      "title": "Make JEV findings drive mandatory lookback before repair",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-153.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-153.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An audited control-flow map showing every current path from Worker JEV findings to local repair/re-evaluation and CI enforcement.",
+        "A judgment-bound lookback/reconsideration contract that changes worker epistemic state before repair source-write authority is granted.",
+        "Material-delta and repeated-failure rules that reject cosmetic/prose-only retry spam and require strategy reconsideration when findings persist.",
+        "One canonical supervision transition policy shared by local execution and CI projection, with focused negative tests and Living truth."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-153.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-153.json",
+        "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-154",
+      "featureId": null,
+      "title": "Reduce Outer Blackboard to value-bearing kernel",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-154.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-154.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Remove graph/context/component fields and layers with no independent routing, authority or context-value consumer.",
+        "Derive fresh-session context on demand without current.json/currentContextRef while preserving claim ownership and exact phase/source authority.",
+        "Retire legacy compatibility and committed projections without weakening Jev or exact delivery gates."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-154.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-154.json",
+        "researchBaselineSha": "3651e60b195b3c158a52311bbb375803486b91de"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-152",
+    "nextWorkId": "BB-155",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
