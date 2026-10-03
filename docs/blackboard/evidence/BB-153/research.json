@@ -36,25 +36,29 @@
       "repo": "noahshinn/reflexion",
       "stars": 3297,
       "commit": "218cf0ef1df84b05ce379dd4a8e47f17766733a0",
-      "finding": "Failed prior trials call reflect before the next reset/step and inject reflection into the next prompt."
+      "finding": "Failed prior trials call reflect before the next reset/step and inject reflection into the next prompt.",
+      "sourceUrl": "https://github.com/noahshinn/reflexion/blob/218cf0ef1df84b05ce379dd4a8e47f17766733a0/hotpotqa_runs/agents.py"
     },
     {
       "repo": "stanfordnlp/dspy",
       "stars": 38473,
       "commit": "ba3f9198efe5d125c7c1a2b40b1f1e6166209bd2",
-      "finding": "GEPA uses metric feedback and execution examples in a reflection step before proposing and evaluating a changed candidate."
+      "finding": "GEPA uses metric feedback and execution examples in a reflection step before proposing and evaluating a changed candidate.",
+      "sourceUrl": "https://github.com/stanfordnlp/dspy/blob/ba3f9198efe5d125c7c1a2b40b1f1e6166209bd2/docs/docs/api/optimizers/GEPA/overview.md"
     },
     {
       "repo": "gepa-ai/gepa",
       "stars": 6850,
       "commit": "fb1ed589fd83372caef499cffc2c73173d3b096b",
-      "finding": "EvaluationBatch carries trajectories; ProposalFn consumes current candidate + reflective dataset and proposal metadata carries parent iteration identity."
+      "finding": "EvaluationBatch carries trajectories; ProposalFn consumes current candidate + reflective dataset and proposal metadata carries parent iteration identity.",
+      "sourceUrl": "https://github.com/gepa-ai/gepa/blob/fb1ed589fd83372caef499cffc2c73173d3b096b/src/gepa/core/adapter.py"
     },
     {
       "repo": "langchain-ai/langgraph",
       "stars": 42639,
       "commit": null,
-      "finding": "Official evaluator-optimizer workflow keeps feedback in graph state and conditionally loops to refinement."
+      "finding": "Official evaluator-optimizer workflow keeps feedback in graph state and conditionally loops to refinement.",
+      "sourceUrl": "https://github.com/langchain-ai/docs/blob/a9cc5701ff6ce584506769dff67b3a8f9ad2877e/src/oss/langgraph/workflows-agents.mdx"
     }
   ],
   "decisions": {
@@ -63,5 +67,17 @@
     "materialProgress": "Require candidate-tree delta for IMPLEMENTATION_DEFECT and evidence-hash delta for INSUFFICIENT_EVIDENCE before another JEV provider dispatch.",
     "repeatControl": "Same finding signature routes LOOKBACK mode to STRATEGY_RECONSIDERATION.",
     "sharedSemantics": "One pure scripts/blackboard-supervision.mjs module is consumed by local delivery/context/JEV and CI validation."
-  }
+  },
+  "paperSources": [
+    {
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "ref": "arXiv:2303.11366",
+      "use": "Explicit reflection on feedback before later trials."
+    },
+    {
+      "title": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "ref": "arXiv:2303.17651",
+      "use": "Comparator showing feedback/refine value but not an independent authority model."
+    }
+  ]
 }
