@@ -29,12 +29,12 @@
     "Missing tool and TOOL_FAILED_BEFORE_EDIT preserve their existing SKIPPED output and exit semantics."
   ],
   "architectureDecisions": [
-    "D1 \u2014 commandSmoke forwards --model, --permission and --trace-dir into runSupervisedTask, copying commandRun's observation construction. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError before mkdtemp. model = options.model ?? null. If options[\"trace-dir\"] is set, createSupervisedObservation({ tool, arm: options.arm ?? \"SMOKE\", taskId: `smoke-${toolId}`, writer: createRunTraceWriter({ dir }) }) and pass invocationObserver/eventSinks/tracer; finalize after the run. --arm requires --trace-dir (same UsageError as commandRun). Default arm SMOKE so report can distinguish from EXHARNESS_SUPERVISED. DELIVERED_TRUTH: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true.",
-    "D2 \u2014 Keep current smoke defaults when flags are omitted: no model, WORKSPACE_EDIT, no traces, maxAttempts 2, timeoutMs positiveInteger(--timeout-ms, 600000). Keep SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths. No --recovery-dir on smoke. Do not write supervisor.js or observation.js.",
-    "D3 \u2014 USAGE smoke line gains [--model M] [--permission WORKSPACE_EDIT|FULL_AUTO] [--trace-dir <dir> [--arm <label>]]. Header comment matches.",
-    "D4 \u2014 Focused tests follow testContract: capture actual fake CLI argv for supplied and omitted model/permission; verify digest chain and invoke actual report; assert default SMOKE arm and no traces when omitted. Distinct invalid permission/arm and SKIPPED fixtures prove no dispatch and existing reasons. Never infer option forwarding from PASS alone.",
-    "D5 \u2014 Living docs. state.md smoke sentence names --model/--permission/--trace-dir, default arm SMOKE, --arm requires --trace-dir, SKIPPED reasons unchanged. observation.md CLI sentence adds smoke --trace-dir. No Blackboard ids.",
-    "D6 \u2014 Evidence at 5386e2ad: commandSmoke currently passes only maxAttempts 2 and timeoutMs."
+    "D1 — commandSmoke forwards --model, --permission and --trace-dir into runSupervisedTask, copying commandRun's observation construction. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError before mkdtemp. model = options.model ?? null. If options[\"trace-dir\"] is set, createSupervisedObservation({ tool, arm: options.arm ?? \"SMOKE\", taskId: `smoke-${toolId}`, writer: createRunTraceWriter({ dir }) }) and pass invocationObserver/eventSinks/tracer; finalize after the run. --arm requires --trace-dir (same UsageError as commandRun). Default arm SMOKE so report can distinguish from EXHARNESS_SUPERVISED. DELIVERED_TRUTH: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true.",
+    "D2 — Keep current smoke defaults when flags are omitted: no model, WORKSPACE_EDIT, no traces, maxAttempts 2, timeoutMs positiveInteger(--timeout-ms, 600000). Keep SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths. No --recovery-dir on smoke. Do not write supervisor.js or observation.js.",
+    "D3 — USAGE smoke line gains [--model M] [--permission WORKSPACE_EDIT|FULL_AUTO] [--trace-dir <dir> [--arm <label>]]. Header comment matches.",
+    "D4 — Focused tests follow testContract: capture actual fake CLI argv for supplied and omitted model/permission; verify digest chain and invoke actual report; assert default SMOKE arm and no traces when omitted. Distinct invalid permission/arm and SKIPPED fixtures prove no dispatch and existing reasons. Never infer option forwarding from PASS alone.",
+    "D5 — Living docs. state.md smoke sentence names --model/--permission/--trace-dir, default arm SMOKE, --arm requires --trace-dir, SKIPPED reasons unchanged. observation.md CLI sentence adds smoke --trace-dir. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: commandSmoke currently passes only maxAttempts 2 and timeoutMs."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -81,9 +81,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 packages/agent-tools/bin/exharness-agent.mjs; SMOKE_OPTIONS_FORWARDED. At commandSmoke preflight validate permission=options.permission??WORKSPACE_EDIT and reject arm without trace-dir before tool resolution or mkdtemp. After resolving tool and constructing task.id=smoke-${toolId}, create observation only when trace-dir supplied: createSupervisedObservation({tool,arm:options.arm??SMOKE,taskId:task.id,writer:createRunTraceWriter({dir})}). Pass model:options.model??null,permissionProfile:permission and conditional invocationObserver/eventSinks/tracer into existing runSupervisedTask call, preserving maxAttempts2/current timeout. Await observation.finalize(result) immediately after supervised result and before SKIPPED/result print; existing finally removes only smoke scratch, not caller trace dir. Add USAGE flags. Focused fake argv proves model/sandbox; readTraces/verifyTraceFile and actual report prove digest chain/default SMOKE arm, with corrupted trace rejected. No supervisor/observation source change.",
-    "S2 \u2014 Fail-closed fixtures [SMOKE_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults and SKIPPED reasons. Existing smoke behavior stays.",
-    "S3 \u2014 Living docs [SMOKE_OPTIONS_FORWARDED]: implement D5. state.md and observation.md name the flags, SMOKE arm, SKIPPED reasons. No Blackboard ids."
+    "S1 — packages/agent-tools/bin/exharness-agent.mjs; SMOKE_OPTIONS_FORWARDED. At commandSmoke preflight validate permission=options.permission??WORKSPACE_EDIT and reject arm without trace-dir before tool resolution or mkdtemp. After resolving tool and constructing task.id=smoke-${toolId}, create observation only when trace-dir supplied: createSupervisedObservation({tool,arm:options.arm??SMOKE,taskId:task.id,writer:createRunTraceWriter({dir})}). Pass model:options.model??null,permissionProfile:permission and conditional invocationObserver/eventSinks/tracer into existing runSupervisedTask call, preserving maxAttempts2/current timeout. Await observation.finalize(result) immediately after supervised result and before SKIPPED/result print; existing finally removes only smoke scratch, not caller trace dir. Add USAGE flags. Focused fake argv proves model/sandbox; readTraces/verifyTraceFile and actual report prove digest chain/default SMOKE arm, with corrupted trace rejected. No supervisor/observation source change.",
+    "S2 — Fail-closed fixtures [SMOKE_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults and SKIPPED reasons. Existing smoke behavior stays. Distinct tests invoke the actual smoke CLI: N1 unknown permission and arm without trace-dir exit64 with zero dispatch; N2 omitted flags capture workspace-write/no model, maxAttempts2, timeout600000, no trace writer. Separate NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT fixtures verify exact SKIPPED reasons and exits. P1 verifies full trace chain and actual report exit0, then a corrupt copy report exit1; P2 proves explicit arm.",
+    "S3 — Living docs [SMOKE_OPTIONS_FORWARDED]: implement D5. state.md and observation.md name the flags, SMOKE arm, SKIPPED reasons. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
@@ -405,8 +405,7 @@
         }
       ],
       "supportingPlanFields": [
-        "testContract",
-        "prototypeEvidence"
+        "invariantCoverage"
       ]
     },
     {
@@ -492,5 +491,6 @@
     "replay": "/workspace/research-plans/isolated-cli-prototype-check.mjs",
     "method": "Executed task-specific source copy changes only this CLI command; imports delivered modules, uses real Git and fake agent. Other commands are baseline. Worker still implements source and executes the bound focused tests after exact READY.",
     "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
