@@ -9,26 +9,34 @@
     "hash": "fcbbbfe7fd803de52b2a21d8027412abf1e136b86f9908392324ca4f859be129"
   },
   "scope": [
-    "agent-tools.operator.smoke-options"
+    "Future Worker: smoke-only model/permission forwarding and optional observation wiring in commandSmoke, smoke USAGE text, focused fixtures and declared Living docs. Existing run/report implementations remain unchanged."
   ],
   "outOfScope": [
     "Durable recovery on the ephemeral smoke repository.",
-    "Changing SKIPPED reasons for missing tools or pre-edit failures."
+    "Changing SKIPPED reasons for missing tools or pre-edit failures.",
+    "Adding a public commandSmoke export or modifying option parser, report, supervisor, observation or permission definitions; smoke-specific wiring only."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Do not change SKIPPED reasons for missing tools or pre-edit failures.",
-    "Unknown permission values fail closed before spawn. --arm requires --trace-dir. Omitted flags keep current smoke defaults.",
-    "No sandbox, SCM push, durable recovery on the ephemeral smoke repo, or live-value claim."
+    "This RESEARCH_SA artifact describes future Worker changes. Current research changes plan data only. Product files listed in sourceScope.write become editable only after independent READY and every direct dependency DONE.",
+    "Use the delivered APIs exactly as architectureDecisions; expected test files are future Worker outputs, not evidence claimed to exist at this research baseline.",
+    "No supervisor.js/observation.js edits, no smoke --recovery-dir, no SKIPPED-reason change.",
+    "Independent Jev owns readiness and Worker acceptance; no live-value, sandbox, SCM publication or product delivery is inferred from scratch prototypes."
   ],
   "invariants": [
-    "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
-    "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "Smoke forwards selected model and permission to the actual tool invocation.",
+    "Smoke trace-dir writes valid digest-chained invocation traces which actual report can read.",
+    "Invalid permission or arm without trace-dir exits64 before tool dispatch.",
+    "Omitted model, permission and traces preserve existing smoke defaults.",
+    "Missing tool and pre-edit tool failure retain delivered SKIPPED reasons and exit behavior.",
+    "Smoke scratch is disposed while the explicitly requested caller-owned trace directory is retained."
   ],
   "architectureDecisions": [
-    "Forward --model, --permission and --trace-dir from commandSmoke into runSupervisedTask, reusing run's observation construction when a trace directory is set.",
-    "Keep the ephemeral smoke repository and SKIPPED reasons. Do not add --recovery-dir on smoke."
+    "D1: In commandSmoke compute permission=options.permission??PermissionProfile.WORKSPACE_EDIT and validate against Object.values(PermissionProfile) before resolving/spawning tools or creating scratch. Forward model:options.model??null and permissionProfile:permission to the existing runSupervisedTask call.",
+    "D2: With trace-dir construct createSupervisedObservation using resolved tool, taskId smoke-${toolId}, arm options.arm??SMOKE and createRunTraceWriter({dir}). Forward invocationObserver/eventSinks/tracer and await finalize(result) before existing print/return branches. Without trace-dir create no observation/writer. Existing parsed arm is a trace label modifier; reject arm without trace-dir before effects.",
+    "D3: Leave runSupervisedTask defaults and smoke return branches intact: maxAttempts2, default timeout600000 with existing timeout override, WORKSPACE_EDIT/no model/no traces when omitted. Missing tool returns SKIPPED NOT_INSTALLED; failed-before-edit returns SKIPPED TOOL_FAILED_BEFORE_EDIT. Current exit codes stay unchanged.",
+    "D4: Add only smoke USAGE flags model/permission/trace-dir and optional arm label. Reuse existing report/readTraces/verifyTraceFile with no changes. Traces encode model/sandbox in argvRedacted, not invented top-level model/permission fields; compare against separately captured fake-agent argv.",
+    "D5: Fixtures invoke actual BIN smoke with delivered FIX_FIRST fake-agent through a capture launcher. Invalid-input cases prove zero capture-marker writes; omission proves unchanged argv and no writer. Trace control proves every recorded invocation has one valid trace and matching tool/task/arm, actual report exits0, copied corrupted trace report exits1.",
+    "D6: Existing finally removes only smoke scratch. Caller trace dir remains after successful, SKIPPED or failed result finalization. Future tests compare scratch disappearance against trace retention, not absence of a handle. Update only declared Living docs; no smoke recovery or QA authority changes."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -36,7 +44,8 @@
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/observation.js",
       "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-      "docs/blackboard/process/operator-cli-factor-parity.md"
+      "docs/blackboard/process/operator-cli-factor-parity.md",
+      "packages/agent-tools/src/run-trace.js"
     ],
     "expectedNew": [
       "packages/agent-tools/test/smoke-cli-options.test.js"
@@ -53,7 +62,8 @@
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
@@ -62,44 +72,109 @@
       "docs/living/system/agent-tools/observation.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin smoke flag mapping and --arm-requires-trace-dir in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --model, --permission and --trace-dir on smoke and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — bin/exharness-agent.mjs: edit only commandSmoke and smoke help/header text. Implement D1-D4 using delivered exports: preflight permission/arm, forward model and permission, conditional observation construction/forwarding, await finalize before existing SKIPPED/result branches. Leave current task, retries, timeout, env mapping and finally scratch disposal unchanged. No run/report/supervisor/observation edits. Finalize uses delivered observation API. Actual smoke JSON is smoke:ACCEPTED on successful result, not smoke:PASS. Trace fields use arm/taskId/tool and argvRedacted. Invalid permission and arm reject UsageError/64 before the fake launcher. Existing parsed model/permission/trace-dir/arm keys are reused; no parser extension or new permission semantics.",
+    "S2 — smoke-cli-options.test.js: actual BIN fixtures P1 argv forwarding, P2 valid trace/report/corrupt-copy/arm controls, literal N1 invalid-input and N2 omitted-default titles, P3 SKIPPED controls and P4 cleanup. Every dynamic test invokes commandSmoke through BIN; trace schema assertions use argvRedacted. Call-site assertion supplements unexposed maxAttempts/timeout values; it does not replace real child dispatch checks.",
+    "S3 — declared agent-tools Living state/observation: document smoke model/permission/trace-dir, SMOKE default label, optional arm modifier, omitted defaults and SKIPPED/cleanup compatibility. Run focused, agent-tools-regression, docs and repository checks with candidate-bound logs after exact READY. Research publishes only exact independent readiness, without product edits or fabricated verification."
   ],
   "acceptanceCriteria": [
     {
       "id": "SMOKE_OPTIONS_FORWARDED",
-      "statement": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+      "statement": "Smoke forwards selected model and permission to the actual tool invocation.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "Future focused test P1 actual model and permission forwarding: Actual BIN smoke --model model-x --permission FULL_AUTO with capture launcher shows --model model-x and Codex --sandbox danger-full-access; FIX_FIRST supplies genuine change. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "SMOKE_TRACE",
+      "statement": "Smoke trace-dir writes valid digest-chained invocation traces which actual report can read.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P2 actual trace and report: Use readTraces and verifyTraceFile; exact invocation count/tool/smoke task/SMOKE arm; compare argvRedacted against captured argv. Actual report exit0; corrupt owned copy report exit1. Separate explicit-arm control uses supplied label. Exact candidate/run/log bindings required."
       ]
     },
     {
       "id": "SMOKE_FAIL_CLOSED",
-      "statement": "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "statement": "Invalid permission or arm without trace-dir exits64 before tool dispatch.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "Future focused test BB-141 N1 Unknown --permission on smoke must fail before spawn: Run actual BIN smoke with invalid permission, then arm without trace-dir; UsageError/exit64 and capture marker absent in each. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "SMOKE_DEFAULTS",
+      "statement": "Omitted model, permission and traces preserve existing smoke defaults.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults: Actual omitted smoke invocation has workspace-write/no model and creates no trace artifact. Candidate call-site remains maxAttempts2 and existing positiveInteger timeout default600000; do not infer unexposed request fields from trace. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "SMOKE_SKIPPED",
+      "statement": "Missing tool and pre-edit tool failure retain delivered SKIPPED reasons and exit behavior.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P3 missing and pre-edit tool controls: Separate actual BIN controls use missing executable and fake pre-edit failure. Assert exact NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT JSON plus baseline exit codes. Exact candidate/run/log bindings required."
+      ]
+    },
+    {
+      "id": "SMOKE_CLEANUP",
+      "statement": "Smoke scratch is disposed while the explicitly requested caller-owned trace directory is retained.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Future focused test P4 scratch cleanup and trace ownership: Capture actual invocation cwd; after completion scratch no longer exists while requested trace files remain readable. No recovery directory is added. Exact candidate/run/log bindings required."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/smoke-cli-options.test.js"
+      "command": "node --test packages/agent-tools/test/smoke-cli-options.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
+          "subject": "commandSmoke",
+          "criterionId": "SMOKE_FAIL_CLOSED"
+        },
+        {
+          "title": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
+          "subject": "commandSmoke",
+          "criterionId": "SMOKE_DEFAULTS"
+        }
+      ],
+      "criterionIds": [
+        "SMOKE_OPTIONS_FORWARDED",
+        "SMOKE_TRACE",
+        "SMOKE_FAIL_CLOSED",
+        "SMOKE_DEFAULTS",
+        "SMOKE_SKIPPED",
+        "SMOKE_CLEANUP"
+      ],
+      "requiredTests": "All named positive controls and every exact negativeCaseBindings title; zero skips/cancellations. Record actual subject invocation and effects; generic regressions do not replace these assertions.",
+      "subjectInvocation": "Each named test launches the actual BIN smoke command, thereby invoking commandSmoke. Invalid permission must reject inside this command before runSupervisedTask is reached; no claim that the rejected path invokes the downstream supervisor."
     },
     {
       "id": "agent-tools-regression",
@@ -108,27 +183,78 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
+      "invariant": "Smoke forwards selected model and permission to the actual tool invocation.",
       "criterionIds": [
         "SMOKE_OPTIONS_FORWARDED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P1 actual model and permission forwarding",
+      "requiredObservations": "Actual BIN smoke --model model-x --permission FULL_AUTO with capture launcher shows --model model-x and Codex --sandbox danger-full-access; FIX_FIRST supplies genuine change."
     },
     {
-      "invariant": "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "invariant": "Smoke trace-dir writes valid digest-chained invocation traces which actual report can read.",
       "criterionIds": [
-        "SMOKE_FAIL_CLOSED"
-      ]
+        "SMOKE_TRACE"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P2 actual trace and report",
+      "requiredObservations": "Use readTraces and verifyTraceFile; exact invocation count/tool/smoke task/SMOKE arm; compare argvRedacted against captured argv. Actual report exit0; corrupt owned copy report exit1. Separate explicit-arm control uses supplied label."
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "Invalid permission or arm without trace-dir exits64 before tool dispatch.",
       "criterionIds": [
-        "SMOKE_OPTIONS_FORWARDED",
         "SMOKE_FAIL_CLOSED"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
+      "requiredObservations": "Run actual BIN smoke with invalid permission, then arm without trace-dir; UsageError/exit64 and capture marker absent in each."
+    },
+    {
+      "invariant": "Omitted model, permission and traces preserve existing smoke defaults.",
+      "criterionIds": [
+        "SMOKE_DEFAULTS"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
+      "requiredObservations": "Actual omitted smoke invocation has workspace-write/no model and creates no trace artifact. Candidate call-site remains maxAttempts2 and existing positiveInteger timeout default600000; do not infer unexposed request fields from trace."
+    },
+    {
+      "invariant": "Missing tool and pre-edit tool failure retain delivered SKIPPED reasons and exit behavior.",
+      "criterionIds": [
+        "SMOKE_SKIPPED"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P3 missing and pre-edit tool controls",
+      "requiredObservations": "Separate actual BIN controls use missing executable and fake pre-edit failure. Assert exact NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT JSON plus baseline exit codes."
+    },
+    {
+      "invariant": "Smoke scratch is disposed while the explicitly requested caller-owned trace directory is retained.",
+      "criterionIds": [
+        "SMOKE_CLEANUP"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "testTitle": "P4 scratch cleanup and trace ownership",
+      "requiredObservations": "Capture actual invocation cwd; after completion scratch no longer exists while requested trace files remain readable. No recovery directory is added."
     }
   ],
   "negativeVerificationCases": [
@@ -143,35 +269,422 @@
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/smoke-cli-options.test.js",
       "testTitle": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
-      "subjectSymbol": "runSupervisedTask"
+      "subjectSymbol": "commandSmoke"
     },
     {
       "id": "NEG_141_2",
       "negativeCaseIndex": 1,
-      "criterionId": "SMOKE_FAIL_CLOSED",
+      "criterionId": "SMOKE_DEFAULTS",
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/smoke-cli-options.test.js",
       "testTitle": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
-      "subjectSymbol": "runSupervisedTask"
+      "subjectSymbol": "commandSmoke"
     }
   ],
-  "researchGaps": [
-    "Ratify --arm requiring --trace-dir on smoke and whether smoke traces use arm label SMOKE, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agent-tools/observation.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that smoke accepts --model, --permission and --trace-dir, that --arm requires --trace-dir, that the default arm label is SMOKE, that omitted flags keep current smoke defaults, and that missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandSmoke passes only maxAttempts 2 and timeoutMs; SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths exist; commandRun already maps model/permission/trace-dir and --arm requires --trace-dir."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-097",
+      "BB-098"
+    ],
+    "workerStart": "Confirm commandSmoke still omits model/permission/trace-dir, SKIPPED reasons still print, and commandRun still maps those flags. BB-097 and BB-098 DONE.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "commandSmoke runSupervisedTask",
+        "SKIPPED NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT",
+        "commandRun observation construction",
+        "createRunTraceWriter digest chain"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "smoke --model/--permission/--trace-dir",
+        "default arm SMOKE",
+        "--arm requires --trace-dir"
+      ]
+    },
+    "contradiction": "None. Default arm is SMOKE rather than EXHARNESS_SUPERVISED so report can distinguish smoke traces from run traces. --arm requires --trace-dir, same as run."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE and BB-098 DONE.",
+    "completion": "focused + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No supervisor.js/observation.js edits, no smoke --recovery-dir, no SKIPPED-reason change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "smoke maxAttempts 2",
+      "SKIPPED NOT_INSTALLED",
+      "SKIPPED TOOL_FAILED_BEFORE_EDIT",
+      "ephemeral smoke repo"
+    ],
+    "add": [
+      "smoke --model/--permission/--trace-dir",
+      "default arm SMOKE",
+      "smoke-cli-options tests"
+    ],
+    "rollback": "Remove the three flags from commandSmoke and smoke USAGE; delete smoke-cli-options.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-141 objective + cli-factor-audit.json + delivered commandSmoke/commandRun observation",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097 + DONE BB-098",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "supervisor.js/observation.js edits, smoke recovery, SKIPPED-reason change."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Live smoke can pin the same run contract the operator already declares on run, including traces.",
-    "measurement": "Fake-CLI smoke fixture forwards FULL_AUTO, a model string and a trace directory; unknown permission fails before spawn.",
+    "expectedValue": "Smoke can pin the same model, permission and traces the operator already uses on run.",
+    "measurement": "Fake-CLI smoke fixture writes digest-chained traces with arm SMOKE; unknown permission fails before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-097 for smoke; BB-074 for end-to-end value"
+    "valueOwner": "BB-097 for smoke; BB-098 for traces"
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+      "criterionIds": [
+        "SMOKE_OPTIONS_FORWARDED",
+        "SMOKE_TRACE",
+        "SMOKE_CLEANUP"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+        "packages/agent-tools/src/observation.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "async function commandSmoke(options) {"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "      maxAttempts: 2,"
+        },
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "  async function finalize(result) {"
+        }
+      ],
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "criterionIds": [
+        "SMOKE_FAIL_CLOSED",
+        "SMOKE_DEFAULTS",
+        "SMOKE_SKIPPED"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "print({ smoke: \"SKIPPED\", tool: toolId, reason: \"TOOL_FAILED_BEFORE_EDIT\", result });"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "print({ smoke: \"SKIPPED\", tool: toolId, reason: \"NOT_INSTALLED\" });"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"smokePassesPermission\": false"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "async function commandSmoke(options) {"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariantCoverage"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "SMOKE_OPTIONS_FORWARDED",
+        "SMOKE_TRACE",
+        "SMOKE_FAIL_CLOSED",
+        "SMOKE_DEFAULTS",
+        "SMOKE_SKIPPED",
+        "SMOKE_CLEANUP"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md",
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/agent-tools/observation.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-factor-parity.md",
+          "match": "| Smoke model / permission / traces"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "smoke --tool"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "`createRunTraceWriter({ dir })` appends lines one at a time."
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "## Digest chain"
+        }
+      ],
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
+    }
+  ],
+  "testContract": [
+    {
+      "id": "SMOKE_OPTIONS_FORWARDED",
+      "testTitle": "P1 actual model and permission forwarding",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Actual BIN smoke --model model-x --permission FULL_AUTO with capture launcher shows --model model-x and Codex --sandbox danger-full-access; FIX_FIRST supplies genuine change."
+    },
+    {
+      "id": "SMOKE_TRACE",
+      "testTitle": "P2 actual trace and report",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Use readTraces and verifyTraceFile; exact invocation count/tool/smoke task/SMOKE arm; compare argvRedacted against captured argv. Actual report exit0; corrupt owned copy report exit1. Separate explicit-arm control uses supplied label."
+    },
+    {
+      "id": "SMOKE_FAIL_CLOSED",
+      "testTitle": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Run actual BIN smoke with invalid permission, then arm without trace-dir; UsageError/exit64 and capture marker absent in each."
+    },
+    {
+      "id": "SMOKE_DEFAULTS",
+      "testTitle": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Actual omitted smoke invocation has workspace-write/no model and creates no trace artifact. Candidate call-site remains maxAttempts2 and existing positiveInteger timeout default600000; do not infer unexposed request fields from trace."
+    },
+    {
+      "id": "SMOKE_SKIPPED",
+      "testTitle": "P3 missing and pre-edit tool controls",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Separate actual BIN controls use missing executable and fake pre-edit failure. Assert exact NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT JSON plus baseline exit codes."
+    },
+    {
+      "id": "SMOKE_CLEANUP",
+      "testTitle": "P4 scratch cleanup and trace ownership",
+      "subjectSymbol": "commandSmoke via actual BIN",
+      "observations": "Capture actual invocation cwd; after completion scratch no longer exists while requested trace files remain readable. No recovery directory is added."
+    }
+  ],
+  "prototypeEvidence": {
+    "result": {
+      "classification": "EXECUTED_SINGLE_TASK_RESEARCH_SOURCE_COPY_NOT_PRODUCT_DELIVERY",
+      "mode": "smoke",
+      "runtime": "v24.19.0",
+      "sourceSha256": "3e551fc9c063e1bdd086e6ebfd4abc2cd8fe57726bcc2e086e46a21762ed7f4c",
+      "observed": {
+        "status": "ACCEPTED",
+        "argv": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "danger-full-access",
+          "--model",
+          "isolated-model",
+          "-"
+        ],
+        "traceArm": "SMOKE",
+        "reportExit": 0,
+        "corruptReportExit": 1,
+        "invalidFlagsExit": 64,
+        "invalidDispatches": 0
+      },
+      "limits": "Scratch copy changes only this task CLI wiring; other CLI features remain baseline. Delivered modules/fake agent used; no tracked product edits or readiness authority."
+    },
+    "patch": "--- packages/agent-tools/bin/exharness-agent.mjs\n+++ scratch/single-task-smoke.mjs\n@@ -33,6 +33,6 @@\n   runProcess,\n   runSupervisedTask\n-} from \"../src/index.js\";\n-import { EvalUsageError, runAgentToolsEval } from \"../src/experiment/index.js\";\n+} from \"/workspace/research-delivery/packages/agent-tools/src/index.js\";\n+import { EvalUsageError, runAgentToolsEval } from \"/workspace/research-delivery/packages/agent-tools/src/experiment/index.js\";\n \n const USAGE = \"usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\\n       exharness-agent report <trace-dir>\\n       exharness-agent probe\\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]\";\n@@ -152,4 +152,7 @@\n \n async function commandSmoke(options) {\n+  const permissionProfile=options.permission ?? PermissionProfile.WORKSPACE_EDIT;\n+  if(!Object.values(PermissionProfile).includes(permissionProfile))throw new UsageError(\"invalid permission\");\n+  if(options.arm!==undefined && options[\"trace-dir\"]===undefined)throw new UsageError(\"--arm requires --trace-dir\");\n   const toolId = options.tool;\n   baseTool(toolId);\n@@ -162,6 +165,8 @@\n   try {\n     const { baseRevision } = await createSmokeRepository(root);\n+    const observation=options[\"trace-dir\"]===undefined?null:createSupervisedObservation({tool,arm:options.arm??\"SMOKE\",taskId:`smoke-${toolId}`,writer:createRunTraceWriter({dir:options[\"trace-dir\"]})});\n     const result = await runSupervisedTask({\n-      tool,\n+      tool,model:options.model??null,permissionProfile,\n+      ...(observation===null?{}:{invocationObserver:observation.invocationObserver,eventSinks:observation.eventSinks,tracer:observation.tracer}),\n       task: {\n         id: `smoke-${toolId}`,\n@@ -174,4 +179,5 @@\n       timeoutMs: positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000)\n     });\n+    if(observation!==null)await observation.finalize(result);\n     if (result.status === AgentTaskStatus.TOOL_UNAVAILABLE) {\n       print({ smoke: \"SKIPPED\", tool: toolId, reason: \"NOT_INSTALLED\", result });\n",
+    "replay": "/workspace/research-plans/isolated-cli-prototype-check.mjs",
+    "method": "Executed task-specific source copy changes only this CLI command; imports delivered modules, uses real Git and fake agent. Other commands are baseline. Worker still implements source and executes the bound focused tests after exact READY.",
+    "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "replayReproduction": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "d4dec96c99b8c03ea0d0450c61e07ff5ded145e213cb68f1facdb7bd171409b2",
+    "sourceEncoding": "gzip+base64 UTF-8",
+    "sourceGzipBase64": "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",
+    "command": "node <decoded-script.mjs> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "1851c5be587a870c7d5c696d6c3921f49fbacc69f9e1c866076a664c66031ded",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "patchedSourceSha256": "0d14e46736f57243b43a1776e56d85ca599a8a8a0c93475df92b9642d8c82779",
+      "modelForwarded": true,
+      "permissionForwarded": true,
+      "traceArm": "SMOKE",
+      "traceCount": 1,
+      "reportExit": 0,
+      "corruptReportExit": 1,
+      "invalidInputExit": 64,
+      "invalidDispatches": 0,
+      "omittedSandbox": "workspace-write",
+      "omittedModelArgument": false,
+      "ownedScratchRemoved": true,
+      "callerTracesRetained": true
+    }
+  },
+  "replayObservations": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "d4dec96c99b8c03ea0d0450c61e07ff5ded145e213cb68f1facdb7bd171409b2",
+    "command": "node <decoded-script.mjs> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "1851c5be587a870c7d5c696d6c3921f49fbacc69f9e1c866076a664c66031ded",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "patchedSourceSha256": "0d14e46736f57243b43a1776e56d85ca599a8a8a0c93475df92b9642d8c82779",
+      "modelForwarded": true,
+      "permissionForwarded": true,
+      "traceArm": "SMOKE",
+      "traceCount": 1,
+      "reportExit": 0,
+      "corruptReportExit": 1,
+      "invalidInputExit": 64,
+      "invalidDispatches": 0,
+      "omittedSandbox": "workspace-write",
+      "omittedModelArgument": false,
+      "ownedScratchRemoved": true,
+      "callerTracesRetained": true
+    },
+    "fixtureChecks": [
+      {
+        "id": "SMOKE_OPTIONS_FORWARDED",
+        "testTitle": "P1 actual model and permission forwarding",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Actual BIN smoke --model model-x --permission FULL_AUTO with capture launcher shows --model model-x and Codex --sandbox danger-full-access; FIX_FIRST supplies genuine change."
+      },
+      {
+        "id": "SMOKE_TRACE",
+        "testTitle": "P2 actual trace and report",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Use readTraces and verifyTraceFile; exact invocation count/tool/smoke task/SMOKE arm; compare argvRedacted against captured argv. Actual report exit0; corrupt owned copy report exit1. Separate explicit-arm control uses supplied label."
+      },
+      {
+        "id": "SMOKE_FAIL_CLOSED",
+        "testTitle": "BB-141 N1 Unknown --permission on smoke must fail before spawn",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Run actual BIN smoke with invalid permission, then arm without trace-dir; UsageError/exit64 and capture marker absent in each."
+      },
+      {
+        "id": "SMOKE_DEFAULTS",
+        "testTitle": "BB-141 N2 Omitted smoke model, permission and trace-dir must keep current defaults",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Actual omitted smoke invocation has workspace-write/no model and creates no trace artifact. Candidate call-site remains maxAttempts2 and existing positiveInteger timeout default600000; do not infer unexposed request fields from trace."
+      },
+      {
+        "id": "SMOKE_SKIPPED",
+        "testTitle": "P3 missing and pre-edit tool controls",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Separate actual BIN controls use missing executable and fake pre-edit failure. Assert exact NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT JSON plus baseline exit codes."
+      },
+      {
+        "id": "SMOKE_CLEANUP",
+        "testTitle": "P4 scratch cleanup and trace ownership",
+        "subjectSymbol": "commandSmoke via actual BIN",
+        "observations": "Capture actual invocation cwd; after completion scratch no longer exists while requested trace files remain readable. No recovery directory is added."
+      }
+    ]
   }
 }
