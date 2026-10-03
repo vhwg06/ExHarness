@@ -1,196 +1,201 @@
 {
- "kind": "BLACKBOARD_ARTIFACT",
- "version": 1,
- "artifactType": "IMPLEMENTATION_RESULT",
- "artifactId": "BB-120-evidence",
- "plan": {
-  "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
-  "hash": "c22c4b1388185fbff7c97555983e1dd4efb88ebf8575d723fdbec18e2c0939a1"
- },
- "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
- "baselineSha": "cff5ef95fd69f8eef05ac3104c5a845ab76d550a",
- "candidateTree": "9fbcce898bce8db24050c4c3c2c3943b6d5bbc0b",
- "verificationRuns": [
-  {
-   "id": "en1-allowlist",
-   "command": "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en1-allowlist.txt",
-   "logHash": "6b543c363d9326e81848715d6f0449c1f926d3924dddb951c9d997f6714a4a97"
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-120-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
+    "hash": "c22c4b1388185fbff7c97555983e1dd4efb88ebf8575d723fdbec18e2c0939a1"
   },
-  {
-   "id": "en2-secrets",
-   "command": "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
-   "logHash": "a908d32f70b9042485f9884304d4f1cb966c238ca545966368877a8064bab45d"
-  },
-  {
-   "id": "en4-path-home",
-   "command": "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en4-path-home.txt",
-   "logHash": "4feba12031f6e8284f164dc3c481414415196e57a067b5112f551b5086bb469e"
-  },
-  {
-   "id": "en5-auth",
-   "command": "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en5-auth.txt",
-   "logHash": "850ed4cb424eeb164e19416be4ddac0c4a12a30c58dc5adcb2a68c0044fb15ba"
-  },
-  {
-   "id": "en6-bin",
-   "command": "node --test --test-name-pattern=\"^EN6 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en6-bin.txt",
-   "logHash": "f90f279f6240bd0f964a17271d61447a47fef933f66f2d24208109eac26866bd"
-  },
-  {
-   "id": "en7-docs",
-   "command": "node --test --test-name-pattern=\"^EN7 \" packages/agent-tools/test/child-env.test.js",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/en7-docs.txt",
-   "logHash": "f5ad4ecdfe7a94b7e663552fee398d36c792ab6ce53ae189891cd85249859c26"
-  },
-  {
-   "id": "agent-tools",
-   "command": "npm run test:agent-tools",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/agent-tools.txt",
-   "logHash": "c069b6214d2432662ac2c0ee987a74ccdeb630bfe3c9b231c51204f0ccbeafe0"
-  },
-  {
-   "id": "docs",
-   "command": "npm run verify:current-docs",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/current-docs.txt",
-   "logHash": "a59039f93d03794969637cab4888a91178d0199d07429733c96f678326b78761"
-  },
-  {
-   "id": "repository",
-   "command": "npm test",
-   "status": "PASSED",
-   "exitCode": 0,
-   "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-   "logRef": "docs/blackboard/evidence/BB-120/repository.txt",
-   "logHash": "a3603a731ef2184e877241c627e7d5667ec807a808d6d793b52fcbba3e2a1388"
-  }
- ],
- "claims": [
-  {
-   "id": "EN1",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en1-allowlist.txt"
-   ]
-  },
-  {
-   "id": "EN2",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en2-secrets.txt"
-   ],
-   "negativeCases": [
+  "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+  "baselineSha": "71c66bce780d4b712e4a36d5832893bc21de45be",
+  "candidateTree": "1d7d7b6fe57614bb5dd06e16ca3bc4565a647cb9",
+  "verificationRuns": [
     {
-     "id": "NC-EN-planted",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
-     "bodyHash": "f1833393f6a4a59c2124d67b678eb95f3c0ecf451b284b068d185f9d5c18ea04"
+      "id": "en1-allowlist",
+      "command": "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en1-allowlist.txt",
+      "logHash": "ca1dd2ef6f4a0d5eb153c2c796b3b6d7c944741c9a4e3143b65bef34cb5f1112"
     },
     {
-     "id": "NC-EN-aws",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
-     "bodyHash": "77ab065fceb95c47a5e69abb60eb6d795aa60f1a8a17375b7b121a33da80e4bc"
+      "id": "en2-secrets",
+      "command": "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+      "logHash": "36353a9260e6a7408e86b4d0cb4f23d744b18197eb139db67fc988bbdb2152ab"
     },
     {
-     "id": "NC-EN-overlay",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
-     "bodyHash": "4b022f0eb5800f680f60849d01673fd564d661e3f6fd258cf429646a39b28ca7"
-    }
-   ]
-  },
-  {
-   "id": "EN3",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en2-secrets.txt"
-   ],
-   "negativeCases": [
+      "id": "en4-path-home",
+      "command": "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en4-path-home.txt",
+      "logHash": "4ddc47a68abe752e1747dc4045fdb7735ac9cd0e3906f63976b9cfc4e65495bb"
+    },
     {
-     "id": "NC-EN-nodetest",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
-     "bodyHash": "51df3978a9de37a47da923418e7059f139f49a686b64c335c650d7dcfa1d40b0"
-    }
-   ]
-  },
-  {
-   "id": "EN4",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en4-path-home.txt"
-   ]
-  },
-  {
-   "id": "EN5",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en5-auth.txt"
-   ],
-   "negativeCases": [
+      "id": "en5-auth",
+      "command": "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en5-auth.txt",
+      "logHash": "a5ab32bac45973236aca166f872acbdaec8fdd96ad1461875630aa39aa81c066"
+    },
     {
-     "id": "NC-EN-auth",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en5-auth.txt",
-     "bodyHash": "269806e1ed265b786aaa62032ee55f9bf2473d6bf542325d03495c65fc0085ad"
-    }
-   ]
-  },
-  {
-   "id": "EN6",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en6-bin.txt",
-    "docs/blackboard/evidence/BB-120/agent-tools.txt"
-   ],
-   "negativeCases": [
+      "id": "en6-bin",
+      "command": "node --test --test-name-pattern=\"^EN6 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en6-bin.txt",
+      "logHash": "c61ba32ac41c734ca119a18fc432403f89f445f2749ff0bc6d2c45b3f2172f56"
+    },
     {
-     "id": "NC-EN-bin",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en6-bin.txt",
-     "bodyHash": "500c48f1028d561a0920958b62f1f5bd8c010e886e984c89179c1a211d6abd80"
-    }
-   ]
-  },
-  {
-   "id": "EN7",
-   "evidenceRefs": [
-    "docs/blackboard/evidence/BB-120/en7-docs.txt",
-    "docs/living/system/agent-tools/state.md",
-    "docs/blackboard/evidence/BB-120/current-docs.txt",
-    "docs/blackboard/evidence/BB-120/repository.txt"
-   ],
-   "negativeCases": [
+      "id": "en7-docs",
+      "command": "node --test --test-name-pattern=\"^EN7 \" packages/agent-tools/test/child-env.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/en7-docs.txt",
+      "logHash": "682b154c2af78c3900e0651dc3292bd10d3c803e4af4eab8e876df49046c832c"
+    },
     {
-     "id": "NC-EN-scope",
-     "testRef": "packages/agent-tools/test/child-env.test.js",
-     "logRef": "docs/blackboard/evidence/BB-120/en7-docs.txt",
-     "bodyHash": "4346149f4b8b0dbdab68bc19a0982ab8b1a2ddcc53e3ba587b8a19c37169330b"
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/agent-tools.txt",
+      "logHash": "b4bbb8a884ce2fdbcfdd0e521abc157e2f6d27d8a4f84e44c2428ca9fef1756f"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/docs.txt",
+      "logHash": "0ffd218ea52f1f7405c86a4e684a187008813c614138ee888913fe2503b0180f"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+      "logRef": "docs/blackboard/evidence/BB-120/repository.txt",
+      "logHash": "440058d6ecd0ac3476eab0e5dc3d0876645fed81dba4074430ee38227d7e37aa"
     }
-   ]
-  }
- ]
+  ],
+  "claims": [
+    {
+      "id": "EN1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en1-allowlist.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "EN2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EN-planted",
+          "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "f1833393f6a4a59c2124d67b678eb95f3c0ecf451b284b068d185f9d5c18ea04"
+        },
+        {
+          "id": "NC-EN-aws",
+          "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "77ab065fceb95c47a5e69abb60eb6d795aa60f1a8a17375b7b121a33da80e4bc"
+        },
+        {
+          "id": "NC-EN-overlay",
+          "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "4b022f0eb5800f680f60849d01673fd564d661e3f6fd258cf429646a39b28ca7"
+        }
+      ]
+    },
+    {
+      "id": "EN3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EN-nodetest",
+          "logRef": "docs/blackboard/evidence/BB-120/en2-secrets.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "51df3978a9de37a47da923418e7059f139f49a686b64c335c650d7dcfa1d40b0"
+        }
+      ]
+    },
+    {
+      "id": "EN4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en4-path-home.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "EN5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en5-auth.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EN-auth",
+          "logRef": "docs/blackboard/evidence/BB-120/en5-auth.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "269806e1ed265b786aaa62032ee55f9bf2473d6bf542325d03495c65fc0085ad"
+        }
+      ]
+    },
+    {
+      "id": "EN6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en6-bin.txt",
+        "docs/blackboard/evidence/BB-120/agent-tools.txt",
+        "docs/blackboard/evidence/BB-120/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EN-bin",
+          "logRef": "docs/blackboard/evidence/BB-120/en6-bin.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "500c48f1028d561a0920958b62f1f5bd8c010e886e984c89179c1a211d6abd80"
+        }
+      ]
+    },
+    {
+      "id": "EN7",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-120/en7-docs.txt",
+        "docs/blackboard/evidence/BB-120/docs.txt",
+        "docs/blackboard/evidence/BB-120/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EN-scope",
+          "logRef": "docs/blackboard/evidence/BB-120/en7-docs.txt",
+          "testRef": "packages/agent-tools/test/child-env.test.js",
+          "bodyHash": "4346149f4b8b0dbdab68bc19a0982ab8b1a2ddcc53e3ba587b8a19c37169330b"
+        }
+      ]
+    }
+  ]
 }
