@@ -13,26 +13,35 @@
     "local-delivery.repository-readiness"
   ],
   "outOfScope": [
-    "BB-067 sandbox/network/tool capability enforcement",
-    "BB-073 distribution and installer support",
-    "Production deployment, arbitrary stack inference, credential provisioning and a new lifecycle scheduler"
+    "BB-067 sandbox/network/tool enforcement; BB-073 distribution/installer support.",
+    "Container execution, external databases, inferred builds/installation, arbitrary stacks, credential provisioning and production deployment.",
+    "Windows/macOS/ARM, host/supervisor failure, daemon escape and durable restart scheduling.",
+    "BB-132/133 journeys/API compatibility and existing Product QA acceptance authority."
   ],
   "constraints": [
-    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
-    "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
-    "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
-    "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
-    "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
+    "Preserve existing generic command/injected verifier authority; no survey-based score, effort or capability claim. Product/runtime and development Blackboard remain distinct.",
+    "Public OSS requires >=1000 stars at lookup, pinned relevant implementation/tests and live seam proof before adoption. Neither container library is adopted.",
+    "BB-104 is DONE; BB-130 env API is PLANNED_CONTRACT pending DONE. Initial support is explicit Node 24/Linux x64.",
+    "Graph/plan use the same source-complete research baseline; objective sources and anchors resolve. Preserve later additive index exports."
   ],
   "invariants": [
-    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
-    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
-    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+    "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness. Acceptance coverage: PREVIEW_IDENTITY, SEEDED_RESET, RECEIPT_FAILURES.",
+    "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance. Acceptance coverage: QA_COMPOSITION, PREVIEW_IDENTITY.",
+    "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers. Acceptance coverage: RESOURCE_LIFECYCLE, SEEDED_RESET.",
+    "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT. Acceptance coverage: PROFILE_ENV, RECEIPT_FAILURES, RESOURCE_LIFECYCLE."
   ],
   "architectureDecisions": [
-    "Compare explicit operator-declared commands with a pinned Dev Container CLI adapter; discovery reports requirements and does not execute arbitrary discovered lifecycle hooks.",
-    "Use a narrow local trusted web/service profile first. Compare Testcontainers for owned disposable dependencies; pin images and seeded data. A container is not automatically a sandbox.",
-    "Keep preview receipt and actual readiness observation separate from BB-054 DeploymentRelease/QualityAcceptance. Bind the product identities through existing contracts when that profile is composed."
+    "AD1: Select LOCAL_PREVIEW_V1/NODE_HTTP_V1: Linux x64, installed Node 24, self-contained tracked Node-standard-library JS entrypoints, explicit argv/env/seed/health, loopback only. Three synthetic separate repositories passed. No inferred install/build, downloaded runtime or Docker dependency; reject unsupported profiles before effects.",
+    "AD2: Preserve optional caller-owned slice.preview in validateDeliverSlice. runQaOnFreshCheckout passes it to runSliceQa after exact acceptedSha checkout; start before independent checks, retain through QA, dispose before workspace finally. Return setup receipt separately; no-preview shape/behavior remains compatible.",
+    "AD3: Export startLocalPreview; implement local-preview.js and local-preview-supervisor.js. IPC lease supervisor creates shell:false Node services in individual process groups, handles errors/close/parent disconnect, waits for cleanup and removes only generated data. Never kill-by-port or adopt persisted PIDs.",
+    "AD4: Independently verify clean Git commit/tree, canonical profile/config/seed/entrypoint digests and actual runtime binary/version before start, after readiness, observe/reset and after QA. Candidate HTTP responses corroborate run nonce/role only; they cannot supply authoritative Git/runtime/evaluator identity.",
+    "AD5: Opt-in Node protocol reports an owned LISTENING endpoint via IPC after OS allocation and answers protected HTTP health with status 200 plus run token/serviceId. Probe all declared services with bounded response/time limits and no redirects. Unsupported apps are reported rather than patched implicitly.",
+    "AD6: Seed generated data outside checkout. reset disposes the old generation, revalidates source/seed identities and returns a new handle/receipt/token; stale handles fail. Mutation followed by reset must reproduce seed-only data and clean Git state.",
+    "AD7: Use literal minimal service/supervisor env, no process.env spread or NODE_OPTIONS; reject credential-bearing profile values/internal overrides. BB-130 PLANNED_CONTRACT supplies explicit verifier env overlay with NODE_TEST_CONTEXT stripped. QA receives only a protected PREVIEW_RECEIPT_PATH; receipt omits raw env/token.",
+    "AD8: Use OBSERVED_READY/FAILED/UNRESOLVED/DISPOSED and typed causes; retain first specific cause, clean partial starts, report CLEANUP_INCOMPLETE on uncertain shutdown. Missing runtime/unsupported profile/timeout/interrupt do not grant readiness or QA acceptance.",
+    "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. The historical probe lacked Docker; current replay observed Docker available. No container setup comparison was executed, so container setup time remains unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim.",
+    "AD10: The explicit service wire protocol is localPreviewContract.wireProtocol. Node fork uses operator runtime execPath; strict IPC LISTENING identifies the OS-assigned loopback port and health echoes the protected token/bindings. Seed copy is outside checkout. No shell/runtime wrapper or project-specific guessed health schema is introduced."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -41,14 +50,20 @@
       "packages/agentic-system/src/local-command-verifier.js",
       "docs/blackboard/process/delivery-capability-discovery.md",
       "docs/blackboard/process/delivery-capability-sources.json",
-      "docs/blackboard/evidence/BB-131/discovery.json"
+      "docs/blackboard/evidence/BB-131/discovery.json",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/test/deliver-slice.test.js"
     ],
     "expectedNew": [
       "packages/agent-tools/src/local-preview.js",
+      "packages/agent-tools/src/local-preview-supervisor.js",
       "packages/agent-tools/test/local-preview.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/local-preview.test.js"
+      "packages/agent-tools/test/local-preview.test.js",
+      "packages/agent-tools/test/deliver-slice.test.js"
     ]
   },
   "sourceScope": {
@@ -59,12 +74,22 @@
       "docs/blackboard/process/delivery-capability-discovery.md",
       "docs/blackboard/process/delivery-capability-sources.json",
       "docs/blackboard/evidence/BB-131/discovery.json",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/test/deliver-slice.test.js",
       "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**"
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/src/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-130.json"
     ],
     "write": [
       "packages/agent-tools/src/local-preview.js",
+      "packages/agent-tools/src/local-preview-supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/index.js",
       "packages/agent-tools/test/local-preview.test.js",
+      "packages/agent-tools/test/deliver-slice.test.js",
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agentic-application/capabilities.md"
     ],
@@ -77,36 +102,95 @@
     ]
   },
   "implementationSlices": [
-    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
-    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
-    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes. The seed format is JSON array/object <=1MiB; service-specific owned data directory receives seed.json with exact protected bytes. No generic database seeding inference.",
+    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics. Inject reserved PREVIEW_CANDIDATE_SHA/TREE, PREVIEW_CONFIG_DIGEST/SEED_DIGEST as checked public identity inputs so the service can answer required health fields. Validate inherited env is absent and all internal overrides rejected. Node DATA_DIR is each service own generation directory; reset copies protected seed.json only after reaping prior groups. The sole new local-preview.js is both public API and private lease supervisor: fork fileURLToPath(import.meta.url) with literal --preview-supervisor; enter child mode only when executed directly with that exact flag. Parent sends one validated START packet; supervisor owns service forks/groups and replies over its own ChildProcess IPC. Schema-check IPC <=64KiB, max32 services; reject unknown messages, duplicate LISTENING, wrong sender and stale token. RESET is serialized, awaits old groups/data disposal, then creates a new generation and returns a new handle; old handle cannot observe/reset. DISPOSE is serialized/idempotent. Parent disconnect aborts startup and triggers the same owned teardown; response correlates owner/generation/request id. No additional undeclared supervisor source file or persisted PID adoption.",
+    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
+    "S4 — local-preview.test.js and deliver-slice.test.js: implement all exact negativeCaseBindings plus three fixed Node/loopback positive profiles using localPreviewContract.api and wireProtocol. Each lifecycle test invokes prepare/reset/dispose through actual owner handle; assert exact receipt bindings/seed generation and foreign resource preservation. Integration uses existing fresh QA checkout and nested finally, no new acceptance authority. Update declared Living docs. This DRAFT already contains final API/schema/file scope, hash-bound executable prototype and labelled results; independent readiness judges this research output, while focused/regression/docs runtime logs are future Worker outputs after READY and dependencies DONE."
   ],
   "acceptanceCriteria": [
     {
       "id": "PREVIEW_IDENTITY",
-      "statement": "A declared supported profile starts from the exact candidate/config/input digests and records owned endpoints, service image/version identities, readiness observations and the reset dataset; process creation alone is not READY.",
+      "statement": "OBSERVED_READY requires all owned services healthy with matching independent candidate/tree/config/runtime/evaluator identities.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Three fresh committed fixtures; compare expected/observed digests, owned IPC endpoint and HTTP nonce/role; reject drift and wrong identity."
       ]
     },
     {
       "id": "RESOURCE_LIFECYCLE",
-      "statement": "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
+      "statement": "Failure, interruption, reset and dispose clean only owned groups/data and preserve foreign resources.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Timeout, foreign port, missing second service, AbortSignal and controller SIGKILL: observe owned closure/data removal and foreign survivor. Repeated dispose is idempotent; stale/foreign handles cannot clean resources."
+      ]
+    },
+    {
+      "id": "SEEDED_RESET",
+      "statement": "Reset invalidates the old generation and recreates the exact seed without candidate-tree mutation.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Mutate JSON records, reset/restart, observe seed-only state/new generation and clean Git. Wrong seed digest fails before reset effects."
+      ]
+    },
+    {
+      "id": "PROFILE_ENV",
+      "statement": "Unsupported profile/runtime/host fails closed; only explicit commands run with no inherited secrets or revived test channel.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Planted-secret boolean child probe, safe overlay, NODE_TEST_CONTEXT absence; unsupported descriptor does not execute hooks. Missing runtime is typed UNRESOLVED."
+      ]
+    },
+    {
+      "id": "RECEIPT_FAILURES",
+      "statement": "Versioned subject-bound receipts carry typed outcomes and bounded redacted diagnostics; uncertain cleanup is explicit.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Assert schema/digests/timestamps and first-cause error, body/log limits, truncation, secret exclusion and injected shutdown timeout -> CLEANUP_INCOMPLETE."
+      ]
+    },
+    {
+      "id": "QA_COMPOSITION",
+      "statement": "Optional preview runs in exact fresh QA checkout through independent checks and is disposed before checkout teardown; it cannot grant acceptance.",
+      "verificationIds": [
+        "composition"
+      ],
+      "evidenceRequired": [
+        "New composition tests directly call runSliceQa for good/failing checks and failed/stale preview. New outer integration calls runDeliverSlice with optional preview and asserts exact fresh candidate checkout, immutable receipt env, failed QA stays failed, and preview disposal precedes QA worktree disposal. No-preview remains unchanged."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/local-preview.test.js"
+      "command": "node --test packages/agent-tools/test/local-preview.test.js",
+      "negativeCases": "Execute distinct bound tests NEG_131_1, NEG_131_2, NEG_131_3, NEG_131_4, NEG_131_5, NEG_131_6, NEG_131_7, NEG_131_8, NEG_131_9, NEG_131_10. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE",
+        "SEEDED_RESET",
+        "PROFILE_ENV",
+        "RECEIPT_FAILURES"
+      ],
+      "requiredTests": "All exact N1-N10 plus complete two-service positive; pin actual Node version/binary and commit/tree, assert exact seed bytes/health bindings, reset stale handle, supervisor disconnect and surviving foreign-port sentinel. Digest/assertion facts come from actual startLocalPreview."
+    },
+    {
+      "id": "composition",
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+      "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only.",
+      "negativeCases": "Execute distinct bound tests NEG_131_11, NEG_131_12. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "criterionIds": [
+        "QA_COMPOSITION"
+      ]
     },
     {
       "id": "agent-tools-regression",
@@ -123,39 +207,78 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "invariant": "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness. Acceptance coverage: PREVIEW_IDENTITY, SEEDED_RESET, RECEIPT_FAILURES.",
       "criterionIds": [
         "PREVIEW_IDENTITY",
-        "RESOURCE_LIFECYCLE"
-      ]
+        "SEEDED_RESET",
+        "RECEIPT_FAILURES"
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Positive fixture starts exact candidate, validates each LISTENING sender/token/port and health candidate/tree/config/seed. Wrong or absent identity never OBSERVED_READY; compare reset generation and new exact seed receipt."
     },
     {
-      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "invariant": "Preview readiness is setup evidence. Existing independent QA/Product QA alone own criterion acceptance. Acceptance coverage: QA_COMPOSITION, PREVIEW_IDENTITY.",
       "criterionIds": [
-        "PREVIEW_IDENTITY",
-        "RESOURCE_LIFECYCLE"
-      ]
+        "QA_COMPOSITION",
+        "PREVIEW_IDENTITY"
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Inject prepareLocalPreview into actual fresh-QA path: QA checks run only after matched readiness; receipt is setup evidence. Existing QA/publisher still require their independent criteria/runtime proofs."
     },
     {
-      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "invariant": "Dispose/reset only resources created by this live owner; never adopt foreign processes, ports, paths or containers. Acceptance coverage: RESOURCE_LIFECYCLE, SEEDED_RESET.",
       "criterionIds": [
-        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE",
+        "SEEDED_RESET"
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Occupied foreign port/server survives failed prepare. Owner reset/dispose/interrupted-start terminate only owned live groups and remove owned data; never kill persisted PID or foreign resource."
+    },
+    {
+      "invariant": "Failures and uncertain cleanup stay explicit; redact/bound diagnostics, exclude parent secrets and strip NODE_TEST_CONTEXT. Acceptance coverage: PROFILE_ENV, RECEIPT_FAILURES, RESOURCE_LIFECYCLE.",
+      "criterionIds": [
+        "PROFILE_ENV",
+        "RECEIPT_FAILURES",
         "RESOURCE_LIFECYCLE"
-      ]
+      ],
+      "verificationIds": [
+        "focused",
+        "delivery-regression"
+      ],
+      "requiredObservations": "Missing runtime/unsupported descriptor/config drift/timeout return declared typed outcomes with bounded diagnostics. Filter child env and strip test channel. Simulated uncertain cleanup remains UNRESOLVED."
     }
   ],
   "negativeVerificationCases": [
-    "A listening process serving the wrong candidate cannot produce a READY preview receipt",
-    "Readiness timeout or port conflict cannot delete an unrelated process or service"
+    "Wrong candidate or health identity rejected",
+    "Foreign occupied port preserved",
+    "Readiness timeout cleans owned services",
+    "Missing service cleans partial start",
+    "Interrupt or controller death preserves foreign server",
+    "Config runtime evaluator drift rejects readiness",
+    "Wrong seed or stale generation rejects reset",
+    "Unsupported profile or runtime executes no hooks",
+    "Parent secret and test channel excluded",
+    "Cleanup timeout stays unresolved",
+    "Preview cannot override failed QA",
+    "Failed setup or stale receipt blocks acceptance"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_131_1",
       "negativeCaseIndex": 0,
-      "criterionId": "RESOURCE_LIFECYCLE",
+      "criterionId": "PREVIEW_IDENTITY",
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/local-preview.test.js",
-      "testTitle": "BB-131 N1 A listening process serving the wrong candidate cannot produce a READY preview receipt",
+      "testTitle": "BB-131 N1 Wrong candidate or health identity rejected",
       "subjectSymbol": "startLocalPreview"
     },
     {
@@ -164,16 +287,102 @@
       "criterionId": "RESOURCE_LIFECYCLE",
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/local-preview.test.js",
-      "testTitle": "BB-131 N2 Readiness timeout or port conflict cannot delete an unrelated process or service",
+      "testTitle": "BB-131 N2 Foreign occupied port preserved",
       "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "RESOURCE_LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N3 Readiness timeout cleans owned services",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "RESOURCE_LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N4 Missing service cleans partial start",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "RESOURCE_LIFECYCLE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N5 Interrupt or controller death preserves foreign server",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "PREVIEW_IDENTITY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N6 Config runtime evaluator drift rejects readiness",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "SEEDED_RESET",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N7 Wrong seed or stale generation rejects reset",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_8",
+      "negativeCaseIndex": 7,
+      "criterionId": "PROFILE_ENV",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N8 Unsupported profile or runtime executes no hooks",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_9",
+      "negativeCaseIndex": 8,
+      "criterionId": "PROFILE_ENV",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N9 Parent secret and test channel excluded",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_10",
+      "negativeCaseIndex": 9,
+      "criterionId": "RECEIPT_FAILURES",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-preview.test.js",
+      "testTitle": "BB-131 N10 Cleanup timeout stays unresolved",
+      "subjectSymbol": "startLocalPreview"
+    },
+    {
+      "id": "NEG_131_11",
+      "negativeCaseIndex": 10,
+      "criterionId": "QA_COMPOSITION",
+      "verificationId": "composition",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "BB-131 N11 Preview cannot override failed QA",
+      "subjectSymbol": "runSliceQa"
+    },
+    {
+      "id": "NEG_131_12",
+      "negativeCaseIndex": 11,
+      "criterionId": "QA_COMPOSITION",
+      "verificationId": "composition",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "BB-131 N12 Failed setup or stale receipt blocks acceptance",
+      "subjectSymbol": "runSliceQa"
     }
   ],
-  "researchGaps": [
-    "Ratify the initial web/service stack, supported hosts and explicit command/env contract with three fixture repositories; compare manual profile versus Dev Container CLI setup cost.",
-    "Prototype child-process/container ownership, readiness identity, reset and crash cleanup, including Docker-unavailable and non-container branches.",
-    "Inspect pinned Dev Container CLI/Testcontainers lifecycle source and tests; finalize exact receipt/API, subject-invoking bindings and objective coverage before Jev."
-  ],
-  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
@@ -183,10 +392,476 @@
     "statement": "Describe the delivered profile, exact identity binding, supported environment and limitations after Worker delivery, without roadmap status or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Enable an observable running candidate and repeatable service state without a session-specific manual setup recipe.",
-    "measurement": "Use three declared web/service fixtures from fresh checkouts; record setup interventions and time-to-observable-preview. Seed wrong-release, missing-service, occupied-port and partial-start cases. Reproduce all owned cleanup and retain foreign resources.",
-    "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
-    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
+    "expectedValue": "Candidate-bound running preview and repeatable service state from an explicit supported profile.",
+    "measurement": "Three synthetic Node fixture runs/negatives in researchBrief; future Worker tests cover final strict contract. Broader quality/effort belongs to BB-074/099.",
+    "evidenceClass": "EXECUTED_LOCAL_RESEARCH_FEASIBILITY_NOT_IMPLEMENTATION_OR_VALUE",
+    "goNoGo": "Narrow NODE_HTTP_V1 research GO based on bounded executed synthetic fixtures. DRAFT until fresh exact Jev SATISFIED. Worker additionally requires BB-130 DONE. Containers and framework inference excluded; no measured effort/speedup claim."
+  },
+  "researchBrief": {
+    "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "checkedAt": "2026-10-01T13:10:01.691549+00:00",
+    "baseSha": "7ccaaa7ca573f9a334397c1f5ae1c81b83419fb4",
+    "baselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+    "dependencies": [
+      {
+        "id": "BB-104",
+        "status": "DONE",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-104.delivered-feature.json"
+      },
+      {
+        "id": "BB-130",
+        "status": "PLANNED",
+        "inputClassification": "PLANNED_CONTRACT",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-130.json",
+        "workerGate": "Must be DONE and exact delivered env API compatible before Worker executes. Research can obtain READY against the explicitly planned contract; drift requires rejudgment."
+      }
+    ],
+    "selection": "NARROW_PROFILE_GO: three synthetic separate repositories using one opt-in Node protocol. Runtime/lifecycle feasibility only; no real-consumer/framework/container acceptance.",
+    "comparison": {
+      "explicitCommands": "Three fresh synthetic checkouts passed; setupMs starts after authoring, not human effort.",
+      "devContainer": "NOT_RUN, Docker absent: host initializeCommand is separate from skip-post-create; tests explicitly remove returned containerId.",
+      "testcontainers": "NOT_RUN, no runtime: inspect session reaper and health predicates; reaper may be disabled/reused.",
+      "value": "Container timings/interventions unknown. No speedup/provider-cost/quality/effort claim."
+    },
+    "executedResult": {
+      "node": "v24.20.0",
+      "platform": "linux",
+      "arch": "x64",
+      "dockerUnavailable": true,
+      "manifestDropsPreview": true,
+      "results": [
+        {
+          "name": "static-web fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 244,
+          "services": 1,
+          "candidateSha": "511bd6910a7ea77b88b6b2c4256e25c0c9d697a9",
+          "candidateTree": "af7646657ffd7b69c47f76756a37099895debd52",
+          "interventions": 0
+        },
+        {
+          "name": "json-api fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 201,
+          "services": 1,
+          "candidateSha": "86220545023b343e50548535592233ead4388b51",
+          "candidateTree": "7a4cea34e309b093f614c6dd042e26aa718d8bba",
+          "interventions": 0
+        },
+        {
+          "name": "web-service fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 281,
+          "services": 2,
+          "candidateSha": "1f5c0b23376fd33039b51836d7180a0ab236e8b8",
+          "candidateTree": "bd79a3063723108b0aa1f24e0e861236d2fb6d7d",
+          "interventions": 0
+        },
+        {
+          "name": "wrong candidate response",
+          "status": "PASS"
+        },
+        {
+          "name": "readiness timeout",
+          "status": "PASS"
+        },
+        {
+          "name": "interrupted start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "missing runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "missing service and partial start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "config drift",
+          "status": "PASS"
+        },
+        {
+          "name": "foreign occupied port survives",
+          "status": "PASS"
+        },
+        {
+          "name": "controller SIGKILL reaps owned group and preserves foreign server",
+          "status": "PASS"
+        },
+        {
+          "name": "container descriptor rejected without running hooks",
+          "status": "PASS"
+        }
+      ],
+      "limits": [
+        "Scratch prototype, not delivered implementation",
+        "Crash test covers controller death with live supervisor; simultaneous supervisor death/host crash needs external reaper",
+        "No container live/setup comparison or third-party stack trial",
+        "Fixture generation/authoring is excluded from setupMs and interventions; no human-effort claim"
+      ]
+    },
+    "prototypeLimitations": [
+      "Worker must add final strict schema/canonicalization/budget checks.",
+      "Controller-death test proves service cleanup with live supervisor; runner removes crash data. Worker tests actual AbortSignal and supervisor data cleanup.",
+      "Two-process fixture is endpoint lifecycle, not business/API compatibility. Existing manifest drops preview; generic checks can already run custom tests."
+    ],
+    "reproduction": "Decode bundled gzip+base64 UTF-8 to scratch .mjs; verify source SHA256; run node <scratch.mjs> <worktree-root>. Uses installed Node/git and real workspace/manifest seams, creates/removes fixtures, zero providers. Commit times/PIDs/ports/timing vary; PASS/tree contents repeat. Docker-absence assertion is host-specific.",
+    "prototypeSourceSha256": "6c5deaf7de4e0dfe4ffc1ffcb89f40a0abb1c94a4c6637e75cc751f351b83917",
+    "sources": [
+      {
+        "repo": "devcontainers/cli",
+        "sha": "3e363f63a712d30a741174f6d1a7e75f47fe3fc1",
+        "packageVersion": "0.89.0",
+        "starsAtLookup": 2973,
+        "metadataUrl": "https://api.github.com/repos/devcontainers/cli",
+        "license": "MIT",
+        "sourceUrl": "https://github.com/devcontainers/cli/tree/3e363f63a712d30a741174f6d1a7e75f47fe3fc1",
+        "inspectedFiles": [
+          "src/spec-node/utils.ts",
+          "src/test/cli.up.test.ts"
+        ],
+        "finding": "initializeCommand runs on host; lifecycle/post hooks and Docker up/config tests require explicit authority/cleanup. Not adopted.",
+        "tests": "SOURCE_INSPECTED_NOT_EXECUTED"
+      },
+      {
+        "repo": "testcontainers/testcontainers-node",
+        "sha": "aa2d5a744a5ea0b686172307302ec8a4765b65ca",
+        "packageVersion": "12.2.0",
+        "starsAtLookup": 2619,
+        "metadataUrl": "https://api.github.com/repos/testcontainers/testcontainers-node",
+        "license": "MIT",
+        "sourceUrl": "https://github.com/testcontainers/testcontainers-node/tree/aa2d5a744a5ea0b686172307302ec8a4765b65ca",
+        "inspectedFiles": [
+          "packages/testcontainers/src/generic-container/generic-container.ts",
+          "packages/testcontainers/src/generic-container/generic-container-auto-cleanup.test.ts",
+          "packages/testcontainers/src/reaper/reaper.ts",
+          "packages/testcontainers/src/wait-strategies/http-wait-strategy.ts"
+        ],
+        "finding": "Runtime-backed create/start uses session-labelled reaper; auto-cleanup-disabled test exists. Reaper supports reuse/disable. HTTP wait supports predicates, not independent candidate identity. Not adopted.",
+        "tests": "SOURCE_INSPECTED_NOT_EXECUTED"
+      }
+    ],
+    "prototypeEncoding": "gzip+base64 UTF-8; decode, verify prototypeSourceSha256, then run the scratch .mjs with the worktree root argument.",
+    "prototypeSourceGzipBase64": "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",
+    "readinessBlocker": {
+      "classification": "RESOLVED_BASELINE_BINDING",
+      "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "observed": "Graph and plan were reconciled to a reviewed source-complete SHA; canonical materialize resolves objective sources and anchors. Historical prototype baseline remains historical."
+    }
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A declared supported profile starts from the exact candidate/config/input digests and records owned endpoints, service image/version identities, readiness observations and the reset dataset; process creation alone is not READY.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "SEEDED_RESET",
+        "QA_COMPOSITION"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agentic-system/src/local-git-workspace.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "export function validateDeliverSlice(slice)"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "async function runQaOnFreshCheckout"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-git-workspace.js",
+          "match": "export async function createLocalGitWorkspace"
+        }
+      ],
+      "supportingPlanFields": [
+        "localPreviewContract"
+      ],
+      "verificationIds": [
+        "focused",
+        "composition"
+      ]
+    },
+    {
+      "objectiveCriterion": "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
+      "criterionIds": [
+        "RESOURCE_LIFECYCLE",
+        "PROFILE_ENV",
+        "RECEIPT_FAILURES"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4"
+      ],
+      "decisionIndexes": [
+        2,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/local-command-verifier.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "function killTree(child)"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "env: childEnvironment()"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariantCoverage"
+      ],
+      "verificationIds": [
+        "focused"
+      ]
+    },
+    {
+      "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
+      "criterionIds": [
+        "PREVIEW_IDENTITY",
+        "RESOURCE_LIFECYCLE",
+        "SEEDED_RESET",
+        "PROFILE_ENV",
+        "RECEIPT_FAILURES",
+        "QA_COMPOSITION"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "decisionIndexes": [
+        0,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-131/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-131/discovery.json",
+          "match": "\"experimentStatus\""
+        }
+      ],
+      "supportingPlanFields": [
+        "prototypeSummary"
+      ],
+      "verificationIds": [
+        "focused",
+        "composition"
+      ]
+    }
+  ],
+  "localPreviewContract": {
+    "version": "LOCAL_PREVIEW_V1",
+    "authority": "Caller-declared profile and evaluator are protected inputs supplied separately from the candidate. Receipt is setup evidence and cannot publish quality acceptance.",
+    "api": "startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) -> {status,reason,receipt,handle?}; OBSERVED_READY has handle {observe(),reset(),dispose()}. Invalid declarations return a typed FAILED receipt before effects. reset returns a new generation/handle and permanently disposes the old handle. dispose is idempotent.",
+    "profile": {
+      "kind": "NODE_HTTP_V1",
+      "runtime": "Operator-selected absolute Node executable with expected version and SHA256. Recheck actual binary/version at observe/reset. Initial support: Node 24/Linux x64.",
+      "commands": "services:[{id,entry,args,env,port,healthPath}]; unique ids, literal string args, tracked relative JS entrypoints, shell:false. No installers, wrappers, hooks or external-service adoption.",
+      "configuration": "configInputs:[{path,sha256}],seed:{path,sha256}; tracked regular files, no symlink escape/traversal. Strict shape/limit checks before effects. Canonical sorted JSON for objects, raw SHA256 for files. Seed must be UTF-8 JSON array/object for this finite profile; parse/schema/size failure INVALID_PROFILE before effects, max seed1MiB. Config regular-file digest set remains unchanged through run.",
+      "ports": "Fixed 127.0.0.1; default port 0 is OS-assigned, nonzero conflict never cleared. No external URLs/redirects. Size/schema-check owned IPC messages and identify child sender.",
+      "environment": "Literal minimal env plus reserved PREVIEW_RUN_TOKEN/SERVICE_ID/DATA_DIR/PORT; reject internal overrides and credential-bearing keys; remove NODE_OPTIONS/NODE_TEST_CONTEXT. QA gets protected PREVIEW_RECEIPT_PATH through BB-130 explicit overlay. Receipt stores keys/digest, no raw values/token. Reserve and inject PREVIEW_CANDIDATE_SHA, PREVIEW_CANDIDATE_TREE, PREVIEW_CONFIG_DIGEST and PREVIEW_SEED_DIGEST from independently checked pins, so entrypoint can echo expected health bindings. Caller overrides of these keys reject.",
+      "budgets": "Positive bounded integers: startup default 30000/max120000 ms; probe default1000 within remaining deadline; response max16384 bytes; output default65536 per stream; shutdown default5000/max30000 ms. Bound runtime probes too."
+    },
+    "receipt": {
+      "fields": [
+        "version",
+        "receiptId",
+        "ownerId",
+        "generation",
+        "status",
+        "reason",
+        "candidate:{id,version,tree}",
+        "profileDigest",
+        "configDigest",
+        "inputDigest",
+        "runtime:{version,binarySha256,platform,arch}",
+        "evaluator:{id,digest,criterionIds}",
+        "services:[{id,entryDigest,argvDigest,envDigest,image:null,version,pid,endpoint,readiness:{status,at,responseDigest}}]",
+        "dataset:{seedDigest,generation,ownedDataId}",
+        "diagnostics:{redactedExcerpt,bytes,captureDigest,truncated}",
+        "cleanup:{status,reason,ownedResourcesOnly}"
+      ],
+      "binding": "SHA256 canonical receipt excluding receiptId. Observed health is timestamped, not perpetual. Consumers call live handle.observe and match protected identities/generation; disposed receipts are stale. No raw env/token publication.",
+      "serviceVersions": "Process service uses actual Node version plus entry/config digests; image:null is NOT_APPLICABLE. Do not invent container identity or missing measurements."
+    },
+    "outcomes": {
+      "OBSERVED_READY": "Every declared service is healthy and all independent bindings match; no QA acceptance is implied.",
+      "FAILED": [
+        "INVALID_PROFILE",
+        "CANDIDATE_MISMATCH",
+        "CONFIG_DRIFT",
+        "RUNTIME_DRIFT",
+        "EVALUATOR_MISMATCH",
+        "SEED_MISMATCH",
+        "READINESS_IDENTITY_MISMATCH",
+        "PORT_CONFLICT",
+        "EARLY_EXIT"
+      ],
+      "UNRESOLVED": [
+        "UNSUPPORTED_PROFILE",
+        "UNSUPPORTED_HOST",
+        "RUNTIME_UNAVAILABLE",
+        "READINESS_TIMEOUT",
+        "INTERRUPTED",
+        "CLEANUP_INCOMPLETE"
+      ],
+      "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
+    },
+    "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
+    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
+    "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
+    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
+    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "previewMechanism": {
+    "api": "startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) -> {status,reason,receipt,handle?}; OBSERVED_READY has handle {observe(),reset(),dispose()}. Invalid declarations return a typed FAILED receipt before effects. reset returns a new generation/handle and permanently disposes the old handle. dispose is idempotent.",
+    "outcomes": {
+      "OBSERVED_READY": "Every declared service is healthy and all independent bindings match; no QA acceptance is implied.",
+      "FAILED": [
+        "INVALID_PROFILE",
+        "CANDIDATE_MISMATCH",
+        "CONFIG_DRIFT",
+        "RUNTIME_DRIFT",
+        "EVALUATOR_MISMATCH",
+        "SEED_MISMATCH",
+        "READINESS_IDENTITY_MISMATCH",
+        "PORT_CONFLICT",
+        "EARLY_EXIT"
+      ],
+      "UNRESOLVED": [
+        "UNSUPPORTED_PROFILE",
+        "UNSUPPORTED_HOST",
+        "RUNTIME_UNAVAILABLE",
+        "READINESS_TIMEOUT",
+        "INTERRUPTED",
+        "CLEANUP_INCOMPLETE"
+      ],
+      "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
+    },
+    "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
+    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
+    "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
+    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
+    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
+  },
+  "prototypeSummary": {
+    "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "selection": "NARROW_PROFILE_GO: three synthetic separate repositories using one opt-in Node protocol. Runtime/lifecycle feasibility only; no real-consumer/framework/container acceptance.",
+    "comparison": {
+      "explicitCommands": "Three fresh synthetic checkouts passed; setupMs starts after authoring, not human effort.",
+      "devContainer": "NOT_RUN, Docker absent: host initializeCommand is separate from skip-post-create; tests explicitly remove returned containerId.",
+      "testcontainers": "NOT_RUN, no runtime: inspect session reaper and health predicates; reaper may be disabled/reused.",
+      "value": "Container timings/interventions unknown. No speedup/provider-cost/quality/effort claim."
+    },
+    "executedResult": {
+      "node": "v24.20.0",
+      "platform": "linux",
+      "arch": "x64",
+      "dockerUnavailable": true,
+      "manifestDropsPreview": true,
+      "results": [
+        {
+          "name": "static-web fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 244,
+          "services": 1,
+          "candidateSha": "511bd6910a7ea77b88b6b2c4256e25c0c9d697a9",
+          "candidateTree": "af7646657ffd7b69c47f76756a37099895debd52",
+          "interventions": 0
+        },
+        {
+          "name": "json-api fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 201,
+          "services": 1,
+          "candidateSha": "86220545023b343e50548535592233ead4388b51",
+          "candidateTree": "7a4cea34e309b093f614c6dd042e26aa718d8bba",
+          "interventions": 0
+        },
+        {
+          "name": "web-service fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 281,
+          "services": 2,
+          "candidateSha": "1f5c0b23376fd33039b51836d7180a0ab236e8b8",
+          "candidateTree": "bd79a3063723108b0aa1f24e0e861236d2fb6d7d",
+          "interventions": 0
+        },
+        {
+          "name": "wrong candidate response",
+          "status": "PASS"
+        },
+        {
+          "name": "readiness timeout",
+          "status": "PASS"
+        },
+        {
+          "name": "interrupted start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "missing runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "missing service and partial start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "config drift",
+          "status": "PASS"
+        },
+        {
+          "name": "foreign occupied port survives",
+          "status": "PASS"
+        },
+        {
+          "name": "controller SIGKILL reaps owned group and preserves foreign server",
+          "status": "PASS"
+        },
+        {
+          "name": "container descriptor rejected without running hooks",
+          "status": "PASS"
+        }
+      ],
+      "limits": [
+        "Scratch prototype, not delivered implementation",
+        "Crash test covers controller death with live supervisor; simultaneous supervisor death/host crash needs external reaper",
+        "No container live/setup comparison or third-party stack trial",
+        "Fixture generation/authoring is excluded from setupMs and interventions; no human-effort claim"
+      ]
+    },
+    "prototypeLimitations": [
+      "Worker must add final strict schema/canonicalization/budget checks.",
+      "Controller-death test proves service cleanup with live supervisor; runner removes crash data. Worker tests actual AbortSignal and supervisor data cleanup.",
+      "Two-process fixture is endpoint lifecycle, not business/API compatibility. Existing manifest drops preview; generic checks can already run custom tests."
+    ],
+    "reproduction": "Decode bundled gzip+base64 UTF-8 to scratch .mjs; verify source SHA256; run node <scratch.mjs> <worktree-root>. Uses installed Node/git and real workspace/manifest seams, creates/removes fixtures, zero providers. Commit times/PIDs/ports/timing vary; PASS/tree contents repeat. Docker-absence assertion is host-specific.",
+    "prototypeSourceSha256": "6c5deaf7de4e0dfe4ffc1ffcb89f40a0abb1c94a4c6637e75cc751f351b83917",
+    "verifiedSourceExcerpt": " async function startLocalPreview(f,patch={}){\n const profile={...f.profile,...patch},started=performance.now();\n if(profile.kind!=='NODE_HTTP_V1')throw Error('UNSUPPORTED_PROFILE');\n if(git(f.root,'rev-parse','HEAD')!==f.sha||git(f.root,'status','--porcelain'))throw Error('CANDIDATE_MISMATCH');\n const before=digest(await readFile(join(f.root,'server.mjs'),'utf8')),seed=await readFile(join(f.root,profile.seed),'utf8'),token=randomUUID(),data=await mkdtemp(join(scratch,'data-'));\n await writeFile(join(data,'rows.json'),seed);const s=spawn(process.execPath,[self,'--supervisor'],{stdio:['ignore','ignore','inherit','ipc']});\n const children=[],endpoints=[];let error=null,disposed=false;\n const dispose=async()=>{if(disposed)return;disposed=true;const closed=new Promise(r=>s.exitCode!==null?r():s.once('exit',r));if(s.connected)s.send({kind:'stop'});await closed;for(const pid of children)await waitGone(pid);await rm(data,{recursive:true,force:true});};\n s.on('message',m=>{if(m.kind==='spawned'&&m.pid)children.push(m.pid);if(m.kind==='error'&&!error)error=m.reason;if(m.kind==='endpoint'){if(m.error)error=m.error==='EADDRINUSE'?'PORT_CONFLICT':m.error;else endpoints.push({...m,url:'http://127.0.0.1:'+m.port});}});\n s.send({root:f.root,launches:profile.launches,runtime:profile.runtime,token,data});\n try{\n for(let i=0;performance.now()-started<profile.timeoutMs;i++){\n if(error)throw Error(error);if(patch.interrupt&&i===1)throw Error('INTERRUPTED');\n if(patch.mutate&&i===1)await writeFile(join(f.root,'server.mjs'),service+'\\n// drift');\n if(endpoints.length===profile.launches.length){\n let ok=true;\n for(const e of endpoints){const r=await fetch(e.url+'/health',{signal:AbortSignal.timeout(150)}).catch(()=>null);if(!r||r.status!==200){ok=false;continue;}const v=await r.json();if(v.token!==token||v.role!==e.id)throw Error('READINESS_IDENTITY_MISMATCH');}\n if(ok){if(digest(await readFile(join(f.root,'server.mjs'),'utf8'))!==before||git(f.root,'status','--porcelain'))throw Error('CONFIG_DRIFT');\n const receipt={state:'OBSERVED_READY',candidateSha:f.sha,candidateTree:f.tree,profileDigest:digest(profile),inputDigest:digest(seed),runtime:process.version,endpoints:endpoints.map(e=>({id:e.id,url:e.url,pid:e.pid})),setupMs:Math.round(performance.now()-started)};\n return {receipt,dispose,data,children,supervisor:s};}}\n await sleep(15);\n }\n throw Error('READINESS_TIMEOUT');\n }catch(e){await dispose();throw e;}",
+    "sourceBinding": "Decoded embedded prototypeSourceGzipBase64 SHA256 matches prototypeSourceSha256. Excerpt is actual executed scratch prototype; final strict API/env/receipt/ownership checks remain precisely specified future Worker outputs. No new execution is claimed here."
   }
 }
