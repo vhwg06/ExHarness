@@ -12,9 +12,11 @@
     "product-qa.browser-journey-profile"
   ],
   "outOfScope": [
-    "A new QA judgment or publication authority",
-    "General autonomous visual design grading, accessibility certification and arbitrary browser automation",
-    "Changing accepted BB-054/069 contracts or declaring live feature delivery from fixture tests"
+    "New QA judgment/publication authority",
+    "Visual design grading, accessibility certification, arbitrary browser automation",
+    "Changing BB-054/069 authority or claiming delivery from fixtures",
+    "CLI/manifest wiring; programmatic injected verifier profile only",
+    "Auth/production/external browsing, Firefox/WebKit or model-selected acceptance"
   ],
   "constraints": [
     "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
@@ -24,14 +26,21 @@
     "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
   ],
   "invariants": [
-    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
-    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
-    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, EVIDENCE_RETENTION.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: USER_JOURNEY, FAILURE_CLASSIFICATION, QA_AUTHORITY.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, EVIDENCE_RETENTION.",
+    "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
+    "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION."
   ],
   "architectureDecisions": [
-    "Compare a deterministic Playwright Test runner with a constrained exploratory browser observer. Start with operator-owned executable journeys; model exploration may propose findings but cannot silently alter acceptance.",
-    "Adapt results into the existing criterionVerifier interface and retain local trace/DOM/network evidence. Screenshot presence is not a behavioral assertion and browser traffic can contain sensitive data.",
-    "Consume BB-127 protected evaluator content and BB-131 preview receipts. BB-054 keeps exact acceptance/publication authority; the runner supplies criterion evidence only."
+    "Pin external Playwright Test1.63.0/source1b025d7e20a026371cd5f98ba0cdce48892737c8 and Chromium1243/153.0.8010.12. Operator provisions; adapter never installs/substitutes versions.",
+    "Injected createBrowserJourneyVerifier.verify uses one protected executable journey/criterion,worker1/retries0/deadlines. No exploratory/model acceptance.",
+    "Require actual successful expect events in declared ASSERT steps. spec.ok,empty steps and exit0 cannot grant PASS.",
+    "Use the explicit normalized projections and adapter below; resolvePolicy/resolvePreview are injected plan-owned functions. Direct dependencies must be DONE before Worker. Research READY is evaluated against this resolved planned interface, not future API discovery.",
+    "Preserve BB-054 snapshot/runtime/publication authority. Browser returns criterion facts only.",
+    "Initial trusted Ubuntu24.04 x86_64/Node24/Chromium synthetic loopback profile; other hosts INCONCLUSIVE/UNSUPPORTED_HOST. No hostile-process confinement claim.",
+    "Keep local receipts/reports/DOM-network traces,screens/source off. Assertion mismatch FAIL; setup/timeout/missing/drift/corrupt evidence INCONCLUSIVE. No universal redaction.",
+    "Programmatic opt-in; no CLI manifest changes. Calibration is prototype evidence,not delivery/live attestation/measured effort."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -40,11 +49,18 @@
       "packages/agent-tools/src/deliver-slice.js",
       "docs/blackboard/process/delivery-capability-discovery.md",
       "docs/blackboard/process/delivery-capability-sources.json",
-      "docs/blackboard/evidence/BB-132/discovery.json"
+      "docs/blackboard/evidence/BB-132/discovery.json",
+      "packages/agentic-system/src/runtime-observation.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/test/product-qa.test.js",
+      "packages/agentic-system/test/acceptance-snapshot.test.js"
     ],
     "expectedNew": [
       "packages/agentic-system/src/browser-journey-verifier.js",
-      "packages/agentic-system/test/browser-journey-verifier.test.js"
+      "packages/agentic-system/src/browser-journey-runner.cjs",
+      "packages/agentic-system/src/browser-journey-reporter.cjs",
+      "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "packages/agentic-system/test/browser-journey-fixtures.cjs"
     ],
     "expectedTests": [
       "packages/agentic-system/test/browser-journey-verifier.test.js"
@@ -52,18 +68,19 @@
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/product-qa.js",
-      "packages/agentic-system/src/acceptance-snapshot.js",
-      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agent-tools/src/**",
       "docs/blackboard/process/delivery-capability-discovery.md",
       "docs/blackboard/process/delivery-capability-sources.json",
-      "docs/blackboard/evidence/BB-132/discovery.json",
-      "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**"
+      "docs/blackboard/evidence/BB-132/discovery.json"
     ],
     "write": [
       "packages/agentic-system/src/browser-journey-verifier.js",
+      "packages/agentic-system/src/browser-journey-runner.cjs",
+      "packages/agentic-system/src/browser-journey-reporter.cjs",
       "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "packages/agentic-system/test/browser-journey-fixtures.cjs",
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agentic-application/capabilities.md"
     ],
@@ -76,36 +93,106 @@
     ]
   },
   "implementationSlices": [
-    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
-    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
-    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+    "S1 — [USER_JOURNEY, IDENTITY_BINDING]: implement D0–D3. Use the plan-owned browserContract policyProjection/previewProjection shapes with injected resolvePolicy/resolvePreview (D3: evaluated against this resolved planned interface, not future API discovery) Worker starts after BB-127/BB-131 dependencies are DONE.; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected browser-journey-runner.cjs with fixed argv and explicit bounded JSON protocol; browser-journey-reporter.cjs records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS. Implement the exact runnerProtocol and assertion ledger in browserContract, including fixed protected paths/config and seven ordered assertion IDs. Factory createBrowserJourneyVerifier({resolvePolicy,resolvePreview,observePreview,runner,evidenceStore,now}) exposes verify on existing QA criterion request; policy/preview projections come from protected operator resolvers. Validate candidate/tree/config/fixture/browser and independent QA snapshot/release/environment/components pre/post. No candidate-selected config or authority. Fixed verdict: valid protected expect mismatch FAIL; setup/transport/timeout/coverage/drift/storage fault INCONCLUSIVE; all mandatory successful events plus exit0/postchecks/durable refs PASS. Evidence contains hashes and typed outcomes, not screenshot-only proof. Cleanup own runner/browser/temp roots, leave caller-owned preview, retain traces via evidenceStore before disposal. Runtime bounds: invocation30s/max120s, streams64KiB, JSON1MiB, trace25MiB.",
+    "S2 — [INDEPENDENT_EVIDENCE, FAILURE_CLASSIFICATION, EVIDENCE_RETENTION, OWNED_RESOURCES]: implement D2,D5,D6. Port embedded matrix into real Chromium fixtures. Each N1-N12 directly constructs createBrowserJourneyVerifier and invokes verify. Inject boundary faults separately; compose new adapter with existing QA/completion/publisher. browser-journey-verifier.test.js also injects the actual factory into createProductQaExecutionStrategy with independent runtimeObserver and protected AcceptanceSnapshot. Assert failed/unknown criterion cannot publish; successful criteria require all QA identities. Generic QA tests remain regressions only. Real browser happy path is mandatory; missing provision aborts the focused command with an explicit setup error yielding INCONCLUSIVE per D6 (never a skip, never PASS). Calibrated seven mandatory ASSERT ids and all11 native browser cases are enumerated in researchEvidence.calibration; reuse this resolved fixed workload. Adapter-specific validation/report/trace controls use injected failures in the actual factory. The source-copy calibration is not mistaken for candidate/QA publication evidence. Implement verification-only fixture bootstrap in browser-journey-fixtures.cjs as browserContract.testProvisioning. Both focused and ordinary npm test invoke it once per test process via test before-hook; native browser cases have no environment-dependent skip. Keep installation out of product adapter and candidate app. Verify exact package SRI/browser revision and bind actual fixture lock/browser hashes before each adapter invocation.",
+    "S3 — browser-journey-fixtures.cjs plus declared Living docs: implement browserContract.testProvisioning exactly once per test process before native fixtures, including pinned package SRI/Chromium revision, externally owned root, 180s install/90s matrix/10s teardown caps and zero skip on setup failure. Port prototypeReproduction fixed journey and reporter into actual factory test matrix; bind every exact N1-N12 title to candidate factory.verify. Existing Product QA integration remains criterion facts via verdict/evidenceRefs, with independent runtimeObserver and AcceptanceSnapshot. Update declared Living descriptions and execute browser-focused/regression/docs checks after READY. Current research output is final browserContract API/projections/runner protocol, exact file/test manifests and embedded hash-bound executed calibration; no unresolved design or future Worker implementation is a readiness prerequisite."
   ],
   "acceptanceCriteria": [
     {
       "id": "USER_JOURNEY",
-      "statement": "A protected create/list/update and validation journey invokes the running app, reloads and checks expected visible/persisted behavior; criterion-specific PASS/FAIL/INCONCLUSIVE includes evaluator, preview, fixture, browser and candidate identities.",
+      "statement": "Protected browser journey checks empty list, blank-title validation/no write, create/list, reload persistence, update and reload with all seven actual assertions observed.",
       "verificationIds": [
-        "focused"
+        "browser-focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Correct x3 and four seeded negatives with real pinned Chromium; exact assertion/report/trace receipts."
       ]
     },
     {
       "id": "INDEPENDENT_EVIDENCE",
-      "statement": "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
+      "statement": "Skip, expected failure, noop, empty steps, missing assertions, retries/duplicates or screenshots alone cannot PASS.",
       "verificationIds": [
-        "focused"
+        "browser-focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Subject-invoking skip/noop/empty-steps/missing/retry controls; assert verdict, reason and actual coverage."
+      ]
+    },
+    {
+      "id": "IDENTITY_BINDING",
+      "statement": "Every result binds exact evaluator, snapshot/release/components, candidate tree, preview/environment, reset fixture, policy and browser; missing/pre-post drift is INCONCLUSIVE.",
+      "verificationIds": [
+        "browser-focused",
+        "qa-seam"
+      ],
+      "evidenceRequired": [
+        "Pre/post trusted observations and recomputed hashes; tamper/wrong identity controls never PASS."
+      ]
+    },
+    {
+      "id": "FAILURE_CLASSIFICATION",
+      "statement": "Inert submit, stale list, lost persistence and invalid validation FAIL; setup, host, absent projections, transport or timeout are INCONCLUSIVE.",
+      "verificationIds": [
+        "browser-focused"
+      ],
+      "evidenceRequired": [
+        "Real four behavioral seeds FAIL; setup/host/transport/timeout controls INCONCLUSIVE with typed reasons."
+      ]
+    },
+    {
+      "id": "EVIDENCE_RETENTION",
+      "statement": "PASS requires a content-addressed receipt, complete assertion ledger and valid bounded digested report/DOM-network trace; capture stays synthetic and local.",
+      "verificationIds": [
+        "browser-focused"
+      ],
+      "evidenceRequired": [
+        "Digested valid trace/report/ledger and owned mode/path checks; missing/corrupt/oversize/foreign evidence fails closed."
+      ]
+    },
+    {
+      "id": "OWNED_RESOURCES",
+      "statement": "Close owned browser contexts/child group on finish/error/timeout; preserve foreign preview resources and reject candidate evaluator commands.",
+      "verificationIds": [
+        "browser-focused"
+      ],
+      "evidenceRequired": [
+        "Owned child teardown and foreign sentinel unchanged on finish/interruption/timeout; no candidate evaluator commands."
+      ]
+    },
+    {
+      "id": "QA_AUTHORITY",
+      "statement": "Return verdict/evidenceRefs through existing Product QA; publication still requires current exact release, independent runtime observation and every criterion PASS.",
+      "verificationIds": [
+        "browser-focused",
+        "qa-seam"
+      ],
+      "evidenceRequired": [
+        "New verifier composed with existing QA/publisher; non-ACCEPT, wrong snapshot or runtime mismatch cannot publish."
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "focused",
-      "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js"
+      "id": "browser-focused",
+      "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js",
+      "requiredTests": "Correct x3 and every N1-N12 title; zero skips/cancellations/todo. Real Chromium for journey violations; injected boundary faults still invoke the actual factory. Four behavior mismatches FAIL; setup/timeout/coverage/drift/artifact/storage INCONCLUSIVE; invalid resources never touch foreign sentinels.",
+      "setup": "Mandatory owned before-hook browser bootstrap per browserContract.testProvisioning, both focused and package suite; installation failure fails, no skips.",
+      "negativeCases": "Run every literal testTitle N1-N12 in negativeCaseBindings; each invokes createBrowserJourneyVerifier and its verify method with the bound criterion and actual or injected fault. Names, subject symbols and criterion ids have one canonical copy in negativeCaseBindings.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "INDEPENDENT_EVIDENCE",
+        "IDENTITY_BINDING",
+        "FAILURE_CLASSIFICATION",
+        "EVIDENCE_RETENTION",
+        "OWNED_RESOURCES",
+        "QA_AUTHORITY"
+      ],
+      "evidence": "Per named test assert exact verdict/reason, executed mandatory assertion IDs, retained evidenceRef and owned/foreign resource effects. Positive cases must reach PASS through the actual factory. Record test file/body and candidate hashes in Worker evidence; generic QA suites provide regression coverage only."
+    },
+    {
+      "id": "qa-seam",
+      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/acceptance-snapshot.test.js",
+      "coverage": "Regression authority only; adapter integration/corrupt reporter/preview/evaluator cases belong to browser-focused and call actual createBrowserJourneyVerifier."
     },
     {
       "id": "agent-tools-regression",
@@ -122,57 +209,173 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, EVIDENCE_RETENTION.",
       "criterionIds": [
-        "USER_JOURNEY",
-        "INDEPENDENT_EVIDENCE"
+        "IDENTITY_BINDING",
+        "INDEPENDENT_EVIDENCE",
+        "EVIDENCE_RETENTION"
       ]
     },
     {
-      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: USER_JOURNEY, FAILURE_CLASSIFICATION, QA_AUTHORITY.",
       "criterionIds": [
         "USER_JOURNEY",
-        "INDEPENDENT_EVIDENCE"
+        "FAILURE_CLASSIFICATION",
+        "QA_AUTHORITY"
       ]
     },
     {
-      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, EVIDENCE_RETENTION.",
       "criterionIds": [
-        "USER_JOURNEY",
-        "INDEPENDENT_EVIDENCE"
+        "OWNED_RESOURCES",
+        "EVIDENCE_RETENTION"
+      ]
+    },
+    {
+      "invariant": "Only protected independent policy defines journey/assertion IDs and expected success. Candidate-controlled config, expected-failure annotations, skipped/empty/no-op tests and screenshots alone cannot produce PASS. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
+      "criterionIds": [
+        "IDENTITY_BINDING",
+        "INDEPENDENT_EVIDENCE",
+        "QA_AUTHORITY",
+        "EVIDENCE_RETENTION"
+      ]
+    },
+    {
+      "invariant": "Browser and runner evidence is retained before cleanup; resource ownership, byte limits and every mandatory assertion are checked, while Product QA alone publishes criterion acceptance. Acceptance coverage: IDENTITY_BINDING, INDEPENDENT_EVIDENCE, QA_AUTHORITY, EVIDENCE_RETENTION.",
+      "criterionIds": [
+        "IDENTITY_BINDING",
+        "INDEPENDENT_EVIDENCE",
+        "QA_AUTHORITY",
+        "EVIDENCE_RETENTION"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "An inert submit button cannot PASS a create-and-reload journey",
-    "A changed evaluator or mismatched preview identity cannot publish criterion PASS"
+    "Inert submit cannot PASS",
+    "Stale list cannot PASS",
+    "Reload state loss cannot PASS",
+    "Broken validation cannot PASS",
+    "Skip/noop cannot PASS",
+    "Empty named steps cannot PASS",
+    "Missing coverage/retries/expected failures cannot PASS",
+    "Evaluator drift cannot PASS",
+    "Preview/release/candidate/browser drift cannot PASS",
+    "Setup/host/transport/timeout cannot PASS",
+    "Screenshot/missing/corrupt/foreign evidence cannot PASS",
+    "Cleanup cannot touch foreign resources or bypass QA"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_132_1",
       "negativeCaseIndex": 0,
-      "criterionId": "INDEPENDENT_EVIDENCE",
-      "verificationId": "focused",
+      "criterionId": "FAILURE_CLASSIFICATION",
+      "verificationId": "browser-focused",
       "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
-      "testTitle": "BB-132 N1 An inert submit button cannot PASS a create-and-reload journey",
+      "testTitle": "BB-132 N1 inert submit",
       "subjectSymbol": "createBrowserJourneyVerifier"
     },
     {
       "id": "NEG_132_2",
       "negativeCaseIndex": 1,
-      "criterionId": "INDEPENDENT_EVIDENCE",
-      "verificationId": "focused",
+      "criterionId": "FAILURE_CLASSIFICATION",
+      "verificationId": "browser-focused",
       "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
-      "testTitle": "BB-132 N2 A changed evaluator or mismatched preview identity cannot publish criterion PASS",
+      "testTitle": "BB-132 N2 stale list",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "FAILURE_CLASSIFICATION",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N3 reload persistence",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "FAILURE_CLASSIFICATION",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N4 validation",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "INDEPENDENT_EVIDENCE",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N5 skip or noop",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "INDEPENDENT_EVIDENCE",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N6 empty assertion steps",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "INDEPENDENT_EVIDENCE",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N7 missing coverage or retries",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_8",
+      "negativeCaseIndex": 7,
+      "criterionId": "IDENTITY_BINDING",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N8 evaluator drift",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_9",
+      "negativeCaseIndex": 8,
+      "criterionId": "IDENTITY_BINDING",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N9 preview or runtime drift",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_10",
+      "negativeCaseIndex": 9,
+      "criterionId": "FAILURE_CLASSIFICATION",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N10 setup or timeout",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_11",
+      "negativeCaseIndex": 10,
+      "criterionId": "EVIDENCE_RETENTION",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N11 invalid artifacts",
+      "subjectSymbol": "createBrowserJourneyVerifier"
+    },
+    {
+      "id": "NEG_132_12",
+      "negativeCaseIndex": 11,
+      "criterionId": "OWNED_RESOURCES",
+      "verificationId": "browser-focused",
+      "testRef": "packages/agentic-system/test/browser-journey-verifier.test.js",
+      "testTitle": "BB-132 N12 cleanup and authority",
       "subjectSymbol": "createBrowserJourneyVerifier"
     }
   ],
-  "researchGaps": [
-    "Calibrate deterministic browser assertions on correct and seeded-broken request-tracker fixtures, including reload, validation and browser/setup failure.",
-    "Pin Playwright release/browser binaries; inspect relevant runner/trace tests and define trace retention/redaction and cross-host support.",
-    "Finalize protected evaluator digest, runtime identity and criterion evidence mapping; discriminate false accepts from tool failures before Jev."
-  ],
-  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
@@ -183,9 +386,608 @@
   },
   "valueHypothesis": {
     "expectedValue": "Give a reviewer evidence that the feature works through its user workflow, including interactions missed by build-only checks.",
-    "measurement": "Compare build/health-only checks with independent browser journeys on correct, inert-submit, stale-list and missing-persistence fixtures. Predeclare the seeded defect matrix; record missed criteria, false accepts, setup failures and review steps. No live model is needed for calibration.",
+    "measurement": "Fixed correct/inert/stale/persistence/validation matrix: compare health-only versus protected browser assertions, report false accepts/setup/coverage. No live model/value measurement.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
-    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
+    "goNoGo": "Calibration supports this bounded prototype. DRAFT until delivered dependencies/fresh Jev; no delivery/productivity/default-promotion claim."
+  },
+  "dependencyReview": {
+    "checkedAt": "2026-10-01",
+    "originMainSha": "d880b2d27739a705ac28a903cd51e44db85db2f0",
+    "baselineRule": "Graph and plan both bind source-complete 5386e2adee15a3175a5b6635b63a54f6e24128cb; canonical source refs/anchors resolve. Historical source pins retained for prototype provenance.",
+    "directDependencies": [
+      {
+        "taskId": "BB-054",
+        "taskStatus": "DONE",
+        "lane": "WORKER",
+        "phase": "DELIVERED",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+        "planStatus": "READY",
+        "planContentHash": "b17604eaf420014477c3f628d33961a5b77d9a6ef1207c457c0e9bfa186740ff",
+        "consumes": "AcceptanceSnapshot/criterionVerifier/publication authority."
+      },
+      {
+        "taskId": "BB-131",
+        "taskStatus": "PLANNED",
+        "lane": "RESEARCH_SA",
+        "phase": "RESEARCH",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-131.json",
+        "planStatus": "DRAFT",
+        "planContentHash": "514f15192b1f2689a0bb292679fe123bf41995332d4603dd79583aa110214980",
+        "consumes": "Preview/readiness/reset projection; undelivered."
+      },
+      {
+        "taskId": "BB-127",
+        "taskStatus": "PLANNED",
+        "lane": "RESEARCH_SA",
+        "phase": "RESEARCH",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-127.json",
+        "planStatus": "DRAFT",
+        "planContentHash": "ebbff031e6c0ddad6c8624a462a022c389344b6e222cee3e76d2cc484a90d1ad",
+        "consumes": "Protected evaluator projection; undelivered."
+      }
+    ],
+    "beforeReady": "Fresh independent Jev evaluates this explicit planned contract. Worker requires BB-127/131 DONE and exact delivered API compatibility; incompatible projections invalidate READY and require research. No unresolved baseline repair remains."
+  },
+  "researchEvidence": {
+    "classification": "EXECUTED_ISOLATED_BROWSER_CALIBRATION_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "date": "2026-10-01",
+    "providerCalls": 0,
+    "upstream": {
+      "repository": "https://github.com/microsoft/playwright",
+      "starsAtLookup": 96956,
+      "license": "Apache-2.0",
+      "sourceSha": "1b025d7e20a026371cd5f98ba0cdce48892737c8",
+      "release": "1.63.0",
+      "packages": {
+        "@playwright/test": "sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==",
+        "playwright": "sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==",
+        "playwright-core": "sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg=="
+      },
+      "browserRevision": "1243",
+      "browserVersion": "153.0.8010.12",
+      "browserExecutableSha256": "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+      "sourceInspections": [
+        {
+          "path": "packages/playwright/src/reporters/json.ts",
+          "sha256": "e95f35241b6a1b2b47b8717b52ac436c04ca14ccb9a5b1a3924356fa69764ad7",
+          "finding": "JSON expectedStatus/results/retry/errors/attachments are distinct; steps omit expect events, requiring the extra reporter."
+        },
+        {
+          "path": "tests/playwright-test/reporter-json.spec.ts",
+          "sha256": "b28ee3af0e104d0941e096960b92337f0e7243ede7b1ed4aa9b7b4cca4437fdb",
+          "finding": "Skipped test has ok=true and stats.skipped=1; spec.ok cannot grant PASS."
+        },
+        {
+          "path": "packages/playwright-core/src/server/trace/recorder/tracing.ts",
+          "sha256": "3a0744912e767dc942a1deaefa92c57d0756ecdfb98caa44284fbcd07691cb9a",
+          "finding": "Archives include network/resources; screens/source off does not redact submitted data."
+        },
+        {
+          "path": "tests/playwright-test/playwright.trace.spec.ts",
+          "sha256": "b429aa1844fc757c66c3576c10096dac6370f2b262b501a54e1fb7c7d3c940d4",
+          "finding": "Inspected source capture opt-in, DOM/ARIA/screen switches and network-context isolation."
+        }
+      ],
+      "sourceBaseUrl": "https://github.com/microsoft/playwright/blob/1b025d7e20a026371cd5f98ba0cdce48892737c8/",
+      "packageLockSha256": "e1b439b9f7fced52fbfd04c850a244ee699d9bfbde6fe65a9baec9e68aa08b45"
+    },
+    "docs": [
+      "https://playwright.dev/docs/test-assertions",
+      "https://playwright.dev/docs/trace-viewer",
+      "https://playwright.dev/docs/browsers"
+    ],
+    "calibration": {
+      "protocol": "Real Chromium -> owned HTTP tracker/JSON rows; fresh [] reset/server/port/preview per run; fixed validation/create/list/reload/update/reload without stubbing. Health-only comparison, no build/model/productivity trial.",
+      "assertionIds": [
+        "empty",
+        "invalid-message",
+        "invalid-no-write",
+        "create-visible",
+        "create-reload",
+        "update-visible",
+        "update-reload"
+      ],
+      "summary": "3 correct PASS, 4 behavioral seeds FAIL, 4 setup/coverage controls INCONCLUSIVE; 11 classifier controls INCONCLUSIVE. No observed false accepts in this fixed matrix; no statistical/live-value inference.",
+      "runs": [
+        [
+          1,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          2,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          3,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          4,
+          "inert-submit",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          5,
+          "stale-list",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          6,
+          "missing-persistence",
+          "FAIL",
+          "ASSERT:create-reload",
+          4
+        ],
+        [
+          7,
+          "validation-broken",
+          "FAIL",
+          "ASSERT:invalid-message",
+          1
+        ],
+        [
+          8,
+          "skip",
+          "INCONCLUSIVE",
+          "SKIPPED_OR_RETRIED",
+          0
+        ],
+        [
+          9,
+          "noop",
+          "INCONCLUSIVE",
+          "ASSERTION_COVERAGE_MISSING",
+          0
+        ],
+        [
+          10,
+          "setup",
+          "INCONCLUSIVE",
+          "IDENTITY_MISSING",
+          0
+        ],
+        [
+          11,
+          "empty-steps",
+          "INCONCLUSIVE",
+          "ASSERTION_EVENTS_MISSING",
+          7
+        ]
+      ],
+      "reportControls": {
+        "count": 11,
+        "all": "INCONCLUSIVE",
+        "cases": [
+          "evaluatorDigest",
+          "candidateDigest",
+          "fixtureDigest",
+          "previewId",
+          "environmentId",
+          "browserVersion",
+          "screenshot-only",
+          "omitted-assertion",
+          "expected-failure",
+          "duplicate-retry",
+          "missing-trace"
+        ],
+        "method": "Clone/mutate positive report or expected binding; classifier controls, not browser runs."
+      },
+      "traceAudit": [
+        {
+          "run": 1,
+          "bytes": 11457,
+          "sha256": "68707b0c1fa391a94d76fa16d02d3240d6afb5bb9843cf8bab4a429520de8a49",
+          "domSnapshots": 35,
+          "networkBytes": 19595
+        },
+        {
+          "run": 4,
+          "bytes": 10170,
+          "sha256": "e07e1a514888fef5b4d131f6299d438f7d3d64b792174283c02df7470b59cf3e",
+          "domSnapshots": 19,
+          "networkBytes": 3880
+        }
+      ],
+      "limitations": "Laboratory source/config/fixture bindings and injected classifier identity controls do not establish deployed runtime identity or confinement. Pre/post lifecycle, Product QA integration and durable evidenceStore are Worker tests.",
+      "shared": "Health=200 all11; correct/skip/noop/empty-steps exit0, defects/setup exit1. Correct has7 successful expect events; empty-steps has7 wrappers/0 expect events.",
+      "traceCapture": "All11 archives:screen/source entries0. Correct:35 DOM snapshots/~19.5KiB network JSON. Seed failures retain diagnostics; submitted values remain.",
+      "runsColumns": [
+        "run",
+        "case",
+        "verdict",
+        "reason",
+        "successfulSteps"
+      ],
+      "reportSha256": {
+        "1": "ef5eb6ce48ce32f6eb6ba2bc30999783feb6b7f55c6500cb9659c68e9939cb70",
+        "4": "8469c24edcff70a7e5fb0f01abd2e46c6205125b4e638c045e8f9782e01673ed",
+        "5": "57a769a360e9ee78bd6e48e68d0f263443013239dfc142fb45f86ebfc4194852",
+        "6": "65f83099047ad7243151ba0d766e0bbfc69c26b78c7cb88787d9313e295bfc61",
+        "7": "32e1db651fd6f0a46d1eb32fae871535e70f4fcaace53ad69fb253452ea80a97"
+      },
+      "fullResultsSha256": "5c930bdc92de66e60dd4b5c74e87647fca9cb9ed11a7b54316b948083c569852"
+    },
+    "existingSeamVerification": {
+      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/acceptance-snapshot.test.js",
+      "result": "10 passed, 0 failed, 0 skipped",
+      "logSha256": "7eee2f607c13d1261add764eeef26d2e8994edf33379e2acc222fc14fcf0feb1"
+    },
+    "gapResolution": "1:matrix/reproduction;2:pinned source/support/capture;3:browserContract. External baseline/dependency gates in dependencyReview."
+  },
+  "prototypeReproduction": {
+    "purpose": "Exact executed prototype; decode/hash-check outside worktrees. IDs/timestamps/hashes vary; verdict matrix must match.",
+    "sourceSha256": "c74ee188dc47574f1100dd385a325781a0ec0878f84d36e02aa063d7a9b748ec",
+    "commands": [
+      "npm install --prefix <research-dir> --ignore-scripts --no-audit --no-fund --save-exact @playwright/test@1.63.0",
+      "TMPDIR=<owned-disk-dir> PLAYWRIGHT_BROWSERS_PATH=<owned-browser-dir> node <research-dir>/node_modules/playwright/cli.js install chromium --only-shell",
+      "PLAYWRIGHT_BROWSERS_PATH=<owned-browser-dir> node <research-dir>/prototype.cjs"
+    ],
+    "sourceEncoding": "base64 gzip UTF-8; sourceSha256 binds decompressed bytes",
+    "sourceGzipBase64": "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",
+    "extractCommand": "python3 - <absolute-plan-json> <owned-research-dir> <<'PY'\nimport sys,json,gzip,base64,pathlib,hashlib\nr=json.load(open(sys.argv[1]))[\"prototypeReproduction\"]; b=gzip.decompress(base64.b64decode(r[\"sourceGzipBase64\"])); assert hashlib.sha256(b).hexdigest()==r[\"sourceSha256\"]; d=pathlib.Path(sys.argv[2]); d.mkdir(parents=True,exist_ok=True); (d/\"prototype.cjs\").write_bytes(b)\nPY"
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A protected create/list/update and validation journey invokes the running app, reloads and checks expected visible/persisted behavior; criterion-specific PASS/FAIL/INCONCLUSIVE includes evaluator, preview, fixture, browser and candidate identities.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "IDENTITY_BINDING"
+      ],
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "browser-focused",
+        "qa-seam"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/product-qa.js",
+        "packages/agentic-system/src/runtime-observation.js",
+        "docs/blackboard/evidence/BB-132/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "invariant(result && [\"PASS\", \"FAIL\", \"INCONCLUSIVE\"].includes(result.verdict), `criterion verifier verdict invalid: ${criterionRef}`);"
+        },
+        {
+          "ref": "packages/agentic-system/src/runtime-observation.js",
+          "match": "export function classifyRuntimeIdentity({ expectedDigest, observedDigests, permittedRuntimeDigests = [] }) {"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "const verdict = criteria && observation && criterionResults.every((result) => result.verdict === \"PASS\") ? \"ACCEPT\" : \"REMEDIATION_REQUIRED\";"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-132/discovery.json",
+          "match": "\"plannedExperiment\""
+        }
+      ],
+      "supportingPlanFields": [
+        "browserInterface"
+      ]
+    },
+    {
+      "objectiveCriterion": "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
+      "criterionIds": [
+        "INDEPENDENT_EVIDENCE",
+        "FAILURE_CLASSIFICATION",
+        "EVIDENCE_RETENTION"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "browser-focused"
+      ],
+      "decisionIndexes": [
+        2,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/product-qa.js",
+        "packages/agentic-system/src/acceptance-snapshot.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "\"every pinned acceptance criterion must PASS\""
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "criterionResults: [{ criterionId: \"product-qa-run\", verdict: \"INCONCLUSIVE\", evidenceRefs: [] }]"
+        },
+        {
+          "ref": "packages/agentic-system/src/acceptance-snapshot.js",
+          "match": "criterionRefs: [...policy.criterionRefs],"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
+      "criterionIds": [
+        "USER_JOURNEY",
+        "INDEPENDENT_EVIDENCE",
+        "IDENTITY_BINDING",
+        "FAILURE_CLASSIFICATION",
+        "EVIDENCE_RETENTION",
+        "OWNED_RESOURCES",
+        "QA_AUTHORITY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "browser-focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-132/discovery.json",
+        "packages/agentic-system/src/product-qa.js",
+        "packages/agentic-system/test/product-qa.test.js",
+        "docs/living/system/agentic-application/capabilities.md",
+        "packages/agentic-system/src/acceptance-snapshot.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/acceptance-snapshot.js",
+          "match": "invariant(Array.isArray(raw.criterionRefs) && raw.criterionRefs.length > 0, \"AcceptancePolicy requires acceptance criteria\");"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "const verdict = criteria && observation && criterionResults.every((result) => result.verdict === \"PASS\") ? \"ACCEPT\" : \"REMEDIATION_REQUIRED\";"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-132/discovery.json",
+          "match": "No named browser journey verifier profile maps protected criteria to UI actions"
+        }
+      ],
+      "supportingPlanFields": [
+        "prototypeSummary",
+        "prototypeMethod"
+      ]
+    }
+  ],
+  "browserContract": {
+    "factory": "createBrowserJourneyVerifier({resolvePolicy,resolvePreview,observePreview,runner,evidenceStore,now}) -> frozen {verify}; operator composition only.",
+    "verifyInput": "Existing {snapshotRef,environmentRef,components,criterionRef,verifierPolicyRef}; resolve immutable policy/preview from exact refs. No invocation-selected evaluator/expectations.",
+    "policyProjection": "{verifierPolicyRef,evaluatorId,evaluatorDigest,protectedRoot,runnerCliPath,runnerDigest,packageLockDigest,playwrightVersion,browserRevision,browserVersion,browserExecutableDigest,journey:{criterionRef,testTitle,assertionIds,files:[{relativePath,sha256}],timeoutMs},originPolicy,capturePolicy}. <=32 unique ordered assertions. Reject unknown fields/duplicate mappings/unsafe paths/symlinks/root inside candidate. Pre/post hash executed files against BB-127 pins.",
+    "previewProjection": "{previewId,candidateSha,candidateTree,sourceDigest,snapshotRef,releaseRef,releaseHeadRevision,environmentRef,components:[{componentKind,artifactDigest}],configDigest,fixtureDigest,resetReceiptRef,origin,readinessReceiptRef,ownershipToken}. BB-131+snapshot projection; independent readiness/runtime receipt required.",
+    "identityChecks": "SHA-256 canonical invocation/criterion/policy/preview/snapshot receipt; exact FRONTEND/BACKEND digests. Trusted observePreview checks before navigation/after assertions. Instance/tree/config/fixture/runtime/head drift prevents PASS. FixtureDigest pins reset seed/receipt, not mutated data.",
+    "runner": "Spawn host runner using process.execPath,shell:false,owned external tempdir; copy only protected hash-checked files. CLI/package from operator root; no candidate config/modules/globalSetup/webServer. Allow env PATH,LANG,TZ,owned temp/cache and synthetic BASE_URL/BINDINGS/output paths; exclude NODE_OPTIONS,NODE_PATH,proxies/auth/secrets. Literal loopback only/no credentials; block service workers/cross-origin requests. No OS sandbox claim.",
+    "assertionCoverage": "Each protected ASSERT:<id> step has one awaited expect. Reporter records actual expect onStepEnd,parent ID/error. Require exact test/project,expectedStatus=passed,one result/retry0,passed/no errors,exact successful ledger. Empty steps/screens/test.ok are insufficient. Early failure leaves later IDs NOT_OBSERVED.",
+    "result": "{verdict:PASS|FAIL|INCONCLUSIVE,evidenceRefs:[receiptRef]}. Immutable receipt: invocation/criterion/snapshot,expected/observed bindings,exit/status,typed reason,assertion/setup/coverage outcomes,artifact hashes. evidenceStore.put returns durable content ref; storage failure INCONCLUSIVE/no fabricated ref. QA aggregates/publishes.",
+    "classification": "INCONCLUSIVE for preflight/setup/host/timeout/transport/parse/coverage/drift/artifact/storage faults; action timeout reason ACTION_TIMEOUT. FAIL/ASSERTION_FAILED for observed protected expect mismatch with valid identities/setup. PASS requires exit0,full coverage,postchecks,retained evidence; malformed results never succeed.",
+    "boundsAndCleanup": "workers1,retries0,expect5000ms,invoke30000ms(max120000),stdout/stderr64KiB each,JSON1MiB,trace25MiB; policy-pinned. Finally close contexts/owned child group(1s kill grace)/tempdir. Preview lifecycle caller-owned. Evidence dir0700/files0600; copy only realpath regular files within owned root after hashing; reject foreign/symlink/oversize.",
+    "retention": "All outcomes trace DOM/network on,sources/screens/video off. Receipt/JSON/trace/bounded logs local7days or operator override; no auto upload. Synthetic unauthenticated fixtures only; auth/production needs separate contract. Submitted values may remain; no universal redaction.",
+    "projectionAdapter": "resolvePolicy is operator-injected and derives protected evaluator/fixture/criterion bytes from the QA snapshot, not from candidate config. resolvePreview adapts the actual BB-131 receipt: candidateSha/tree/profile/config/seed/runtime/evaluator/services and live owner handle. It supplies snapshot/environment/release/components from the independent QA request and rejects mismatch with runtimeObserver; BB-131 is not assumed to export those authority fields. Adapter logic lives in browser-journey-verifier.js; no nonexistent upstream API or source edit is required.",
+    "runnerProtocol": "runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
+    "testProvisioning": "Verification-only browser-journey-fixtures.cjs owns one external mkdtemp fixture root, writes a fixed package manifest with exact @playwright/test@1.63.0, verifies all three recorded package SRI values and provisions Chromium1243 with disk-backed TMPDIR. Bootstrap may install this explicit test prerequisite; createBrowserJourneyVerifier itself never installs. Network/install failure fails focused verification, never skips. Reuse only a caller-provided root after identical pin checks; record actual lock/browser digests in protected fixture policy. Run setup before focused tests and npm test:agentic so the default CI kernel can execute native browser positives without undeclared environment setup. Remove only the owned root/browser children in after-hook. Bound install/download deadline180s and output64KiB; test total within collector300s. Production operator still provides independent pinned root/policy. Use one owned bootstrap per test process, native fixture invocation timeout5000ms and aggregate fixture-matrix deadline90000ms; installer180s+matrix90s+teardown10s stays below the 300s collector command deadline. Inject long-timeout boundary controls instead of sleeping for the production120s cap. Deadlines fail the suite, never skip."
+  },
+  "profileSupport": {
+    "name": "local-browser-journey-v1",
+    "calibratedHost": "Ubuntu 24.04.5 x86_64, Node v24.20.0",
+    "browser": "Chromium headless shell only; no channel substitution or auto-upgrade",
+    "limits": "Trusted synthetic unauthenticated loopback app; no production/auth/external origins. Persistence is reload-only; DB/crash compatibility belongs to BB-133. No cross-host equivalence.",
+    "setup": "External exact @playwright/test@1.63.0 lock/SRI+chromium --only-shell. Extraction exhausted512MiB tmpfs; disk-backed TMPDIR succeeded. No version fallback."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "browserMechanism": {
+    "factory": "createBrowserJourneyVerifier({resolvePolicy,resolvePreview,observePreview,runner,evidenceStore,now}) -> frozen {verify}; operator composition only.",
+    "verifyInput": "Existing {snapshotRef,environmentRef,components,criterionRef,verifierPolicyRef}; resolve immutable policy/preview from exact refs. No invocation-selected evaluator/expectations.",
+    "projectionAdapter": "resolvePolicy is operator-injected and derives protected evaluator/fixture/criterion bytes from the QA snapshot, not from candidate config. resolvePreview adapts the actual BB-131 receipt: candidateSha/tree/profile/config/seed/runtime/evaluator/services and live owner handle. It supplies snapshot/environment/release/components from the independent QA request and rejects mismatch with runtimeObserver; BB-131 is not assumed to export those authority fields. Adapter logic lives in browser-journey-verifier.js; no nonexistent upstream API or source edit is required.",
+    "runnerProtocol": "runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
+    "testProvisioning": "Verification-only browser-journey-fixtures.cjs owns one external mkdtemp fixture root, writes a fixed package manifest with exact @playwright/test@1.63.0, verifies all three recorded package SRI values and provisions Chromium1243 with disk-backed TMPDIR. Bootstrap may install this explicit test prerequisite; createBrowserJourneyVerifier itself never installs. Network/install failure fails focused verification, never skips. Reuse only a caller-provided root after identical pin checks; record actual lock/browser digests in protected fixture policy. Run setup before focused tests and npm test:agentic so the default CI kernel can execute native browser positives without undeclared environment setup. Remove only the owned root/browser children in after-hook. Bound install/download deadline180s and output64KiB; test total within collector300s. Production operator still provides independent pinned root/policy. Use one owned bootstrap per test process, native fixture invocation timeout5000ms and aggregate fixture-matrix deadline90000ms; installer180s+matrix90s+teardown10s stays below the 300s collector command deadline. Inject long-timeout boundary controls instead of sleeping for the production120s cap. Deadlines fail the suite, never skip."
+  },
+  "prototypeSummary": {
+    "classification": "EXECUTED_ISOLATED_BROWSER_CALIBRATION_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "calibration": {
+      "protocol": "Real Chromium -> owned HTTP tracker/JSON rows; fresh [] reset/server/port/preview per run; fixed validation/create/list/reload/update/reload without stubbing. Health-only comparison, no build/model/productivity trial.",
+      "assertionIds": [
+        "empty",
+        "invalid-message",
+        "invalid-no-write",
+        "create-visible",
+        "create-reload",
+        "update-visible",
+        "update-reload"
+      ],
+      "summary": "3 correct PASS, 4 behavioral seeds FAIL, 4 setup/coverage controls INCONCLUSIVE; 11 classifier controls INCONCLUSIVE. No observed false accepts in this fixed matrix; no statistical/live-value inference.",
+      "runs": [
+        [
+          1,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          2,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          3,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          4,
+          "inert-submit",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          5,
+          "stale-list",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          6,
+          "missing-persistence",
+          "FAIL",
+          "ASSERT:create-reload",
+          4
+        ],
+        [
+          7,
+          "validation-broken",
+          "FAIL",
+          "ASSERT:invalid-message",
+          1
+        ],
+        [
+          8,
+          "skip",
+          "INCONCLUSIVE",
+          "SKIPPED_OR_RETRIED",
+          0
+        ],
+        [
+          9,
+          "noop",
+          "INCONCLUSIVE",
+          "ASSERTION_COVERAGE_MISSING",
+          0
+        ],
+        [
+          10,
+          "setup",
+          "INCONCLUSIVE",
+          "IDENTITY_MISSING",
+          0
+        ],
+        [
+          11,
+          "empty-steps",
+          "INCONCLUSIVE",
+          "ASSERTION_EVENTS_MISSING",
+          7
+        ]
+      ],
+      "reportControls": {
+        "count": 11,
+        "all": "INCONCLUSIVE",
+        "cases": [
+          "evaluatorDigest",
+          "candidateDigest",
+          "fixtureDigest",
+          "previewId",
+          "environmentId",
+          "browserVersion",
+          "screenshot-only",
+          "omitted-assertion",
+          "expected-failure",
+          "duplicate-retry",
+          "missing-trace"
+        ],
+        "method": "Clone/mutate positive report or expected binding; classifier controls, not browser runs."
+      },
+      "traceAudit": [
+        {
+          "run": 1,
+          "bytes": 11457,
+          "sha256": "68707b0c1fa391a94d76fa16d02d3240d6afb5bb9843cf8bab4a429520de8a49",
+          "domSnapshots": 35,
+          "networkBytes": 19595
+        },
+        {
+          "run": 4,
+          "bytes": 10170,
+          "sha256": "e07e1a514888fef5b4d131f6299d438f7d3d64b792174283c02df7470b59cf3e",
+          "domSnapshots": 19,
+          "networkBytes": 3880
+        }
+      ],
+      "limitations": "Laboratory source/config/fixture bindings and injected classifier identity controls do not establish deployed runtime identity or confinement. Pre/post lifecycle, Product QA integration and durable evidenceStore are Worker tests.",
+      "shared": "Health=200 all11; correct/skip/noop/empty-steps exit0, defects/setup exit1. Correct has7 successful expect events; empty-steps has7 wrappers/0 expect events.",
+      "traceCapture": "All11 archives:screen/source entries0. Correct:35 DOM snapshots/~19.5KiB network JSON. Seed failures retain diagnostics; submitted values remain.",
+      "runsColumns": [
+        "run",
+        "case",
+        "verdict",
+        "reason",
+        "successfulSteps"
+      ],
+      "reportSha256": {
+        "1": "ef5eb6ce48ce32f6eb6ba2bc30999783feb6b7f55c6500cb9659c68e9939cb70",
+        "4": "8469c24edcff70a7e5fb0f01abd2e46c6205125b4e638c045e8f9782e01673ed",
+        "5": "57a769a360e9ee78bd6e48e68d0f263443013239dfc142fb45f86ebfc4194852",
+        "6": "65f83099047ad7243151ba0d766e0bbfc69c26b78c7cb88787d9313e295bfc61",
+        "7": "32e1db651fd6f0a46d1eb32fae871535e70f4fcaace53ad69fb253452ea80a97"
+      },
+      "fullResultsSha256": "5c930bdc92de66e60dd4b5c74e87647fca9cb9ed11a7b54316b948083c569852"
+    },
+    "existingSeamVerification": {
+      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/acceptance-snapshot.test.js",
+      "result": "10 passed, 0 failed, 0 skipped",
+      "logSha256": "7eee2f607c13d1261add764eeef26d2e8994edf33379e2acc222fc14fcf0feb1"
+    },
+    "gapResolution": "1:matrix/reproduction;2:pinned source/support/capture;3:browserContract. External baseline/dependency gates in dependencyReview."
+  },
+  "browserInterface": {
+    "factory": "createBrowserJourneyVerifier({resolvePolicy,resolvePreview,observePreview,runner,evidenceStore,now}) -> frozen {verify}; operator composition only.",
+    "verifyInput": "Existing {snapshotRef,environmentRef,components,criterionRef,verifierPolicyRef}; resolve immutable policy/preview from exact refs. No invocation-selected evaluator/expectations.",
+    "policyProjection": "{verifierPolicyRef,evaluatorId,evaluatorDigest,protectedRoot,runnerCliPath,runnerDigest,packageLockDigest,playwrightVersion,browserRevision,browserVersion,browserExecutableDigest,journey:{criterionRef,testTitle,assertionIds,files:[{relativePath,sha256}],timeoutMs},originPolicy,capturePolicy}. <=32 unique ordered assertions. Reject unknown fields/duplicate mappings/unsafe paths/symlinks/root inside candidate. Pre/post hash executed files against BB-127 pins.",
+    "previewProjection": "{previewId,candidateSha,candidateTree,sourceDigest,snapshotRef,releaseRef,releaseHeadRevision,environmentRef,components:[{componentKind,artifactDigest}],configDigest,fixtureDigest,resetReceiptRef,origin,readinessReceiptRef,ownershipToken}. BB-131+snapshot projection; independent readiness/runtime receipt required.",
+    "identityChecks": "SHA-256 canonical invocation/criterion/policy/preview/snapshot receipt; exact FRONTEND/BACKEND digests. Trusted observePreview checks before navigation/after assertions. Instance/tree/config/fixture/runtime/head drift prevents PASS. FixtureDigest pins reset seed/receipt, not mutated data.",
+    "runner": "Spawn host runner using process.execPath,shell:false,owned external tempdir; copy only protected hash-checked files. CLI/package from operator root; no candidate config/modules/globalSetup/webServer. Allow env PATH,LANG,TZ,owned temp/cache and synthetic BASE_URL/BINDINGS/output paths; exclude NODE_OPTIONS,NODE_PATH,proxies/auth/secrets. Literal loopback only/no credentials; block service workers/cross-origin requests. No OS sandbox claim.",
+    "assertionCoverage": "Each protected ASSERT:<id> step has one awaited expect. Reporter records actual expect onStepEnd,parent ID/error. Require exact test/project,expectedStatus=passed,one result/retry0,passed/no errors,exact successful ledger. Empty steps/screens/test.ok are insufficient. Early failure leaves later IDs NOT_OBSERVED.",
+    "result": "{verdict:PASS|FAIL|INCONCLUSIVE,evidenceRefs:[receiptRef]}. Immutable receipt: invocation/criterion/snapshot,expected/observed bindings,exit/status,typed reason,assertion/setup/coverage outcomes,artifact hashes. evidenceStore.put returns durable content ref; storage failure INCONCLUSIVE/no fabricated ref. QA aggregates/publishes.",
+    "classification": "INCONCLUSIVE for preflight/setup/host/timeout/transport/parse/coverage/drift/artifact/storage faults; action timeout reason ACTION_TIMEOUT. FAIL/ASSERTION_FAILED for observed protected expect mismatch with valid identities/setup. PASS requires exit0,full coverage,postchecks,retained evidence; malformed results never succeed.",
+    "boundsAndCleanup": "workers1,retries0,expect5000ms,invoke30000ms(max120000),stdout/stderr64KiB each,JSON1MiB,trace25MiB; policy-pinned. Finally close contexts/owned child group(1s kill grace)/tempdir. Preview lifecycle caller-owned. Evidence dir0700/files0600; copy only realpath regular files within owned root after hashing; reject foreign/symlink/oversize.",
+    "retention": "All outcomes trace DOM/network on,sources/screens/video off. Receipt/JSON/trace/bounded logs local7days or operator override; no auto upload. Synthetic unauthenticated fixtures only; auth/production needs separate contract. Submitted values may remain; no universal redaction.",
+    "projectionAdapter": "resolvePolicy is operator-injected and derives protected evaluator/fixture/criterion bytes from the QA snapshot, not from candidate config. resolvePreview adapts the actual BB-131 receipt: candidateSha/tree/profile/config/seed/runtime/evaluator/services and live owner handle. It supplies snapshot/environment/release/components from the independent QA request and rejects mismatch with runtimeObserver; BB-131 is not assumed to export those authority fields. Adapter logic lives in browser-journey-verifier.js; no nonexistent upstream API or source edit is required.",
+    "runnerProtocol": "runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup."
+  },
+  "prototypeMethod": {
+    "purpose": "Exact executed prototype; decode/hash-check outside worktrees. IDs/timestamps/hashes vary; verdict matrix must match.",
+    "sourceSha256": "c74ee188dc47574f1100dd385a325781a0ec0878f84d36e02aa063d7a9b748ec",
+    "commands": [
+      "npm install --prefix <research-dir> --ignore-scripts --no-audit --no-fund --save-exact @playwright/test@1.63.0",
+      "TMPDIR=<owned-disk-dir> PLAYWRIGHT_BROWSERS_PATH=<owned-browser-dir> node <research-dir>/node_modules/playwright/cli.js install chromium --only-shell",
+      "PLAYWRIGHT_BROWSERS_PATH=<owned-browser-dir> node <research-dir>/prototype.cjs"
+    ],
+    "sourceEncoding": "base64 gzip UTF-8; sourceSha256 binds decompressed bytes",
+    "journeySource": " await page.goto(process.env.BASE_URL);\n await check('empty',()=>expect(page.getByTestId('row')).toHaveCount(0));\n await page.getByRole('button',{name:'Create',exact:true}).click();\n await check('invalid-message',()=>expect(page.getByRole('alert')).toHaveText('Title required'));\n await check('invalid-no-write',()=>expect(page.getByTestId('row')).toHaveCount(0));\n await page.getByLabel('Title',{exact:true}).fill('Alpha');\n await page.getByRole('button',{name:'Create',exact:true}).click();\n await check('create-visible',()=>expect(page.getByTestId('row')).toHaveText('Alpha Update'));\n await page.reload();\n await check('create-reload',()=>expect(page.getByTestId('row')).toHaveText('Alpha Update'));\n await page.getByLabel('Title',{exact:true}).fill('Beta');\n await page.getByRole('button',{name:'Update',exact:true}).click();\n await check('update-visible',()=>expect(page.getByTestId('row')).toHaveText('Beta Update'));\n await page.reload();\n await check('update-reload',()=>expect(page.getByTestId('row')).toHaveText('Beta Update'));",
+    "reporterSource": "const reporterSource = `module.exports=class {onTestBegin(test){this.observations=[];}onStepEnd(test,result,step){if(step.category!=='expect')return;let p=step.parent;while(p&&!p.title.startsWith('ASSERT:'))p=p.parent;if(p)this.observations.push({id:p.title.slice(7),ok:!step.error});}onTestEnd(test,result){result.attachments.push({name:'assertion-observations',contentType:'application/json',body:Buffer.from(JSON.stringify(this.observations))});}};\\n`;",
+    "binding": "Decoded embedded sourceGzipBase64 SHA256 matches sourceSha256. Journey is the actual executed seven-assertion calibration. Reported results remain historical source-bound observations, not production QA or new local execution."
   }
 }
