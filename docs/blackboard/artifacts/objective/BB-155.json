@@ -1,0 +1,46 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-155",
+  "outcome": "Build a new Outer Blackboard control plane with one authoritative Work resource per current work item, executable lifecycle transitions, and a pure context builder, so work state is independent of source branches, PR registration, worktrees, and operator documentation.",
+  "currentProblem": "The current Outer Blackboard splits truth across the canonical graph, objective/plan artifacts, registration/refinement branches, worktrees and generated projections. A canonical path is not a canonical state when the same path differs across branches. New work also has a bootstrap loop: research requires an OBJECTIVE already registered in the graph, while registration itself requires a source PR merge. Finally, jev.md mixes lifecycle instructions with implementation-strategy history, so a fresh agent cannot derive the exact next legal action from state alone.",
+  "scope": [
+    "outer-blackboard.v2-control-authority",
+    "outer-blackboard.work-resource",
+    "outer-blackboard.executable-lifecycle",
+    "outer-blackboard.context-builder",
+    "outer-blackboard.source-attempt-binding",
+    "outer-blackboard.operator-next-action"
+  ],
+  "constraints": [
+    "Task 1 builds the new control plane only. It must not migrate or cut over any current unfinished legacy work.",
+    "Blackboard authority must be readable identically from any checkout/worktree and must not depend on whichever source branch is currently checked out.",
+    "A new Work must be creatable directly in the control plane before any source PR or branch exists.",
+    "Context is derived output, not authority: no context generation/history/currentContextRef persistence in the V2 model.",
+    "Source branches, worktrees and candidate SHAs are attempt bindings only and never become Blackboard truth.",
+    "Independent Jev judgment, exact candidate/evidence/merge binding, negative-case verification and Living Docs delivery truth remain trust primitives; V2 may adapt them but must not weaken them.",
+    "The lifecycle and legal next actions must be executable state-machine data/code; operator docs may explain semantics but cannot be required to infer what action is legal next."
+  ],
+  "successCriteria": [
+    "From two different source checkouts/worktrees, `bb show <WORK_ID>` resolves byte-equivalent authoritative Work state from one control-plane authority.",
+    "A brand-new work item can be created and enter research without first merging a source-code registration PR.",
+    "The V2 Work resource separates desired semantic state from observed lifecycle state and provides an explicit revision/generation binding for stale judgment detection.",
+    "`bb next <WORK_ID>` derives the bounded legal next actions and blockers from executable lifecycle state without requiring jev.md or previous conversation.",
+    "`buildContext(<WORK_ID>)` derives the current agent goal, inputs, read/write authority, forbidden actions and required output without persisting a context artifact.",
+    "Source branch/worktree/candidate identity is recorded only as an Attempt bound to a Work and cannot redefine the Work objective/plan or lifecycle authority.",
+    "V2 can run against empty/new Work resources in parallel with the legacy Blackboard, with no migration or dual-write of current legacy tasks in this task."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/work-graph.json",
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/jev.md",
+    "scripts/blackboard-work-graph.mjs",
+    "scripts/blackboard-delivery.mjs",
+    "scripts/blackboard-implementation-bootstrap.mjs",
+    "scripts/blackboard-task-context-resolver.mjs",
+    "scripts/blackboard-jev-cli.mjs",
+    "scripts/blackboard-jev-ci.mjs",
+    "AGENTS.md"
+  ]
+}
