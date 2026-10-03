@@ -286,3 +286,8 @@ Expected modified trusted surfaces:
 - `docs/living/system/state.md`
 
 Worker start rule: bind exact delivered BB-152 surface first. If its phase-envelope contract contradicts this plan, return to RESEARCH_SA; do not adapt architecture ad hoc in Worker.
+
+
+## Research publication hygiene
+
+The registration PR and the research-closure PR use different branches. A branch that has already been merged must not be reused as evidence that a later research head passed CI/JEV: checks are accepted only when their subject SHA is the exact current PR head. This section records that BB-153 research closure is intentionally published from a fresh branch and must receive a fresh exact-head workflow result before merge.
