@@ -317,3 +317,10 @@ local publish ----------------> blackboard-delivery.mjs -> blackboard-supervisio
 `blackboard-jev-ci.mjs` remains thin/data-only and does not need a BB-153 implementation write. During the BB-153 implementation PR, candidate kernel tests execute the new module, while JEV itself remains pinned to the old trusted base. Once merged, later PRs naturally execute the delivered supervision module from their trusted base controller.
 
 This resolves the evidence gap without weakening the CI trust boundary or adding a second policy.
+
+
+## JEV R2 lookback — bounded objective evidence
+
+R2 on `7d86f03fcff9aa02112b5c1760433b7de48fd084` did not reach the provider. Trusted materialization failed with `objective sourceAnchors exceeds bounded limit`: objective-4 had five exact anchors after the R1 grounding pass, while JEV allows at most four per objective. This is a plan-shape failure, not a semantic finding.
+
+The repair preserves the R1 conclusion and removes only the redundant reusable-workflow anchor. The four retained anchors prove (1) local CLI delegation into `blackboard-jev.mjs`, (2) CI adapter delegation into the same module, (3) the CI data-only/no-candidate-module boundary, and (4) controller pinning to the PR base. The reusable workflow remains listed in sourceRefs/supporting evidence but does not consume a fifth exact anchor slot.
