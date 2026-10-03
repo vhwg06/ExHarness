@@ -42,13 +42,13 @@
   "architectureDecisions": [
     "D1 — Pinned delivered BB-155+BB-157 profile; base Work wire/CAS/clock/fence intact. Check digest/capability before freeze; READY is design only.",
     "D2 — Prepare pinned selector-aware public/CI/bootstrap; wrong/unreachable authority/protocol fails. Postflip current Work uses service only; immutable historical proof never routes current work.",
-    "D3 — Admission quiesce precedes hard freeze: finish existing source publications with main writable, prove zero active legacy claims/callbacks; then maintenance+native main lock and fresh SHA recheck. Failed drain/race aborts. No Git/SQLite shared transaction or forged claim clearing.",
+    "D3 — resolvedSliceData.freeze selects admission drain before hard maintenance/native GitHub main lock; zero live legacy claims, fresh SHA, enforced protection or abort. No synthetic clearing or Git/SQLite shared transaction.",
     "D4 — Manifest includes all status!=DONE except exact valid BLOCKED withdrawal. Ordinary BLOCKED stays. Prove unique/disjoint exhaustive id partition and complete regular-file closure. Reject ambiguous withdrawal, missing refs and dangling/withdrawn dependency; never use a fixed count.",
     "D5 — Exact transformBlueprint Work wire, generation/RV1; preserve ids, inline bodies/hashes, edges/components/scopes and phase authority. DONE uses external validated Living bindings only. Preserve/hash-pin existing isolated V2 set. importAuthorityRef proof never masquerades as a native Decision.",
     "D6 — Original archived assertReady/validateEvaluation must pass. Typed immutable importAuthorityRef maps equal gen1 semantics/version refs, never rewrites answers/cacheKey or impersonates Decision. Pending judgment owns a real new read-only controller claim; no invented result/legacy lease. Unused stale EXECUTION candidates stay diagnostic.",
-    "D7 — Independent archived legacy guards versus actual native nextActions/buildContext on prepared snapshot. Compare diagnostics, proposed actions/required inputs and enabled mutation separately per parityBlueprint.algorithmSteps. Research claim may run ahead; Worker claim needs readiness/deps. VERIFY_MERGE is read-only; store publication is PUBLISH_DELIVERY_RECEIPT only with verified proof.",
+    "D7 — resolvedSliceData.phaseRows/equality bind actual native nextActions/buildContext to independently validated source. Research may run ahead; Worker requires readiness/delivery. Read-only VERIFY_MERGE cannot publish; receipt publication requires actual merge proof.",
     "D8 — Exactly all included ids once, zero per-field diffs in canonical parity report. Compare semantic inputs/edges/scopes/blockers and native action guards; explicit CAS/fence/transport refinements never erase authority. Bind report to manifest/controller/destination.",
-    "D9 — One guarded BEGIN IMMEDIATE creates all real native records and target selectors privately, computes actual same-connection exhaustive parity, then report/receipt/allocator COMMIT. Failure rolls back all; WAL readers see old state until commit. This resolves store-clock claim identity without partial cutover.",
+    "D9 — migrationContract.boundary selects same-connection native parity inside BEGIN IMMEDIATE before report/receipt/allocator COMMIT. Every record/selector rolls back on failure; external readers see old state until commit.",
     "D10 — Public wrappers route current Work only to pinned service; raw legacy-current APIs reject before I/O. No fallback/dual-write. Immutable historical proofs remain data; release main freeze only after every id and public surface verifies.",
     "D11 — Select safer operational155->157->156 profile. No optional verification command: source collector executes every command. Exact BB-157 failure/reflection/lease subjects must preserve legal authority or migration fails. Missing applicable reflection cannot be manufactured; legitimate source resolution precedes a new snapshot.",
     "D12 — Owned fixtures exercise all exports/checks without live cutover. Preserve independent judge, negative bindings and exact merge/tree/Living trust. Actual delivery requires real frozen cutover proof."
@@ -122,13 +122,13 @@
     ]
   },
   "implementationSlices": [
-    "S0 — scripts/blackboard-v2/{cli,transport,trust-adapter}.mjs and cutoverContract.surfaceChanges public/CI files (CUTOVER). Extend delivered cli.mjs/createControlClient, not a second CLI. Input exact BB-155/157 delivered pins; output installed selector-aware prepared release: LEGACY preserves admitted work, V2 calls one service, wrong pins fail. Merge independently approved code before drain; AGENTS/README/contracts/state/Living edits explain conditional activation. No current graph retirement before COMMIT.",
-    "S1 — scripts/blackboard-v2/{main-freeze,migrate-legacy}.mjs (MANIFEST/TERMINAL_EXCLUSION). beginLegacyDrain stops new claims, drains existing publications with main writable, proves zero callbacks/claims; enterMaintenance stops all writes; acquireGithubMainFreeze saves/enforces/verifies policy and SHA. buildMigrationManifest captures manifestBlueprint complete regular-file closure and destination hash. Output exhaustive disjoint unfinished/DONE/withdrawn partition + immutable archive/freeze proof. Race/malformed withdrawal/missing ref aborts before import.",
-    "S2 — scripts/blackboard-v2/{migrate-legacy,work-resource}.mjs (SEMANTICS/TERMINAL_EXCLUSION). transformLegacyWork(entry,archive) implements every transformBlueprint/parityBlueprint.phaseRows row, outputs exact gen1/RV1 Work templates and immutable original typed proof inputs. Unchanged assertReady/validateEvaluation validate originals; strict importAuthorityRef is not Decision. resolveImportedAuthority checks equal semantics/current subject. DONE/withdrawn never create Work. Invalid/stale/unsettled phase fails whole batch; native Attempt/LeaseVersion created by S4.",
-    "S3 — scripts/blackboard-v2/migrate-legacy.mjs (PARITY). prepareMigrationSnapshot resolves recorded proof/Living facts; assertMigrationParity compares legacy projections with actual readSnapshot/nextActions/buildContext on S4 same SQL connection. Implement parityBlueprint.algorithmSteps and phaseRows: exact full-id set, scopes, dependencies, blockers, diagnostic versus enabled mutation and raw guards. Output zero-diff Report or throw; normalize only declared aliases/maintenance comparison, no guessed native clock or caller equality flag.",
-    "S4 — scripts/blackboard-v2/control-store.mjs (CUTOVER/PARITY). Add commitMigration(migrationContract.exports arguments): BEGIN IMMEDIATE checks revision/selectors/profile/freeze/source/destination. Insert every real Work/Attempt/LeaseVersion/candidate/evidence/import-proof, stage selectors privately; S3 uses same-connection snapshots; require exhaustive zero diff/live leases. Persist Report/CutoverReceipt/allocator then one COMMIT. Any fault ROLLBACK all; identical receipt retry idempotent. Existing isolated V2 rows unchanged; no dual-write.",
-    "S5 — test/blackboard-v2-migration.test.mjs + delivered control/supervision suites (all five criteria). Invoke actual buildMigrationManifest/transformLegacyWork/commitMigration under exact N1-N3 bound titles. Own immutable legacy fixtures cover every phase row, last-id mismatch, stale proofs, lock/drain races, transaction faults/restart/lost-response, isolated preservation. Fresh two-cwd CLI/public reads agree; raw legacy APIs deny before I/O. Run all verificationPlan commands, no skip; retain judge/merge/Living/negative assertions. Fixture success is research/verification only.",
-    "S6 — scripts/blackboard-v2/{cli,transport,trust-adapter}.mjs plus named public/CI adapters and docs (CUTOVER/TERMINAL_EXCLUSION). After actual receipt, verify all-id hash/actions/context/pins/routes; raw readWorkGraph/current writers reject RETIRED, immutable SHA diagnostics stay read-only. Release freeze only after postchecks. Imported BB-156 MERGE_PENDING keeps original accepted candidate; verifyWorkMerge is read-only, PUBLISH_DELIVERY_RECEIPT requires actual cutover/main/equal-tree/Living proofs. Emit operational evidence and final Living Docs/state pointer through V2; no legacy DONE write."
+    "S0 — scripts/blackboard-v2/{cli,transport,trust-adapter}.mjs + cutoverContract.surfaceChanges public/CI/docs. Implement pinned selector routing from currentSessionBlueprint: legacy admitted work until COMMIT, then one V2 authority. Independent code approval/merge/install precedes S1. Covers CUTOVER; activation-conditional docs preserve current graph.",
+    "S1 — scripts/blackboard-v2/{main-freeze,migrate-legacy}.mjs. Implement resolvedSliceData.source/freeze exactly: admission drain, hard maintenance/native verified lock, buildMigrationManifest full immutable closure and exhaustive partition. Input fresh locked SHA/destination; output manifest/archive/freeze proof; any race/ref/withdrawal error aborts. Covers MANIFEST/TERMINAL_EXCLUSION.",
+    "S2 — migrate-legacy.mjs/work-resource.mjs. transformLegacyWork implements resolvedSliceData.work/phaseRows/proofBinding; unchanged validators validate originals. Output strict semantic templates/import proofs, no live old lease and no terminal Work. Native pending records allocated only by S4. Invalid/stale phase aborts entire batch. Covers SEMANTICS/TERMINAL_EXCLUSION.",
+    "S3 — migrate-legacy.mjs. prepareMigrationSnapshot resolves actual stored proof/Living facts; assertMigrationParity implements resolvedSliceData.equality against independent source projection and S4 actual native snapshots. Full set/zero diffs, no producer boolean or guessed clock. Output bound Report or throw. Covers PARITY.",
+    "S4 — control-store.mjs. commitMigration uses migrationContract.exports/boundary: BEGIN IMMEDIATE, all guards, native rows/Attempt/fence/LeaseVersion/versions/proofs and private selectors; call S3 on same connection, persist zero-diff Report/CutoverReceipt/allocator, COMMIT. Any fault rolls all back; identical receipt retry idempotent; isolated rows preserved. Covers CUTOVER/PARITY.",
+    "S5 — test/blackboard-v2-migration.test.mjs and base/supervision suites. Invoke N1-N3 exact bindings and all verificationPlan commands; exhaustive phase rows, last-id/stale proof, drain/lock, every transaction fault/restart/lost response, isolated preservation, two-cwd public routing and raw deny-before-I/O. No skipped judge/negative/merge/Living checks. Covers all five criteria.",
+    "S6 — cli/transport/trust-adapter plus public/CI/docs. Actual receipt/all ids/hash/actions/context/pins/routes postcheck before freeze release; raw current graph/writers RETIRED, immutable SHA diagnostic remains. Imported BB-156 keeps accepted candidate; readonly verifyWorkMerge and actual cutover/main/tree/Living proof gate V2 delivery. Publish final Living Docs/state pointer through V2, no legacy DONE write. Covers CUTOVER/TERMINAL_EXCLUSION."
   ],
   "acceptanceCriteria": [
     {
@@ -628,7 +628,7 @@
     "kind": "PLANNED_PRODUCT_ACCEPTANCE",
     "mapping": "Archive-derived semantic templates preserve id/inline bodies/hashes/edges/components/direct scopes; DONE edges use validated Living proof only. Native gen1/RV1 rows, pending controller Attempt/fence/Lease/version records and exact bridge bindings materialize inside uncommitted import transaction with store clock, then native parity before COMMIT. Original evaluator bytes/subject hashes unchanged.",
     "tests": "For EVERY manifest id, compare these fields against independently read source bodies/edges; assert unique Work per id. Tamper goal,plan,edge,component,scope or required receipt: transform/parity aborts. Preserve MERGE_PENDING candidate/tree/evidence; no DONE row is emitted for a Living dependency.",
-    "wire": "Use exact BB-155 Work wire: {id,resourceVersion:1,generation:1,spec:{objective:{ref,hash,body},plan:{ref,semanticHash,body}|null,dependencies:[{workId,requires,source:WORK|LIVING,binding?}],components,writeScope,forbiddenWrite,labels,provenance},status:{phase,observedGeneration:1,activeAttemptRef:null,activeLeaseRef:null,candidateVersionRef:null,evidenceVersionRef:null,readinessDecisionRef:null,latestCandidateDecisionRef:null,deliveryReceiptRef:null,conditions:[],dependencyFacts,leaseState:NONE,blockers:[],importAuthorityRef}}. Optional refs/phase facts replaced only by validated phase-specific native records/bridge; use optional BB-157 failureAnchorRef/repairReflectionRef only when exact applicable authority exists. readScope remains plan/component context data; no unsupported spec.scopes field. Strict schema validation must pass every prepared Work."
+    "wireRef": "state.plan.migrationContract.resolvedSliceData.work"
   },
   "parityBlueprint": {
     "kind": "PLANNED_PRODUCT_ACCEPTANCE",
@@ -642,64 +642,14 @@
       "limits": "Historical model calibration; real native/live acceptance belongs to Worker."
     },
     "projection": "For every id compare semantic hashes/edges/components and {current/postclaim scope,ownership,readiness/candidate proof hash,dependency blocker refs,diagnostic next,proposed native action required inputs,enabled mutation}. phaseRows fixes native ids/guards. Record protocol alias/refinement separately; preserve all semantic blockers. Source unsupported authority aborts whole prepare before visibility.",
-    "phaseRows": [
-      {
-        "source": "RESEARCH_SA/RESEARCH unclaimed",
-        "target": "RESEARCHING no live owner",
-        "native": "START_RESEARCH",
-        "guard": "valid goal/components; dependencies may be unfinished",
-        "scope": "current product []; research output is exact current plan"
-      },
-      {
-        "source": "WORKER/EXECUTION unclaimed",
-        "target": "READY via validated import proof",
-        "native": "CLAIM_EXECUTION",
-        "guard": "genuine current readiness AND every direct dependency delivered; preserve each blocker/ref",
-        "scope": "current []; after claim exact plan.writeScope"
-      },
-      {
-        "source": "WORKER/JUDGMENT",
-        "target": "JUDGING + real new readonly controller Attempt/lease",
-        "native": "PUBLISH_DECISION(kind=candidate)",
-        "guard": "independent JEV response for exact gen1 Attempt/candidate/evidence; readonly judge request is separate from response publication",
-        "scope": "[]; no response invented"
-      },
-      {
-        "source": "RESEARCH_SA/JUDGMENT",
-        "target": "PLAN_JUDGMENT + readonly Research Attempt/lease",
-        "native": "PUBLISH_DECISION(kind=readiness)",
-        "guard": "independent exact goal/plan response, no fabricated READY",
-        "scope": "[]"
-      },
-      {
-        "source": "WORKER/MERGE_PENDING",
-        "target": "MERGE_PENDING via accepted import proof",
-        "native": "PUBLISH_DELIVERY_RECEIPT",
-        "guard": "original independent accepted candidate AND verified actual main/candidate/tree/Living receipt",
-        "scope": "[]; VERIFY_MERGE diagnostic cannot publish"
-      },
-      {
-        "source": "BLOCKED nonwithdrawn",
-        "target": "BLOCKED",
-        "native": null,
-        "guard": "preserve explicit blocker/ref; no automatic claim",
-        "scope": "[]"
-      },
-      {
-        "source": "REPAIR or unknown/current ACTIVE claim",
-        "target": "PREPARE_ABORT unless exact compatible authority / zero-claim drain proven",
-        "native": null,
-        "guard": "resolve legitimately before fresh snapshot; never drop item, downgrade phase, fake reflection/lease/Decision or declare parity",
-        "scope": "no import/cutover visibility"
-      }
-    ],
     "verification": "Actual exported derivation on all ids; zero diffs/full set, raw actions/refinements, rollback on last-id tampering.",
     "signature": "assertMigrationParity({manifest,archive,nativeSnapshots,capabilities})->Report; target snapshots from actual same-connection rows after native creation, no predicted clock/template oracle.",
     "algorithmSteps": [
       "Precompute legacy projection with archived shipped goal/plan/receipt/dependency and ownership/context guards; unclaimed scope is prospective.",
       "Inside commitMigration create real gen1 rows/Attempt/fence/Lease/version/import proofs with store clock. Same-connection readSnapshot resolves exact recorded facts, then actual delivered nextActions/buildContext. Do not predict lease IDs/times or copy legacy ready flags.",
       "Compare every phaseRows guard/action/scope/blocker/proof and exact checked set. For parity only, remove transient maintenance barrier on BOTH projections to compare post-release authority; real apply remains blocked. Unknown/diff/expired continuation lease => ROLLBACK; zero diffs => persist report/receipt and COMMIT all."
-    ]
+    ],
+    "phaseRowsRef": "state.plan.migrationContract.resolvedSliceData.phaseRows"
   },
   "supervisionInterface": {
     "basis": "MERGED_READY_PLAN",
@@ -711,13 +661,27 @@
   "migrationContract": {
     "profile": "Pinned DELIVERED BB-155+BB-157 V2_SUPERVISION_V1; manifest records controller/schema digest. Missing capability fails before freeze; READY is design only.",
     "exports": "migrate-legacy: buildMigrationManifest, transformLegacyWork, resolveImportedAuthority, prepareMigrationSnapshot, assertMigrationParity. Store.commitMigration({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash}) creates native rows/records then computes parity inside uncommitted SQL transaction; caller cannot supply equal=true. transport.verifyWorkMerge is read-only.",
-    "prepare": "Archived projections validated outside SQL; native claims/versions created inside S4 with actual store clock, not predicted timestamps.",
-    "proof": "During prepare, archived unchanged validators validate each original evaluation against its exact original materialized input; store originalExpectedInputRef/hash and raw evaluation ref/hash as immutable records. Migration-only proof binds these to equal new gen1 Work semantics/version refs. Optional status.importAuthorityRef is typed bridge, native Decision refs remain native or null. Postflip resolver reads V2 records and current Work projection only, never legacy graph/path/currentContextRef; old validators may check stored typed envelope without source discovery. Actor cannot insert proof/facts; semantic/subject revision supersedes bridge.",
+    "prepare": "Validate source/templates before SQL; actual native claims/versions/parity inside S4, using store clock.",
+    "proof": "resolvedSliceData.proofBinding owns original validators, exact immutable import binding and postflip record-only resolution; no actor-generated fact/Decision.",
     "boundary": "BEGIN IMMEDIATE checks selectors/revision/profile/freeze/main/destination. Insert ALL native rows/records with real store-clock claims; stage V2/ALL_WORK selectors in SAME uncommitted transaction. Same-connection readSnapshot/actual nextActions/buildContext computes exhaustive parity. Require zero diffs and live continuation leases, insert report+cutover receipt/allocator, COMMIT. Any fault rolls back every row/selector. External WAL readers see only old state until COMMIT.",
     "stages": [
-      "Approve/merge/install conditional routing under LEGACY.",
-      "Drain admission, then maintenance/main lock, fresh S1/S2, same-transaction S3/S4, COMMIT.",
-      "Postcheck actual receipt/all ids/routes, release freeze, publish original accepted BB-156 through V2 with actual delivery proofs."
-    ]
+      "Approve/merge/install LEGACY routing; S1 admission drain then hard freeze; S2 transform; S3 parity inside S4; S5 checks; S6 actual postchecks and V2 delivery."
+    ],
+    "resolvedSliceData": {
+      "source": "Locked SHA complete graph/registry/task/goal/plan/original input/eval/log/code closure. Include all non-DONE except valid BLOCKED [WITHDRAWN ...]; malformed withdrawal/dangling withdrawn edge aborts. Sorted unique included/DONE/withdrawn sets disjoint and exhaustive; resolve every required ref/hash/mode. No counts/sampling.",
+      "freeze": "Pause new admission; normal publications finish on writable main; zero claims/callbacks. Durable maintenance stops both legacy/isolated writers/reconcile. Preserve main protection; lock_branch/enforce_admins, no bypass/force/delete; GET verifies SHA/policy/nonce. Missing enforcement/race aborts; precommit abort restores protection.",
+      "work": "{id,resourceVersion:1,generation:1,spec:{objective:{ref,hash,body},plan:{ref,semanticHash,body}|null,dependencies:[{workId,requires,source:WORK|LIVING,binding?}],components,writeScope,forbiddenWrite,labels,provenance},status:{phase,observedGeneration:1,activeAttemptRef:null,activeLeaseRef:null,candidateVersionRef:null,evidenceVersionRef:null,readinessDecisionRef:null,latestCandidateDecisionRef:null,deliveryReceiptRef:null,conditions:[],dependencyFacts,leaseState:NONE,blockers:[],importAuthorityRef}}. Strict BB-155 schema plus optional importAuthorityRef and exact applicable BB-157 failureAnchorRef/repairReflectionRef; validated phase rows replace default refs only.",
+      "phaseRows": [
+        "RESEARCH unclaimed -> RESEARCHING, owner/lease null; START_RESEARCH valid goal/components even with unfinished deps; product scope [].",
+        "EXECUTION unclaimed -> READY with validated original readiness import; CLAIM_EXECUTION only all direct deps DELIVERED; current scope [], postclaim exact plan scope; unused stale candidate diagnostic only.",
+        "WORKER/JUDGMENT -> JUDGING with real new read-only controller Implementation Attempt/fence/LeaseVersion/candidate/evidence; PUBLISH_DECISION only fresh independent exact V2 subject response.",
+        "RESEARCH/JUDGMENT -> PLAN_JUDGMENT with real new read-only Research Attempt/fence/LeaseVersion/exact goal-plan; PUBLISH_DECISION readiness only fresh independent response.",
+        "MERGE_PENDING -> MERGE_PENDING with original accepted candidate import; verifyWorkMerge read-only; PUBLISH_DELIVERY_RECEIPT needs actual candidate/main/equal-tree/Living proof.",
+        "Ordinary BLOCKED -> BLOCKED, same blockers, no enabled action. DONE/withdrawn -> no Work; DONE dependency uses exact external Living proof.",
+        "REPAIR/unknown/current ACTIVE -> abort unless exact compatible BB-157 reflection or zero-claim drain proven; legitimately resolve source before fresh snapshot, never discard/downgrade/fake authority."
+      ],
+      "equality": "Every id: exact goal/plan/edges/components, current/postclaim scope/ownership, original proofs/dependency blockers, diagnostics/proposed action inputs/enabled mutations. Actual same-connection nextActions/buildContext; only declared alias normalization. Remove maintenance from comparison only; actual apply frozen. Full-id zero diffs and live continuation leases gate COMMIT.",
+      "proofBinding": "Migration-only LEGACY_IMPORT_RECEIPT_V1 binds unchanged original input/eval/answers/cacheKey to gen1 spec/versions. Validate original first; compare exact id/goal/plan/sorted edges/components/scopes projections. Strict importAuthorityRef never Decision. Resolver uses immutable V2 records plus current subject only; actor cannot insert proof/facts; revision supersedes bridge."
+    }
   }
 }
