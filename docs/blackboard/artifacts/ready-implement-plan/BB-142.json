@@ -84,7 +84,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — supervised-backend.js: add only recoveryDir=null option and recoveryDir property at runSupervisedTask call (D1). Keep all validation, acceptedSha mapping, re-grounding and finally cleanup unchanged. Delivered supervisor implements D2-D3 without edits. Covers RECOVERY_FORWARDING, RECOVERY_RETAINED, OMITTED_CLEANUP, INVALID_RECOVERY and EXECUTE_ONLY.",
+    "S1 — supervised-backend.js: add only recoveryDir=null option and recoveryDir property at runSupervisedTask call (D1). Keep all validation, acceptedSha mapping, re-grounding and finally cleanup unchanged. Delivered supervisor implements D2-D3 without edits. Covers RECOVERY_FORWARDING, RECOVERY_RETAINED, OMITTED_CLEANUP, INVALID_RECOVERY and EXECUTE_ONLY. Exact patch: append recoveryDir=null after invocationObserver=null in the existing options destructure; add recoveryDir as a sibling property in the existing runSupervisedTask object. Source-copy replay implements precisely these two edits and real delivered supervisor behavior; no hypothetical adapter API is used.",
     "S2 — bb142-adapter-recovery.test.js: implement literal negativeCaseBindings titles N1/N2 and separate P1 persisted execute, P3 invalid directory, P4 execute-only checks as specified by acceptanceCriteria. Every dynamic case directly invokes runSupervisedBackendWork. P1 validates handle twice and retained candidate after return; N1 rejects duplicate before dispatch; N2 proves captured cwd removal. Compare unchanged source snapshots in P1/N1/N2. Optional driver interruption control asserts persisted RUNNING bytes survive; it never resumes.",
     "S3 — declared Application Living docs: describe optional execute persistence and caller ownership, omitted disposal, HANDLE_CURRENT duplicate rejection and Board-only recovery. Run focused, agentic-regression, docs and repository checks. Future Worker records exact candidate/log hashes; current research binds objective, source baseline, prototype result and final plan for independent readiness."
   ],
@@ -403,7 +403,7 @@
     "expectedValue": "Application execute can persist the delivered recovery handle so a crash keeps the same worktree and candidate identity.",
     "measurement": "Fake-CLI adapter fixture writes handle.json; a second first-run fails HANDLE_CURRENT before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-101 for the handle; BB-102 for the adapter"
+    "valueOwner": "BB-100 for the supervised adapter; BB-101 for durable recovery"
   },
   "objectiveCoverage": [
     {
@@ -452,7 +452,7 @@
         }
       ],
       "supportingPlanFields": [
-        "prototypeEvidence"
+        "replayObservations"
       ]
     },
     {
@@ -496,7 +496,7 @@
         }
       ],
       "supportingPlanFields": [
-        "testContract"
+        "invariantCoverage"
       ]
     },
     {
@@ -544,7 +544,9 @@
           "match": "# Agent-tool durable recovery"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "replayObservations"
+      ]
     }
   ],
   "testContract": [
@@ -622,5 +624,113 @@
     "patch": "--- packages/agentic-system/src/supervised-backend.js\n+++ scratch/prototype-adapter.mjs\n@@ -22,5 +22,5 @@\n   subjectFromValue,\n   VerificationStatus\n-} from \"../../core-harness/src/index.js\";\n+} from \"/workspace/research-delivery/packages/core-harness/src/index.js\";\n import {\n   BackendEvidenceClaim,\n@@ -29,7 +29,7 @@\n   BackendContextSchema,\n   parseBackendWorkOrder\n-} from \"./contracts.js\";\n-import { createLocalGitWorkspace } from \"./local-git-workspace.js\";\n-import { createLocalCommandVerifier } from \"./local-command-verifier.js\";\n+} from \"/workspace/research-delivery/packages/agentic-system/src/contracts.js\";\n+import { createLocalGitWorkspace } from \"/workspace/research-delivery/packages/agentic-system/src/local-git-workspace.js\";\n+import { createLocalCommandVerifier } from \"/workspace/research-delivery/packages/agentic-system/src/local-command-verifier.js\";\n \n const run = promisify(execFile);\n@@ -183,5 +183,5 @@\n   eventSinks = [],\n   tracer = null,\n-  invocationObserver = null\n+  invocationObserver = null, recoveryDir = null\n } = {}) {\n   const parsedOrder = parseBackendWorkOrder(order);\n@@ -191,6 +191,6 @@\n   // Leaf-module dynamic imports only: supervisor.js statically imports\n   // agentic-system/src/index.js, so a static import here would cycle.\n-  const supervisor = await import(\"../../agent-tools/src/supervisor.js\");\n-  const adapters = await import(\"../../agent-tools/src/tool-adapters.js\");\n+  const supervisor = await import(\"/workspace/research-delivery/packages/agent-tools/src/supervisor.js\");\n+  const adapters = await import(\"/workspace/research-delivery/packages/agent-tools/src/tool-adapters.js\");\n   const { runSupervisedTask, AgentTaskStatus, AttemptOutcome } = supervisor;\n   const resolvedPermissionProfile = permissionProfile === undefined\n@@ -199,4 +199,5 @@\n \n   const supervised = await runSupervisedTask({\n+    recoveryDir,\n     tool,\n     task,\n",
     "authority": "The task-specific executed source-copy patch/result below is the relevant feasibility evidence. The earlier aggregate API seam probe remains historical research, not a required implementation contract for this task."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "replayReproduction": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "07df9759d833e9320fce45f6bb68240b4bea91ba6cfa3416abc0a23f9863d419",
+    "sourceEncoding": "gzip+base64 UTF-8",
+    "sourceGzipBase64": "H4sIAAAAAAACA7VYbW/bNhD+7l8h+AslhJbrpOkKByqQOu6aoY0D29lW2J5BS3SsRhI1kkpiBP7vO77IkjKn7YbNH2yL5B3v5bnnSMVpzrh0ciI3SbzCkqb5Ok4oFsUq5yykQuCvgmWYw9CmkHGCxVa0VkTQwMr41/DrwqhP+O39rLfwfE4FS+6p67XoY05DSaMAnZ68fUOPSURp75Sc9H46JaerN29O4OuEnL5ew9zr3vHbcIVaRAgKJlUW+OGGhndLVsi8kO4M3cYSYdQZICwkd5UtHkac3ndywgWFqY/D8wu0AGceZTDlBfV8WBjnrhcEpUEt9pCBWQ0fSuf99C5S/92c03X8GKDVqvf6uCNYwUPaCVm+7SDPa0m+7bccMxooK7ooJ+EduaWiC1+ZjMMOhAU0dQUPu6LIKb+PBY06K1hGs8j/KlDLCVlEA6MFAkeipTLbVUHMExJSFzlOnN2zkMiYZaMVxOaecidwsiJJ5hl4+415PM8ch9OQwdD2Iq6L9Ro7hCwTKuSlibCQPJBYOrzIJvvRKRF37pPd9J+JOE7DEGxMsN5z6kO2XY7cWXuOFp479596+HjXnf2hno+8eQ/hhKSriDhpPwWMHanMuzZqkHaIdjedHdex5x2phVhtAPu4Ot9dRCKSS8o7AC3J5DaHZEMWPP+Bx5Ka0FuJDU3AicmPpFdSIQ/ktxPRJFYO+2qBybbRGtSVN7Iu8iSWLup2ncn7Xh95s1eLep4asX1vtvmN8Tubk5emHSIc5UISZ/TcRAAk9k5WCVhzljo/lAWzFB1V2Wj49M2cmJXes2hUfhpojYfXo+V4NJoCsr6yOIMNgIWctu+369/eGbj+dwl0pHjLj4o0F+6eJ7wjdFb5fRSgeRYbBnx6KXY7R3va9rsHsdM+q6mARJ4raEwZS8ZF9pFkEXApQCBebw9MRLHImaBjUxdklVCYs/sdtP85BDsS9AlNL2VxKZhpNyHBLWfFom1go9PkAVOrJdPp+Mo0j2LuetiZW8qDxFHCw01now3uzEE1KLalT2WR7zXppyqA7hx9uPx9+eFyPJmCFAglVJkgCUAwgkdgT0fzglGWb8A9oWg40LZodb4ymUdCEwYyS3wVlsSoLIWNdR+Auo1wg2iQmdVyTTHNPXNks7cWNtEZDPfXkFg7YftRbdKMdFVTCWX7zBoR/DIZXfm6B7lroatamTTZZqFbdjLbInG7kOu3bQgmLCR5DlA7vPR4gbVWtVV2Cyhyn3QY+htf/0IHJLIQ8Gj+7Lyj9hw+GZSFMetJFOkuMDkyDu13CB8iF9YDc6Uayd6ZccynfxYkcWHYPcYnHj6FoKFa3MAyETz5vm+SpB5xPeQa77FpSKI/a670G7NAb1iN9mdz1OnEGTT4jqqsIGVRkdA5gvx11I/KFa7yjCu8LHb4Re29xWJXMxzgXCQyONCmavXuKj0GJo1wGGEbZzDr/Pr60+XwooRUCe1S+0EqqCPzwBYvEYVbKvdq2w8Gw+tptX9DkbEBzkl7Sf8BXJOc0jFjEkO09+clHWN1YlKcj62XMBsLCGFDN7tz6WMspNA4PajZawjAYS8f1gwy/XqSkVxsmNzXeM48m8IVXTNO6zW62kLvDBq1VEPBHKk6el7VRSbrtdgQrvOKQk+lwvMTmt3KjXFA22vd4PQrnBmFC+fHd99GDabBO+prXgmAWT6eX118Gi4HN+Px8Gp6MFPf9QzrCByQ/PceYh2i/zpTpiKbqaqqtLLCBypL9yedOQKyUqMpyWsuvWCc0YdnlgRVFUyXg9Hn609DXQolHc7R+Obq6vLq5zna4WrxdDr8fP2CQFVPu0XdLZbGUu7L+ptdDj8xe/zuC0qz4B0REATHDkbBOzXq54XYuOXYvni8ndl03xb3+3+PrqyBfkVbz4DCDnJWc4nVoQ20IOkdVFYjgLoQ8LiH1yQpM/ejwCp1GGiVT3VwwXEozkiSQFiMBgknkghO87UsWDnvbKckQNY1sbsnSUEdtnaA7yA9r4/xEyT3n9f2y72ur7fYeXgKTWvIOeP/W6UqlxicYxJ26z4/E4QJbLjve4Dm4e/DwQ2geTkeTobn48HH5WR0Mx4AF42uvyyvRtPlxfDT5a/D8ReIS3kzALkfvaVXldNsi7ZAy94wAEKLIyLpZyLhEi/6Em7jwCDgC4SBCwktrv93nrQrLuB4bOVe2d7/XpHhTRbC0y2NrLoGpIRGm5mxuBg8RGOaQsqsAFyXSRKDev5eA63cR8/udAuroU7FPl5XLdjA5+DRvVpUayI8bZxH4ZIQFlzAvdAYAwaE1O5ckzqAcg0XbZw+2pc32nX8KAt+4B5r7zjqCgA3ntrrFMC5O0PqJGveoBxSBBdn9dJFvz7BMk4pK2Tw5pXXsnHpm7dBPk8VexkVXusv5aZlpE4SAAA=",
+    "command": "python3 <decoded-script.py> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "904146565fa1c75f92cbe3a6e3abc08eb58f833e40f774ef8555a4417ba13102",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "retainedCandidateMatches": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleBytesUnchanged": true,
+      "sourceSnapshotsEqual": true,
+      "omittedCwdRemoved": true,
+      "invalidDirBeforeDispatch": true
+    }
+  },
+  "replayObservations": {
+    "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+    "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "runtime": "Node v24.19.0, installed Git, no providers",
+    "sourceSha256": "07df9759d833e9320fce45f6bb68240b4bea91ba6cfa3416abc0a23f9863d419",
+    "command": "python3 <decoded-script.py> <baseline-checkout>",
+    "scope": "Only owned temporary source copy and scratch fixture resources. Baseline/product worktrees stayed clean. Decode outside worktrees, verify decompressed script hash, then execute against an exact baseline checkout.",
+    "logSha256": "904146565fa1c75f92cbe3a6e3abc08eb58f833e40f774ef8555a4417ba13102",
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_NOT_DELIVERY",
+      "baseline": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "status": "APPLIED",
+      "phases": [
+        {
+          "phase": "ACT_COMPLETED",
+          "status": "RUNNING"
+        },
+        {
+          "phase": "ATTEMPT_COMPLETED",
+          "status": "ACCEPTED"
+        }
+      ],
+      "retainedCandidateMatches": true,
+      "secondFirstRun": "HANDLE_CURRENT",
+      "secondDispatches": 0,
+      "handleBytesUnchanged": true,
+      "sourceSnapshotsEqual": true,
+      "omittedCwdRemoved": true,
+      "invalidDirBeforeDispatch": true
+    },
+    "fixtureChecks": [
+      {
+        "id": "RECOVERY_FORWARDING",
+        "testTitle": "P1 actual persisted execute",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Actual adapter call uses owned recoveryDir; verifier reads handle.json at ACT_COMPLETED/RUNNING. No additional adapter callback."
+      },
+      {
+        "id": "RECOVERY_RETAINED",
+        "testTitle": "P1 actual persisted execute",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "verifyAgentToolRunHandle after return validates task/repository/base/candidate; handle status ACCEPTED, worktree exists and HEAD matches candidateSha."
+      },
+      {
+        "id": "SOURCE_UNCHANGED",
+        "testTitle": "P1/N1/N2 source preservation",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Compare exact before/after HEAD, sorted refs/heads and porcelain snapshots; no source cleanup or checkout."
+      },
+      {
+        "id": "ADAPTER_RECOVERY_FAIL_CLOSED",
+        "testTitle": "BB-142 N1 A second first-run against a current recovery handle must fail before spawn",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "First adapter call creates current handle; snapshot bytes and fake-dispatch counter. Second actual adapter call rejects HANDLE_CURRENT; exact bytes/counter unchanged."
+      },
+      {
+        "id": "OMITTED_CLEANUP",
+        "testTitle": "BB-142 N2 Omitted recoveryDir must dispose the temporary worktree",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "invocationObserver captures real first-run cwd; after adapter return stat reports ENOENT. No recovery handle appears in source; existing adapter re-ground finally remains intact."
+      },
+      {
+        "id": "INVALID_RECOVERY",
+        "testTitle": "P3 invalid recovery directory",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Actual adapter calls with empty string/number/object reject delivered TypeError; no fake-agent marker or new handle."
+      },
+      {
+        "id": "EXECUTE_ONLY",
+        "testTitle": "P4 execute-only ownership",
+        "subjectSymbol": "runSupervisedBackendWork",
+        "observations": "Focused source-contract check on candidate adapter finds only forwarding, no resumeSupervisedTask import/call. Existing Backend/QA regressions remain green."
+      }
+    ]
+  }
 }
