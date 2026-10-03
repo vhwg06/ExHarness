@@ -79,5 +79,37 @@
       "ref": "arXiv:2303.17651",
       "use": "Comparator showing feedback/refine value but not an independent authority model."
     }
-  ]
+  ],
+  "jevReadinessR1": {
+    "subjectSha": "99a06d29c29cc772fa15446733ef7af453471cf1",
+    "verdict": "RESEARCH_REQUIRED",
+    "onlyFailedQuestion": "objective-4",
+    "choice": "INSUFFICIENT_EVIDENCE",
+    "probabilities": {
+      "INSUFFICIENT_EVIDENCE": 0.49,
+      "SATISFIED": 0.48,
+      "IMPLEMENTATION_DEFECT": 0.02,
+      "PLAN_INPUT_CONTRADICTION": 0.01
+    },
+    "disposition": "LOOKBACK_SHARED_SEMANTICS_SEAM_ONLY"
+  },
+  "sharedSemanticsProbe": {
+    "local": {
+      "ref": "scripts/blackboard-jev-cli.mjs",
+      "fact": "Imports materialize/evaluate from blackboard-jev.mjs and publishEvaluation from blackboard-delivery.mjs."
+    },
+    "ci": {
+      "ref": "scripts/blackboard-jev-ci.mjs",
+      "fact": "Imports materialize/evaluate/validateEvaluation from blackboard-jev.mjs and explicitly never imports or executes candidate modules in evaluate."
+    },
+    "workflow": {
+      "ref": ".github/workflows/test.yml",
+      "fact": "Passes controller_sha and trusted_sha as github.event.pull_request.base.sha."
+    },
+    "reusableWorkflow": {
+      "ref": ".github/workflows/blackboard-jev.yml",
+      "fact": "Runs controller/scripts/blackboard-jev-ci.mjs; controller is the trusted base checkout."
+    },
+    "conclusion": "Shared supervision validation belongs in blackboard-jev.mjs -> blackboard-supervision.mjs. Publication transitions belong in blackboard-delivery.mjs -> the same module. Do not put candidate supervision semantics directly in blackboard-jev-ci.mjs."
+  }
 }
