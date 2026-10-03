@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-153
+next-work-id: BB-154
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -71,6 +71,7 @@ NONE
 - BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
 - BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
 - BB-152 [RESEARCH_SA/RESEARCH] — Make fresh-agent Outer Blackboard delivery onboarding phase-complete
+- BB-153 [RESEARCH_SA/RESEARCH] — Reduce Outer Blackboard to value-bearing kernel
 
 ## Dependency graph
 
@@ -166,6 +167,7 @@ BB-149 [BLOCKED] <- BB-084
 BB-150 [BLOCKED] <- BB-097
 BB-151 [BLOCKED] <- BB-105, BB-102
 BB-152 [RESEARCH_SCHEDULABLE] <- BB-056
+BB-153 [RESEARCH_SCHEDULABLE] <- BB-056
 ```
 
 ## Context semantics
