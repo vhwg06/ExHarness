@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-155
+next-work-id: BB-158
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -45,7 +45,6 @@ NONE
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-094 [WORKER/EXECUTION] — Verify Oracle on supported Core execution profiles
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
-- BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
 - BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 - BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
@@ -70,9 +69,9 @@ NONE
 - BB-145 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-059 evidence-gated HOW evolution on current main
 - BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
 - BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
-- BB-152 [RESEARCH_SA/RESEARCH] — Make fresh-agent Outer Blackboard delivery onboarding phase-complete
-- BB-153 [RESEARCH_SA/RESEARCH] — Make JEV findings drive mandatory lookback before repair
-- BB-154 [RESEARCH_SA/RESEARCH] — Reduce Outer Blackboard to value-bearing kernel
+- BB-155 [RESEARCH_SA/RESEARCH] — Build Blackboard V2 control plane
+- BB-156 [RESEARCH_SA/RESEARCH] — Migrate unfinished work to Blackboard V2 and cut over
+- BB-157 [RESEARCH_SA/RESEARCH] — Add JEV supervisory lookback and anti-spam loop to Blackboard V2
 
 ## Dependency graph
 
@@ -135,7 +134,7 @@ BB-105 [DONE] <- BB-097, BB-098
 BB-106 [DONE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
-BB-120 [WORKER_SCHEDULABLE] <- BB-097
+BB-120 [PLANNED] <- BB-097
 BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
 BB-122 [DONE] <- BB-097, BB-098
 BB-123 [WORKER_SCHEDULABLE] <- BB-105, BB-102
@@ -167,9 +166,12 @@ BB-148 [BLOCKED] <- BB-059, BB-064, BB-065
 BB-149 [BLOCKED] <- BB-084
 BB-150 [BLOCKED] <- BB-097
 BB-151 [BLOCKED] <- BB-105, BB-102
-BB-152 [RESEARCH_SCHEDULABLE] <- BB-056
-BB-153 [RESEARCH_SCHEDULABLE] <- BB-056, BB-059
-BB-154 [RESEARCH_SCHEDULABLE] <- BB-056
+BB-152 [BLOCKED] <- BB-056
+BB-153 [BLOCKED] <- BB-056, BB-059
+BB-154 [BLOCKED] <- BB-056
+BB-155 [RESEARCH_SCHEDULABLE] <- BB-056
+BB-156 [RESEARCH_SCHEDULABLE] <- BB-155
+BB-157 [RESEARCH_SCHEDULABLE] <- BB-155
 ```
 
 ## Context semantics

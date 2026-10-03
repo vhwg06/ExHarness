@@ -4748,14 +4748,14 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-120.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
         "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "610efba13f28d063f555ab3cc4ec6b22eb5a0971d0d3258b424e828020c2c18c",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.candidate-jev-evaluation.json",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.implementation-result.json",
-        "candidateSha": "b4916bb0b266e0c9af3674e5f4cccd2261fd626b",
-        "baselineSha": "cff5ef95fd69f8eef05ac3104c5a845ab76d550a"
+        "candidateSha": "c577b266c6697e59f3a615ee0205ef4389142747",
+        "baselineSha": "71c66bce780d4b712e4a36d5832893bc21de45be",
+        "lastEvaluatedInput": "ecb70924e256df2e4f46467edc07f0649529196a16a5c16af1762df886ec1e58"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "MERGE_PENDING"
     },
     {
       "id": "BB-121",
@@ -6774,9 +6774,9 @@
     {
       "id": "BB-152",
       "featureId": null,
-      "title": "Make fresh-agent Outer Blackboard delivery onboarding phase-complete",
+      "title": "[WITHDRAWN by Blackboard V2 redesign] Make fresh-agent Outer Blackboard delivery onboarding phase-complete",
       "kind": "BUGFIX",
-      "status": "PLANNED",
+      "status": "BLOCKED",
       "complexity": "M",
       "components": [
         "outer/blackboard"
@@ -6817,9 +6817,9 @@
     {
       "id": "BB-153",
       "featureId": null,
-      "title": "Make JEV findings drive mandatory lookback before repair",
+      "title": "[WITHDRAWN by Blackboard V2 redesign] Make JEV findings drive mandatory lookback before repair",
       "kind": "RESEARCH",
-      "status": "PLANNED",
+      "status": "BLOCKED",
       "complexity": "L",
       "components": [
         "outer/blackboard",
@@ -6868,9 +6868,9 @@
     {
       "id": "BB-154",
       "featureId": null,
-      "title": "Reduce Outer Blackboard to value-bearing kernel",
+      "title": "[WITHDRAWN by Blackboard V2 split] Reduce Outer Blackboard to value-bearing kernel",
       "kind": "BUGFIX",
-      "status": "PLANNED",
+      "status": "BLOCKED",
       "complexity": "L",
       "components": [
         "outer/blackboard"
@@ -6907,10 +6907,140 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-155",
+      "featureId": null,
+      "title": "Build Blackboard V2 control plane",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-155.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One source-branch-independent V2 control authority with one Work resource per work id.",
+        "Executable lifecycle and `next` action derivation rather than prose-inferred workflow.",
+        "Pure context builder plus Attempt bindings that keep source branches/worktrees outside Blackboard authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-155.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-156",
+      "featureId": null,
+      "title": "Migrate unfinished work to Blackboard V2 and cut over",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-156.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-156.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One exact manifest of current unfinished non-withdrawn legacy work; DONE work is excluded.",
+        "One V2 Work per manifest item with semantic/dependency/authority parity.",
+        "Atomic authority cutover to V2 with no dual-write or long-lived legacy current-work reader."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-156.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-156.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-157",
+      "featureId": null,
+      "title": "Add JEV supervisory lookback and anti-spam loop to Blackboard V2",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-157.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Read-only V2 LOOKBACK phase before writable repair after failed JEV.",
+        "Exact workGeneration/Attempt/Decision-bound RepairReflection publication.",
+        "Failure-class-specific material-delta guard before another JEV call.",
+        "Repeated identical finding signature routes to strategy reconsideration without duplicate authoritative supervision state."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-157.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
+        "researchBaselineSha": "7599ef5a1395af36b0f86a6f940f059b28edb343"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-155",
+    "nextWorkId": "BB-158",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
