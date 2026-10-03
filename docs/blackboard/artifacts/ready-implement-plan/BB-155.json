@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-155",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-155.json",
     "hash": "bfd0906428c6b7d490c85b5c7185f5c133f753b733532ae6c756f3e8eed2455b"
@@ -701,5 +701,6 @@
     "kind": "PLANNED_PRODUCT_ACCEPTANCE",
     "construction": "Empty isolated service registers create/research/control only, no migration/import action. New ids V2-opaque; BB-n rejected. Legacy BB-n authority is not read or mirrored by this service. Existing isolated Work and its source contexts remain disjoint until future BB-156 selector/import transaction.",
     "test": "COEXISTENCE fixture snapshots all legacy graph/current artifacts plus Git HEAD/ref/status bytes; run actual new-Work create/start/plan control against separate external DB; compare every before/after hash and ref/status exactly. Database contains only W (no legacy ids). BB-n create/claim/import action each rejects with no row/status/allocation effect. Leave legacy bootstrap and graph validators operating unchanged."
-  }
+  },
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.readiness-jev-evaluation.json"
 }
