@@ -18,21 +18,27 @@
     "Claiming schema-valid responses imply business correctness or product acceptance"
   ],
   "constraints": [
-    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
     "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
     "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
     "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
   ],
   "invariants": [
-    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
-    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
-    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: EVIDENCE_IDENTITY, FAIL_CLOSED.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: EVIDENCE_IDENTITY, FAIL_CLOSED.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, FAIL_CLOSED.",
+    "Restart preserves the same owned store and generation without invoking preview reset/reseed; prior-client expectations and seeded rows remain external protected inputs. Acceptance coverage: PERSISTED_STATE, EVIDENCE_IDENTITY, FAIL_CLOSED, OWNED_RESOURCES.",
+    "Full mandatory assertion ledger and independently bound identities are required for PASS; an unavailable runtime, missing observation, cleanup/evidence failure or setup timeout returns INCONCLUSIVE. Acceptance coverage: PERSISTED_STATE, EVIDENCE_IDENTITY, FAIL_CLOSED, OWNED_RESOURCES."
   ],
   "architectureDecisions": [
-    "Compare a small deterministic HTTP/client and database fixture verifier with a pinned Schemathesis CLI adapter for schema-derived/stateful probes. Business invariants and the prior contract remain independently owned.",
-    "Use disposable service/data fixtures through BB-131, optionally backed by Testcontainers. Bound request count and destructive operations to owned test data; never infer a production migration policy.",
-    "Publish criterion evidence through the existing QA seam. BB-071/074 consume a two-change compatibility cohort; this profile does not reimplement change invalidation or the benchmark substrate."
+    "D1: Select NODE_HTTP_SQLITE_LOCAL_V1: trusted local loopback HTTP service, Node major24/Linux x64 with built-in SQLite (calibrated24.20.0/3.53.4) and an owned file-backed SQLite fixture. A finite externally pinned previous-client request/assertion manifest plus independent row assertions verifies one explicit forward migration and a fresh process restart; no inferred migration or generic OpenAPI compatibility claim.",
+    "D2: Implement createApiStateVerifier as the existing Product QA criterionVerifier injection. Resolve an external protected profile by snapshotRef/verifierPolicyRef, validate all input digests before effects and emit PASS/FAIL/INCONCLUSIVE plus content-addressed evidenceRefs. Product QA observes runtime identity, aggregates criteria and owns QualityAcceptance publication unchanged.",
+    "D3: Implement the plan-owned preview/protected input adapters with profileContract interfaces inside api-state-verifier.js. Every direct dependency must be DONE before Worker. They supply delivered owned startup/receipt/dispose and protected input pins; this task supplies the SQLite migration/restart lifecycle. No alternate implementation before dependency DONE, and no unresolved API selection.",
+    "D4: Do not adopt Schemathesis/Testcontainers. Inspected pinned source/tests support optional future adapters; Node avoids Python/container prerequisites. No external runtime or comparative cost/value claim.",
+    "D5: Expose a callable factory via Product QA injection; no deliver manifest/CLI extension. Generic command checks remain usable. BB-071/074 own change/value and BB-129 owns handoff.",
+    "D6: Keep DRAFT; only fresh independent Jev SATISFIED grants readiness. Calibration establishes prototype feasibility, not product implementation, dependency delivery or value.",
+    "D7 — Map each fault to exact verdict/reason and effect boundary in testContract. Focused tests directly exercise the new factory and Product QA injection; generic QA tests cannot stand in for adapter evidence. Retain deterministic single-request/single-seed-row reproducers for observed compatibility failures and bounded setup diagnostics for inconclusive failures."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -41,7 +47,8 @@
       "packages/agent-tools/src/deliver-slice.js",
       "docs/blackboard/process/delivery-capability-discovery.md",
       "docs/blackboard/process/delivery-capability-sources.json",
-      "docs/blackboard/evidence/BB-133/discovery.json"
+      "docs/blackboard/evidence/BB-133/discovery.json",
+      "packages/agentic-system/test/product-qa.test.js"
     ],
     "expectedNew": [
       "packages/agentic-system/src/api-state-verifier.js",
@@ -60,7 +67,8 @@
       "docs/blackboard/process/delivery-capability-sources.json",
       "docs/blackboard/evidence/BB-133/discovery.json",
       "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**"
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/product-qa.test.js"
     ],
     "write": [
       "packages/agentic-system/src/api-state-verifier.js",
@@ -77,103 +85,289 @@
     ]
   },
   "implementationSlices": [
-    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
-    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
-    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+    "S1 — [API_COMPATIBILITY, PERSISTED_STATE, EVIDENCE_IDENTITY] api-state-verifier.js, after dependencies DONE/exact READY: implement the exact profileContract factory/resolver schemas and protected hash validators. Independently bind QA snapshot/release/environment/components and candidate/tree/config before effects. Use the plan-owned previewShim over BB-131 startLocalPreview; any injected lifecycle implements the same phase/ownership protocol per profileContract.previewShim. Capture owned store realpath/token outside preview generation roots, reject foreign/symlink roots before mutation, pin actual Node24/Linuxx64/SQLite binary/version and rehash protected inputs pre/post. No new upstream export or acceptance publisher is assumed.",
+    "S2 — [API_COMPATIBILITY, PERSISTED_STATE, FAIL_CLOSED, OWNED_RESOURCES] Execute the finite fixture oracle in profileContract.fixture through prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose. Record exact prior-client create/read/update and old/new row/schema assertions. Stop/reap each owned service before transition; migrate once and restart a new process on identical DB owner/path/seed generation. Never BB-131 reset/reseed. Pass DB path and phase as literal entry argv; controlled preview id/token replacement requires owned transition receipts with candidate/tree/runtime/config invariant. Recheck store/schema/rows after restart. Bound requests/phases with profileContract.budgets; retain first mismatch before owned teardown.",
+    "S3 — [FAIL_CLOSED, EVIDENCE_IDENTITY, NEW_BEHAVIOR] Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver. Return {verdict,evidenceRefs}; evidenceStore.put stores immutable API_STATE_CRITERION_EVIDENCE with exact criterion/QA/candidate/schema/data/evaluator/preview bindings and executed assertion IDs. FAIL means observed protected behavioral mismatch; setup/parse/timeout/missing identities/coverage/digest drift INCONCLUSIVE. PASS only after all required assertions, unchanged protected bytes, durable evidence and owned cleanup. Limits20requests/1s each, startup/migration/stop2s, total30s, response8KiB/evidence64KiB. Retain first mismatch before cleanup; evidenceStore or cleanup failure prevents PASS. Adapter has no acceptance publisher; actual ProductQA injection and runtimeObserver independently govern publication. Retain provisional observation before cleanup, then finalize receipt with observed cleanup after finally; PASS requires both stores and successful cleanup, as profileContract.result specifies.",
+    "S4 — [API_COMPATIBILITY, PERSISTED_STATE, FAIL_CLOSED, OWNED_RESOURCES, EVIDENCE_IDENTITY, NEW_BEHAVIOR] Run declared focused/QA/regression/docs checks under Node24/Linux x64, retain exact bound Worker evidence and update Living limits. Before execution, verify dependencies DONE and delivered APIs match the explicit projections defined in D1-D3 and profileContract; the check either confirms READY or fail-closes (no implementation authority follows from a shim or prototype)."
   ],
   "acceptanceCriteria": [
     {
-      "id": "COMPATIBLE_BEHAVIOR",
-      "statement": "An operator-pinned prior API/client contract and business assertions pass against the candidate; create/update/read and seeded old-record preservation are verified across one declared migration and restart, with exact schema/data/evaluator/preview identities.",
+      "id": "API_COMPATIBILITY",
+      "statement": "The pinned previous-client create/read/update requests retain their expected status, required response fields/types and declared values after candidate migration.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Prior-client observations before and after migration; distinguish missing fields, required-input additions and altered values."
       ]
     },
     {
-      "id": "DESTRUCTIVE_CHANGE_REJECTION",
-      "statement": "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
+      "id": "PERSISTED_STATE",
+      "statement": "All externally seeded old-record projections and the declared new-record update survive one forward migration and a new process restart on the same owned SQLite database.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+        "Seed digest, store schema/user_version observations, old/new row projections before/after migration and restart; data-loss/corruption/reset reproducers."
+      ]
+    },
+    {
+      "id": "NEW_BEHAVIOR",
+      "statement": "The candidate supports the independently declared added priority field/default and invalid-input rejection while retaining previous-client behavior.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Good-path create with priority 2, update/read, old-row default priority 0 and 400 validation observation; every mandatory assertion must execute."
+      ]
+    },
+    {
+      "id": "EVIDENCE_IDENTITY",
+      "statement": "Every criterion result binds the exact Git candidate, environment/snapshot, preview receipt, protected evaluator/config, prior contract, dataset, schema and migration identities and is returned through the existing QA evidence seam.",
+      "verificationIds": [
+        "focused",
+        "qa-authority"
+      ],
+      "evidenceRequired": [
+        "Per-criterion content-addressed evidence envelope; digest mismatch/missing identity and Product QA release drift cannot grant acceptance."
+      ]
+    },
+    {
+      "id": "FAIL_CLOSED",
+      "statement": "Any destructive or incompatible observed change returns FAIL, and missing runtime/setup/timeout/parse/coverage evidence returns INCONCLUSIVE; neither verdict can grant acceptance.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Distinct verdict/reason and bounded diagnostics/reproducer for all named negatives; unknown criterion, skipped/no-op assertions and weakened candidate schema never PASS."
+      ]
+    },
+    {
+      "id": "OWNED_RESOURCES",
+      "statement": "Migration/reset/cleanup affect only the copied fixture database and service handles owned by this run; foreign resources are preserved after both success and failure.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Owned token/path/PID receipt, dispose facts and surviving foreign database/process fixtures; attempts to use a foreign or unowned root rejected before effects."
       ]
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/api-state-verifier.test.js"
+      "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
+      "negativeCases": "Execute distinct bound tests NEG_133_1, NEG_133_2, NEG_133_3, NEG_133_4, NEG_133_5, NEG_133_6, NEG_133_7, NEG_133_8, NEG_133_9, NEG_133_10, NEG_133_11, NEG_133_12, NEG_133_13. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
+      "setup": "Node24/Linux x64 is the CI runtime; focused before-hook probes built-in DatabaseSync and pins actual process version/binary/SQLite version. Missing API fails command, never skips. The declared finite migration/restart suite must pass on that exact observed runtime; measured prototype versions remain historical facts.",
+      "requiredTests": "One complete PASS control and all N1-N13 exact titles, zero skips/cancellations/todo. N1-N6 FAIL on protected behavioral mismatch; N7-N11/N13 INCONCLUSIVE on integrity/setup/coverage faults; N12 rejects before foreign effects. Use a 90s aggregate matrix deadline and injected deterministic timeout fault instead of waiting every production deadline.",
+      "criterionIds": [
+        "API_COMPATIBILITY",
+        "PERSISTED_STATE",
+        "NEW_BEHAVIOR",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
+      ],
+      "evidence": "Per named test assert exact verdict/reason, executed mandatory assertion IDs, retained evidenceRef and owned/foreign resource effects. Positive cases must reach PASS through the actual factory. Record test file/body and candidate hashes in Worker evidence; generic QA suites provide regression coverage only."
+    },
+    {
+      "id": "qa-authority",
+      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
+      "negativeCases": "Existing Product QA regressions establish runtime/snapshot/release authority. Adapter-specific evaluator/assertion/preview corruption is exercised by focused api-state-verifier.test.js through actual createApiStateVerifier injection, not claimed as coverage by generic Product QA tests."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "negativeCases": "regression must stay green; no silent behavior change."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "negativeCases": "regression must stay green; no silent behavior change."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "negativeCases": "docs must keep Living limits reconciled; no Blackboard ids in Living docs."
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance. Acceptance coverage: EVIDENCE_IDENTITY, FAIL_CLOSED.",
       "criterionIds": [
-        "COMPATIBLE_BEHAVIOR",
-        "DESTRUCTIVE_CHANGE_REJECTION"
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED"
       ]
     },
     {
-      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance. Acceptance coverage: EVIDENCE_IDENTITY, FAIL_CLOSED.",
       "criterionIds": [
-        "COMPATIBLE_BEHAVIOR",
-        "DESTRUCTIVE_CHANGE_REJECTION"
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED"
       ]
     },
     {
-      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects. Acceptance coverage: OWNED_RESOURCES, FAIL_CLOSED.",
       "criterionIds": [
-        "COMPATIBLE_BEHAVIOR",
-        "DESTRUCTIVE_CHANGE_REJECTION"
+        "OWNED_RESOURCES",
+        "FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Restart preserves the same owned store and generation without invoking preview reset/reseed; prior-client expectations and seeded rows remain external protected inputs. Acceptance coverage: PERSISTED_STATE, EVIDENCE_IDENTITY, FAIL_CLOSED, OWNED_RESOURCES.",
+      "criterionIds": [
+        "PERSISTED_STATE",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
+      ]
+    },
+    {
+      "invariant": "Full mandatory assertion ledger and independently bound identities are required for PASS; an unavailable runtime, missing observation, cleanup/evidence failure or setup timeout returns INCONCLUSIVE. Acceptance coverage: PERSISTED_STATE, EVIDENCE_IDENTITY, FAIL_CLOSED, OWNED_RESOURCES.",
+      "criterionIds": [
+        "PERSISTED_STATE",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "A migration that deletes seeded old records cannot PASS preserved-state criteria",
-    "Weakening a candidate OpenAPI schema cannot replace the operator-pinned prior compatibility contract"
+    "Deleted seeded old rows cannot PASS preserved-state criteria",
+    "Weakening candidate schema cannot replace pinned prior-client assertions",
+    "Adding a required input field breaks the previous client",
+    "Removing a required response field cannot PASS",
+    "Corrupting old record values cannot PASS",
+    "Resetting state on restart cannot PASS",
+    "Changed evaluator digest cannot grant acceptance",
+    "Deleting mandatory assertions or using a no-op oracle cannot grant acceptance",
+    "Missing or wrong preview identity cannot grant acceptance",
+    "Migration failure or unavailable runtime is INCONCLUSIVE",
+    "Timeout or malformed response is INCONCLUSIVE",
+    "Foreign fixture roots and service handles cannot be reset or disposed",
+    "Unknown or unexecuted criterion cannot PASS"
   ],
   "negativeCaseBindings": [
     {
       "id": "NEG_133_1",
       "negativeCaseIndex": 0,
-      "criterionId": "DESTRUCTIVE_CHANGE_REJECTION",
+      "criterionId": "PERSISTED_STATE",
       "verificationId": "focused",
       "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
-      "testTitle": "BB-133 N1 A migration that deletes seeded old records cannot PASS preserved-state criteria",
+      "testTitle": "BB-133 N1 Deleted seeded old rows cannot PASS preserved-state criteria",
       "subjectSymbol": "createApiStateVerifier"
     },
     {
       "id": "NEG_133_2",
       "negativeCaseIndex": 1,
-      "criterionId": "DESTRUCTIVE_CHANGE_REJECTION",
+      "criterionId": "API_COMPATIBILITY",
       "verificationId": "focused",
       "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
-      "testTitle": "BB-133 N2 Weakening a candidate OpenAPI schema cannot replace the operator-pinned prior compatibility contract",
+      "testTitle": "BB-133 N2 Weakening candidate schema cannot replace pinned prior-client assertions",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "API_COMPATIBILITY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N3 Adding a required input field breaks the previous client",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "API_COMPATIBILITY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N4 Removing a required response field cannot PASS",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_5",
+      "negativeCaseIndex": 4,
+      "criterionId": "PERSISTED_STATE",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N5 Corrupting old record values cannot PASS",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "PERSISTED_STATE",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N6 Resetting state on restart cannot PASS",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_7",
+      "negativeCaseIndex": 6,
+      "criterionId": "EVIDENCE_IDENTITY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N7 Changed evaluator digest cannot grant acceptance",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_8",
+      "negativeCaseIndex": 7,
+      "criterionId": "FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N8 Deleting mandatory assertions or using a no-op oracle cannot grant acceptance",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_9",
+      "negativeCaseIndex": 8,
+      "criterionId": "EVIDENCE_IDENTITY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N9 Missing or wrong preview identity cannot grant acceptance",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_10",
+      "negativeCaseIndex": 9,
+      "criterionId": "FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N10 Migration failure or unavailable runtime is INCONCLUSIVE",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_11",
+      "negativeCaseIndex": 10,
+      "criterionId": "FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N11 Timeout or malformed response is INCONCLUSIVE",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_12",
+      "negativeCaseIndex": 11,
+      "criterionId": "OWNED_RESOURCES",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N12 Foreign fixture roots and service handles cannot be reset or disposed",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_13",
+      "negativeCaseIndex": 12,
+      "criterionId": "FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N13 Unknown or unexecuted criterion cannot PASS",
       "subjectSymbol": "createApiStateVerifier"
     }
   ],
-  "researchGaps": [
-    "Ratify one HTTP/schema plus persistent-store profile and prior-client/migration semantics; split API and migration work if the discriminating prototype cannot remain bounded.",
-    "Inspect pinned Schemathesis/Testcontainers implementation tests; compare external Python CLI cost with minimal Node HTTP assertions and finalize reproducibility/seed limits.",
-    "Execute correct, breaking-client and data-loss fixtures from clean state, pin the prior contract and independent business oracle, and finalize Jev evidence routing."
-  ],
-  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
@@ -184,9 +378,485 @@
   },
   "valueHypothesis": {
     "expectedValue": "Make useful existing-repository features deliverable without silently breaking current consumers or destroying existing data.",
-    "measurement": "Run an initial accepted fixture and a follow-up field/validation migration against the same independent prior-client/data assertions. Seed response incompatibility and data deletion. Report defect detection, retained behavior, setup failures and reviewer reproducer completeness.",
+    "measurement": "Use the same pinned old-client/data assertions across two changes. Seed response incompatibility/data deletion; report detection, persistence, setup failures and reproducer completeness.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
-    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
-  }
+    "goNoGo": "Calibration passed; advance only after dependencies DONE and independent READY. No default promotion or productivity claim."
+  },
+  "researchPrototype": {
+    "classification": "RESEARCH_ONLY_NOT_DELIVERED_SUBJECT",
+    "runtime": "Node 24.20.0; built-in node:sqlite (experimental)",
+    "replayCommand": "python3 -c 'import json,zlib,base64; p=json.load(open(\"docs/blackboard/artifacts/ready-implement-plan/BB-133.json\")); print(zlib.decompress(base64.b64decode(p[\"researchPrototype\"][\"sourceZlibBase64\"])).decode(),end=\"\")' | node --input-type=module",
+    "sourceSha256": "b6d610eb2e4b9a0c902cf287a4c486ea2741b9e44450f3aa8b3a9b79b8eed233",
+    "executedAt": "2026-10-01T14:23:35.363852+00:00",
+    "observation": {
+      "runtime": "v24.20.0",
+      "sqlite": "3.53.4",
+      "profile": "NODE_HTTP_SQLITE_LOCAL_V1",
+      "classification": "RESEARCH_PROTOTYPE_NOT_PRODUCT_IMPLEMENTATION"
+    },
+    "identities": {
+      "schemaDigest": "e3740dae63b176b24a4bea379face3609a4d4c2dd4711bb47aa892eee21917be",
+      "datasetDigest": "9dc1b560a599b4a4fa14a422a0e3738937e67419e8da06ea2749974043bb6823",
+      "evaluatorDigest": "62e9de678739931508ab715f38c27e95221f774e27823e86bf6c1e42da170a57"
+    },
+    "results": [
+      {
+        "mode": "correct",
+        "verdict": "PASS",
+        "requests": 11
+      },
+      {
+        "mode": "required-input",
+        "verdict": "FAIL",
+        "requests": 5
+      },
+      {
+        "mode": "response-break",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "data-loss",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "record-corruption",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "reset-on-restart",
+        "verdict": "FAIL",
+        "requests": 10
+      },
+      {
+        "mode": "weakened-schema",
+        "verdict": "FAIL",
+        "requests": 6
+      },
+      {
+        "mode": "evaluator-drift",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "assertion-deletion",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "missing-identity",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "wrong-preview",
+        "verdict": "FAIL",
+        "requests": 3
+      },
+      {
+        "mode": "setup-failure",
+        "verdict": "INCONCLUSIVE",
+        "requests": 2
+      },
+      {
+        "mode": "malformed-response",
+        "verdict": "INCONCLUSIVE",
+        "requests": 4
+      }
+    ],
+    "cleanup": "All 13 cases stopped owned children, removed owned state and preserved a foreign sentinel before outer temporary fixture cleanup.",
+    "limits": "Synthetic SHA-256 candidateDigest, not Git/deployment identity. Separate service processes and real SQLite. Proposed shims, no delivered BB-127/131 invocation. Small required-field descriptor, no OpenAPI engine. No external CLI/Docker/provider/production trial.",
+    "resultsDigest": "7a8890a2c49f5af37d16848611736b735923c3c3df1ababfd2eb12f8fc919b93",
+    "positiveCandidateDigest": "cbc543408d1f1d8acbf507f871a416f186e5336243c54ce4d4e3023f2581c9c9",
+    "representativeReproducers": {
+      "data-loss": {
+        "request": {
+          "method": "GET",
+          "path": "/tasks/1",
+          "body": null
+        },
+        "response": {
+          "code": 200,
+          "body": null
+        }
+      },
+      "weakened-schema": {
+        "request": {
+          "method": "GET",
+          "path": "/tasks/1",
+          "body": null
+        },
+        "response": {
+          "code": 200,
+          "body": {
+            "id": 1,
+            "status": "open",
+            "priority": 0,
+            "label": "legacy"
+          }
+        }
+      }
+    },
+    "reproducerPolicy": "Replay prints all candidate digests, facts and first-failing request/response. Decoded source contains fixed seed and migration SQL; decode without piping to Node to review. Reproducers are not algorithmically minimized.",
+    "sourceEncoding": "zlib+base64 UTF-8; sourceSha256 hashes decoded bytes",
+    "sourceZlibBase64": "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",
+    "resultsDigestEncoding": "SHA-256 of replay results array: sorted object keys, compact JSON",
+    "freshReplay": {
+      "runtime": "v24.19.0",
+      "sqlite": "3.53.3",
+      "classification": "RESEARCH_PROTOTYPE_NOT_PRODUCT_IMPLEMENTATION",
+      "results": [
+        [
+          "correct",
+          "PASS",
+          "all assertions passed",
+          true,
+          true
+        ],
+        [
+          "required-input",
+          "FAIL",
+          "prior client create",
+          true,
+          true
+        ],
+        [
+          "response-break",
+          "FAIL",
+          "old record after migration",
+          true,
+          true
+        ],
+        [
+          "data-loss",
+          "FAIL",
+          "old record after migration",
+          true,
+          true
+        ],
+        [
+          "record-corruption",
+          "FAIL",
+          "old record after migration",
+          true,
+          true
+        ],
+        [
+          "reset-on-restart",
+          "FAIL",
+          "old record after restart",
+          true,
+          true
+        ],
+        [
+          "weakened-schema",
+          "FAIL",
+          "old record after migration",
+          true,
+          true
+        ],
+        [
+          "evaluator-drift",
+          "FAIL",
+          "evaluator digest drift",
+          true,
+          true
+        ],
+        [
+          "assertion-deletion",
+          "FAIL",
+          "evaluator digest drift",
+          true,
+          true
+        ],
+        [
+          "missing-identity",
+          "FAIL",
+          "missing preview identity",
+          true,
+          true
+        ],
+        [
+          "wrong-preview",
+          "FAIL",
+          "preview identity drift",
+          true,
+          true
+        ],
+        [
+          "setup-failure",
+          "INCONCLUSIVE",
+          "setup failed: ModuleJob.run (node:internal/modules/esm/module_job:439:25)",
+          true,
+          true
+        ],
+        [
+          "malformed-response",
+          "INCONCLUSIVE",
+          "Unexpected token 'i', \"invalid\" is not valid JSON",
+          true,
+          true
+        ]
+      ],
+      "sourceSha256": "b6d610eb2e4b9a0c902cf287a4c486ea2741b9e44450f3aa8b3a9b79b8eed233",
+      "limits": "Synthetic prototype bindings, not Product QA identities. Historical preflight assertion faults are FAIL here; selected product contract requires INCONCLUSIVE for integrity/coverage faults. Product factory and minimized reproducer remain focused Worker obligations."
+    }
+  },
+  "researchSources": {
+    "checkedAt": "2026-10-01T14:18:37.522680+00:00",
+    "eligibility": "Both exceed 1000 stars at this lookup; popularity is eligibility only. Source pins retained from canonical source ledger; no dependency adopted.",
+    "findings": [
+      "Schemathesis response_schema_conformance uses the loaded operation validator. Tests reject malformed GET bodies. Stateful executor checks budgets, records requests and validates responses; interrupt-after-deadline test distinguishes interruption from clean exhaustion. Schema checks alone cannot establish independent prior-client/data assertions.",
+      "Testcontainers start obtains runtime/image and waits before returning. HTTP strategy probes mapped endpoints; mismatch-timeout test rejects failed readiness. Restart-persistence test writes/reads a file across restart, not database business semantics."
+    ],
+    "comparison": {
+      "node": "SELECTED: Node fetch/child_process/node:sqlite; no added package install. 13 calibrated finite cases; 11 requests on correct path, real SQLite, three service processes.",
+      "schemathesis": "NOT SELECTED: extra Python CLI and generated-probe budgets; independent prior-client/data assertions still needed. CLI not executed; no measured install cost.",
+      "testcontainers": "NOT SELECTED: container runtime, pinned image and cleanup lifecycle add prerequisites unnecessary for this file-backed fixture. No Docker trial or measured setup cost.",
+      "decision": "No external tool adoption. Optional future adoption requires executed seams. Narrow built-in profile closes runner selection."
+    },
+    "repositories": [
+      {
+        "repo": "schemathesis/schemathesis",
+        "stars": 3643,
+        "license": "MIT",
+        "metadataSource": "https://api.github.com/repos/schemathesis/schemathesis",
+        "sha": "8168d57287a08eaeea1457778765f83f19e20eda",
+        "inspectedFiles": [
+          {
+            "path": "src/schemathesis/specs/openapi/checks.py",
+            "sha256": "0723d90fa3ce85e94c3fa70913f3b7338a0193ea20ae331a346cd85914ede436",
+            "bytes": 66274
+          },
+          {
+            "path": "test/specs/openapi/test_checks.py",
+            "sha256": "6c1167f95161f6c294880fad9e249813813ef6b91fcb4e45587dc22ee84ef799",
+            "bytes": 101192
+          },
+          {
+            "path": "src/schemathesis/engine/run/stateful/_executor.py",
+            "sha256": "bae0567cd17814839ce50764d49fc4ef15e75d376c042ae17ce8b68423d2c1a6",
+            "bytes": 25143
+          },
+          {
+            "path": "test/engine/test_stateful_executor.py",
+            "sha256": "c7b363d5eb843be264977cfbc761e88af4801b3b85c0fb8496fc98e6fc065450",
+            "bytes": 3065
+          }
+        ]
+      },
+      {
+        "repo": "testcontainers/testcontainers-node",
+        "stars": 2619,
+        "license": "MIT",
+        "metadataSource": "https://api.github.com/repos/testcontainers/testcontainers-node",
+        "sha": "aa2d5a744a5ea0b686172307302ec8a4765b65ca",
+        "inspectedFiles": [
+          {
+            "path": "packages/testcontainers/src/generic-container/generic-container.ts",
+            "sha256": "302067df71871a86ed33bdf4444ca863f9eb85ba7f5d229a9364a3fd5f3ff265",
+            "bytes": 19427
+          },
+          {
+            "path": "packages/testcontainers/src/generic-container/generic-container-restart.test.ts",
+            "sha256": "a151ed5976f223361911c93a42b9b0e267a90427074c329f2e56d3d0cc275dab",
+            "bytes": 1214
+          },
+          {
+            "path": "packages/testcontainers/src/wait-strategies/http-wait-strategy.ts",
+            "sha256": "000fe108177385b03321ca34af59ba74e7ea41b30cce5315f898267ae6ff1ae6",
+            "bytes": 5931
+          },
+          {
+            "path": "packages/testcontainers/src/wait-strategies/http-wait-strategy.test.ts",
+            "sha256": "8c263d6b71e36fd20fc90801ef6a06be03f698d53223cdc9acd00105e762ba5c",
+            "bytes": 6884
+          }
+        ]
+      }
+    ]
+  },
+  "dependencyContracts": {
+    "stateAtResearch": {
+      "BB-054": "DONE/DELIVERED",
+      "BB-131": "PLANNED/RESEARCH_SA/RESEARCH",
+      "BB-127": "PLANNED/RESEARCH_SA/RESEARCH"
+    },
+    "refs": [
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-054.delivered-feature.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-131.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-127.json"
+    ],
+    "workerGate": "Every direct dependency must be DONE. Proposed preview and external evaluator shims are assumptions for research, not implementation authority. Reconcile with their delivered identities/APIs and obtain fresh exact READY before Worker.",
+    "researchBaseSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+    "checkoutBaseSha": "fe5d6db971b4c4015a4d860fa7b079973d4e80e2",
+    "readinessBlocker": "RESOLVED: graph and plan bind a source-complete SHA; canonical materialize resolves every required objective source and source anchor.",
+    "baselineMissingRefs": []
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "An operator-pinned prior API/client contract and business assertions pass against the candidate; create/update/read and seeded old-record preservation are verified across one declared migration and restart, with exact schema/data/evaluator/preview identities.",
+      "criterionIds": [
+        "API_COMPATIBILITY",
+        "PERSISTED_STATE",
+        "NEW_BEHAVIOR",
+        "EVIDENCE_IDENTITY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "qa-authority"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/product-qa.js",
+        "docs/blackboard/evidence/BB-133/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
+          "match": "there is no named local API/state compatibility profile"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "export function createLocalCommandVerifier({"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "criterionVerifier,"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "every pinned acceptance criterion must PASS"
+        }
+      ],
+      "supportingPlanFields": [
+        "profileContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
+      "criterionIds": [
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES",
+        "API_COMPATIBILITY",
+        "PERSISTED_STATE"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/product-qa.js",
+        "docs/blackboard/evidence/BB-133/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "criteria.results.every((result) => result.verdict === \"PASS\")"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "REMEDIATION_REQUIRED"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
+          "match": "Schema-derived checks alone cannot establish business semantics"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
+      "criterionIds": [
+        "API_COMPATIBILITY",
+        "PERSISTED_STATE",
+        "NEW_BEHAVIOR",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "focused",
+        "qa-authority",
+        "agent-tools-regression",
+        "agentic-regression",
+        "docs"
+      ],
+      "decisionIndexes": [
+        3,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-133/discovery.json",
+        "packages/agentic-system/src/product-qa.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
+          "match": "\"plannedExperiment\": \"Run an initial accepted fixture"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "every pinned acceptance criterion must PASS"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchResolution",
+        "researchPrototype"
+      ]
+    }
+  ],
+  "researchResolution": {
+    "profile": "Finite HTTP/SQLite profile selected; previous-client and business assertions pinned independently. Prototype remains bounded; no split needed.",
+    "tooling": "Eight pinned source/test files inspected. Built-in Node selected; non-selected Python/container tools not adopted or cost-benchmarked.",
+    "experiment": "13 cases: correct PASS; ten violations FAIL; setup/malformed output INCONCLUSIVE. Weakened candidate schema passes its own check but fails prior oracle. Replay, hashes and reproducers embedded.",
+    "readiness": "All research choices are explicit, source-complete baseline bound and historical discovery retained. DRAFT awaits fresh exact independent Jev. Dependencies DONE gate Worker execution, not source materialization; incompatible delivered APIs require rejudgment."
+  },
+  "profileContract": {
+    "kind": "API_STATE_PROFILE_V1",
+    "support": "Trusted local Node major24/Linux x64 with built-in node:sqlite DatabaseSync; loopback HTTP, one owned DB file/forward migration. Observed calibration was Node24.20.0/SQLite3.53.4; preserve those measured facts, with no cross-version equivalence claim. Every supplied runtime is independently pinned by version/binary hash and checked by focused API/SQLite fixtures. Unsupported/missing runtime is INCONCLUSIVE. No external/production DB, inferred commands, generic schema-diff or confinement claim.",
+    "factory": "createApiStateVerifier({ resolvePinnedInput, previewLifecycle, evidenceStore, now }) => { verify({ snapshotRef, environmentRef, components, criterionRef, verifierPolicyRef }) => Promise<{ verdict, evidenceRefs }> } Optional previewLifecycle injection must implement the same phase protocol, ownership and receipts; default plan-owned implementation lives in this module, no new BB-131 export assumed.",
+    "resolver": "resolvePinnedInput receives the QA verify request and returns immutable protected profileRef/hash, 40-hex Git candidateSha, checkout tree/config digest, previewReceiptRef/hash, environment/snapshot/release, evaluator/priorClient/businessAssertions/seed/migration refs+hashes, schema versions, criterionBindings and bounded commands. Hash actual bytes/canonical config. Criterion must belong to snapshot and every mandatory assertion must execute.",
+    "previewShim": "Plan-owned fixture lifecycle implemented in api-state-verifier.js using injected previewLifecycle; not an existing BB-131 export. Implement prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose over tracked fixture scripts and a single privately owned store root. BB-131 startLocalPreview supplies owned service startup/readiness/receipt/dispose only. Its reset creates a new seeded generation, so never call reset between migration and restart. Restart must stop/reap owned candidate process then start again against exactly the same DB path, seed generation and protected migration history. Every fixture service receipt binds candidate/tree/runtime/config; QA snapshot/environment/release stay independent. Resolve scripts/runtime/env from operator-pinned profile before effects; no inferred commands. API verifier creates its SQLite root separately from every BB-131 generation/data directory. Pass that exact owned DB path as a literal service argv input to tracked fixture entrypoint, never DATA_DIR override. Preview dispose reaps service/removes preview data but cannot delete API-owned DB; verifier finally closes connections and removes its own DB root. Initial baseline phase uses the declared candidate fixture entry in explicit baseline-v1 mode, then stop/reap, one forward migration, candidate-v2 mode and fresh restart-v2 mode. No preview reset/reseed occurs across these phases. Trusted lifecycle returns phase receipts; accept replacement preview id/token only from the owned transition, with invariant candidate/tree/runtime/config and unchanged store owner/path/seed generation. Retain all phase receipt hashes in criterion evidence.",
+    "protectedInputs": "BB-127 pins external evaluator/client/business assertions outside candidate write scope; resolve by snapshot/policy. Candidate schema is diagnostic only. Rehash inputs/preview before effects, after migration/restart and before final evidence. Digest drift/missing identity fails closed. Trusted local commands are unsandboxed.",
+    "fixture": "Version 1 tasks(id INTEGER PRIMARY KEY,title/status required TEXT), seed id1/legacy/open. Migration adds priority INTEGER NOT NULL DEFAULT 0, version 2. Assert old row/priority0; prior client creates id2; new client id3/priority2 updates title, rejects missing title and persists after restart. Seed digest binds inputs, not unchanged whole DB bytes.",
+    "budgets": "Default maximum 20 requests, 1000ms per HTTP request, 2000ms startup/readiness/migration/stop, 30000ms total run, 8192 bytes each response/diagnostic, 65536 bytes total evidence. Finite request sequence and fixed seed, no randomized generation. Abort/kill only owned children, close connections before reset, return INCONCLUSIVE on exhaustion with mandatory observations absent. Retain content-addressed sanitized evidence before cleanup.",
+    "result": "evidenceStore.put(envelope) returns immutable evidenceRef. API_STATE_CRITERION_EVIDENCE/version 1 binds criterionRef/verdict/reason, candidateSha/tree/config, snapshot/environment/release, preview/evaluator/priorClient/businessAssertions/seed/migration refs+hashes, schema versions, executedAssertionIds, phase/request/expected/actual or bounded raw diagnostics and cleanup. Store/cleanup failure prevents PASS. Return {verdict,evidenceRefs}; any caching requires all immutable identities and ownership, never prior-candidate results. For failure, retain the fixed-fixture single-request/single-row reduced reproducer specified in testContract, before owned cleanup; unrelated data is excluded. This is deterministic fixture reduction, not a generic minimization algorithm. Retention/cleanup order: store the immutable bounded observation/reproducer first as provisional evidence; dispose owned resources in finally; then store a final receipt referencing provisional evidence and observed cleanup facts. Only the final successful store and successful cleanup permit PASS. Storage/cleanup failure returns INCONCLUSIVE and any already durable refs, never a receipt that predicts future cleanup.",
+    "composition": "Direct module import supplies criterionVerifier to createProductQaExecutionStrategy. The adapter has evidenceStore access only, no QualityAcceptance publisher. Product QA runtimeObserver independently checks release identity; local preview identity alone is insufficient. No manifest field or automatic CLI invocation is added in BB-133.",
+    "testEvidence": "All focused Worker tests invoke createApiStateVerifier; embedded prototype is calibration only, not implementation evidence."
+  },
+  "testContract": {
+    "matrix": "For each N1-N13 construct the actual factory, call verify with pinned external profile and use fresh owned SQLite/store/service fixtures. N1 deleted rows, N2 weakened candidate schema, N3 required-input addition, N4 response removal, N5 corruption, N6 restart reset => FAIL with observed first differing assertion. N7 digest drift/N8 missing/no-op mandatory assertions/N9 identity missing => INCONCLUSIVE before effects or acceptance; N10 migration/setup and N11 timeout/parse => INCONCLUSIVE with bounded diagnostics. N12 foreign resources survive; N13 unknown/skipped criteria cannot PASS. Positive control must execute every mandatory old/new/migration/restart assertion and PASS. Implement one named positive control and every literal N1-N13 title from negativeCaseBindings, 0 skips. N12 injects foreign roots/handles and asserts zero foreign effects plus survivors. N1/N2 reduced reproducers replay separately after retaining original diagnostics; N7-N9/N13 identity/coverage faults have no acceptance publisher access. Record source-bound actual factory invocations, phase receipts and DB row/schema checks.",
+    "reproducer": "For an observed HTTP/assertion mismatch retain exactly the failing finite request method/path/body, expected/actual status/body projection and the single seed row involved, plus candidate/config/evaluator/preview/store/schema identities. This deterministic reduction of the fixed fixture is the minimized reproducer; unrelated requests/rows are excluded. Setup failures retain minimal setup diagnostics, not an invented HTTP mismatch. Retain before cleanup, within profile budgets.",
+    "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases.",
+    "prototypeBoundary": "The 13-case executed prototype uses synthetic candidate hashes/proposed shims and has non-minimized first-failure examples; it proves HTTP/SQLite discriminating feasibility only. Product-level exact Git/QA identities, durable evidenceStore and deterministic reduction are mandatory new focused tests, not existing generic QA coverage."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
