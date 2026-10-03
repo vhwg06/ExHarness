@@ -232,12 +232,225 @@
     }
   ],
   "researchGaps": [],
-  "researchBaselineSha": "afb27059e9981da4ce4842be27205ccc5b72ef13",
+  "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living system state describes the delivered phase-specific fresh-agent onboarding contract, explicit merge-pending resume behavior and non-authority boundary without Blackboard ids or research-only claims."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-152 objective + current Outer Blackboard delivery/bootstrap/control-plane source at the pinned research baseline",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + exact researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh independent Jev SATISFIED",
+      "forbidden": [
+        "product-source implementation",
+        "self-issued readiness",
+        "claiming merge or delivery authority"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY BB-152 plan + DONE BB-056 delivery substrate",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + exact candidate/evidence + independent Jev + merge identity",
+      "convergence": "focused cold-start tests + blackboard context regressions + Living truth + independent Worker Jev + exact delivery verification",
+      "forbidden": [
+        "changing Jev verdict semantics",
+        "changing CI routing",
+        "session-history generations",
+        "generic repository-wide context loading"
+      ]
+    }
+  ],
+  "deliveryContract": {
+    "precondition": "BB-056 is DONE and the exact BB-152 plan has a fresh SATISFIED readiness judgment.",
+    "implementationBoundary": "Only the declared delivery-context/bootstrap/materialization contract and focused tests/docs may change; trusted Jev, delivery publisher and work-graph transition semantics remain unchanged.",
+    "completion": "Focused onboarding tests and blackboard-context verification pass; Living system state matches delivered behavior; independent Worker Jev is SATISFIED; exact evaluated candidate is merged and verify/publish delivery succeed.",
+    "forbidden": "No direct DONE transition, no self-acceptance, no source-write authority in JUDGMENT/MERGE_PENDING, no implicit selection of PLANNED work."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "blackboard-context",
+      "docs"
+    ],
+    "readiness": "Research candidate is selected only by an exact plan or research-baseline change; Jev judges the pinned baseline and plan as data.",
+    "worker": "Worker evidence remains candidate-bound; merge publication is separately verified against the evaluated tree."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Every contracted nonterminal lane/phase has one deterministic phase-local delivery envelope with current goal, entry conditions, required outputs, exit conditions, legal next actions and forbidden actions bound to the exact work id and semantic subject.",
+      "criterionIds": [
+        "PHASE_CONTEXT"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery-context.mjs",
+        "scripts/blackboard-implementation-bootstrap.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery-context.mjs",
+          "match": "hardInvariants:plan.invariants,verification:plan.verificationPlan,expectedOutputs:[task.lane==='RESEARCH_SA'?'READY_IMPLEMENT_PLAN':'DELIVERED_FEATURE'],"
+        },
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "if(task.contract) return {workId:selected,taskId:selected,pipeline:\"IMPLEMENTATION_WORKER\",lane,phase:spec.phase,intent:lane==='RESEARCH_SA'?'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN',rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main'],context};"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "sourceScope",
+        "invariantCoverage"
+      ]
+    },
+    {
+      "objectiveCriterion": "Bootstrap intent/rules come from that envelope so REPAIR, JUDGMENT and MERGE_PENDING cannot be presented as ordinary implementation execution.",
+      "criterionIds": [
+        "BOOTSTRAP"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-implementation-bootstrap.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "const implementationItems=graph.tasks.filter(t=>t.status===\"ACTIVE\"&&(t.contract ? ['RESEARCH_SA','WORKER'].includes(t.lane) : [\"IMPLEMENTATION\",\"BUGFIX\"].includes(t.kind)));"
+        },
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "if(task.contract) return {workId:selected,taskId:selected,pipeline:\"IMPLEMENTATION_WORKER\",lane,phase:spec.phase,intent:lane==='RESEARCH_SA'?'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN',rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main'],context};"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "A fresh session given an exact PLANNED/MERGE_PENDING work id can materialize read-only finalization context and the exact verify/publish delivery sequence without reclaiming the task; auto-selection still considers only ACTIVE work.",
+      "criterionIds": [
+        "MERGE_RESUME"
+      ],
+      "planElements": [
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        5
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-implementation-bootstrap.mjs",
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "if(!task)throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: ${selected} is not an active implementation task`);"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "} else task.phase = evaluation.verdict === 'SATISFIED' ? 'MERGE_PENDING' : 'REPAIR';"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "task.status = 'PLANNED'; task.claim = null; task.currentContextRef = null;"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "if (task.lane !== 'WORKER' || task.phase !== 'MERGE_PENDING') fail('not MERGE_PENDING');"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "deliveryContract",
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Focused negative tests prove judgment cannot advertise source mutation or self-acceptance, merge-pending cannot grant implementation authority, and no direct transition to DONE exists without verified merge identity.",
+      "criterionIds": [
+        "AUTHORITY",
+        "BOOTSTRAP",
+        "MERGE_RESUME"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        5
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-implementation-bootstrap.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "const { graph, task, receipt } = verifyDelivery(root, id, options);"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "task.contract.deliveryRef = ref; task.status = 'DONE'; task.phase = 'DELIVERED';"
+        },
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main']"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings",
+        "verificationPlan",
+        "deliveryContract"
+      ]
+    }
+  ]
 }
