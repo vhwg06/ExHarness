@@ -102,10 +102,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes. The seed format is JSON array/object <=1MiB; service-specific owned data directory receives seed.json with exact protected bytes. No generic database seeding inference.",
-    "S2 \u2014 Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics. Inject reserved PREVIEW_CANDIDATE_SHA/TREE, PREVIEW_CONFIG_DIGEST/SEED_DIGEST as checked public identity inputs so the service can answer required health fields. Validate inherited env is absent and all internal overrides rejected. Node DATA_DIR is each service own generation directory; reset copies protected seed.json only after reaping prior groups. The sole new local-preview.js is both public API and private lease supervisor: fork fileURLToPath(import.meta.url) with literal --preview-supervisor; enter child mode only when executed directly with that exact flag. Parent sends one validated START packet; supervisor owns service forks/groups and replies over its own ChildProcess IPC. Schema-check IPC <=64KiB, max32 services; reject unknown messages, duplicate LISTENING, wrong sender and stale token. RESET is serialized, awaits old groups/data disposal, then creates a new generation and returns a new handle; old handle cannot observe/reset. DISPOSE is serialized/idempotent. Parent disconnect aborts startup and triggers the same owned teardown; response correlates owner/generation/request id. No additional undeclared supervisor source file or persisted PID adoption.",
-    "S3 \u2014 Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
-    "S4 \u2014 Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority."
+    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes. The seed format is JSON array/object <=1MiB; service-specific owned data directory receives seed.json with exact protected bytes. No generic database seeding inference.",
+    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics. Inject reserved PREVIEW_CANDIDATE_SHA/TREE, PREVIEW_CONFIG_DIGEST/SEED_DIGEST as checked public identity inputs so the service can answer required health fields. Validate inherited env is absent and all internal overrides rejected. Node DATA_DIR is each service own generation directory; reset copies protected seed.json only after reaping prior groups. The sole new local-preview.js is both public API and private lease supervisor: fork fileURLToPath(import.meta.url) with literal --preview-supervisor; enter child mode only when executed directly with that exact flag. Parent sends one validated START packet; supervisor owns service forks/groups and replies over its own ChildProcess IPC. Schema-check IPC <=64KiB, max32 services; reject unknown messages, duplicate LISTENING, wrong sender and stale token. RESET is serialized, awaits old groups/data disposal, then creates a new generation and returns a new handle; old handle cannot observe/reset. DISPOSE is serialized/idempotent. Parent disconnect aborts startup and triggers the same owned teardown; response correlates owner/generation/request id. No additional undeclared supervisor source file or persisted PID adoption.",
+    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
+    "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority. Final research output is this DRAFT file-level plan with localPreviewContract APIs/wire protocol, embedded hash-bound prototype/reproduction and distinct negativeCaseBindings. Submit the unchanged complete plan for independent readiness; no Worker code or future runtime logs are prerequisites to this RESEARCH_SA judgment. Worker implementation checks remain gated by exact READY and dependencies DONE."
   ],
   "acceptanceCriteria": [
     {
@@ -568,7 +568,9 @@
           "match": "export async function createLocalGitWorkspace"
         }
       ],
-      "supportingPlanFields": [],
+      "supportingPlanFields": [
+        "previewMechanism"
+      ],
       "verificationIds": [
         "focused",
         "composition"
@@ -604,7 +606,9 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": [],
+      "supportingPlanFields": [
+        "previewMechanism"
+      ],
       "verificationIds": [
         "focused"
       ]
@@ -638,7 +642,9 @@
           "match": "\"experimentStatus\""
         }
       ],
-      "supportingPlanFields": [],
+      "supportingPlanFields": [
+        "prototypeSummary"
+      ],
       "verificationIds": [
         "focused",
         "composition"
@@ -708,5 +714,132 @@
     "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
     "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
     "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "previewMechanism": {
+    "api": "startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) -> {status,reason,receipt,handle?}; OBSERVED_READY has handle {observe(),reset(),dispose()}. Invalid declarations return a typed FAILED receipt before effects. reset returns a new generation/handle and permanently disposes the old handle. dispose is idempotent.",
+    "outcomes": {
+      "OBSERVED_READY": "Every declared service is healthy and all independent bindings match; no QA acceptance is implied.",
+      "FAILED": [
+        "INVALID_PROFILE",
+        "CANDIDATE_MISMATCH",
+        "CONFIG_DRIFT",
+        "RUNTIME_DRIFT",
+        "EVALUATOR_MISMATCH",
+        "SEED_MISMATCH",
+        "READINESS_IDENTITY_MISMATCH",
+        "PORT_CONFLICT",
+        "EARLY_EXIT"
+      ],
+      "UNRESOLVED": [
+        "UNSUPPORTED_PROFILE",
+        "UNSUPPORTED_HOST",
+        "RUNTIME_UNAVAILABLE",
+        "READINESS_TIMEOUT",
+        "INTERRUPTED",
+        "CLEANUP_INCOMPLETE"
+      ],
+      "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
+    },
+    "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
+    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
+    "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
+    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed.",
+    "wireProtocol": "Service launch uses child_process.fork(entry,args,{execPath:runtime.path,cwd:workspaceRoot,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}); runtime path is execPath option, entry is modulePath. Service sends {type:LISTENING,serviceId,runToken,host:127.0.0.1,port:integer}; receiver validates exact sender child, token and declared port. HTTP health returns {serviceId,runToken,candidateVersion,candidateTree,configDigest,seedDigest}; require exact values/no redirects. Supervisor uses a separate fork with live IPC lease. Owned data lives in mkdtemp outside checkout; copy seed before service spawn. Lifecycle cleanup awaits group termination and deletes owned data; receipts survive externally. Service entry must implement this documented protocol; no wrapper inference. Service receives those four protected identity environment keys plus PREVIEW_RUN_TOKEN/SERVICE_ID/PORT/DATA_DIR. Each service owns <runRoot>/data/<serviceId>; copy the protected seed regular-file bytes there as seed.json before fork. Entrypoint reads that declared file, never an inferred DB path. Profile/receipt pins initial seed bytes; live mutations are checked by caller assertions, reset re-copies original seed to a new generation. Lease supervisor bootstrap and serialized parent/child protocol are specified in S2; all service groups belong to that live owner, not the API controller process."
+  },
+  "prototypeSummary": {
+    "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "selection": "NARROW_PROFILE_GO: three synthetic separate repositories using one opt-in Node protocol. Runtime/lifecycle feasibility only; no real-consumer/framework/container acceptance.",
+    "comparison": {
+      "explicitCommands": "Three fresh synthetic checkouts passed; setupMs starts after authoring, not human effort.",
+      "devContainer": "NOT_RUN, Docker absent: host initializeCommand is separate from skip-post-create; tests explicitly remove returned containerId.",
+      "testcontainers": "NOT_RUN, no runtime: inspect session reaper and health predicates; reaper may be disabled/reused.",
+      "value": "Container timings/interventions unknown. No speedup/provider-cost/quality/effort claim."
+    },
+    "executedResult": {
+      "node": "v24.20.0",
+      "platform": "linux",
+      "arch": "x64",
+      "dockerUnavailable": true,
+      "manifestDropsPreview": true,
+      "results": [
+        {
+          "name": "static-web fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 244,
+          "services": 1,
+          "candidateSha": "511bd6910a7ea77b88b6b2c4256e25c0c9d697a9",
+          "candidateTree": "af7646657ffd7b69c47f76756a37099895debd52",
+          "interventions": 0
+        },
+        {
+          "name": "json-api fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 201,
+          "services": 1,
+          "candidateSha": "86220545023b343e50548535592233ead4388b51",
+          "candidateTree": "7a4cea34e309b093f614c6dd042e26aa718d8bba",
+          "interventions": 0
+        },
+        {
+          "name": "web-service fresh-checkout/readiness/reset/dispose",
+          "status": "PASS",
+          "setupMs": 281,
+          "services": 2,
+          "candidateSha": "1f5c0b23376fd33039b51836d7180a0ab236e8b8",
+          "candidateTree": "bd79a3063723108b0aa1f24e0e861236d2fb6d7d",
+          "interventions": 0
+        },
+        {
+          "name": "wrong candidate response",
+          "status": "PASS"
+        },
+        {
+          "name": "readiness timeout",
+          "status": "PASS"
+        },
+        {
+          "name": "interrupted start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "missing runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "missing service and partial start cleanup",
+          "status": "PASS"
+        },
+        {
+          "name": "config drift",
+          "status": "PASS"
+        },
+        {
+          "name": "foreign occupied port survives",
+          "status": "PASS"
+        },
+        {
+          "name": "controller SIGKILL reaps owned group and preserves foreign server",
+          "status": "PASS"
+        },
+        {
+          "name": "container descriptor rejected without running hooks",
+          "status": "PASS"
+        }
+      ],
+      "limits": [
+        "Scratch prototype, not delivered implementation",
+        "Crash test covers controller death with live supervisor; simultaneous supervisor death/host crash needs external reaper",
+        "No container live/setup comparison or third-party stack trial",
+        "Fixture generation/authoring is excluded from setupMs and interventions; no human-effort claim"
+      ]
+    },
+    "prototypeLimitations": [
+      "Worker must add final strict schema/canonicalization/budget checks.",
+      "Controller-death test proves service cleanup with live supervisor; runner removes crash data. Worker tests actual AbortSignal and supervisor data cleanup.",
+      "Two-process fixture is endpoint lifecycle, not business/API compatibility. Existing manifest drops preview; generic checks can already run custom tests."
+    ],
+    "reproduction": "Decode bundled gzip+base64 UTF-8 to scratch .mjs; verify source SHA256; run node <scratch.mjs> <worktree-root>. Uses installed Node/git and real workspace/manifest seams, creates/removes fixtures, zero providers. Commit times/PIDs/ports/timing vary; PASS/tree contents repeat. Docker-absence assertion is host-specific.",
+    "prototypeSourceSha256": "6c5deaf7de4e0dfe4ffc1ffcb89f40a0abb1c94a4c6637e75cc751f351b83917"
   }
 }
