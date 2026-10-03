@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-158
+next-work-id: BB-159
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -72,6 +72,7 @@ NONE
 - BB-155 [RESEARCH_SA/RESEARCH] — Build Blackboard V2 control plane
 - BB-156 [RESEARCH_SA/RESEARCH] — Migrate unfinished work to Blackboard V2 and cut over
 - BB-157 [RESEARCH_SA/RESEARCH] — Add JEV supervisory lookback and anti-spam loop to Blackboard V2
+- BB-158 [RESEARCH_SA/RESEARCH] — Refactor CI into an agent-native delivery feedback plane
 
 ## Dependency graph
 
@@ -172,6 +173,7 @@ BB-154 [BLOCKED] <- BB-056
 BB-155 [RESEARCH_SCHEDULABLE] <- BB-056
 BB-156 [RESEARCH_SCHEDULABLE] <- BB-155
 BB-157 [RESEARCH_SCHEDULABLE] <- BB-155
+BB-158 [BLOCKED_BY BB-155,BB-157] <- BB-155, BB-157
 ```
 
 ## Context semantics
