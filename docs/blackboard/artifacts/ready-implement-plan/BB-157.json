@@ -85,7 +85,8 @@
       "test/blackboard-v2-supervision.test.mjs",
       "docs/living/system/state.md",
       "package.json",
-      "package-lock.json"
+      "package-lock.json",
+      "scripts/blackboard-v2/work-resource.mjs"
     ],
     "forbiddenWrite": [
       "docs/blackboard/work-graph.json",
@@ -101,10 +102,10 @@
   },
   "implementationSlices": [
     "S1 — supervision.mjs: implement strict REPAIR_REFLECTION_V1 validation, findingSignature and deriveReflectionMode with D3-D5/D8; resolve exact immutable failed Decision/Attempt/candidate/evidence refs from store snapshot and reject duplicate/missing diagnoses, authority-verdict fields and stale generation/subject. Export publishRepairReflection wrapper over BB-155 apply PUBLISH_REFLECTION; no direct SQL or duplicate supervision state.",
-    "S2 — lifecycle.mjs: extend actual phase table with LOOKBACK and replace base failed candidate BLOCKED edge. Failed candidate typed outcomes route by D2; independent exact Decision publication is required. LOOKBACK has no source/evidence mutation or provider action. One exact reflection publication transaction validates current lease/fence/CAS and record refs then enters REPAIRING; stale Decision/reflection stays SUPERSEDED with unchanged Work. No CAS/store-clock/fence changes.",
+    "S2 — lifecycle.mjs/work-resource.mjs: add LOOKBACK enum and optional exact repairReflectionRef to strict status schema. Implement supervisionContract.dispatchTable with existing trusted candidate validation first: contradiction -> research/revoke; allSAT -> merge; defect/evidence -> LOOKBACK. Read-only LOOKBACK exposes no source/evidence/spec writes or provider request. PUBLISH_REFLECTION performs one CAS/live lease/fence/subject check, immutable insert and phase change to REPAIRING; stale subject SUPERSEDED with zero Work effects. REQUEST_CANDIDATE_JUDGMENT is external JUDGE_CANDIDATE; guard it with exact accepted reflection and materialProgressContract before reservation/dispatch. Keep base SQLite/clock/fence unchanged.",
     "S3 — supervision.mjs/lifecycle.mjs/CLI: derive candidate/evidence material projections from trusted object/check facts per D6-D7, compare against immutable failed subject and apply failure-class matrix before dispatch. Wire the pure guard into nextActions and repeat it in store apply/reservation; unchanged/metadata-only subject blocks provider invocation. Unique reservation/cache reuse prevents concurrent repeated calls. No actor hash, reflection text or prose churn unlocks JEV. Implement the pinned parser and typed-evidence profiles in materialProgressContract; lock dependencies in package-lock.json. Add comment/formatting-only candidate and timing-only log variants with zero provider dispatch.",
-    "S4 — supervision.mjs/context-builder.mjs: derive same/changed signature mode from comparable APPLIED candidate Decisions using storeSequence; require explicit reconsidered strategy/falsification fields for repeats. LOOKBACK context supplies failed facts/mode and zero source writes; REPAIRING supplies accepted reflection/exact plan scope only. Context projection remains pure and produces no persisted Context artifact.",
-    "S5 — blackboard-v2-supervision.test.mjs: invoke actual nextActions, publishRepairReflection, assertMaterialProgress and deriveReflectionMode for every N1-N5 title; cover defects/evidence/mixed/contradiction/allSAT, each stale identity/fence/lease, reordered decisions, ignored superseded history, same-tree new commits, doc/control-only changes, invalid evidence provenance, reservation race and repeated strategy fields. Assert zero provider calls before all guards; only fresh independent Jev can reach MERGE_PENDING. Run core regression/repository/docs; update Living state. Worker requires BB-155 DELIVERED and exact planned API; research model code is not delivery. N3 also requires JS comment/whitespace-only changes, identical test observations with different timing/stream hashes, unsupported parser and altered actor digest; all block with zero provider calls. Positive controls change actual syntax or add verified criterion observations."
+    "S4 — supervision.mjs/context-builder.mjs: derive signature/mode from immutable snapshot per findingContract, selecting immediate previous comparable APPLIED failure by storeSequence; ignore stale/readiness history. Repeated signature requires reconsideration and normalized strategy projection changed from prior accepted reflection; id/revision/time/format-only churn rejects. Snapshot reader resolves needed records before pure projection. LOOKBACK context shows failed Decision/Attempt/version refs, mode and required output, writeScope=[]; REPAIRING includes exact accepted reflection and existing plan scope only. Store no counter or duplicate finding authority.",
+    "S5 — test/blackboard-v2-supervision.test.mjs: invoke actual nextActions, publishRepairReflection, assertMaterialProgress and deriveReflectionMode with all N1-N5 titles. N1 asserts defect/evidence/mixed -> LOOKBACK and context empty scope, contradiction -> research and allSAT -> merge; no direct repair. N4 tests two comparable failures/reordered answers/history yield STRATEGY_RECONSIDERATION; producer mode override, revision/whitespace-only strategy cannot satisfy reflection, changed hypothesis+intervention+falsification can. N5 enforces judgeBoundary using separate actor/judge capabilities and actual base trusted validator. Cover every stale exact ref/fence, syntax/log noise, unsupported parser, material positive controls and reservation race; zero dispatch before guards. Run focused/base/repository checks and declared Living state. Worker requires BB-155 DELIVERED and exact updated API; no research model is delivery."
   ],
   "acceptanceCriteria": [
     {
@@ -115,7 +116,8 @@
       ],
       "evidenceRequired": [
         "Transition tests for IMPLEMENTATION_DEFECT, INSUFFICIENT_EVIDENCE, mixed failure, SATISFIED and PLAN_INPUT_CONTRADICTION.",
-        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof.",
+        "Actual dispatchTable outcome/context matrix: defect, evidence and mixed produce LOOKBACK/writeScope=[], only exact reflection enters REPAIRING; zero provider dispatch and zero product/evidence/spec writes."
       ]
     },
     {
@@ -148,7 +150,8 @@
       ],
       "evidenceRequired": [
         "Decision-history fixtures proving same/different signature behavior.",
-        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof.",
+        "Actual comparable Decision storeSequence fixtures; assert required mode and reject revision/format-only strategy, accept changed epistemic projection without granting correctness."
       ]
     },
     {
@@ -160,7 +163,8 @@
       ],
       "evidenceRequired": [
         "Negative fixture where reflection exists but no fresh judged candidate cannot advance.",
-        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof."
+        "Exact candidate-bound product test logs including stated positive/negative controls; invoke actual exported symbol from owning implementation slice, observe phase/source-write scope/record bytes and provider call count. Producer reflection is never correctness proof.",
+        "Actual separate actor/judge capability fixtures and existing trusted evaluation validator; reflection cannot alter failed answers, acceptance or evaluator cacheKey."
       ]
     }
   ],
@@ -306,7 +310,13 @@
     "publication": "publishRepairReflection(store,{workId,expectedResourceVersion,expectedGeneration,attemptToken,reflection}) delegates action PUBLISH_REFLECTION. The pinned server resolves records from the same transaction and invokes validateRepairReflection(reflection,snapshot), derives mode and checks live fence/lease. Accepted record plus phase/reference update is atomic. Malformed schema/forged authority rejects; stale but typed subject is SUPERSEDED. Superseded reflection never becomes current pointer/condition. Retries of same id/body are idempotent; changed bytes with same id reject.",
     "ownership": "The same current Attempt may append candidate/evidence version records after reflection, but failed Decision versions remain immutable. Lease takeover allocates a new Attempt/fence; prior reflection is then stale. It cannot grant the new owner repair unless a new exact failed subject is applicable or operator research resolves the situation. Spec revision increments Work.generation and clears current applicability, never patches reflection to a new generation.",
     "readOnly": "LOOKBACK source/evidence/spec writeScope=[]; context lists read and derive reflection only. The sole actor control publication is the typed reflection action; store owns its lifecycle transition. No candidate publish, shell repair or JEV_CANDIDATE dispatch during LOOKBACK.",
-    "baseAPI": "BB-155 readSnapshot/createWork/apply/readRecord; canonical Work fields id/resourceVersion/generation/spec/status; strict record refs {kind,id,hash}; status latestCandidateDecisionRef and activeAttemptRef; lifecycle exported nextActions/reduceLifecycle; context exported buildContext. BB-157 edits lifecycle/context/CLI and adds supervision.mjs, imports existing store API without modifying store primitives."
+    "baseAPI": "BB-155 readSnapshot/createWork/apply/readRecord; Work id/resourceVersion/generation/spec/status. Immutable Attempt identity, LeaseVersion and candidate/evidence version records; status activeAttemptRef/activeLeaseRef/candidateVersionRef/evidenceVersionRef/latestCandidateDecisionRef. nextActions/reduceLifecycle/buildContext, materializeWorkJudgment and existing independent evaluate/validateEvaluation. BB-157 adds optional status.repairReflectionRef (immutable exact ref) and LOOKBACK to the strict V2 schema; it changes no SQLite CAS/clock/fence primitive.",
+    "dispatchTable": [
+      "Independent PUBLISH_DECISION(kind=candidate) first passes existing typed evaluation validation plus exact current Work-generation/spec/Attempt/candidate/evidence and live lease/fence/CAS. Missing answer, forged identity or wrong phase rejects; stale trusted subject is SUPERSEDED without Work changes.",
+      "Any required PLAN_INPUT_CONTRADICTION -> RESEARCHING and revoke readiness/current subject ownership. Otherwise every required SATISFIED -> MERGE_PENDING. Otherwise IMPLEMENTATION_DEFECT and/or INSUFFICIENT_EVIDENCE -> LOOKBACK, preserve exact failed subject refs and current owner. No direct REPAIRING or source write.",
+      "LOOKBACK exposes READ_FAILURE and DERIVE_REFLECTION only; product/evidence/spec writeScope=[] and JEV request forbidden. PUBLISH_REFLECTION is the only typed control mutation allowed to its live owner. The store transaction verifies exact reflection bindings, required diagnosis/mode/strategy, then appends record and enters REPAIRING; this authorizes repair only, never correctness.",
+      "REPAIRING stages immutable candidate/evidence versions using base store. External JUDGE_CANDIDATE maps to base REQUEST_CANDIDATE_JUDGMENT: accepted current reflection, exact current readiness/dependencies/lease, required material deltas and unique subject reservation must all pass under CAS before JUDGING/dispatch. Failure emits blockers and zero provider calls. A fresh failed Decision returns LOOKBACK; a fresh independent allSAT alone advances MERGE_PENDING."
+    ]
   },
   "materialProgressContract": {
     "candidateProjection": "Resolve immutable candidate Git objects and authorized plan product/test/config paths; sort {path,mode,profile,syntaxDigest}. Controller-owned normalizer profiles: JS/MJS via acorn 8.15.0 parse(ecmaVersion:latest,sourceType:module), strip start/end/loc/range/comment and ordinary literal raw but preserve value, directive, regex source/flags, template raw/cooked and hashbang where execution-sensitive; JSON parsed value with duplicate-key rejection; YAML 2.8.1 parsed trusted document semantics with duplicate keys/unknown custom tags rejected. Retain executable directives/comments if a declared tool consumes them; such profiles must be declared before judgment. Unsupported language/ambiguous parse has no approved projection and blocks dispatch until research resolves a trusted profile, never fallback to raw blob hash. Different native tree and syntax projection required. Whitespace/comment-only JS, prose/control record edits or same-tree commits fail NO_MATERIAL_DELTA. Exclude authority artifact bodies, not source implementing the controller. AST difference does not imply behavioral correctness; independent JEV decides.",
@@ -325,7 +335,9 @@
     "signature": "sha256(canonical sorted [questionId,typedChoice] for all required non-SATISFIED candidate answers). Unique IDs and valid response coverage required beforehand; confidence/producer text excluded.",
     "previous": "Highest storeSequence less than current in supplied immutable Decisions with same workId/generation/specHash, APPLIED candidate kind, nonSatisfied and comparable questionSpecHash. Store sequence is authoritative. Superseded/readiness results do not increment a hidden count or reset a repeated finding.",
     "mode": "First/changed finding DIAGNOSIS; identical prior signature STRATEGY_RECONSIDERATION. Current status stores only exact reflection ref and Decision ref; mode/signature are deterministically recomputed and checked, never a separate authoritative repeatCount/finding-summary resource.",
-    "authority": "Reflection validates coverage/binding/required epistemic fields; it does not choose SATISFIED. Candidate material + evidence + a new independently validated JevDecision are still required for MERGE_PENDING."
+    "authority": "Reflection validates coverage/binding/required epistemic fields; it does not choose SATISFIED. Candidate material + evidence + a new independently validated JevDecision are still required for MERGE_PENDING.",
+    "strategy": "For a repeated comparable finding, resolve the previous accepted reflection by exact previous failed Decision ref from immutable records. Require whyPreviousRepeated, an alternative approach and a falsification condition. Strategy digest excludes revision/id/time/reflection prose outside {diagnoses.questionId/revisedHypothesis/minimalIntervention/verificationIds/expectedCounterexample,strategy.approach/alternatives/falsificationCondition}; NFKC+trim+whitespace-fold strings, sort question/verification IDs. Digest must differ from prior accepted strategy; bumping revision or reformatting cannot pass. It enforces explicit epistemic revision, not correctness; independent Jev judges the subsequent candidate.",
+    "snapshot": "readSnapshot supplies exact current Decision plus immutable comparable candidate Decisions and accepted reflections needed for predecessor selection, ordered by storeSequence. deriveReflectionMode filters same Work generation/spec/questionSpecHash, APPLIED non-satisfied candidate results and selects max prior sequence. It recomputes canonical signature/mode from these facts, independent of producer mode or mutable counter. nextActions/buildContext read this supplied snapshot only; the SQL reader assembles it before pure projection."
   },
   "dependencyContract": {
     "workId": "BB-155",
@@ -472,10 +484,7 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "findingContract",
-        "dependencyContract",
-        "researchSummary",
-        "foundationInterface"
+        "judgeBoundary"
       ]
     }
   ],
@@ -524,7 +533,7 @@
   "foundationInterface": {
     "classification": "CURRENT_SYSTEM_NOT_CHANGED",
     "workId": "BB-155",
-    "planHash": "9212a4d1dfeb411a01314c04338927fa7ae3745ff094f9af751006b05b732ab5",
+    "planHash": "8fef6dff0e56e2f5b9be10e3d6c7cfc9627260f0159087b44f2416533c99bebe",
     "proposedRef": "https://github.com/vhwg06/ExHarness/pull/543",
     "publicMethods": [
       "readSnapshot",
@@ -535,5 +544,10 @@
     "Work": "id/resourceVersion/generation/spec/status",
     "controller": "single Node24 SQLite service",
     "version": 1
+  },
+  "judgeBoundary": {
+    "authority": "PUBLISH_REFLECTION has actor capability and cannot publish a Decision. Strict reflection schema rejects answers/verdict/accepted/delivery/ready fields. Only judge capability plus existing validateEvaluation against freshly materialized exact subject can publish candidate correctness.",
+    "evidence": "materializeWorkJudgment uses original objective/READY plan, current immutable candidate and trusted collected criterion/negative-case evidence. Reflection text, mode, strategy revision and metadata are not correctness evidence, do not change questionSpecHash/cacheKey and cannot satisfy a failed finding. Context may show reflection for repair reasoning; criterion judgment remains independent.",
+    "test": "N5 calls actual publishRepairReflection/apply then observes REPAIRING (never MERGE_PENDING), unchanged failed answers and zero provider calls. Attempt actor-published allSAT/missing answers must reject; only a separate trusted judge fixture satisfying exact new subject reaches MERGE_PENDING after material guards. Fixtures are test data, never real SATISFIED receipt."
   }
 }
