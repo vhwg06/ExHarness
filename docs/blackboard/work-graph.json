@@ -6869,9 +6869,9 @@
     {
       "id": "BB-154",
       "featureId": null,
-      "title": "Reduce Outer Blackboard to value-bearing kernel",
+      "title": "[WITHDRAWN by Blackboard V2 split] Reduce Outer Blackboard to value-bearing kernel",
       "kind": "BUGFIX",
-      "status": "PLANNED",
+      "status": "BLOCKED",
       "complexity": "L",
       "components": [
         "outer/blackboard"
@@ -6908,10 +6908,96 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-155",
+      "featureId": null,
+      "title": "Build Blackboard V2 control plane",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-155.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One source-branch-independent V2 control authority with one Work resource per work id.",
+        "Executable lifecycle and `next` action derivation rather than prose-inferred workflow.",
+        "Pure context builder plus Attempt bindings that keep source branches/worktrees outside Blackboard authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-155.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-156",
+      "featureId": null,
+      "title": "Migrate unfinished work to Blackboard V2 and cut over",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-155",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-156.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-156.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "One exact manifest of current unfinished non-withdrawn legacy work; DONE work is excluded.",
+        "One V2 Work per manifest item with semantic/dependency/authority parity.",
+        "Atomic authority cutover to V2 with no dual-write or long-lived legacy current-work reader."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-156.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-156.json",
+        "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-155",
+    "nextWorkId": "BB-157",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
