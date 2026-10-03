@@ -1,0 +1,275 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-154",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-154.json",
+    "hash": "541ea8d514e8377f51a6cf40ed081d708ff46ba1795f1964ded724fdbb7fec7e"
+  },
+  "scope": [
+    "outer-blackboard.graph-simplification",
+    "outer-blackboard.context-projection-simplification",
+    "outer-blackboard.component-registry-simplification",
+    "outer-blackboard.legacy-control-retirement",
+    "outer-blackboard.value-validation"
+  ],
+  "outOfScope": [
+    "Jev provider/verdict semantics or the atomic-choice policy.",
+    "Worker evidence retention/pruning after DONE.",
+    "OBJECTIVE_SUPERSESSION semantics.",
+    "Candidate/evidence/merge binding or DELIVERED_FEATURE receipt semantics.",
+    "Product/runtime Blackboard under packages/agentic-system."
+  ],
+  "constraints": [
+    "Preserve the two lanes RESEARCH_SA and WORKER, phase semantics, one-task claim ownership, direct task dependency ordering, exact objective/plan bindings, independent Jev judgment, negative-case binding, Living Docs consolidation and exact candidate/evidence/merge delivery verification.",
+    "Do not change Jev verdict semantics, provider policy, worker evidence retention, OBJECTIVE_SUPERSESSION semantics or delivery receipt semantics in this cleanup.",
+    "Do not remove a field or layer merely because it is aesthetically redundant; removal requires either no current consumer, a derivable equivalent, or a replacement that preserves the same decision/authority value.",
+    "Migrate current unfinished tasks deterministically and preserve terminal receipts/artifacts without rewriting historical evidence.",
+    "Fresh-agent onboarding must not regress: the post-cleanup bootstrap must recover the exact task, lane/phase, current-system refs, plan scope and legal next action without prior conversation."
+  ],
+  "invariants": [
+    "Task remains the only scheduling/claim/execution unit and direct dependency ordering remains acyclic and fail-closed.",
+    "RESEARCH_SA and WORKER remain the only lanes; phases and exact objective/plan/Jev/delivery authority remain unchanged.",
+    "Removing derived context/state files cannot remove semantic continuation state; bootstrap must derive the same current obligation from canonical data.",
+    "DONE dependency context still resolves to consolidated Living truth, never terminal implementation transcript by default.",
+    "Plan sourceScope remains the only product-source mutation authority for contracted work; component metadata cannot widen it."
+  ],
+  "architectureDecisions": [
+    "D1 — Remove the Feature layer from the current graph. Current evidence is 79 Features / 79 Tasks with every Feature owning exactly one Task and acceptanceTaskId equal to that sole Task. Migrate each task to direct topicId; union the former Feature artifactRefs into that Task's artifacts.inputRefs; remove graph.features, topic.featureIds, task.featureId, feature status and acceptanceTaskId. Topic stays as the roadmap grouping boundary.",
+    "D2 — Collapse dependency edges to direct task identity only. Current evidence is 152 edges: 151 use requires=['TASK_OUTPUT']; the lone DELIVERED_SYSTEM_TRUTH edge is legacy BB-052 -> BB-048 and is already represented by the delivered dependency rule. Store dependencies as task ids (or taskId-only objects) and keep the existing rule: RESEARCH may inspect unfinished dependency objective/plan; WORKER requires DONE; DONE contributes consolidatedRefs.",
+    "D3 — Remove graph fields with no contracted-path decision consumer: task.complexity, task.kind, task.expectedOutputs, topic.status, and allocation.executionUnit/contextRoutingUnit/workerOwnership. Keep allocation.nextWorkId. Objective/READY plan own outcome and executable acceptance semantics; lane/phase/status own lifecycle.",
+    "D4 — Remove persisted helper context identity. Delete task.currentContextRef and docs/blackboard/context/<id>/current.json as lifecycle state. Keep task.claim.workerId for single-owner concurrency. deriveTaskContext becomes the only semantic context constructor and bootstrap derives/materializes it on demand for the exact task/phase. No context file write/delete is needed on claim, judgment or delivery.",
+    "D5 — Keep the human routing projection but stop committing it. blackboard-state-project.mjs renders the current summary on demand from graph/registry; remove docs/blackboard/state.md as a tracked source and remove verify-state drift checks. AGENTS/docs instruct fresh sessions to run/read the generated view, then resolve the exact task.",
+    "D6 — Slim Component Registry to fields with current contracted-path value. Keep component id, currentSystemRefs and bounded progressiveSearchRoots; keep contractRefs only as explicit discovery hints. Remove contextOwner (validation-only) and sourceRoots/testRoots (legacy resolver-only); READY plan sourceScope remains mutation/read authority.",
+    "D7 — Retire legacy outer-context machinery after proving no unfinished consumer: delete blackboard-context-board.mjs, blackboard-context-generate.mjs and their legacy-only tests; remove the non-OBJECTIVE_PLAN_DELIVERY branch in context contract/resolver/verify; remove migrate:blackboard-delivery and blackboard-delivery-migrate.mjs. The retained legacy terminal task remains historical data, not a runtime compatibility requirement.",
+    "D8 — Replace the current synthetic eval:blackboard-context value claim. Its artifact declares productionEvidence=false and its reduction baseline is constructed by adding repository-scan/history/guess refs. Keep deterministic context invariants as tests, but do not call them a value gate. Add a focused before/after fresh-bootstrap fixture proving identical task selection, dependency truth, current-system refs, source scope and phase obligation with fewer persisted/schema fields.",
+    "D9 — Do not simplify Jev or terminal evidence retention in this task. The recent BB-152 readiness run demonstrated real independent-judge value by returning RESEARCH_REQUIRED for an underspecified plan; exact candidate/evidence/merge checks and retained incident evidence remain value-bearing until separately benchmarked."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/README.md",
+      "AGENTS.md",
+      "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-task-context-resolver.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-context-contract.mjs",
+      "scripts/blackboard-context-materialize.mjs",
+      "scripts/blackboard-context-verify.mjs",
+      "scripts/blackboard-state-project.mjs",
+      "scripts/blackboard-context-board.mjs",
+      "scripts/blackboard-context-generate.mjs",
+      "scripts/blackboard-delivery-migrate.mjs",
+      "scripts/blackboard-context-eval.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-objective-supersession.mjs",
+      "package.json"
+    ],
+    "expectedNew": [
+      "test/blackboard-value-kernel.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-value-kernel.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/system/state.md",
+      "AGENTS.md",
+      "package.json",
+      "scripts/blackboard-*.mjs",
+      "test/blackboard-*.test.mjs"
+    ],
+    "write": [
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/README.md",
+      "docs/blackboard/state.md",
+      "docs/living/system/state.md",
+      "AGENTS.md",
+      "package.json",
+      "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-task-context-resolver.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-context-contract.mjs",
+      "scripts/blackboard-context-materialize.mjs",
+      "scripts/blackboard-context-verify.mjs",
+      "scripts/blackboard-state-project.mjs",
+      "scripts/blackboard-context-board.mjs",
+      "scripts/blackboard-context-generate.mjs",
+      "scripts/blackboard-delivery-migrate.mjs",
+      "scripts/blackboard-context-eval.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-objective-supersession.mjs",
+      "test/blackboard-*.test.mjs"
+    ],
+    "forbiddenWrite": [
+      ".github/**",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "docs/blackboard/artifacts/**",
+      "docs/blackboard/evidence/**",
+      "packages/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Graph kernel: migrate Feature -> direct Topic/Task, simplify dependency edge shape, remove unused task/topic/allocation metadata, and update graph validation/supersession identity preservation without changing lane/phase/status/claim/contract authority.",
+    "S2 — Derived context removal: eliminate currentContextRef/current.json lifecycle writes and verification; derive task context on demand from canonical graph/plan/registry in claim/bootstrap/judgment/finalization paths.",
+    "S3 — Registry + legacy retirement: slim Component Registry fields and delete legacy context-generation/board-parsing/migration compatibility code proven unreachable by unfinished contracted work.",
+    "S4 — Projection/docs: stop tracking state.md, retain on-demand renderer, update AGENTS/README/contracts to point at generated routing view and canonical sources.",
+    "S5 — Value regression: add one focused parity suite over representative RESEARCH, EXECUTION, JUDGMENT/MERGE_PENDING and DONE-dependency cases; prove same scheduling/authority/context semantics with smaller schema and no persisted helper context."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "GRAPH_KERNEL",
+      "statement": "Canonical graph uses Topic -> Task directly and removes one-to-one Feature/acceptance duplication, constant dependency-requires metadata and unused task/topic/allocation fields without changing schedulability, direct dependency ordering or task identity.",
+      "verificationIds": [
+        "focused",
+        "blackboard-work-graph"
+      ],
+      "evidenceRequired": [
+        "Before/after fixture covering all current tasks/dependency edges with identical task readiness results and preserved planning refs."
+      ]
+    },
+    {
+      "id": "DERIVED_CONTEXT",
+      "statement": "Fresh bootstrap and context materialization require no persisted current.json/currentContextRef; claim ownership stays explicit and exact phase/source authority is derived from canonical data.",
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "evidenceRequired": [
+        "Fixtures for RESEARCH, EXECUTION and read-only finalization proving no helper-context file exists or is written while returned context remains deterministic."
+      ]
+    },
+    {
+      "id": "REGISTRY_LEGACY",
+      "statement": "Component Registry and outer-context runtime contain only fields/code with a current contracted consumer; legacy compatibility scripts/branches are absent and no unfinished task depends on them.",
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "evidenceRequired": [
+        "Consumer inventory plus fixture showing every unfinished task derives context through OBJECTIVE_PLAN_DELIVERY."
+      ]
+    },
+    {
+      "id": "VALUE_PARITY",
+      "statement": "Cleanup reduces schema/projection/runtime surface while preserving task selection, dependency truth, current-system refs, plan source scope, Jev authority and delivery binding; synthetic context checks are no longer presented as production value evidence.",
+      "verificationIds": [
+        "focused",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Counted before/after fields/files plus semantic parity assertions and full repository verification."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Task remains the only scheduling/claim/execution unit and direct dependency ordering remains acyclic and fail-closed.",
+      "criterionIds": [
+        "GRAPH_KERNEL",
+        "VALUE_PARITY"
+      ]
+    },
+    {
+      "invariant": "RESEARCH_SA and WORKER remain the only lanes; phases and exact objective/plan/Jev/delivery authority remain unchanged.",
+      "criterionIds": [
+        "VALUE_PARITY"
+      ]
+    },
+    {
+      "invariant": "Removing derived context/state files cannot remove semantic continuation state; bootstrap must derive the same current obligation from canonical data.",
+      "criterionIds": [
+        "DERIVED_CONTEXT",
+        "VALUE_PARITY"
+      ]
+    },
+    {
+      "invariant": "DONE dependency context still resolves to consolidated Living truth, never terminal implementation transcript by default.",
+      "criterionIds": [
+        "GRAPH_KERNEL",
+        "DERIVED_CONTEXT"
+      ]
+    },
+    {
+      "invariant": "Plan sourceScope remains the only product-source mutation authority for contracted work; component metadata cannot widen it.",
+      "criterionIds": [
+        "REGISTRY_LEGACY",
+        "VALUE_PARITY"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test test/blackboard-value-kernel.test.mjs test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs test/blackboard-context-bootstrap.test.mjs"
+    },
+    {
+      "id": "blackboard-work-graph",
+      "command": "npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "blackboard-context",
+      "command": "npm run verify:blackboard-context"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "negativeVerificationCases": [
+    "Graph simplification drops a Feature planning ref or changes any current task's derived readiness/dependency result.",
+    "Fresh bootstrap silently recreates or requires current.json/currentContextRef, or a read-only phase gains product-source write authority.",
+    "Registry/legacy cleanup widens source mutation authority beyond the exact READY plan or leaves an unfinished task on a removed legacy path."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_154_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "GRAPH_KERNEL",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-value-kernel.test.mjs",
+      "testTitle": "BB-154 N1 graph simplification preserves planning refs and readiness",
+      "subjectSymbol": "assertWorkGraph"
+    },
+    {
+      "id": "NEG_154_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "DERIVED_CONTEXT",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-value-kernel.test.mjs",
+      "testTitle": "BB-154 N2 bootstrap derives current obligation without helper context authority",
+      "subjectSymbol": "bootstrapImplementationSession"
+    },
+    {
+      "id": "NEG_154_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "REGISTRY_LEGACY",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-value-kernel.test.mjs",
+      "testTitle": "BB-154 N3 registry cleanup cannot widen READY plan source authority",
+      "subjectSymbol": "deriveDeliveryContext"
+    }
+  ],
+  "researchGaps": [],
+  "researchBaselineSha": "3651e60b195b3c158a52311bbb375803486b91de",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living system state describes only the delivered value-bearing Outer Blackboard kernel and no longer presents removed projections/legacy compatibility as current system behavior."
+  }
+}
