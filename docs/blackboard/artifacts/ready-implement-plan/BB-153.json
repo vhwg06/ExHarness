@@ -37,34 +37,21 @@
     "Local runtime and CI consume one canonical supervision transition policy while CI remains enforcement/projection rather than the feedback-loop owner."
   ],
   "architectureDecisions": [
-    "D1 — Treat the missing capability as a supervisor-controller problem between JEV judgment publication and Worker repair, not as a stronger evaluator prompt. JEV produces semantic findings; a control contract decides the next cognitive/action obligation.",
-    "D2 — Preserve two lanes. Research must decide whether LOOKBACK is represented as a distinct Worker phase or as a mandatory, read-only precondition inside REPAIR; either representation must prevent source-write IMPLEMENT authority before lookback completion.",
-    "D3 — A lookback contract must bind the exact evaluation and candidate and capture failed claims, expected-versus-observed evidence, invalidated assumptions, causal diagnosis, strategy revision and expected new evidence. It is an epistemic artifact, not proof of correctness.",
-    "D4 — Re-evaluation must require a material delta linked to unresolved findings: candidate/evidence/strategy changes must be explicit and freshness-bound. Cosmetic artifact churn or prose-only changes are no semantic progress.",
-    "D5 — Repeated unresolved findings with no material strategy delta must route to strategy reconsideration/escalation rather than unlimited evaluate-repair retries.",
-    "D6 — Local execution and CI must share the same transition/validity semantics. CI may project or enforce the resulting supervision state, but should not own a separate decision about what failure means.",
-    "D7 — Evidence weighting remains observation-first: exact candidate, executed verification, runtime/test outcomes and grounded evidence dominate actor-authored explanations."
+    "D1 — Add WORKER/LOOKBACK as a first-class Worker phase between a REPAIR_REQUIRED JEV publication and WORKER/REPAIR. It is a phase, not a lane; source write scope is empty in LOOKBACK. A hidden lookbackRequired flag inside REPAIR is rejected because it hides authority state and conflicts with phase-complete onboarding.",
+    "D2 — Keep the JEV provider response typed and non-prescriptive in v1. Do not persist provider free text. A deterministic SUPERVISION_FINDING_SET_V1 is projected from the exact failed evaluation + plan + implementation-result and contains failed question ids, typed failure choices, owned criterion/invariant/negative/Living statements, exact candidate/evidence bindings, findingSignature and repeatCount.",
+    "D3 — Add SUPERVISION_LOOKBACK_V1 as actor-owned epistemic state at docs/blackboard/artifacts/ready-implement-plan/<WORK_ID>.lookback.json. It binds exact plan/evaluation/candidate/evidence/findingSignature and requires one diagnosis per failed question plus strategyRevision {strategyClass, priorStrategyRef, changes, intentionallyUnchanged, expectedFreshEvidence} and mode DIAGNOSIS|STRATEGY_RECONSIDERATION. It cannot contain acceptance/delivery authority.",
+    "D4 — Publishing a structurally complete, exact-bound lookback is the only LOOKBACK→REPAIR transition. The lookback is not correctness evidence; it grants one repair attempt because the actor has explicitly revised its understanding/strategy. Stale evaluation/candidate/evidence bindings fail closed.",
+    "D5 — Persist compact SUPERVISION_STATE_V1 on the current task contract: lastFailedEvaluationRef, failedCandidateSha, failedCandidateTree, failedEvidenceHash, findingSignature, repeatCount, lookbackRef, lookbackHash and mode. No session transcript or generic history chain is introduced.",
+    "D6 — Before any subsequent Worker JEV provider dispatch, assert material progress against SUPERVISION_STATE_V1. IMPLEMENTATION_DEFECT requires candidate-tree delta; INSUFFICIENT_EVIDENCE requires implementation-result/evidence-hash delta; mixed failures require both. Lookback prose/control-only changes never count. PLAN_INPUT_CONTRADICTION still returns directly to RESEARCH_SA.",
+    "D7 — findingSignature is hash(sorted(nonSatisfied questionId + ':' + choice)). A different signature resets repeatCount and uses DIAGNOSIS. The same signature on the next failed cycle increments repeatCount and selects STRATEGY_RECONSIDERATION, which must reference the prior strategy and state why it failed plus an alternative strategy class. Repeat count alone never declares plan contradiction.",
+    "D8 — Add pure trusted scripts/blackboard-supervision.mjs as the canonical controller seam for finding projection, signature/repeat semantics, lookback validation, material-progress validation and LOOKBACK action/authority projection. blackboard-delivery, delivery-context, implementation-bootstrap, blackboard-jev and blackboard-jev-ci consume it; CI workflow YAML remains enforcement plumbing.",
+    "D9 — BB-152 becomes a direct Worker dependency. BB-153 extends the delivered phase-local delivery envelope with LOOKBACK instead of creating a parallel bootstrap policy. Worker start binds exact DONE BB-152; incompatible delivered seams are PLAN_INPUT_CONTRADICTION before writes.",
+    "D10 — Evidence truth remains observation-first. JEV choice + exact criterion/evidence identify what must be reconsidered, actor diagnosis guides strategy, but only fresh candidate/evidence plus the next JEV judgment determine resolution."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "scripts/blackboard-delivery.mjs",
-      "scripts/blackboard-delivery-context.mjs",
-      "scripts/blackboard-implementation-bootstrap.mjs",
-      "scripts/blackboard-jev.mjs",
-      "scripts/blackboard-jev-cli.mjs",
-      "scripts/blackboard-jev-ci.mjs",
-      "test/blackboard-context-bootstrap.test.mjs",
-      "test/blackboard-jev.test.mjs",
-      "docs/blackboard/jev.md",
-      "docs/living/system/state.md"
-    ],
-    "expectedNew": [],
-    "expectedTests": [
-      "test/blackboard-jev-supervision.test.mjs"
-    ]
-  },
-  "sourceScope": {
-    "read": [
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-work-graph.mjs",
       "scripts/blackboard-delivery.mjs",
       "scripts/blackboard-delivery-context.mjs",
       "scripts/blackboard-implementation-bootstrap.mjs",
@@ -72,6 +59,32 @@
       "scripts/blackboard-jev-cli.mjs",
       "scripts/blackboard-jev-ci.mjs",
       "scripts/blackboard-state-project.mjs",
+      "test/blackboard-context-bootstrap.test.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/blackboard/pipelines.md",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-supervision.mjs",
+      "test/blackboard-jev-supervision.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-jev-supervision.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-state-project.mjs",
+      "scripts/blackboard-context-contract.mjs",
       "test/blackboard-*.test.mjs",
       "docs/blackboard/jev.md",
       "docs/blackboard/pipelines.md",
@@ -79,12 +92,21 @@
       "package.json"
     ],
     "write": [
+      "scripts/blackboard-supervision.mjs",
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-work-graph.mjs",
       "scripts/blackboard-delivery.mjs",
       "scripts/blackboard-delivery-context.mjs",
       "scripts/blackboard-implementation-bootstrap.mjs",
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-state-project.mjs",
       "test/blackboard-jev-supervision.test.mjs",
+      "test/blackboard-context-bootstrap.test.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/blackboard/pipelines.md",
       "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
@@ -95,62 +117,77 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Current-loop audit: trace Worker FINDINGS/REPAIR_REQUIRED from JEV publication through delivery context/bootstrap/local execution and CI projection; identify every point that currently turns findings directly back into IMPLEMENT authority.",
-    "S2 — Supervisory contract: specify judgment-bound lookback/reconsideration data, next-state mapping for implementation defect / insufficient evidence / plan contradiction, and the exact authority boundary before repair.",
-    "S3 — Material-progress contract: specify finding resolution lineage, material-delta rules and repeated-failure escalation so unchanged/cosmetic resubmission cannot advance evaluation.",
-    "S4 — Shared local/CI semantics: select one canonical controller/transition seam consumed by local execution and CI projection, then define focused negative tests and Living truth."
+    "S1 — Supervisor primitive [SUPERVISORY_LOOP, LOOKBACK_BINDING]: add LOOKBACK to the Worker phase contract and implement blackboard-supervision.mjs finding projection, SUPERVISION_STATE_V1 and exact-bound SUPERVISION_LOOKBACK_V1 validation.",
+    "S2 — Control transition [SUPERVISORY_LOOP, LOOKBACK_BINDING]: publish Worker REPAIR_REQUIRED into LOOKBACK; derive read-only LOOKBACK delivery/bootstrap intent; add publish-lookback transition into REPAIR with stale-binding/forbidden-authority failures.",
+    "S3 — Anti-spam progress [MATERIAL_DELTA, EVIDENCE_TRUTH]: enforce failure-class-specific candidate/evidence material delta before Worker JEV provider dispatch and ignore lookback/control-only churn.",
+    "S4 — Repeated-failure supervision [MATERIAL_DELTA]: compute findingSignature/repeatCount and route repeated identical failures to STRATEGY_RECONSIDERATION with prior-strategy binding.",
+    "S5 — Shared local/CI semantics + migration [SHARED_SEMANTICS]: make local publication/context/JEV and blackboard-jev-ci consume the same supervisor module; extend delivered BB-152 phase envelope; update tests and Living/Blackboard docs."
   ],
   "acceptanceCriteria": [
     {
       "id": "SUPERVISORY_LOOP",
-      "statement": "A non-satisfied Worker JEV judgment cannot immediately expose source-write IMPLEMENT authority; the next required obligation is a read-only judgment-bound lookback/reconsideration, after which an explicit control decision may authorize repair.",
+      "statement": "A Worker evaluation containing IMPLEMENTATION_DEFECT or INSUFFICIENT_EVIDENCE publishes to PLANNED/WORKER/LOOKBACK, not REPAIR; LOOKBACK derives a non-IMPLEMENT read-only source context and only exact publication of SUPERVISION_LOOKBACK_V1 can transition to REPAIR.",
       "verificationIds": [
         "focused",
-        "blackboard-context"
+        "blackboard-context",
+        "jev-regression"
       ],
       "evidenceRequired": [
-        "Focused transition tests covering Worker findings publication through derived delivery/bootstrap context and proving no direct FINDINGS→IMPLEMENT path."
+        "Focused transition fixture from bound Worker evaluation through LOOKBACK context and lookback publication, asserting phase, action and empty source write scope."
       ]
     },
     {
       "id": "LOOKBACK_BINDING",
-      "statement": "The supervisory lookback is bound to the exact prior judgment, candidate and plan and records failed claims, expected-versus-observed evidence, invalidated assumptions, causal diagnosis, strategy revision and expected fresh evidence; stale or self-authored lookback cannot supervise another candidate.",
+      "statement": "SUPERVISION_FINDING_SET_V1 and SUPERVISION_LOOKBACK_V1 bind exact plan/evaluation/candidate/evidence/findingSignature; every failed question is diagnosed exactly once, acceptance-authority fields are rejected, and stale or mismatched bindings cannot grant REPAIR.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Exact-subject fixtures for valid lookback plus stale-judgment/candidate and prose-only negative cases."
+        "Exact-subject positive fixture plus stale evaluation, stale candidate/evidence, missing failed-question diagnosis and forbidden acceptance-field negative fixtures."
       ]
     },
     {
       "id": "MATERIAL_DELTA",
-      "statement": "A new JEV evaluation after failure requires material progress linked to the unresolved findings; unchanged candidate/evidence or a repeated strategy without new causal/evidence basis is rejected as no semantic progress and repeated failure triggers strategy reconsideration.",
+      "statement": "After a failed cycle, Worker JEV dispatch is denied before provider call unless material progress addresses the typed failure classes: candidate-tree delta for IMPLEMENTATION_DEFECT, evidence-hash delta for INSUFFICIENT_EVIDENCE, and both for mixed failures; repeated same findingSignature selects STRATEGY_RECONSIDERATION.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "jev-regression"
       ],
       "evidenceRequired": [
-        "Attempt-lineage fixtures proving unchanged/cosmetic resubmission and repeated identical strategy cannot create a new valid supervision cycle."
+        "Provider-call-count fixtures proving unchanged/cosmetic retries make zero provider calls and repeated identical findings select reconsideration mode."
       ]
     },
     {
       "id": "SHARED_SEMANTICS",
-      "statement": "Local execution and CI enforcement derive failure/next-state semantics from one canonical supervision policy; CI only projects/enforces the bound state and does not own a separate pass/fail feedback-loop interpretation.",
+      "statement": "Local delivery/context/JEV and blackboard-jev-ci use scripts/blackboard-supervision.mjs for supervision state/validity; CI workflow YAML contains no separate failure-to-repair business rule.",
       "verificationIds": [
         "focused",
-        "blackboard-context"
+        "jev-regression"
       ],
       "evidenceRequired": [
-        "Tests or source-level assertions showing both entry paths consume the same controller/transition contract."
+        "Import/source assertions and equivalent local/CI fixtures over one bound failed evaluation."
       ]
     },
     {
       "id": "EVIDENCE_TRUTH",
-      "statement": "Agent-authored explanations and generated artifacts are supervisory context only; they cannot independently satisfy a JEV finding or material-delta requirement without fresh observed evidence bound to the candidate.",
+      "statement": "Actor-authored lookback text and Blackboard control changes are never material implementation progress or correctness evidence; only exact candidate/evidence deltas and a fresh independent JEV judgment can resolve prior findings.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "Negative fixture where explanation/metadata changes but candidate and observed evidence do not, which must remain unresolved."
+        "Negative fixtures changing only lookback prose/control metadata while candidate/evidence bindings stay fixed, plus fresh-delta positive fixtures."
+      ]
+    },
+    {
+      "id": "BB152_INTEGRATION",
+      "statement": "Worker preflight requires DONE BB-152 and extends its delivered phase-local onboarding contract with LOOKBACK without duplicating a second phase policy; incompatible delivered BB-152 seams fail PLAN_INPUT_CONTRADICTION before product writes.",
+      "verificationIds": [
+        "focused",
+        "blackboard-context",
+        "docs"
+      ],
+      "evidenceRequired": [
+        "Dependency/preflight fixture, phase-envelope assertion and Living/Blackboard documentation."
       ]
     }
   ],
@@ -186,7 +223,8 @@
     {
       "invariant": "Local runtime and CI consume one canonical supervision transition policy while CI remains enforcement/projection rather than the feedback-loop owner.",
       "criterionIds": [
-        "SHARED_SEMANTICS"
+        "SHARED_SEMANTICS",
+        "BB152_INTEGRATION"
       ]
     }
   ],
@@ -200,15 +238,25 @@
       "command": "npm run verify:blackboard-context"
     },
     {
+      "id": "jev-regression",
+      "command": "npm run test:blackboard-jev"
+    },
+    {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "negativeVerificationCases": [
-    "A Worker REPAIR_REQUIRED judgment immediately produces an IMPLEMENT action with source-write authority and no lookback.",
-    "A prose-only lookback or unchanged candidate/evidence is accepted as material progress and allowed to re-enter JEV.",
-    "The same unresolved finding and repair strategy can be retried repeatedly without strategy reconsideration.",
-    "Local and CI paths derive different next-state semantics for the same bound JEV judgment."
+    "A Worker REPAIR_REQUIRED judgment exposes source-write IMPLEMENT/REPAIR authority before an exact lookback is published.",
+    "A stale/mismatched or incomplete lookback grants REPAIR.",
+    "Changing only lookback prose/control metadata or keeping the failed candidate/evidence can trigger another JEV provider call.",
+    "The same failed question/choice signature returns to ordinary DIAGNOSIS instead of STRATEGY_RECONSIDERATION.",
+    "Local and CI paths derive different validity/next-state semantics for the same failed judgment.",
+    "BB-153 Worker starts against an unfinished/incompatible BB-152 onboarding contract."
   ],
   "negativeCaseBindings": [
     {
@@ -217,17 +265,17 @@
       "criterionId": "SUPERVISORY_LOOP",
       "verificationId": "focused",
       "testRef": "test/blackboard-jev-supervision.test.mjs",
-      "testTitle": "BB-153 N1 failed JEV cannot return directly to source-write IMPLEMENT",
+      "testTitle": "BB-153 N1 failed JEV enters read-only LOOKBACK before REPAIR",
       "subjectSymbol": "publishEvaluation"
     },
     {
       "id": "NEG_153_2",
       "negativeCaseIndex": 1,
-      "criterionId": "MATERIAL_DELTA",
+      "criterionId": "LOOKBACK_BINDING",
       "verificationId": "focused",
       "testRef": "test/blackboard-jev-supervision.test.mjs",
-      "testTitle": "BB-153 N2 prose-only or unchanged resubmission is not material progress",
-      "subjectSymbol": "deriveDeliveryContext"
+      "testTitle": "BB-153 N2 stale or incomplete lookback cannot authorize repair",
+      "subjectSymbol": "publishSupervisionLookback"
     },
     {
       "id": "NEG_153_3",
@@ -235,25 +283,38 @@
       "criterionId": "MATERIAL_DELTA",
       "verificationId": "focused",
       "testRef": "test/blackboard-jev-supervision.test.mjs",
-      "testTitle": "BB-153 N3 repeated unresolved strategy requires reconsideration",
-      "subjectSymbol": "publishEvaluation"
+      "testTitle": "BB-153 N3 cosmetic or unchanged retry cannot call JEV",
+      "subjectSymbol": "assertSupervisionMaterialProgress"
     },
     {
       "id": "NEG_153_4",
       "negativeCaseIndex": 3,
+      "criterionId": "MATERIAL_DELTA",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N4 repeated finding signature requires strategy reconsideration",
+      "subjectSymbol": "deriveSupervisionState"
+    },
+    {
+      "id": "NEG_153_5",
+      "negativeCaseIndex": 4,
       "criterionId": "SHARED_SEMANTICS",
       "verificationId": "focused",
       "testRef": "test/blackboard-jev-supervision.test.mjs",
-      "testTitle": "BB-153 N4 local and CI consume one supervision transition contract",
-      "subjectSymbol": "publishEvaluation"
+      "testTitle": "BB-153 N5 local and CI consume one supervision controller",
+      "subjectSymbol": "deriveSupervisionState"
+    },
+    {
+      "id": "NEG_153_6",
+      "negativeCaseIndex": 5,
+      "criterionId": "BB152_INTEGRATION",
+      "verificationId": "focused",
+      "testRef": "test/blackboard-jev-supervision.test.mjs",
+      "testTitle": "BB-153 N6 unfinished or incompatible onboarding dependency fails closed",
+      "subjectSymbol": "assertSupervisionDependency"
     }
   ],
-  "researchGaps": [
-    "Audit the exact local runner/bootstrap path after WORKER/REPAIR and identify whether the cleanest representation is a new LOOKBACK phase or a mandatory pre-repair substate/receipt without expanding the two-lane model.",
-    "Define the smallest structured lookback contract and failure taxonomy that adds supervisory value without letting JEV prescribe repairs or letting actor-authored diagnosis become proof.",
-    "Define material-delta and repeated-failure semantics that are deterministic enough to enforce without rewarding artifact churn or blocking legitimate evidence-only fixes.",
-    "Pin the canonical controller seam shared by local execution and CI projection, including how existing REPAIR/JUDGMENT/merge transitions migrate without breaking current delivered tasks."
-  ],
+  "researchGaps": [],
   "researchBaselineSha": "3bd32d8b4ec9d08a1535b5fa9245c5f6df5d0bae",
   "livingDocs": {
     "refs": [
@@ -261,5 +322,392 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living system state describes JEV as a semantic supervisor whose failed judgments require a bound lookback/reconsideration before repair, while CI remains an enforcement projection and generated explanation is not correctness evidence."
-  }
+  },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/process/jev-supervisory-feedback-research.md",
+      "classification": "RESEARCH_RECORD",
+      "finding": "Current ExHarness maps failed Worker judgment directly to writable REPAIR; external Reflexion/GEPA/evaluator-optimizer patterns support an explicit reflection state before mutation, while ExHarness additionally needs exact binding and material-delta enforcement."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-153/research.json",
+      "classification": "RESEARCH_EVIDENCE",
+      "finding": "Pinned current-system audit plus >=1k-star repository evidence and chosen decisions; providerCalls=0."
+    }
+  ],
+  "supervisionContract": {
+    "phases": [
+      "EXECUTION",
+      "JUDGMENT",
+      "LOOKBACK",
+      "REPAIR",
+      "MERGE_PENDING"
+    ],
+    "lookbackArtifact": "SUPERVISION_LOOKBACK_V1",
+    "findingProjection": "SUPERVISION_FINDING_SET_V1",
+    "state": "SUPERVISION_STATE_V1",
+    "failureRouting": {
+      "SATISFIED": "MERGE_PENDING",
+      "PLAN_INPUT_CONTRADICTION": "RESEARCH_SA/RESEARCH",
+      "IMPLEMENTATION_DEFECT": "LOOKBACK",
+      "INSUFFICIENT_EVIDENCE": "LOOKBACK"
+    },
+    "lookbackSourceWriteAuthority": false,
+    "repairRequiresExactLookback": true,
+    "providerTextPersisted": false
+  },
+  "materialDeltaContract": {
+    "IMPLEMENTATION_DEFECT": "candidateTree must differ from failedCandidateTree",
+    "INSUFFICIENT_EVIDENCE": "implementation-result/evidence hash must differ from failedEvidenceHash",
+    "MIXED": "both applicable deltas are required",
+    "ignored": [
+      "lookback prose hash",
+      "Blackboard projection-only changes",
+      "retry count"
+    ],
+    "enforcementPoint": "before Worker JEV provider dispatch"
+  },
+  "repeatFailureContract": {
+    "findingSignature": "sha256(sorted(nonSatisfied questionId + ':' + choice))",
+    "differentSignature": {
+      "repeatCount": 0,
+      "mode": "DIAGNOSIS"
+    },
+    "sameSignature": {
+      "incrementRepeatCount": true,
+      "mode": "STRATEGY_RECONSIDERATION"
+    },
+    "automaticPlanContradiction": false
+  },
+  "benchmarkContract": {
+    "deterministic": [
+      "failed judgment enters read-only LOOKBACK",
+      "stale lookback fails",
+      "valid lookback enters REPAIR",
+      "failure-class-specific material delta blocks provider retry",
+      "prose-only delta is ignored",
+      "same finding signature selects STRATEGY_RECONSIDERATION",
+      "local and CI share controller semantics"
+    ],
+    "heldOutAblation": {
+      "baseline": "current gate-only failed-judgment -> REPAIR loop",
+      "treatment": "LOOKBACK supervisory loop",
+      "pinnedFactors": [
+        "task",
+        "base",
+        "model",
+        "provider",
+        "budget"
+      ],
+      "metrics": [
+        "independent final acceptance",
+        "JEV calls per accepted task",
+        "repeated identical finding rate",
+        "attempts to resolve first finding",
+        "material-delta repair fraction",
+        "tokens",
+        "elapsed time",
+        "observed cost",
+        "repair-induced regressions"
+      ],
+      "successRule": "preserve independent acceptance while reducing repeated-finding/provider-call waste; lower call count alone is not success"
+    }
+  },
+  "dependencyResolution": {
+    "direct": [
+      "BB-056",
+      "BB-059",
+      "BB-152"
+    ],
+    "workerStart": "BB-056 and BB-059 are delivered. BB-152 must be DONE; bind its delivered phase-local onboarding surface before any BB-153 source write. If delivered BB-152 conflicts with the planned phase seam, return PLAN_INPUT_CONTRADICTION.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "BB-056 JEV evidence/publication pipeline",
+        "BB-059 JEV/HOW evaluation semantics"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-152 DELIVERY_ENVELOPE_V1 and phase-specific bootstrap until BB-152 is DONE"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "WORKER/LOOKBACK",
+        "SUPERVISION_FINDING_SET_V1",
+        "SUPERVISION_LOOKBACK_V1",
+        "SUPERVISION_STATE_V1",
+        "scripts/blackboard-supervision.mjs"
+      ]
+    }
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-153 objective + current main control-flow audit + pinned external reflection/optimizer evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh JEV SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness",
+        "free-text provider rationale as trusted authority"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-056/BB-059/BB-152",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + exact supervision/candidate/evidence/JEV bindings",
+      "convergence": "all focused/regression/docs checks + independent Worker JEV + exact merge publication",
+      "forbidden": [
+        "direct failed-judgment -> writable REPAIR",
+        "cosmetic retry as material progress",
+        "parallel local/CI supervision semantics"
+      ]
+    }
+  ],
+  "deliveryContract": {
+    "precondition": "BB-056, BB-059 and BB-152 DONE; exact READY plan; no unresolved research gaps.",
+    "completion": "LOOKBACK/repair/material-delta/shared-CI tests + blackboard context/JEV regressions + docs + independent Worker JEV + exact merge verification.",
+    "forbidden": "No third lane, no free-text JEV authority, no source writes during LOOKBACK, no provider retry without material delta."
+  },
+  "ciContract": {
+    "selector": "Existing trusted PR-base selection remains; no workflow YAML business-rule fork.",
+    "supervision": "blackboard-jev-ci imports the same blackboard-supervision.mjs validity/material-progress primitives used locally.",
+    "provider": "TYPESAFE_API_KEY is available only to JEV evaluation as before; blocked material progress fails before provider dispatch."
+  },
+  "migrationContract": {
+    "preserve": [
+      "two-lane Research/Worker model",
+      "typed JEV outcomes",
+      "no-provider-text response trust boundary",
+      "exact candidate/evidence/merge binding",
+      "existing EXECUTION/JUDGMENT/MERGE_PENDING semantics"
+    ],
+    "add": [
+      "WORKER/LOOKBACK",
+      "SUPERVISION_FINDING_SET_V1",
+      "SUPERVISION_LOOKBACK_V1",
+      "SUPERVISION_STATE_V1",
+      "blackboard-supervision.mjs"
+    ],
+    "bb152": "Extend delivered BB-152 phase envelope/bootstrap table with LOOKBACK; do not duplicate it.",
+    "rollback": "Remove LOOKBACK/controller/lookback artifact handling and restore REPAIR_REQUIRED -> REPAIR only if the feature is explicitly rolled back before dependent work relies on supervision state."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A non-satisfied Worker judgment cannot transition directly into an IMPLEMENT action; the next obligation is an explicit read-only lookback/reconsideration bound to the exact judgment, candidate and generation.",
+      "criterionIds": [
+        "SUPERVISORY_LOOP"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-delivery-context.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "else task.phase = evaluation.verdict === 'SATISFIED' ? 'MERGE_PENDING' : 'REPAIR';"
+        },
+        {
+          "ref": "scripts/blackboard-delivery-context.mjs",
+          "match": "const execution = task.lane === 'WORKER' && ['EXECUTION','REPAIR'].includes(task.phase);"
+        }
+      ],
+      "supportingPlanFields": [
+        "supervisionContract",
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "The lookback records failed claims, expected versus observed evidence, invalidated assumptions, causal diagnosis, strategy revision and the evidence expected from the next attempt before repair authority is granted.",
+      "criterionIds": [
+        "LOOKBACK_BINDING"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        9
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "// Only report trusted question IDs and numeric aggregates; never echo provider text."
+        }
+      ],
+      "supportingPlanFields": [
+        "supervisionContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Re-evaluation requires a material candidate/evidence/strategy delta that addresses prior findings; unchanged or cosmetic resubmission cannot create semantic progress.",
+      "criterionIds": [
+        "MATERIAL_DELTA",
+        "EVIDENCE_TRUTH"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "jev-regression"
+      ],
+      "decisionIndexes": [
+        5,
+        9
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev.mjs",
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "export function validateResponse(response, payload) {"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "task.contract.lastEvaluatedInput = evaluation.cacheKey;"
+        }
+      ],
+      "supportingPlanFields": [
+        "materialDeltaContract",
+        "benchmarkContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Repeated unresolved findings trigger strategy reconsideration/escalation instead of unlimited JEV retry spam.",
+      "criterionIds": [
+        "MATERIAL_DELTA"
+      ],
+      "planElements": [
+        "S4"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "task.contract.lastEvaluatedInput = evaluation.cacheKey;"
+        }
+      ],
+      "supportingPlanFields": [
+        "repeatFailureContract",
+        "benchmarkContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Local execution and CI enforcement use the same canonical supervisory transition semantics, while CI remains the final projection/gate rather than the owner of the feedback loop.",
+      "criterionIds": [
+        "SHARED_SEMANTICS",
+        "BB152_INTEGRATION"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "focused",
+        "blackboard-context",
+        "jev-regression"
+      ],
+      "decisionIndexes": [
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev-ci.mjs",
+        "scripts/blackboard-implementation-bootstrap.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN'"
+        },
+        {
+          "ref": "scripts/blackboard-jev-ci.mjs",
+          "match": "import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution",
+        "ciContract",
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Focused negative tests prove that prose-only lookback, unchanged candidates and repeated identical repair strategies cannot advance to another accepted evaluation.",
+      "criterionIds": [
+        "LOOKBACK_BINDING",
+        "MATERIAL_DELTA",
+        "SHARED_SEMANTICS",
+        "BB152_INTEGRATION"
+      ],
+      "planElements": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "test/blackboard-context-bootstrap.test.mjs",
+        "scripts/blackboard-delivery-context.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "test/blackboard-context-bootstrap.test.mjs",
+          "match": "assert.equal(session.intent,\"IMPLEMENT_EXACT_READY_PLAN\");"
+        },
+        {
+          "ref": "scripts/blackboard-delivery-context.mjs",
+          "match": "action:{kind:execution?'IMPLEMENT':task.lane==='RESEARCH_SA'?'RESEARCH':'REVIEW'"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases",
+        "negativeCaseBindings",
+        "benchmarkContract"
+      ]
+    }
+  ]
 }
