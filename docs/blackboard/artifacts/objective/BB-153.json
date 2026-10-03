@@ -1,0 +1,46 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-153",
+  "outcome": "Reduce the Outer Blackboard to a smaller value-bearing control plane: keep only semantics that change routing, authority, context quality or delivery trust, and remove derived, duplicate or legacy structures that add ceremony without independent decision value.",
+  "currentProblem": "The delivered Blackboard now has enough operational history to distinguish controls from ceremony. Current main carries several structures that are derivable, constant, legacy-only or unused by the contracted delivery path: every Feature is one-to-one with one Task; dependency requires metadata is effectively constant; committed state/current-context projections are rebuildable and non-authoritative; legacy context transition modules have no current runtime consumer; and parts of the component/task schema are validated but do not affect scheduling, context or delivery. This increases plan/schema surface, merge churn and fresh-agent onboarding complexity.",
+  "scope": [
+    "outer-blackboard.graph-simplification",
+    "outer-blackboard.context-projection-simplification",
+    "outer-blackboard.component-registry-simplification",
+    "outer-blackboard.legacy-control-retirement",
+    "outer-blackboard.value-validation"
+  ],
+  "constraints": [
+    "Preserve the two lanes RESEARCH_SA and WORKER, phase semantics, one-task claim ownership, direct task dependency ordering, exact objective/plan bindings, independent Jev judgment, negative-case binding, Living Docs consolidation and exact candidate/evidence/merge delivery verification.",
+    "Do not change Jev verdict semantics, provider policy, worker evidence retention, OBJECTIVE_SUPERSESSION semantics or delivery receipt semantics in this cleanup.",
+    "Do not remove a field or layer merely because it is aesthetically redundant; removal requires either no current consumer, a derivable equivalent, or a replacement that preserves the same decision/authority value.",
+    "Migrate current unfinished tasks deterministically and preserve terminal receipts/artifacts without rewriting historical evidence.",
+    "Fresh-agent onboarding must not regress: the post-cleanup bootstrap must recover the exact task, lane/phase, current-system refs, plan scope and legal next action without prior conversation."
+  ],
+  "successCriteria": [
+    "The graph no longer carries a Feature layer when every Feature is one-to-one with one Task; Tasks bind directly to Topics and preserve all planning refs losslessly.",
+    "Rebuildable routing projections are no longer persisted as authority-adjacent state: fresh bootstrap derives context from canonical graph/plan/registry data without requiring current.json/currentContextRef, and the human state view is generated on demand rather than committed.",
+    "Graph and component schemas drop metadata that has no current decision consumer, including constant allocation literals, redundant dependency requires metadata, unused topic status, and legacy-only registry fields, while preserving the bounded context-routing value of Components.",
+    "Legacy outer-context code paths and one-time migration surfaces with no unfinished consumer are removed from runtime/tests/package scripts.",
+    "A focused before/after value check proves equivalent scheduling/authority/delivery behavior and no worse fresh-agent context sufficiency while reducing canonical schema/projection surface."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/work-graph.json",
+    "docs/blackboard/component-registry.json",
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/README.md",
+    "scripts/blackboard-work-graph.mjs",
+    "scripts/blackboard-task-context-resolver.mjs",
+    "scripts/blackboard-delivery-context.mjs",
+    "scripts/blackboard-implementation-bootstrap.mjs",
+    "scripts/blackboard-context-verify.mjs",
+    "scripts/blackboard-state-project.mjs",
+    "scripts/blackboard-context-board.mjs",
+    "scripts/blackboard-context-generate.mjs",
+    "scripts/blackboard-delivery-migrate.mjs",
+    "scripts/blackboard-context-eval.mjs",
+    "package.json"
+  ]
+}
