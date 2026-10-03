@@ -387,7 +387,7 @@
       "transport": "HTTP 127.0.0.1; service rejects non-loopback bind unless separately installed trusted TLS; body max1MiB; request timeout30s; no network lookup from repository config",
       "authentication": "out-of-checkout 0600 token file; capabilities reader/actor/judge/operator; compare opaque tokens safely; never emit secrets; distinct actor and independent judge identities"
     },
-    "schema": "metadata(authorityId,schemaVersion,controllerDigest,authorityMode,lastCommittedTime,allocationNextId); works(id PRIMARY KEY,resourceVersion,generation,specJson,statusJson,fenceCounter); attempts(id PRIMARY KEY,workId,generation,canonicalJson); records(id PRIMARY KEY,kind,workId,generation,hash,canonicalJson). Foreign keys and uniqueness enforce exact identities. All backing state is service authority, not Git.",
+    "schema": "metadata(authorityId,schemaVersion,controllerDigest,authorityMode,currentWorkAuthority,lastCommittedTime,allocationNextId); works(id PRIMARY KEY,resourceVersion,generation,specJson,statusJson,fenceCounter); attempts(id PRIMARY KEY,workId,generation,canonicalJson); records(id PRIMARY KEY,kind,workId,generation,hash,canonicalJson). Foreign keys and uniqueness enforce exact identities. All backing state is service authority, not Git.",
     "transaction": "BEGIN IMMEDIATE -> schema/auth/action validation -> sample trusted service Date.now -> CLOCK_REGRESSION check against durable lastCommittedTime -> compare expected resourceVersion/generation -> current lease/fence/subject checks -> records+Work+allocation update -> update lastCommittedTime -> COMMIT. Any exception ROLLBACK including allocation and inserted receipts. Busy timeout returns RETRYABLE_BUSY without effects. No unguarded file replace.",
     "clock": "Production clock cannot be supplied in request. Injectable test clock exists only at server construction in test harness. Positive safe-integer ttl range1000..3600000ms; lease expires at now>=leaseUntil. Renew requires same current owner/Attempt/fence and unexpired lease; takeover only after store time expiry. Process restart reopens same database, never resets lastCommittedTime/fenceCounter. Clock rollback blocks mutating operations; show remains readable.",
     "api": [
@@ -442,7 +442,7 @@
     "limits": "Prototype synthetic Decisions test binding/control safety only; no new real SATISFIED result is claimed by this plan. Trusted receipts, real Jev and exact merge verification remain required in Worker evidence."
   },
   "coexistenceContract": {
-    "mode": "ISOLATED_NEW_WORK service initializes empty works table with no legacy graph reader/import API. Accept only newly allocated V2-opaque ids; reject BB-n create/claim/import before any effects. Legacy current work remains solely legacy; no mirrored row or dual-write. BB-156 later atomically imports and switches allocator to BB-n above all ids; existing isolated V2 ids remain unique.",
+    "mode": "ISOLATED_NEW_WORK service initializes empty works table with no legacy graph reader/import API. Accept only newly allocated V2-opaque ids; reject BB-n create/claim/import before any effects. Legacy current work remains solely legacy; no mirrored row or dual-write. BB-156 later atomically imports and switches allocator to BB-n above all ids; existing isolated V2 ids remain unique. Initial currentWorkAuthority=LEGACY is metadata for later cutover only; authorityMode=ISOLATED_NEW_WORK governs new V2 namespace. BB-156 atomically sets currentWorkAuthority=V2 and authorityMode=ALL_WORK.",
     "deliveryBoundary": "BB-155 Worker tests a separate ISOLATED_NEW_WORK service and new V2 ids only; no import/cutover action is registered in that release. BB-156 owns the migration-only module/selector transaction and external freeze. Combined research reproduction has separately named scratch migration tests for BB-156, not a BB-155 product migration. BB-157 owns LOOKBACK/reflection policy. Delivered API divergence reopens research."
   },
   "researchSummary": {
@@ -481,8 +481,7 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "authorityContract",
-        "authorityE2E"
+        "criterion_authority"
       ]
     },
     {
@@ -503,8 +502,7 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "bootstrapContract",
-        "authorityE2E"
+        "criterion_bootstrap"
       ]
     },
     {
@@ -586,7 +584,7 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "trustContract"
+        "criterion_attempt"
       ]
     },
     {
@@ -607,8 +605,7 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "coexistenceContract",
-        "testContract"
+        "criterion_coexistence"
       ]
     }
   ],
@@ -682,5 +679,25 @@
     "sourceRefsUnchanged": true,
     "replay": "researchReproduction carries exact script/log hashes; product tests still required.",
     "canonicalShowSha256": "8f5994e8cce6509a21e71b9722c834b69723f768990a3d383147b205e3301503"
+  },
+  "criterion_authority": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "construction": "One installed controller, one external SQLite DB and one operator-provisioned BB_CONTROL_CONFIG shared by all source sessions. Explicit config is a test/operator override, never checked-out repository state. createControlClient verifies service authorityId and protocol before any Work request. Client code cannot supply database path or replace a Work.",
+    "test": "N1 starts actual server.mjs over one scratch DB; creates Work W using actual CLI; constructs two Git worktrees with different work-graph.json bodies and branch heads; runs actual CLI bb show W in each with the SAME external BB_CONTROL_CONFIG, no per-cwd options. assert.equal(stdoutA,stdoutB); assert.equal(parsedA.resourceVersion,serverSnapshot.resourceVersion); assert.deepEqual(parsedA,serverSnapshot). Repeat after one guarded mutation to verify both see the new RV. Wrong authorityId and unreachable URL must error with no local graph read/fallback."
+  },
+  "criterion_bootstrap": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "construction": "create --objective ABS_JSON sends body, not a repository artifact ref. Store owns control URI/hash/id allocation. Empty initial Work table and empty components/dependencies are supported. create requires operator role; START_RESEARCH requires actor Research ownership. Neither requires Git, sourceRef, baseSha, graph registration or PR.",
+    "test": "Before creating any .git or source branch, actual CLI create in a plain directory returns W,generation1,RV1,phase PROPOSED. Apply START_RESEARCH with expectedRV1/gen1 -> RESEARCHING with actual Research Attempt+LeaseVersion. A separately configured reader can show W. Duplicate create rejects without additional Work/allocation effects; PUBLISH_PLAN later rotates generation under the specified transaction, not bootstrap."
+  },
+  "criterion_attempt": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "construction": "Work spec contains no source branch/worktree/candidate SHA authority. Immutable Attempt identity binds workId/generation/semantic specHash. CandidateVersion/EvidenceVersion are child records bound to that same Attempt, never an alternative Work authority; status stores refs only. All source-field publication checks current owner/fence/lease/generation.",
+    "test": "N5 publishes a valid candidate child version and confirms spec/semanticHash/generation unchanged. Try payload additions objective,plan,generation,owner,fence and mismatched Attempt/generation: reject before insertion/RV/status effects; canonical Work bytes stay equal. Pure reader show/next/context requires no source branch or fence."
+  },
+  "criterion_coexistence": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "construction": "Empty isolated service registers create/research/control only, no migration/import action. New ids V2-opaque; BB-n rejected. Legacy BB-n authority is not read or mirrored by this service. Existing isolated Work and its source contexts remain disjoint until future BB-156 selector/import transaction.",
+    "test": "COEXISTENCE fixture snapshots all legacy graph/current artifacts plus Git HEAD/ref/status bytes; run actual new-Work create/start/plan control against separate external DB; compare every before/after hash and ref/status exactly. Database contains only W (no legacy ids). BB-n create/claim/import action each rejects with no row/status/allocation effect. Leave legacy bootstrap and graph validators operating unchanged."
   }
 }
