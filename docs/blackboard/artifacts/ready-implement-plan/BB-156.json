@@ -28,42 +28,50 @@
     "Preserve work ids, semantic objective/current plan, direct dependencies, components, lane/phase meaning, and any current readiness/candidate/evaluation authority that is still valid at the cutover snapshot.",
     "Do not invent historical generations. Each migrated Work starts at V2 generation 1 (or one deterministic initial generation) with legacy source SHA recorded as migration provenance.",
     "Existing raw evidence/receipt files may remain as immutable referenced blobs when still required by an unfinished Work; physical storage cleanup is not required for cutover.",
-    "Migration must fail before authority switch if any unfinished Work cannot be transformed or if parity/next-action verification differs."
+    "Migration must fail before authority switch if any unfinished Work cannot be transformed or if parity/next-action verification differs.",
+    "Selected operational profile is V2_SUPERVISION_V1: BB-155 and BB-157 must be DELIVERED in the pinned controller release before migration verification/cutover. Canonical direct dependency remains BB-155; this chooses the explicitly recommended safe 155 ->157 ->156 deployment order, not a new graph edge. Research READY is not runtime capability delivery."
   ],
   "invariants": [
-    "Cutover operates on one exact legacy snapshot SHA and one exact V2 implementation version delivered by BB-155.",
-    "Every live legacy work id appears exactly once in the migration manifest; DONE/withdrawn ids appear zero times.",
-    "A migrated Work's semantic objective/plan and direct dependency meaning are preserved, not reinterpreted during migration.",
-    "Current trusted readiness/candidate/evaluation facts are carried only when their existing exact bindings validate at the snapshot; stale authority is not promoted.",
-    "Authority flips only after complete migration and parity verification; there is no state where some current work is writable in legacy and some in V2."
+    "Exact included/excluded id sets partition the locked snapshot; all unfinished non-withdrawn tasks migrate, ordinary BLOCKED remains included.",
+    "Imported Work generation1 preserves semantics/edges/components and only current validated phase-relevant authority; no fake Jev verdict or historical generations.",
+    "Every included Work passes semantic/readiness/blocker/immediate-action parity; any mismatch aborts before visibility.",
+    "All import rows, receipt, allocator and selector publish in one SQLite transaction under a held external source-write freeze.",
+    "After selector commit current Work uses only V2; unsupported clients/legacy writes reject and no fallback or dual-write occurs.",
+    "DONE/withdrawn task resources remain absent; DONE dependency truth is externally bound Living delivery evidence."
   ],
   "architectureDecisions": [
-    "D1 — BB-156 consumes BB-155 as a hard dependency. At Worker start, pin `legacySnapshotSha` to the exact candidate baseline and enumerate all legacy tasks where status != DONE, excluding explicitly withdrawn BLOCKED duplicates by an exact predicate recorded in the migration manifest.",
-    "D2 — Produce BLACKBOARD_V2_MIGRATION_MANIFEST_V1 containing source SHA, V2 schema/controller version, included ids, excluded DONE ids/count, excluded withdrawn ids/reasons, per-work source refs/hashes, and a manifest hash. Migration is deterministic from this manifest.",
-    "D3 — Transform each included task into one WORK_RESOURCE_V2. Preserve id, objective semantics, current plan semantics, direct dependencies and components. Map legacy RESEARCH_SA/RESEARCH to the corresponding V2 research state and WORKER/EXECUTION to the corresponding ready/execution state based on validated plan/readiness bindings; later phases map only when exact legacy authority exists.",
-    "D4 — Set migrated Work generation deterministically to the V2 initial generation; record `{legacySnapshotSha, legacyTaskId, legacyObjectiveHash, legacyPlanHash}` as migration provenance. Do not reconstruct old generations from Git history.",
-    "D5 — Revalidate any carried readiness/evaluation/candidate/evidence bindings with the trusted existing validators before materializing them as V2 conditions/attempt receipts. Invalid/stale authority causes migration failure for that Work instead of silent downgrade or promotion.",
-    "D6 — Before cutover, run all-work parity: legacy task readiness/blockers vs V2 lifecycle blockers, exact dependencies, objective/plan hashes, and `bb-v2 next` expected immediate action class. Any mismatch fails the migration.",
-    "D7 — Publish all V2 Works and the cutover marker atomically/CAS on the V2 control authority. Only after that publication succeeds, change repository operator/bootstrap surfaces to V2 and retire legacy current-work routing. No dual-write adapter is introduced.",
-    "D8 — DONE legacy tasks are not represented in V2. Their current delivered semantics continue from Living Docs. Withdrawn duplicate tasks are absent. Existing evidence/receipt blobs required by migrated unfinished work may remain at their old refs and are treated as immutable external blobs until a separate storage cleanup."
+    "D1 — Require delivered BB-155+BB-157 V2_SUPERVISION_V1 compatibility; pin prepared successor controller digest/schema/protocol before freeze. READY alone is not runtime delivery.",
+    "D2 — Explicit pinned public/CI adapters, no cwd/fallback authority; postflip current Work uses V2, immutable history is data only.",
+    "D3 — Pause new admission, finish existing publication before hard maintenance/native main lock; zero claims/callbacks, enforced protection and fresh SHA or abort.",
+    "D4 — All non-DONE except exact valid withdrawn BLOCKED; ordinary BLOCKED included. Unique/disjoint/exhaustive partition and full closure, unknown/dangling withdrawal aborts.",
+    "D5 — Exact gen1/RV1 Work wire preserves semantics/edges/components/scopes; DONE dependency is external Living proof, isolated V2 set hash unchanged, import receipt never Decision.",
+    "D6 — Original typed input/eval validates unchanged; migration-only bridge binds exact new spec/versions. Pending judgment gets new real read-only controller claim and fresh independent judgment; no imported live lease/fake answer.",
+    "D7 — Independently validated legacy guards versus actual same-transaction native next/context; compare raw action/guard/blocker/scopes, separate diagnostics from mutation. Real merge proof gates publication.",
+    "D8 — Exact all-id zero-diff report bound to manifest/controller/destination; aliases preserve raw semantic authority. Any mismatch aborts.",
+    "D9 — One BEGIN IMMEDIATE inserts native records/private selectors, computes actual exhaustive parity, persists report/receipt/allocator then COMMIT; fault rolls all back, readers see old state until commit.",
+    "D10 — Public wrappers use one V2 service; raw legacy current APIs deny before I/O. No dual-write/fallback/revert after commit; release freeze after all-id/routing postchecks.",
+    "D11 — Select 155→157→156; all verification commands mandatory. Incompatible REPAIR/ACTIVE authority requires legitimate source resolution before fresh snapshot, never drop/fake/downgrade.",
+    "D12 — Owned fixtures invoke actual exports and every negative/merge/Living trust check. Actual delivery requires real cutover/main/equal-tree/Living evidence, not fixture success."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "scripts/blackboard-v2/control-store.mjs",
-      "scripts/blackboard-v2/work-resource.mjs",
-      "scripts/blackboard-v2/lifecycle.mjs",
-      "scripts/blackboard-v2/context-builder.mjs",
-      "scripts/blackboard-v2/cli.mjs",
       "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+      "scripts/blackboard-work-graph.mjs",
       "scripts/blackboard-delivery-contract.mjs",
       "scripts/blackboard-delivery.mjs",
       "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-implementation-bootstrap.mjs",
       "AGENTS.md",
-      "package.json"
+      "package.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
     ],
     "expectedNew": [
       "scripts/blackboard-v2/migrate-legacy.mjs",
-      "test/blackboard-v2-migration.test.mjs"
+      "test/blackboard-v2-migration.test.mjs",
+      "scripts/blackboard-v2/transport.mjs",
+      "scripts/blackboard-v2/main-freeze.mjs"
     ],
     "expectedTests": [
       "test/blackboard-v2-migration.test.mjs"
@@ -77,7 +85,8 @@
       "scripts/blackboard-v2/**",
       "test/blackboard-*.test.mjs",
       "package.json",
-      "AGENTS.md"
+      "AGENTS.md",
+      ".github/workflows/**"
     ],
     "write": [
       "scripts/blackboard-v2/migrate-legacy.mjs",
@@ -90,22 +99,36 @@
       "docs/blackboard/state.md",
       "docs/blackboard/README.md",
       "docs/blackboard/contracts.md",
-      "docs/blackboard/context/README.md"
+      "docs/blackboard/context/README.md",
+      "scripts/blackboard-implementation-bootstrap.mjs",
+      "scripts/blackboard-task-context-resolver.mjs",
+      "scripts/blackboard-context-materialize.mjs",
+      "scripts/blackboard-context-verify.mjs",
+      "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-state-project.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      ".github/workflows/test.yml",
+      ".github/workflows/blackboard-jev.yml",
+      "test/blackboard-*.test.mjs",
+      "test/fixtures/blackboard-legacy/**"
     ],
     "forbiddenWrite": [
-      ".github/**",
       "packages/**",
       "scripts/blackboard-jev.mjs",
-      "scripts/blackboard-jev-ci.mjs",
       "docs/blackboard/evidence/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Snapshot + manifest: enumerate the exact unfinished/non-withdrawn legacy set and bind every source object/hash.",
-    "S2 — Transform + authority validation: materialize one V2 Work per manifest item and validate any carried readiness/candidate/evidence authority.",
-    "S3 — Full parity gate: compare dependencies, blockers, semantic hashes and immediate next-action class for every migrated Work.",
-    "S4 — Atomic cutover: publish the complete V2 set plus cutover marker, then switch bootstrap/operator docs/scripts to V2 with no dual-write.",
-    "S5 — Legacy retirement: remove current-work legacy routing/projections for migrated tasks and prove DONE/withdrawn work is absent from V2."
+    "S0 — BUILD cli/transport/trust-adapter/public/CI/docs (CUTOVER): explicit config/pins, LEGACY compatibility then V2-only routes, deny raw current APIs before I/O. Operator schema upgrade adds LEGACY/ISOLATED selectors/revision/nonce/receipt fields in same DB, no import/switch. Conditional docs preserve graph. Construct release only; candidate approval/merge/install after S5.",
+    "S1 — BUILD main-freeze/migrate-legacy (MANIFEST/TERMINAL_EXCLUSION). Implement drain, maintenance, enforced native GitHub lock and buildMigrationManifest per manifestBlueprint.schema/withdrawalRule, snapshotContract freeze/quiesce. Fixture inputs -> exact partition/archive/freeze proof. Race/ref/withdrawal/lock errors abort/restore. No live main lock/capture at build time.",
+    "S2 — BUILD migrate-legacy/work-resource/trust-adapter/lifecycle/context-builder. transformLegacyWork -> strict wire/templates/proof records; resolveImportedAuthority -> purpose-bound native acceptance facts. Implement migrationContract.importIntegration in native snapshot, guards, context and store apply. Original validators unchanged; native Decision priority even nonSAT; no Decision impersonation/terminal Work/old lease; invalid phase/proof aborts. SEMANTICS/TERMINAL_EXCLUSION.",
+    "S3 — BUILD scripts/blackboard-v2/migrate-legacy.mjs/control-store.mjs (PARITY). Add internal readMigrationSnapshot(tx,id) on the commit handle, resolving staged Work/records/typed import authority and dependency/Living facts. Invoke actual delivered nextActions(snapshot), buildContext(snapshot,systemFacts); no HTTP/second connection/nested BEGIN. Independently validate legacy source with archived taskReadiness/assertReady/validateEvaluation/deriveDeliveryContext. Compare every parityBlueprint.phaseRows guard, raw actions/required inputs, current/postclaim scope, blockers/proofs and exact id set; comparison clone omits maintenance only, real apply stays frozen. Zero-diff bound Report or throw.",
+    "S4 — BUILD scripts/blackboard-v2/control-store.mjs (CUTOVER/PARITY). Add commitMigration(migrationContract.exports arguments): BEGIN IMMEDIATE checks revision/selectors/profile/freeze/source/destination. Insert every real Work/Attempt/LeaseVersion/candidate/evidence/import-proof, stage selectors privately; S3 uses same-connection snapshots; require exhaustive zero diff/live leases. Persist Report/CutoverReceipt/allocator then one COMMIT. Any fault ROLLBACK all; identical receipt retry idempotent. Existing isolated V2 rows unchanged; no dual-write.",
+    "S5 — TEST migration/control/supervision suites (all criteria): exact N1-N3 titles invoke buildMigrationManifest/transformLegacyWork/commitMigration. Full phase rows, stale proof/last-id diff, drain/lock/transaction faults/restart/lost-response, isolated preservation, fresh two-cwd public/raw routing. All verificationPlan commands, no skip; preserve evaluator/negative/main/tree/Living checks. Frozen fixtures never cut over live authority.",
+    "S6 — OPERATE only after S0-S5 candidate correctness approval + normal main merge + pinned install. Admission drain on writable main -> zero claims/callbacks -> hard maintenance/main lock -> fresh full manifest/templates -> actual S3 inside S4 -> one COMMIT -> actual all-id/hash/action/context/pin/public/raw postchecks -> release. Source BB-156 MERGE_PENDING keeps accepted candidate via validated bridge; verifyWorkMerge is read-only. Actual cutover/main/equal-tree/Living proofs gate V2 delivery and final Living Docs/state pointer. No legacy DONE or automatic postcommit rollback."
   ],
   "acceptanceCriteria": [
     {
@@ -115,7 +138,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Manifest count/id-set checks against the pinned legacy snapshot."
+        "Manifest count/id-set checks against the pinned legacy snapshot.",
+        "Every snapshot graph id appears exactly once in included or excluded sets; all included body/receipt/source closures resolve. No sampled/count-only success."
       ]
     },
     {
@@ -135,7 +159,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "All-work parity report with zero mismatches."
+        "Exhaustive per-id report with exact included id set and zero field diffs, bound to fresh manifest/controller; raw native action ids and each protocol normalization retained.",
+        "Independent archived guard validation versus delivered native nextActions/buildContext on exact prepared snapshot; separate diagnostics/proposed required-input actions/enabled mutation and current/postclaim scopes. Both receipt publication paths require valid main/candidate/tree/Living proof."
       ]
     },
     {
@@ -162,47 +187,97 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Cutover operates on one exact legacy snapshot SHA and one exact V2 implementation version delivered by BB-155.",
+      "invariant": "Exact included/excluded id sets partition the locked snapshot; all unfinished non-withdrawn tasks migrate, ordinary BLOCKED remains included.",
       "criterionIds": [
-        "MANIFEST",
-        "CUTOVER"
-      ]
+        "MANIFEST"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Invoke buildMigrationManifest on complete fixture: exact unique/disjoint/exhaustive sets, ordinary BLOCKED included, DONE/withdrawn absent; add id -> +1; N1 missing/duplicate/ambiguous fails."
     },
     {
-      "invariant": "Every live legacy work id appears exactly once in the migration manifest; DONE/withdrawn ids appear zero times.",
-      "criterionIds": [
-        "MANIFEST",
-        "TERMINAL_EXCLUSION"
-      ]
-    },
-    {
-      "invariant": "A migrated Work's semantic objective/plan and direct dependency meaning are preserved, not reinterpreted during migration.",
-      "criterionIds": [
-        "SEMANTICS",
-        "PARITY"
-      ]
-    },
-    {
-      "invariant": "Current trusted readiness/candidate/evaluation facts are carried only when their existing exact bindings validate at the snapshot; stale authority is not promoted.",
+      "invariant": "Imported Work generation1 preserves semantics/edges/components and only current validated phase-relevant authority; no fake Jev verdict or historical generations.",
       "criterionIds": [
         "SEMANTICS"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual transform/resolveImportedAuthority/nextActions: exact schema/semantics/scopes; claim/new candidate keeps readiness, stale candidate bridge rejects, native nonSAT never falls back to old SAT; spoof/hash/role rejects."
     },
     {
-      "invariant": "Authority flips only after complete migration and parity verification; there is no state where some current work is writable in legacy and some in V2.",
+      "invariant": "Every included Work passes semantic/readiness/blocker/immediate-action parity; any mismatch aborts before visibility.",
+      "criterionIds": [
+        "PARITY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Invoke actual assertMigrationParity with all phase rows and same-transaction native next/context: full checked ids/zero diffs; mutate last id guard/scope/proof/dependency -> throw."
+    },
+    {
+      "invariant": "All import rows, receipt, allocator and selector publish in one SQLite transaction under a held external source-write freeze.",
       "criterionIds": [
         "CUTOVER"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Invoke commitMigration with two DB connections: peer sees old until COMMIT, all-new after; every insertion/selector/receipt fault rolls back rows/allocator; missing lock/CAS fails; restart retry same receipt."
+    },
+    {
+      "invariant": "After selector commit current Work uses only V2; unsupported clients/legacy writes reject and no fallback or dual-write occurs.",
+      "criterionIds": [
+        "CUTOVER"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Actual CLI/public wrappers from two cwd return one Work/context; raw current readers/writers deny RETIRED before I/O; wrong pins/protocol/network never fallback or mutate rows/files."
+    },
+    {
+      "invariant": "DONE/withdrawn task resources remain absent; DONE dependency truth is externally bound Living delivery evidence.",
+      "criterionIds": [
+        "TERMINAL_EXCLUSION"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Invoke manifest/transform/commit with DONE/withdrawn and external Living edge: no terminal rows, exact valid Living binding satisfies dependency; missing/stale Living receipt aborts."
     }
   ],
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test test/blackboard-v2-migration.test.mjs test/blackboard-v2-control.test.mjs"
+      "command": "node --test test/blackboard-v2-migration.test.mjs test/blackboard-v2-control.test.mjs",
+      "criterionIds": [
+        "MANIFEST",
+        "SEMANTICS",
+        "PARITY",
+        "CUTOVER",
+        "TERMINAL_EXCLUSION"
+      ],
+      "mustPass": "All N1/N2/N3 literal titles invoke actual bound exported functions; full all-id parity, every supported phase, transaction/restart/routing fixtures pass, zero skipped. Verification runs use owned fixture databases/frozen repositories, never switch live authority.",
+      "requiredOutputs": "Exact candidate-bound log/hash/exit0, manifest and per-id parity report, transaction fault/restart evidence"
+    },
+    {
+      "id": "supervision-regression",
+      "command": "node --test test/blackboard-v2-supervision.test.mjs",
+      "criterionIds": [
+        "PARITY",
+        "CUTOVER"
+      ],
+      "requiredOutputs": "Mandatory candidate-bound log/hash/exit0, zero skipped; selected release must already deliver BB-157. Actual LOOKBACK/failureAnchor/exact two-Attempt reflection/material/repetition guards preserved. Missing capability/module fails before collection/cutover, not optional skip."
     },
     {
       "id": "repository",
-      "command": "npm run verify"
+      "command": "npm run verify",
+      "criterionIds": [
+        "CUTOVER",
+        "TERMINAL_EXCLUSION"
+      ],
+      "requiredOutputs": "Exact candidate-bound repository/docs/authority-route check log/hash/exit0"
     }
   ],
   "negativeVerificationCases": [
@@ -227,7 +302,7 @@
       "verificationId": "focused",
       "testRef": "test/blackboard-v2-migration.test.mjs",
       "testTitle": "BB-156 N2 stale legacy authority cannot migrate into V2",
-      "subjectSymbol": "migrateLegacyWork"
+      "subjectSymbol": "transformLegacyWork"
     },
     {
       "id": "NEG_156_3",
@@ -236,18 +311,416 @@
       "verificationId": "focused",
       "testRef": "test/blackboard-v2-migration.test.mjs",
       "testTitle": "BB-156 N3 cutover is atomic and never dual-writes",
-      "subjectSymbol": "publishMigrationCutover"
+      "subjectSymbol": "commitMigration"
     }
   ],
-  "researchGaps": [
-    "At Worker execution, pin the exact legacy cutover snapshot and generated unfinished/non-withdrawn manifest; the current registration-time task count is informational only because concurrent work may complete before BB-155 is delivered."
-  ],
-  "researchBaselineSha": "ad800c95917ecc912c1627185a79f5a13f8d8879",
+  "researchGaps": [],
+  "researchBaselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living system state records that V2 is the sole current-work Outer Blackboard authority after the one-shot unfinished-work cutover; DONE work remains represented by Living Docs rather than migrated work resources."
+  },
+  "snapshotContract": {
+    "manifest": "BLACKBOARD_V2_MIGRATION_MANIFEST_V1 {id,legacySnapshotSha,sourceTree,graphHash,registryHash,controllerDigest,schemaVersion,capabilities,freezeReceiptRef,preExistingV2SetHash,included:[{id,taskHash,objectiveRef/hash,planRef/semanticHash,requiredReceiptRefs/hashes,componentRefs/hashes,dependencyBindings,legacyState,nextActionClass}],excludedDone:[{id,livingRefs,receiptRef/hash}],excludedWithdrawn:[{id,titleMarker,reason}],allocationNextId,manifestHash}. Canonical sorting/hash; all fields derived from one locked immutable source snapshot, not caller prose. Manifest is canonically derived, not a producer count: included ids union excludedDone/withdrawn must equal all graph ids, pairwise disjoint, and each included entry must resolve its complete required source/authority closure.",
+    "predicate": "DONE always excluded. Withdrawal only status BLOCKED with exact bracketed prefix [WITHDRAWN ...] matching trusted title; all other unfinished statuses included, including non-withdrawn BLOCKED. Unknown/malformed withdrawal status/title combinations fail WITHDRAWAL_AMBIGUOUS. Reject references to excluded withdrawn dependencies. Included-id union excluded sets equals entire snapshot task id set, disjoint and unique.",
+    "freeze": "Selected adapter GithubMainFreeze in main-freeze.mjs: operator-owned GitHub token locks main through branch protection lock_branch=true/enforce_admins=true, with force/deletion/bypass disabled and existing protection retained. If repository policy cannot enforce lock or credentials lack permission, fail before capture. GET confirms locked protection and exact main SHA; service appends freeze receipt {repo,mainSha,protectionDigest,nonce,held,authorityRevision}. Drain/reconcile legacy claims and provider callbacks before capturing closure. Lock remains until postcommit verification or explicit abort restores saved protection. No SQLite transaction is claimed to lock Git; remote lock observation and operator ownership are explicit prerequisites.",
+    "storage": "Fetch exact Git objects and refs before freeze; resolve via git show SHA:path and actual blob modes, never current checkout files. Evidence/log/receipt closure hashes checked; required external blobs must be retained and readable. Research baseline count is only a historical calibration fixture. Worker enumerates a fresh locked snapshot at execution.",
+    "barrier": "Before capture, service maintenance CAS sets durable freeze nonce/revision and rejects actor allocation/publication/renewal plus reconciliation writes in both isolated V2 and legacy-current adapters, leaving readers available. Only operator freeze/migration actions are allowed. Native GitHub main lock is then confirmed and legacy claims/callbacks drained. Pre-existing V2 Work set is hash-bound and cannot change during capture/commit; failed native lock restores barrier/protection without import. Postcommit or explicit abort releases maintenance only after verification. No clock/ownership fact is manufactured.",
+    "quiesce": "Pause new legacy admission, finish normal publications on unlocked main, require zero active legacy claims/callbacks; then hard maintenance/native main lock and fresh recheck. Race aborts; no synthetic cleanup. Existing isolated V2 set hash-bound after hard barrier."
+  },
+  "transformContract": {
+    "terminalDependencies": "Keep original dependency workId/requires in the edge. For a DONE source, source=LIVING and binding names exact delivered consolidated refs/hash and validated receipt/backup authority. No DONE row or full DONE-task copy in V2. V2 evaluates direct dependencies from Work delivery or trusted external Living facts supplied to pure next/context. Missing Living proof blocks import, not synthetic DONE creation.",
+    "staleArtifacts": "EXECUTION phase unused candidate/evidence artifacts are classified non-authoritative diagnostics, with exact hashes retained if referenced. Required current readiness/candidate/Decision/reflection must validate; otherwise whole migration aborts. No phase downgrade, receipt rewriting or old generation reconstruction.",
+    "phaseMapRef": "state.objectiveEvidence[2].supportingPlanEvidence.parityBlueprint.phaseRows"
+  },
+  "parityContract": {
+    "legacyOracle": "Archived taskReadiness/context plus independent trust validators and actual ownership guard; derive dependency blockers and required readiness/proof, not context action alone. MERGE_PENDING scheduler exclusion does not erase read-only verification continuation; mutating publish-delivery still needs valid merge proof. Unknown phase/receipt/ownership aborts.",
+    "v2Oracle": "Actual same-connection readSnapshot of newly created native rows inside uncommitted migration transaction; resolve typed store proof/Living facts, invoke delivered native nextActions/buildContext. Remove transient barrier only on both comparison projections, never on actual apply. All-id exact semantic/scope/blocker/action proof comparison before COMMIT; no predicted clock/lease.",
+    "outputs": "Store-produced canonical Report {manifestHash,controllerDigest,perWork:[{id,legacy,v2,rawNativeActions,protocolRefinements,fieldDiffs,equal}],mismatchCount,checkedIdSetHash,reportHash}; unique complete checked set=manifest and mismatchCount0. Persist with cutover receipt in SAME COMMIT; caller equal/report assertion is not authority.",
+    "supervision": "Selected release requires delivered BB-157. Compare LOOKBACK/REPAIRING authority and material guard exact subjects. Unreflected legacy repair is incompatible and aborts before selector mutation; resolve legitimately before a fresh snapshot. Canonical direct dependency remains BB-155; operational order155->157->156.",
+    "ownershipNormalization": "Legacy deriveDeliveryContext returns IMPLEMENT and prospective plan writeScope for PLANNED/unclaimed Worker, while actual bootstrap requires ACTIVE and claim. Therefore sourceScope from derived context alone is not current authority. Normalize ownership as UNCLAIMED/CLAIMED, immediate action as CLAIM_EXECUTION/START_RESEARCH before execution, current granted product scope=[] when unclaimed, and separately compare postclaim prospective scope to exact plan. Normalize V2 CAS/fence/token URI as protocol refinement of legacy claim, not identical serialized preconditions; readiness/deps/objective/plan/phase-required correctness and postclaim scope must remain exact. Report every normalization/refinement explicitly; never erase a semantic blocker."
+  },
+  "cutoverContract": {
+    "prepare": "Follow migrationContract.stages: independently approved candidate/routing is merged+installed while LEGACY; docs remain activation-conditional. Quiesce admission before hard maintenance/main lock, then fresh capture/recheck all source/destination/profile/pins. Prepare all records/trust/parity without current visibility. Missing capability, race or unsettled claim aborts.",
+    "commit": "BEGIN IMMEDIATE: CAS LEGACY/ISOLATED_NEW_WORK revision; verify pinned profile/freeze/main/source/destination. Insert ALL Work/native controller claims/versions/typed proofs, stage V2/ALL_WORK selectors privately. Compute same-connection native snapshots and exhaustive parity against validated source; zero diff/full set/live leases required. Insert report+receipt+allocator, COMMIT. Any fault rolls back everything; WAL readers retain old state until commit. Identical receipt resolves lost response; conflicting manifest aborts.",
+    "post": "Read service selector+receipt and all manifest Work ids; compare full set/hashes/next/context and reject every legacy write/current-work reader. Mark source routing docs/deprecated graph pointer non-authoritative in prepared cleanup; retained receipt blobs remain immutable external subjects. Only then release repository freeze. If response was lost, immutable receipt id+manifestHash identifies successful cutover; conflict/missing receipt is fatal. Postcommit failure never switches back or dual-writes.",
+    "surfaceChanges": "Route scripts/blackboard-implementation-bootstrap.mjs, blackboard-task-context-resolver.mjs, blackboard-context-materialize.mjs, blackboard-context-verify.mjs, blackboard-work-graph.mjs, blackboard-state-project.mjs, blackboard-delivery-context.mjs, blackboard-delivery.mjs and blackboard-jev-cli/ci.mjs through pinned service/control reader for current Work. Keep immutable legacy validator functions explicitly historical only. Adapt test.yml/blackboard-jev workflows to query pinned authority and reject legacy-current mutations/old client protocol; receipt/evaluator correctness rules remain unchanged. No branch-local graph fallback. Convert legacy unit tests to explicit owned immutable snapshot fixtures (test/fixtures/blackboard-legacy), not retired live graph. Current verify/CI validates service Work/selector and routing; historical validator helpers require explicit snapshot. Keep all negative/JeV/receipt coverage and assertions, no skipped legacy regressions.",
+    "transport": "Local same-host clients use delivered loopback transport. Before GitHub CI or remote agents can consume this one authority, operator installs trusted HTTPS transport with pinned authorityId/TLS/controller and separate reader/judge/actor credentials outside checkout; otherwise remote cutover precondition fails. No public endpoint or credentials are deployed by research. Pinned transport service may expose read-only CI facts with same exact authority; no per-run independent authority is substituted for live Work.",
+    "retention": "DONE/withdrawn Work are absent. Preserve original terminal Living Docs and Git backup, and raw immutable evidence still referenced by unfinished Work. Do not delete prior process/evidence storage just to make cutover appear complete; no long-lived legacy current-work parser remains.",
+    "routing": "Prepared public entrypoints query pinned GET /v2/authority and validate protocol/controller. V2 wrappers route current create/show/next/context/actions to service. Raw legacy-current reader/mutator/old publisher denies RETIRED; explicit immutable historical API requires SHA and is read-only. LEGACY transition release preserves legitimate old current operations until maintenance barrier, without dual-write. currentSessionBlueprint resolves each surface; no fallback on transport/pin failure."
+  },
+  "researchSummary": {
+    "classification": "EXECUTED_RESEARCH_MODEL_NOT_MIGRATION",
+    "snapshotSha": "d795bca0e1865685d6b11b66de12224691446897",
+    "graphHash": "0887ea0f2bbf3a09b3c5ccca2a08b7d4b8554d61fd3a2874b31ac9508c654675",
+    "counts": {
+      "included": 46,
+      "excludedDone": 43,
+      "excludedWithdrawn": 7
+    },
+    "manifestHash": "34ed77b29f87f77926a8df88a241e0325406a0e54d5ad73513cbab24f3205445",
+    "observed": "33 combined prototype checks pass/0skip; full 46-id routing/component/dependency parity model at historical d795 snapshot, MERGE_PENDING next VERIFY_MERGE, injected failure after all Work inserts rolls back rows+selector; restart preserves successful complete selector. This is a scratch model, not actual V2 controller parity or live cutover.",
+    "trustedReadiness": "Existing assertReady validated all22 unfinished Worker plans at that snapshot. BB-120 exact candidate materialize/validateEvaluation also valid; BB-085/123 EXECUTION unused candidate data mismatch current candidate evaluation and is classified non-authoritative, not carried as current Decision.",
+    "limits": "Snapshot is historical calibration; concurrent main work may finish before execution. Worker recomputes a fresh locked set. No real Git main lock, remote transport deploy, migration or authority cutover was performed.",
+    "sourceSha256": "dd1509bb34a7ed7ca3db2f62c669452811f52be89ea094aad178b1a5cca24022",
+    "testSha256": "f2bd5304f888cebd19c14363d389af6b52aab2db43fd5575f95fbe3c8baa2c60",
+    "logSha256": "d7fd7e6d5476d81652205f1295bcc593f40a3d50bf5e638b6f4c3ea7cbaf6256"
+  },
+  "researchReproduction": {
+    "classification": "EXECUTED_RESEARCH_MODEL_NOT_DELIVERY",
+    "extract": "Decode each gzipBase64 into named files under an owned scratch directory. Set V2_RESEARCH_SOURCE_ROOT to a Git repository containing exact d795bca0e1865685d6b11b66de12224691446897 objects; execute node --test probe.test.mjs. Legacy graph and routing source are read with git show at that immutable SHA, not from current checkout. All service databases/config/Git worktrees are owned scratch and disposed. Additional all-work parity calibration: use a detached f3d527ee1735756aa802987ba3a37760b1e97cbb checkout and V2_PARITY_SOURCE_ROOT=<absolute checkout> node parity156-research.mjs; report is written next to scratch script (or V2_PARITY_OUTPUT_ROOT). No checkout files are modified.",
+    "files": {
+      "control-probe.mjs": {
+        "sha256": "dd1509bb34a7ed7ca3db2f62c669452811f52be89ea094aad178b1a5cca24022",
+        "bytes": 9871,
+        "gzipBase64": "H4sIAAAAAAACA61aW3fiRhJ+n18h5wFJZ7TKOLvZB4jMkUG2leG2Eowzx/GyAjW2YiGRlgBzbP77VvVFF8CezJ59maFv1VVf3VuOlquU5spLN8iDWZARf5fM98qCpktFTdKQNLM/4ygnautDJHbOKQlychNkjwYNkjBdTiZut3ZkTnerPIUj5JkdmadJBv8GSZpE8yC2nq2LX/3hwMxyGiUP0WKnPRva1Njo1sWm0ch3K5IulI1lWWo6+4PMc7XROLMpDXZmlLH/tY3eHrIlE691EiBEMk1METHc6GYG12vaXXBv3M3ugXxgxilwQDrpchVQos10XW9u9ANOH0E2ZLKUVFOzx+Cnn/+p6uZ6FcKkJrh8Ri65HGr7uVnIqD3ruhlGDyTLNfWRPKtwBydOCTJpzQEo6+Ilf6TpVknIVnEoTamG0/pe7p2nq12BFjCcEe0QOL3CfBxkmTKi6Yz4eUqJ8vKBC0TXcxhriygmxhwAeLI0wAI0Tswk3Wq6rgAfUWbyNfZvi02EMwtZq9oGo6LLZZM8k7n2n5FnX/dt5Y90TZMgni5Rtlu711LEQgYHQdAkXWfW1aRXLszW2W6aR0uSrnPr50+fPrU+KB3PsceOMrYve47iXimD4VhxfnP9sa8sSR5oT8rY+W0MFNy+7X1VPjtfjQ2fwp0DIK+/T2Wb0qdMi8JjOnSjuIOxc+14BS1jloa77yIfknmURYD7yStOk3MHvuONlaGnuNeDoecgG0MmrvLF7k0cX9FUphfVUD+puqGpiDEMes613fnKZijZsHv5ltZ/9NYe9B+nYDT6i9SXGMMKx1J/oSQHrSlyw4oS5hmq7/SczljZKFfesM9Zub1xgLUnqw1u8EByON02N0Aqf9YWSXkHswn10rl2B4rb7ztdF6ACjnK6g+jBDDuxSoPT9Fa00M4G6+WMUPBwP1gQN8nJA6Faor++Jr/wJY0dYWwLLMB5uTdpaqc37Hyees615/i+OxyopYlKiX6YjLqoMyaK74BoVrsQSVD8QTfpOtF85l9wu94STmstEhjWzV7tDPt9dwxXCQzpfh7k80eNHGLhDXu9S7vzmXGFDk/2AFv2CM4XhfqLvOMtHdANNxumCWa9gu8oLHQBdBiMtIAE7Gt6NZwMuiWDL6ZpVmIJNZGsblCSgefOyRdC0YCa1KQbZHC1zrUtOIXkEHdbGJO0rd4KSUxywubMAwKtNwUSKuAyoA4YyTbcYdHNx/OKWIo96ILgTD5USRlZOc9bMwqRNRSamvPHIIFYe2ZZ56VJ2P60Mxxc9dxORUeMJYY8UkBH4FEeADSyFZnXHQIsG0OlkH9rvcCuB5IQGuQI1Dk70mSQsMNGlgf5Omu+rCCHkKY68oajoe90VSPIc7Jc5c1kHccGkAsjpJA17+73+yNTVUU8YFGAgyXDQNs4N9q6AAW4KXHZ6ieERBGZkHEQLTUGmZFuQQAjz2PrHCKuEYBA+Rhi8JHokBwqsteIIuzbQ70D/KCRN/BnBzg8pgCjbcYEYJokeRRfwGXF0Z5j+870xumh7fL7FySZE6skwcaddA2Bgrbbn/SP562TaxYbtA6vRk02y/JFA4MCmN2wCRDhr+tSyVuz1LjAjtE0SuabwPxHABS1EUZYH/iPgVC1nBlTQvgUxOkQCWBhwWb2Nb0VXscUx66CcZ4+kcRAkIRCAutQJub/wetrAIYNqmAn4CdOMCrFHBvhdF1SWK/KihtKEX+xqgryx3bPmV45gw4EdhYpZnGUPXaksMLSONPZmtVl32VebHQsOxPxTnV+czqTsTu4hlznOSPb9fD3vRkl83gdQulXQMP8sEwToxs0rKuhd+l2u86Am6UoG5/ILtMkr1A5Lon2ZF3AbVWlwoU1jcK4qk4Yco/wyKLKz1MlVU0GnwfD28HUH068DjDjcjMXXEAJFz0kR65i8BgjuNPfMRhWBhAfopFQwrejWh16uBpOWGVQa1Wt4uPHwpcsGeUg5zq217lhCnk70BlVv2y+5cnvOYMws66osISA4fdYlnHCbyCRKcFqFUMYncXECk0eC6C0j8JGIzTTWUbohoSlq1h1V8FNCBWaACxh/6BxGPVGI8BVcRUjiv6Jczyk4Zj9gp0H8RA31ayNba7N4JaqAbId1YlGo+4L2K/8Ouleo65aoj8Am5mnNLSwPGBqB5gY1HMeAUts2qo9GvVcSGhN1Z+MHA9yGwy+kcGKiriSxYocFpq1LMZZ0bmnlxfrssRiy9+ffQ5AAIUk2RbOcT+HFusZaog0YvpQRz17MHUHo8kYSYw9uwtEWFHZrtl6syRDNoTuDun49tj1rxAtONh3vGtnOnIGXXZU7Q2Hn1lNWMlbAfRWobRuC5Fp1b2gVYOh6hMQcGIQvPQKHjSpUYD/f4m/b+UeI7SKi8xFlIQciyhknnJSvkbj2axYGQImjateLTCVgXZLyF5fzyCtUeGnZ+incvhOOqOlF55xL8S5OlMAI6yFYq3mamdHzodbqr52duh8jD6AAc2ED1EdpKFI5nAK/K3MrKVXFaUPcAi7sorVQhMO0bJqb2d1e+NlMTaJKA6h0YaUFtKHaa1QF8RP5DOMgocEmsMMglDykKMw8mIx8/paTEivOaueY5M762Jn/rkmGV7Ewt0zC3fivWQHHdEqDpJC5eLtpNGorZgwu9T0Stb0nCvshcALwTMhjLjdqlfTQjaet+iRx1fqhHcSzHydp+DJ2jJIogXIwGpBn+QG8Ab0SeiJJttAKOz8dF4F7Cu9KuvUdWa/vFl/fa2sFl077hB95+FllTZ3Mh5+cbyDuprlG8kyoJ0hLZ6EOPvmMlhJhxSPYhVoR7bnjr9O+67ft8edG6C5YC9RLC4ooDRBRf9f25StedSoANccQbSBYAHGfIvn1YIpd/ArqNvpTjue7d/8tXZe/fKTWnb0DHfR0H/va0ChlfqDwKFiPp7r+vupr/aEU8l6qlSXatS0V5Z2L8h/88iODFBv862HgiisvhEMva7jKZdfYRpuDeJY02uGsEeT38vXw8U6YQ6knIhO0soZq98RheR1d3ifITfd/7V32WPOvhHH5mtKoZWVDRKAs6klpZLZN9IOZqSi9BPUxAQunSwD5bbjRTySEQiFkAx+kdvkBC7WSpAAQTgJokQrMGaA1Kwg8beg+KnffbqXdoNiNxpHSsRp3TqReyRqbWjqPPCI669Tz4H44rtgPTYre5pq17WvB0Pf9dVjrUDHQmjeh5xIoyAe0fQBMkSm8bwqlWJEy1VMlvCLYYPZs8PebEIrp2tS9MTVSalITB0Ze4iGICToFuAVBs2x46GFnTDBWsEZ+6Oe03cGYybKtOtcORg2Gw3t7E2WeKIjx8W31GJtXq+8uE07NtR3GFjgpt7YVo/YGfiTqyu34wJHU+cLYMxaaGTnAIKCiYPyXvJQna6xIKkWHMgUBZAeay8hz7nNfmbaC3Ys4gmrrButu/t98QKIr6QAu3UHrYLUiMizIVmRBFnaXYpd7fbdvX4v8o0oZlZWNS3z1otd38q2ET6eruAuWFHKt7Mm32Dhq4M3nsoKXG3NKAmeWnx3rS6XB0aTy57r30yxoK9vZyU+9kFoGuUBnHFObPccu/u13Nbp2W5/Kl4hhgd7y8eJpjwsK48jxgpzqZOQDdoBX2/sLsriI/Jl0VQ/cdCLyGNQWbhXUAjgav0AmJILq6gMmZ74IdbXS6tgPX5KZ1EIZtC8U/uTMXrC2PH67sDuqfd7Qe4SX+u/RUzYiRzXKN9CxeKIFxQkG5JFsI7z5uEbC3vvYS9U4IZ3Qo3GG+9HRoG7cYBQ5SVnBb4qWRJ1sf6OFG9zbRwpFeRgfK6qPXqjcVTiSmd8p+U6OnPc5rDvMViqnoVF9IAS0IdLp1e224PSq+t0XPEx5Y0gHxoHbaAYvhla5YaDYKeXX07etS8CtVCWBQ+kbmjHSO7ZS9gBJf7jbXstHKlqCfVIYVSe9Gsxp2Yi7UMLZc/8R7F3to7isJMmOcRgLUuCFbTfAOEuAyz14ktZNULLTWWV+JAGcVNOsycnk380h0rJiBJob0DM+jp2WQbEb34RGkl2L8ujyzSNSZDgN6Eg9KGXIs1im5gwtjTKCV/7C0+x5d3VF9lG4ywxD/yoXWezek1VT2DL8jdw+ec6oiQcrnOQFJaErk+AnVMoGeDkskcegvlOe6DB6tGI2cAD2aIELMvIHgOJPKSjx5AG28TKrQvJPrqmjF6Nxo///v3u1h3fdD37dqC1m79nr7/f6z+aOX72z808yvFbOScnAAktdrGZB9lTUZRWLsDirzscOPg3DwUHWl58iQzThLBaqA+Fz/ukLEmK1+GwcofdoZHfF9RYo2BJ1uQ21sBWiNiQQr440LdyTxOOwLVdVXV++NyOSWNqT8Y3Q9Zhes6/Ji44zfTS5XG1EIqsMisvK4iI8MIutC40fJSEsMFe+pooPSukQia1G0LZCpfwF7XboQeuC9u1E9te4mgDdS8EvoxTwY+mxbIZ0DxagPFkJnKUxqy6C3H3vvkCfVKlL4vCJoPx+DvgS+F5cBA2ASmwunluVucNdL+DdTFlzKH9Ad4S8FlclQOjCkwTwdoffGg8ZZ7tMs3m5dtvPbEdPUvmJrDCNsrgNvVt9eDZU+bR44qPMSdNEbQXmlxxSJCpR5d6LaHn5WEZlE/KcofF33gCpiNmWEg1ltGDUMEL92RfhBD8/ga+LPx7DFexr22sgc2h891L05ONt/UGAWy3mZecekMxyDP3nC4oqok1MTMt9iWpKHyLTbfSnZsn/Lbw9cJZ88pFxUeRF8aLIbmGOIcFA03nELzAiB82dz/dI3BgVkSVkYw3T+UfBtUP/P3ewFcr8UcWtaWfMVJgmYB/qoEfkFXPxtLl3Kht+8c9RxNSB/TxDxqoGmqGMqVX14oMru+hZgnimBPnf5Wy//BfeFH8dI8mAAA="
+      },
+      "control-client-probe.mjs": {
+        "sha256": "d7c9a82dc1f98527efb8e61d3a1823b46d45dd04fce1f25b4536ba67e35dbfab",
+        "bytes": 1240,
+        "gzipBase64": "H4sIAAAAAAACA3VTXW/aQBB851e4LzmfMIfap8rIjQglEW1kUj7aSFGEDnsdnBifdXcOoZb/e/d8IbileQGtd2dmd3Yv3RZCaidRTiLF1iG5iMFPFBl0UpspuN60cyY+ZisTLsRlmsFydl23C0uZteoinos8jXh2qGH9SORaiqxXSLEGtn00ovBi2ynzSKcidyIJXMONqRhlKeTarZDX46XeCJnq/ST2tHiCvKZO1XG42udRC8yzzN0ClsaeFKUGby3iPa1QWGlHBnzHU9QCHW1cZO3amuoVsQEeg1R+NbRiv7kh9ckFcAnSId1G2CO3veGhm94kJn67NzLCGbHr3mJfAPEJL4oMTTBE/UclclJ7jDHXtHVemV//zafmI639qqY1HdiWNbzo164lM4FLB2nifpBMPFG9kWLn5LBzxlIK6Zo8HUjQpcwbZN1xXqPK2uq7aeypAiIafGm8IjfT+YJ4pP/8qb8T8kkRr3otqamnNJe6weCWINIQz0CJUkbwE33Ckd6l6ZNuGndJv2FAznfwRmMjdn4aH4iuxqc8tB506g6OjXcTgVKMy4fnu4/3Z2f21hjujzPcZxAEf12nayImUTN7hn/RlLKNhITiFVmv7/AvSR8M1uPNPXnN5Fry+6ANZgpXCu4nOug4ZhmNSqqGa9TBe3KPPPRkR2R4MZ9eLxfj1fh2MZ6Fw+vVaBpeTq5Ws/GP5WQ2/koMre0oCk5fw7f5NGQFlwrcROFsPDZCc3wGLV2PlDr5TCg9cuGlB3YqdIlYXnJuTytiNjabbvE3o1PqH2F2nW+oJjSgsNyuQf4PgNtt1WOE5dTPyyyz5pm2gsDEp1Ytw+/h9Fe4Go4Wk2mIvhyWoHSMOLbDNweGgZr7+ANNF5gW2AQAAA=="
+      },
+      "probe.test.mjs": {
+        "sha256": "f2bd5304f888cebd19c14363d389af6b52aab2db43fd5575f95fbe3c8baa2c60",
+        "bytes": 19472,
+        "gzipBase64": "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"
+      },
+      "probe.log": {
+        "sha256": "d7fd7e6d5476d81652205f1295bcc593f40a3d50bf5e638b6f4c3ea7cbaf6256",
+        "bytes": 2878,
+        "gzipBase64": "H4sIAAAAAAACA51Wy3LbRhC8+yv26FRJMh7Eq3ySJdpWWZGcWHGOriUwJDcCdpHdBSXmnE/IMT+S3/GXpAcAKcBJdMiFEghO70zPdM9+/fMPESaJ+PTDtfIkLs4/CUu/UOmdcF7WJHZknTLaCakr0VpyZHfkxGrv8fkyPkuTRbiIGvfdi68jFKnN1gulK2oJH9ojzJTknChrqRon9orqShhN4kFpTVa8DOPkLArjMFhMgeSGg8valPeilFobL+ixVZZETdLRa2Ro8HD8wWuxJl2SkNVO4i/SC8+KIA6iZIo6DbKmrlcS/6ylqjk/46gScu2RFEr10nrxMjjLF3m6yGcg1EjtVYlf7RTzg3p3slaVZFoMyquoVANxD8pvTedFrdZU7ktwSut1zzDyi9MsS4sZtOksilgzSWAduZ57T03rkSQHcR9GNiw9WO6aWXHH1I4YMQ3CIp01pO24YKM9Pfo+HDh9ZhWh0EZp5bgUFLG25jfiWtrOnwBeVqdG1/uR1w7N4j5Ku+eDgjQMwmx6ELf0/d3dRyE7lIzU9sDwndXDvJzSr50CS9zVn4295+Ma4R+MKLdU3jNHZa3wFswUMQYiCosJNZm4+v7j9fL75c3d+d3V7c2Xy+Xb5cWdQABmVFzf3n54c37xoedbaHMgcqDoKSNkvoiivIhmyDeffnr79uriCuBflp+vLpc3F8v/gRxmURwnU2R6BNugYV1Tz7qQNdO0sZLrtNRKZcWKSx966qRXbr1Hv6xFhGbdcMpBEaezlAd5ToAfQOk7gp5k/wiNsFDxM8+tK7dSbzDc3Lg4LYLwWSw5jNxV9Z8wwVmWF3GRPwvDsqLqcpTCj7R+Bq5Y5NHieThQVPUSu7NEz2VW5HH0PFmQbcVD/V667TNIeRoF/1bjUZK9MA6OOcHvY4tkMQ094JamaRR3uiHhuZLBWuE9g9oOufXiX7FRDcmkRZxkM8RGPeLVGl6r9IbPh8A4xmBOLdUEH/RQee2l63lJMZ/pFADzRyi6Ek5ttPRsFBVZNbCBQaINSxje4ZDSMFivRwo4aUvG4nua2h2AjB37kGVFNBu03oo0+1BfFyxIuVb6cjto64n7BmdbJeu+7nyR5ROYFBqqRdlBICiv02t2sC2CtNGnjFNZ+QAXg30qXdZdRdWJuLy9Wb56eilXjoOBHqZxHKffoJ+ymMRhg5X7E25aC+FqPxYuQTm0+WrwUtHKgwVkwaLIsxne4M01bWS572U63zfgdYuF41E6XqysKvuWNGozSnliMdFZHBZZEE3xlebx48GyPM281GC4vNaYJ4W8Lb/tLbe3/yOcI55XY3uH4R2XT3HHmjhXbhuW/64350k8CEXvuEdBEn7TI28abJWy8wZ3CNHyPcIhmomssXhwuJ+v2sNkHUIGWfEoRWdJnKTJLDtu6FOHFPH4O1OD6Gu1gxyGdXkynY9vft1IpQdWqNpQrxDshSKZ7bRB4aXp9JApBznRGHi10ahvqOCf94FeblmYz+4eRwODEFY193m0NXb+oY3CtYRdbMeDG/ISAbI3lCxaRIspB1Cf0ryO31zfXnxYXgoI/V6op7k/rqzDyucLwiJIZvP+OZpMOjAl31EqA0Y4rdK0+8PsHsceFmPgmgNgGMRJMbtxwDDWatOxDVxcX2Euqb8X9VyvaM0XsHGHrrAHMUEHTbnBFYfb5fF6gOQ7WME7mCarhz0TB0dJwZfGvBiK+f0vgSAMWBz3D65TDBL0D610xxc8z+PXJd8Ta6yo8dndq7Y9PnlTmfHfqhuk+AXX1zTKcC42aPHib5pJEX4+CwAA"
+      },
+      "migration-probe-report.json": {
+        "sha256": "7e56e5ce5ca4486a4faea173226ddedd46bc8f873f2a18c7c08e88bc732e5203",
+        "bytes": 1918,
+        "gzipBase64": "H4sIAAAAAAACA2WVXW/TMBSG7/crrFxvkr99PK7YFmkgxqRtDBBClb9CI6XJSNLBhPjvpN0m9RVX7ZvY5zm2Hsd/jhirUhemqW3aFOZ26KtTVtVf6vNPd/XF6qa+rd/enF+urq4v6g+rj9d3q+X33X1987U63s2dhu2Yyu067KZl501MgRdB1lgy2UYhorW5CCmltl5obcm756k/xvCwvgzTejeVE7kSeCNjbFTgPqpkUkpBBk7RZR3JGJ2taLIKkpyOSoTkDadkjbbOPJds+9Rtc8lLxW9LXp6cnZ1wa/dvX5ODRJD8YXIckoAkISlIGpKBBL0QzCMYSTDSQ01/OFLwwxUJySEJSAqShgQ1pYWEBIJ0uGdCAV0BXUlI0IsCugK6AroCugK6BroGuga6BrqGndDQi4ZeNPRiYKSBkcZVS/i+97L8fvbyYugLuqnBPwNWGbDDgAFA5kDmBgw3SADDLRhuwXALvVjoxUIvFg0HugO6AzoBnYBOQCfgERAICAQEDwQPBA8ED+vzePaA54HnwT8O/nHwj4N/HPzj4B/H0w1WcTx7eKL0/8Z9bud1HsOvHrQToJ3QsAgDizCwCBBUgKDCHODnMfRTM4ybkl+/8GQpNd6HvOxSEilZV7LVLnhynvPCtXSxxGSyIJ1lUrsbYJHQC5eUd+nlC78JfduUaX6tqnTJzkXpG3KNc17aQLkhClKLwpU0mtvlQlruDhOyU0aoFEOUulFyOVEvJ70K23k9jO38dDXk0u3q9suf0+ln186FTWFTTtbDNLOpjI9tKmy/vJB21+X0hvUDy+WhG542pZ+Pl5fbaS6Zva/vWXkM3XZ/rbJhZGMJHUvbeXgsY3X09+gfdipdm34HAAA="
+      },
+      "legacy-authority-probe.json": {
+        "sha256": "faf299f9979601d13b55f5319ae969562c4752488f221c40a5c731b321464326",
+        "bytes": 3011,
+        "gzipBase64": "H4sIAAAAAAACA8WW30+DMBDH3/dXNDxrsjLoYG8wmoU4mWFoXIwhhRZXs4G24IvxfxdqomZxMTHqvTQp37v7XH8c1+cRQla5Y1rLSpaslU1tzZCV0iDKV8lyk2fp5TqjUX4VLOMoyOJVkierLD+PF6mZWSdDBN10qhTrLRuc+dR3i5KNBfaISzyXkwLjghAusG3bDvGx4xDPn765KqG7Xat7x5t+itCzGXtB8iFYGJ6OCTGm5uvDlmkxCPSazi/fMzCaEozLWughmGUS/tBKVnPJWWt8g3BNk8wy2svJUewUBuvBYH0Q7HQMg8UwWBsGO4HBOjBYFwYL85fyYM7W+81Npko1ykReBvOzcBWkUR7RZXxF000eJ8ZthsQT23WmRSHdFfeibNFe6j1ry+1BLql47GTfWOaf1lWxnRbfLQrmCH2YOvFB6gSPQdoqtr9qNOc0XdD8giZRnCx+gD7Qjl6+VnXiu/wm/15Q7+aIy6oSSqNKNXtUdkqJukVhwxRHheyN6rvfqTBsg1QYnoC8qbDzp4+bfrwdvYxeAaJNM+HDCwAA"
+      },
+      "authority-e2e-report.json": {
+        "sha256": "eb31501c7ab129c07c76758b6c49be40c381395935f1bfbea65e0e106a479ca5",
+        "bytes": 557,
+        "gzipBase64": "H4sIAAAAAAACA1WRzW7bMBCE736Kha4xWv1YtpScGptwXbhJKyVOehJochURkUmVXCUwir57KRkunNOSXPLbmeGfCUAgWu6cqpXgpIwOriFgz2z5+MBWVcFK9qVYfq1KVuw2S1Z9v1+xbXV3/1D5utmx4lcwHRkWOaF8UtSYnkrTW4G3lmvReB7ZHi9vrVGjPQ+Lxg5qQouyQIfcjo+C8+zN3fo0QypHSgtaK1pb3jW3R0L3Ac+10d5GWzbmnf3ueXvZdf6wbHiczgd6Vqd5PsNMCJynYc7jCBfRPl/EsciS2X7uV0m9mGd5HvJEJlkSzRb7OEwxScIoDZOTJHdhtMDaPfrK9QvKy8G896FYRccfLRd48FYHAeXPrSL8LIyu1Qv40JySCHtDDZyo8G7sK1n0HkdMqw6K3PhU+PREAwPY04aPQwkO7ZsSeLXcbqCzhgwdO7wBbYad7AXBwZcW3RRa9YZA3L3Cf21T+MZ2wH0cHXk3CMaCxK41x0Hwp2Dyd/IP/De/Gi0CAAA="
+      },
+      "parity156-research.mjs": {
+        "sha256": "20bbdb89c2f8c5e3b81e1f2ba1501b030801d8e7cf51b58d50fd141bfaf8eeef",
+        "bytes": 8291,
+        "gzipBase64": "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"
+      },
+      "parity156-research-report.json": {
+        "sha256": "3b92df1fd6cb4de994df81196a9d386ae1f4612eb58e5276a821b6998840bb71",
+        "bytes": 148042,
+        "gzipBase64": "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"
+      },
+      "parity156-research.log": {
+        "sha256": "c83ccd93b979c3dcec1cd860646194d36f4298dac641b028989ea8df0dd8bbb6",
+        "bytes": 1935,
+        "gzipBase64": "H4sIAAAAAAACA31V32/bOAx+718h5LlrbUv+tXtKHd+WuzYp3HS74XAIZImOfXPswJK7FMP+96OduAsx4JCH5BPJjx8pivl+xdhM1dKYqqiUtFXbzN6zWfpXmjxv0sU2S5/SeZZ83D7Os+Xmy/ZhvUjvt6v1ZvuYrRfPyWb7Kc2Wvy+T+Wa5Xs2uBzrT9p2Cp1IOTAXXvhcCuCH3Qz+QMnK8OApzySUPw8DJXYhDleen0F0nD+VHacohlCvNHaGVjAsnF1LlIsxjV/giyKXvurHHPR4WUioolEDqgItCxX7kaEAjOCfKqlF1r0EvtUHSv/EID+/u3jlBMDpMKCQoIii+RKFDkEuQRxAnSBDkE0S0RCQuIp4R8YwJZ3zp6TqXFbmeQ5BLECdIEEQ4vYAgmiEi6LJnLifZOcnOPYKIFk6yc5Kdk+ycZOckuyDZBckuSHZBsgvSCUG0CKJFEC0+8fSJp089oxmCf8ZBVSWor8OcPoGdnoAf5jzinhJBLFWk8btQPIjxk3OIcNajAPsu/cIHLwx4EPhhnCt8VUOgc841MSdt31hkFeF4uq/MXlpVTsfOePoi60pLCzoDqasGzPBqPE5tiWz0+GswutdvO2TE30/lJffz5cP2tEiG1fCexefCF+ljulqkq+TL9u5+nfyZLgYWfraO+wQXTZp9SCd2PH7azLPN2zoaNAk0/BhzN7DDzfUCSdvYrq0v3jmKsu8qC3um4QCNhka9MtA7YFP102389DSqPfxq77Adr+xz232FjumqA2UvOZuW1W2zG2xQo5QONI3EAKgOFr/37QtopkqJ7obVqL1mUo2b9xyxhw4VqqnJ7NC1bfH/kW9ThL7/wng2zVCsQOLQRL4XeWGEzxtHRuNC5W7oFkIUEcf1g+vSy3GFuoUjHM15oR3IeRgHUp1mqK72lR06O/vkMVNpYJVhsmFwPNSVqizCth5mA3UakJ0q2b7FXjBUbqBGSWg6PQ7W9TWYa+yZ/dkthrRF34zKzQ1Lj5WxVbMbq8T+KrxaONrbbprKW8Bp7Mc/LHaey7Yz7BtyDT3pZV3jTR9B9Zj4hj3iRQ10fzwvPjykq81tlj7Ol9nteQCZzA00lhVdu2e2xNJMIw+mbO1v050X1dH2WBvb98aiHlSNnjgveE1Yc9cPvSglGrEgdpBdZV8ZiiswpsThGF7gGyvLoWgHpQ2W1tuB7GZ29ePqP2FtUuCPBwAA"
+      }
+    }
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "An exact cutover manifest enumerates every unfinished non-withdrawn legacy work item and excludes every DONE and withdrawn item.",
+      "criterionIds": [
+        "MANIFEST"
+      ],
+      "planElements": [
+        "S0",
+        "S1"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "manifestBlueprint"
+      ]
+    },
+    {
+      "objectiveCriterion": "Every manifest entry becomes exactly one V2 Work with preserved id, objective/plan semantics, dependencies/components and phase-relevant authority bindings.",
+      "criterionIds": [
+        "SEMANTICS"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        4
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "transformBlueprint",
+        "importAuthorityContract",
+        "foundationInterface"
+      ]
+    },
+    {
+      "objectiveCriterion": "Legacy and V2 derivations agree for dependency readiness/blockers and the legal immediate next action for every migrated work item before cutover.",
+      "criterionIds": [
+        "PARITY"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs",
+        "scripts/blackboard-implementation-bootstrap.mjs",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "return {taskId,ready:true,reason:\"RESEARCH_CAN_RUN_AHEAD\",blockedBy:[]};"
+        },
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "const blockedBy=task.dependencies.filter(d=>byId.get(d.taskId)?.status!==\"DONE\").map(d=>d.taskId);"
+        },
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "BLACKBOARD_BOOTSTRAP_INVALID: no active implementation task"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+          "match": "nextActions(snapshot) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}"
+        }
+      ],
+      "supportingPlanFields": [
+        "parityBlueprint"
+      ]
+    },
+    {
+      "objectiveCriterion": "The authority switch is atomic/fail-closed: either all manifest work is available from V2 and legacy current-work authority is retired, or no cutover is published.",
+      "criterionIds": [
+        "CUTOVER"
+      ],
+      "planElements": [
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        8
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "cutoverContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "After cutover, fresh sessions create/show/next/build context exclusively through V2; no current unfinished work requires work-graph registration, currentContextRef, process docs or jev.md to infer lifecycle.",
+      "criterionIds": [
+        "CUTOVER"
+      ],
+      "planElements": [
+        "S0",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        9
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "currentSessionBlueprint"
+      ]
+    },
+    {
+      "objectiveCriterion": "Legacy DONE work is absent from V2 migration state and remains represented only by delivered Living Docs/backup; withdrawn duplicates remain absent.",
+      "criterionIds": [
+        "TERMINAL_EXCLUSION"
+      ],
+      "planElements": [
+        "S2",
+        "S6"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        4
+      ],
+      "sourceRefs": [],
+      "sourceAnchors": [],
+      "supportingPlanFields": [
+        "transformContract"
+      ]
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "foundationInterface": {
+    "classification": "CURRENT_SYSTEM_NOT_CHANGED",
+    "workId": "BB-155",
+    "planHash": "2677c29d899e6bfb78528608d58d8657c6ccc2e09773f3ef382edb776da04c5c",
+    "proposedRef": "https://github.com/vhwg06/ExHarness/pull/543",
+    "publicMethods": [
+      "readSnapshot",
+      "createWork",
+      "apply",
+      "readRecord"
+    ],
+    "Work": "id/resourceVersion/generation/spec/status",
+    "controller": "single Node24 SQLite service",
+    "version": 1,
+    "basis": "MERGED_READY_PLAN",
+    "snapshot": "readSnapshot -> {work,records,systemFacts}; show returns .work only",
+    "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.readiness-jev-evaluation.json"
+  },
+  "currentSessionBlueprint": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "test": "After fixture commitMigration, run actual prepared CLI/public compatibility entrypoints in fresh processes from two cwd with contradictory local graphs; explicit BB_CONTROL_CONFIG pins same authority. bb create --objective ABS_JSON before Git registration -> server BB-n/gen1/PROPOSED; bb show each migrated id -> canonical service Work; bb next/context -> service snapshot derived pure actions/context. Compare every imported id to parity report. No currentContextRef/graph/process/jev.md lookup. Wrong/unreachable authority errors. Historical-only APIs require frozen SHA; old current-graph mutation APIs reject before I/O. Neither reads nor denied calls change graph/context/ref/status bytes.",
+    "routing": [
+      "Add one authority-aware public adapter in scripts/blackboard-v2/transport.mjs: readAuthority(config)->{authorityId,authorityRevision,currentWorkAuthority,authorityMode,controllerDigest,minProtocol,cutoverReceiptRef}; validate pins/protocol, then createControlClient. No directory-derived URL. Selector lookup is read-only; absent/unreachable/wrong authority never chooses legacy.",
+      "CLI create/show/next/context dispatch to delivered createWork/readSnapshot/nextActions/buildContext. Public bootstrapImplementationSession, context resolver/materialize/verify and deriveDeliveryContext become service-aware compatibility wrappers when selector V2: explicit work id; bootstrap checks current live ownership, context readers use supplied service snapshot. They return V2 authority/context and must not call readWorkGraph or read currentContextRef.",
+      "Public claim/evaluation/publication/delivery CLI and CI selectors route current Work actions/materialization to pinned V2 controller with exact roles/CAS/subject. Existing immutable evaluation validators remain unchanged. Public state projection reads V2 and may emit a rebuildable display, never publishes a second authority.",
+      "Raw legacy readWorkGraph(current), graph claim/set-status/context-ref mutations and old-protocol current publisher are retired: LEGACY_AUTHORITY_RETIRED before current graph/context I/O. Explicit readLegacySnapshot({sha,ref}) is a separate bounded read-only diagnostic/import path, requiring immutable SHA; no write route. Prepared public wrappers above succeed through V2 instead of being confused with denied raw APIs."
+    ],
+    "assertions": "Instrument actual adapter calls: each fresh public entrypoint requests the same pinned authority/Work id and never invokes legacy-current reader; canonical show bytes agree across cwd. Invoke each raw legacy-current API with valid old input and assert RETIRED, unchanged hashes and zero service mutations. Include task absent from local graph, deliberately false local READY/owner, wrong pins, missing config and network failure. Prospective scope alone never permits bootstrap without live V2 ownership."
+  },
+  "importAuthorityContract": {
+    "bridge": "Migration-role immutable proof binds originalExpectedInputRef/hash and original evaluation bytes to new Work generation1/spec/version semantics. Both sides independently validated during prepare; original allSAT answers/stateHash/cacheKey never rewritten. After flip resolver uses stored immutable typed records+current Work binding, no graph/legacy current reader. Actor cannot publish import proofs.",
+    "ownership": "Drained legacy claims are never imported as live leases. For READY/RESEARCHING, current V2 owner/lease is null and the first action is real START_RESEARCH/CLAIM_EXECUTION. For a validated fixed pending JUDGMENT, migration may allocate a new generation1 read-only controller Attempt + LeaseVersion using store clock/fence inside the uncommitted import transaction before native parity; it binds exact imported source/evidence and grants no product writes. Controller requests fresh independent judgment for this V2 subject; it never invents an answer. MERGE_PENDING retains exact original accepted candidate via bridge and exposes read-only verifyWorkMerge diagnostic; actual store PUBLISH_DELIVERY_RECEIPT requires real verified receipt and independent controller CAS, not a legacy actor source mutation. REPAIR without a valid supervision reflection remains parity blocker. Pending research judgment analogously uses a new read-only controller Research Attempt/lease with exact imported objective/plan, then genuine independent V2 readiness judgment.",
+    "guards": "Strict optional importAuthorityRef is LEGACY_IMPORT_RECEIPT_V1, never Decision. resolveImportedAuthority validates original immutable inputs/evals then current purposeBindings: readiness gen/spec/plan, candidate exact accepted versions. Current native Decision prevails even nonSAT. Typed facts come from V2 store only; actors cannot supply them. Missing/stale/unsupported proof aborts import; base CAS/fences remain.",
+    "schema": "LEGACY_IMPORT_RECEIPT_V1={id,workId,newGeneration:1,legacySnapshotSha,legacyTaskHash,old:{objectiveRef/hash,planRef/semanticHash,readinessEvalRef/hash?,candidateEvalRef/hash?,candidateInputRef/hash?},new:{semanticSpecHash,objectiveHash,planHash,edgeProjectionHash,componentProjectionHash,scopeHash,phase,importAttemptRef?,versionRefs},validatorControllerDigest,parityReportHash}. All fields derived/recomputed under migration role. normalizeLegacySemantics and normalizeV2Semantics return exactly {id,objectiveHash,planHash,sorted taskId/requires edges,sorted components,writeScope,forbiddenWrite}; ignore transport ref format and generation reset only. Preserve body bytes/semantic hashes, no boolean accepted from producer. Bridge resolver requires both projections equal, current Work gen1/spec equals new binding; readiness applicability ignores later Attempt/candidate/evidence changes, candidate applicability requires exact accepted versions; any current native Decision overrides bridge even nonSAT, and original trusted validation successful. old also includes originalExpectedInputRef/hash (full typed original evaluator input, not producer reconstructed flags). Store has corresponding immutable source/receipt blobs. Validate original before receipt insert; postflip lifecycle reads these V2 records only. new.purposeBindings={readiness:{workGeneration,semanticSpecHash,planHash},candidate?:{workGeneration,semanticSpecHash,versionRefs,candidateSha,candidateTree}}; derive from original validated subjects, never producer flags."
+  },
+  "manifestBlueprint": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "algorithm": "Read all tasks from locked SHA. Filter DONE into excludedDone; only exact valid BLOCKED WITHDRAWN marker into excludedWithdrawn; include all remaining tasks. Sort ids. Assert set(included) disjoint exclusions and union equals source task ids. Each included id resolves task/objective/plan/components/deps/phase-required authority to exact Git/blob/hash closure. Fail unknown withdrawal, duplicate id or unresolved ref; no sampling or hardcoded totals.",
+    "tests": "Fixture contains ordinary BLOCKED, withdrawn BLOCKED, DONE, planned research, READY Worker and MERGE_PENDING. Compare full expected included/excluded id arrays, then add an extra unfinished task and require one extra Work. Removal/duplicate/stale source reference must fail. Real Worker uses the same algorithm on its fresh frozen main manifest.",
+    "schema": "BLACKBOARD_V2_MIGRATION_MANIFEST_V1 {id,legacySnapshotSha,sourceTree,graphHash,registryHash,controllerDigest,schemaVersion,capabilities,freezeReceiptRef,preExistingV2SetHash,included:[{id,taskHash,objectiveRef/hash,planRef/semanticHash,requiredReceiptRefs/hashes,componentRefs/hashes,dependencyBindings,legacyState,nextActionClass}],excludedDone:[{id,livingRefs,receiptRef/hash}],excludedWithdrawn:[{id,titleMarker,reason}],allocationNextId,manifestHash}",
+    "withdrawalRule": "Exclude DONE first; withdrawal only BLOCKED title with exact trusted [WITHDRAWN ...] bracketed prefix. Unknown/malformed status/title pairing or withdrawn dependency fails. Ordinary BLOCKED is included; all id sets exhaust snapshot."
+  },
+  "transformBlueprint": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "mapping": "Archive-derived semantic templates preserve id/inline bodies/hashes/edges/components/direct scopes; DONE edges use validated Living proof only. Native gen1/RV1 rows, pending controller Attempt/fence/Lease/version records and exact bridge bindings materialize inside uncommitted import transaction with store clock, then native parity before COMMIT. Original evaluator bytes/subject hashes unchanged.",
+    "tests": "For EVERY manifest id, compare these fields against independently read source bodies/edges; assert unique Work per id. Tamper goal,plan,edge,component,scope or required receipt: transform/parity aborts. Preserve MERGE_PENDING candidate/tree/evidence; no DONE row is emitted for a Living dependency.",
+    "wire": "Use exact BB-155 Work wire: {id,resourceVersion:1,generation:1,spec:{objective:{ref,hash,body},plan:{ref,semanticHash,body}|null,dependencies:[{workId,requires,source:WORK|LIVING,binding?}],components,writeScope,forbiddenWrite,labels,provenance},status:{phase,observedGeneration:1,activeAttemptRef:null,activeLeaseRef:null,candidateVersionRef:null,evidenceVersionRef:null,readinessDecisionRef:null,latestCandidateDecisionRef:null,deliveryReceiptRef:null,conditions:[],dependencyFacts,leaseState:NONE,blockers:[],importAuthorityRef}}. Optional refs/phase facts replaced only by validated phase-specific native records/bridge; use optional BB-157 failureAnchorRef/repairReflectionRef only when exact applicable authority exists. readScope remains plan/component context data; no unsupported spec.scopes field. Strict schema validation must pass every prepared Work."
+  },
+  "parityBlueprint": {
+    "kind": "PLANNED_PRODUCT_ACCEPTANCE",
+    "algorithm": "Derive legacy and V2 projections independently per algorithmSteps; compare required inputs/semantic guards and enabled mutations separately from diagnostic continuations. All included ids exactly once, zero diffs before any current import visibility.",
+    "tests": "All-id/phase positives, last-id dependency/scope/receipt/action negatives; mismatch leaves all rows/selectors unpublished.",
+    "observedResearch": {
+      "classification": "EXECUTED_RESEARCH_PARITY_MODEL_NOT_PRODUCT_VERIFICATION",
+      "sourceSha": "f3d527ee1735756aa802987ba3a37760b1e97cbb",
+      "checkedIdSetHash": "57b3832c469ac8dc46fc369696b3e895886128a5f5e276366579bc60b57b3057",
+      "results": "47/47 model, zero diffs; 23 readiness+1 candidate validated; all5 tamper controls caught.",
+      "projectionHash": "9ceac368528278124612d0b43171f44f830762e02b6a61f040d33fd0eb3796ac",
+      "limits": "Model only; native/live checks are Worker work."
+    },
+    "projection": "For every id compare semantic hashes/edges/components and {current/postclaim scope,ownership,readiness/candidate proof hash,dependency blocker refs,diagnostic next,proposed native action required inputs,enabled mutation}. phaseRows fixes native ids/guards. Record protocol alias/refinement separately; preserve all semantic blockers. Source unsupported authority aborts whole prepare before visibility.",
+    "phaseRows": [
+      {
+        "source": "RESEARCH_SA/RESEARCH unclaimed",
+        "target": "RESEARCHING no live owner",
+        "native": "START_RESEARCH",
+        "guard": "valid goal/components; dependencies may be unfinished",
+        "scope": "current product []; research output is exact current plan"
+      },
+      {
+        "source": "WORKER/EXECUTION unclaimed",
+        "target": "READY via validated import proof",
+        "native": "CLAIM_EXECUTION",
+        "guard": "genuine current readiness AND every direct dependency delivered; preserve each blocker/ref",
+        "scope": "current []; after claim exact plan.writeScope"
+      },
+      {
+        "source": "WORKER/JUDGMENT",
+        "target": "JUDGING + real new readonly controller Attempt/lease",
+        "native": "PUBLISH_DECISION(kind=candidate)",
+        "guard": "independent JEV response for exact gen1 Attempt/candidate/evidence; readonly judge request is separate from response publication",
+        "scope": "[]; no response invented"
+      },
+      {
+        "source": "RESEARCH_SA/JUDGMENT",
+        "target": "PLAN_JUDGMENT + readonly Research Attempt/lease",
+        "native": "PUBLISH_DECISION(kind=readiness)",
+        "guard": "independent exact goal/plan response, no fabricated READY",
+        "scope": "[]"
+      },
+      {
+        "source": "WORKER/MERGE_PENDING",
+        "target": "MERGE_PENDING via accepted import proof",
+        "native": "PUBLISH_DELIVERY_RECEIPT",
+        "guard": "original independent accepted candidate AND verified actual main/candidate/tree/Living receipt",
+        "scope": "[]; VERIFY_MERGE diagnostic cannot publish"
+      },
+      {
+        "source": "BLOCKED nonwithdrawn",
+        "target": "BLOCKED",
+        "native": null,
+        "guard": "preserve explicit blocker/ref; no automatic claim",
+        "scope": "[]"
+      },
+      {
+        "source": "REPAIR or unknown/current ACTIVE claim",
+        "target": "PREPARE_ABORT unless exact compatible authority / zero-claim drain proven",
+        "native": null,
+        "guard": "resolve legitimately before fresh snapshot; never drop item, downgrade phase, fake reflection/lease/Decision or declare parity",
+        "scope": "no import/cutover visibility"
+      }
+    ],
+    "verification": "Worker invokes actual archived guards and delivered native derivation for every included id; exact checked set/zero field diffs before commit, with raw actions and refinements retained.",
+    "signature": "assertMigrationParity({manifest,archive,nativeSnapshots,capabilities})->Report: original legacy side prevalidated; target snapshots read on migration connection after actual native creation in uncommitted transaction. No template-only/fake-clock oracle. Public readers cannot see rows/selectors before successful COMMIT.",
+    "algorithmSteps": [
+      "Precompute legacy projection with archived shipped goal/plan/receipt/dependency and ownership/context guards; unclaimed scope is prospective.",
+      "Inside commitMigration create real gen1 rows/Attempt/fence/Lease/version/import proofs with store clock. Same-connection readSnapshot resolves exact recorded facts, then actual delivered nextActions/buildContext. Do not predict lease IDs/times or copy legacy ready flags.",
+      "Compare every phaseRows guard/action/scope/blocker/proof and exact checked set. For parity only, remove transient maintenance barrier on BOTH projections to compare post-release authority; real apply remains blocked. Unknown/diff/expired continuation lease => ROLLBACK; zero diffs => persist report/receipt and COMMIT all."
+    ]
+  },
+  "supervisionInterface": {
+    "basis": "MERGED_READY_PLAN",
+    "workId": "BB-157",
+    "planHash": "cf0fb21069b8d5eac6f4ea047b1ee4596622b4844f5bb52a94c6573e3d85cf76",
+    "runtimeRequired": "DELIVERED V2_SUPERVISION_V1, never inferred from plan READY",
+    "records": "LOOKBACK/failureAnchorRef/repairReflectionRef; reflection failedAttemptRef binds original failure, publishingAttemptRef binds current live owner; independently resolved immutable records, no synthetic reflection."
+  },
+  "migrationContract": {
+    "profile": "Pinned delivered BB-155 + BB-157 V2_SUPERVISION_V1 runtime. Capture controller/schema digest; reject missing capability before freeze. READY research plans are design inputs only.",
+    "exports": "migrate-legacy: buildMigrationManifest, transformLegacyWork, resolveImportedAuthority, prepareMigrationSnapshot, assertMigrationParity. Store.commitMigration({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash}) creates native rows/records then computes parity inside uncommitted SQL transaction; caller cannot supply equal=true. transport.verifyWorkMerge is read-only.",
+    "prepare": "Original validation/templates before SQL; native clock/records/parity in S4.",
+    "boundary": "BEGIN IMMEDIATE checks selectors/revision/profile/freeze/main/destination. Insert ALL native rows/records with real store-clock claims; stage V2/ALL_WORK selectors in SAME uncommitted transaction. Same-connection readSnapshot/actual nextActions/buildContext computes exhaustive parity. Require zero diffs and live continuation leases, insert report+cutover receipt/allocator, COMMIT. Any fault rolls back every row/selector. External WAL readers see only old state until COMMIT.",
+    "stages": [
+      "Build/test S0-S5, all mandatory checks and genuine independent candidate correctness approval; normal code merge/install under LEGACY. Fixtures are no operational delivery.",
+      "S6 operator drain/freeze/capture/templates; actual S3 inside S4 atomic commit; postcheck/release; real cutover/main/tree/Living proofs gate V2 delivery."
+    ],
+    "nativeContracts": {
+      "sourceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+      "semanticHash": "2677c29d899e6bfb78528608d58d8657c6ccc2e09773f3ef382edb776da04c5c",
+      "nextActions": "nextActions(snapshot) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}",
+      "buildContext": "buildContext(snapshot,systemFacts) -> {goal,inputs,readScope,writeScope,forbidden,requiredOutput,bindings}"
+    },
+    "sliceMode": "S0-S5 owned build/fixtures; S6 real operator flow after code approval/merge/install.",
+    "importIntegration": "Keep original typed inputs/eval/answers/cacheKey/hashes unchanged. resolveImportedAuthority(snapshot,purpose) derives immutable acceptance facts, never actor flags. Readiness binds gen1/spec/plan only: new owner/candidate/evidence does not revoke it. Candidate binds exact accepted candidate/evidence versions/SHA/tree. Any current native Decision has priority even nonSAT; never fallback to old SAT after failure. Extend native snapshot, lifecycle claim/receipt guards and ContextBuilder; apply revalidates purpose under CAS. Revision supersedes both; dependencies/main/tree/Living guards mandatory."
   }
 }
