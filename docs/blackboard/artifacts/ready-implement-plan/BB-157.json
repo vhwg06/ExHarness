@@ -296,7 +296,7 @@
     }
   ],
   "researchGaps": [],
-  "researchBaselineSha": "d795bca0e1865685d6b11b66de12224691446897",
+  "researchBaselineSha": "f3d527ee1735756aa802987ba3a37760b1e97cbb",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
@@ -310,7 +310,7 @@
     "publication": "publishRepairReflection(store,{workId,expectedResourceVersion,expectedGeneration,attemptToken,reflection}) delegates action PUBLISH_REFLECTION. The pinned server resolves records from the same transaction and invokes validateRepairReflection(reflection,snapshot), derives mode and checks live fence/lease. Accepted record plus phase/reference update is atomic. Malformed schema/forged authority rejects; stale but typed subject is SUPERSEDED. Superseded reflection never becomes current pointer/condition. Retries of same id/body are idempotent; changed bytes with same id reject.",
     "ownership": "The same current Attempt may append candidate/evidence version records after reflection, but failed Decision versions remain immutable. Lease takeover allocates a new Attempt/fence; prior reflection is then stale. It cannot grant the new owner repair unless a new exact failed subject is applicable or operator research resolves the situation. Spec revision increments Work.generation and clears current applicability, never patches reflection to a new generation.",
     "readOnly": "LOOKBACK source/evidence/spec writeScope=[]; context lists read and derive reflection only. The sole actor control publication is the typed reflection action; store owns its lifecycle transition. No candidate publish, shell repair or JEV_CANDIDATE dispatch during LOOKBACK.",
-    "baseAPI": "BB-155 readSnapshot/createWork/apply/readRecord; Work id/resourceVersion/generation/spec/status. Immutable Attempt identity, LeaseVersion and candidate/evidence version records; status activeAttemptRef/activeLeaseRef/candidateVersionRef/evidenceVersionRef/latestCandidateDecisionRef. nextActions/reduceLifecycle/buildContext, materializeWorkJudgment and existing independent evaluate/validateEvaluation. BB-157 adds optional status.repairReflectionRef (immutable exact ref) and LOOKBACK to the strict V2 schema; it changes no SQLite CAS/clock/fence primitive.",
+    "baseAPI": "BB-155 readSnapshot/createWork/apply/readRecord; Work id/resourceVersion/generation/spec/status. Immutable Attempt identity, LeaseVersion and candidate/evidence version records; status activeAttemptRef/activeLeaseRef/candidateVersionRef/evidenceVersionRef/latestCandidateDecisionRef. nextActions/reduceLifecycle/buildContext, materializeWorkJudgment and existing independent evaluate/validateEvaluation. BB-157 adds optional status.repairReflectionRef (immutable exact ref) and LOOKBACK to the strict V2 schema; it changes no SQLite CAS/clock/fence primitive. readSnapshot returns {work,records,systemFacts}; binding checks read snapshot.work, not a flattened envelope.",
     "dispatchTable": [
       "Independent PUBLISH_DECISION(kind=candidate) first passes existing typed evaluation validation plus exact current Work-generation/spec/Attempt/candidate/evidence and live lease/fence/CAS. Missing answer, forged identity or wrong phase rejects; stale trusted subject is SUPERSEDED without Work changes.",
       "Any required PLAN_INPUT_CONTRADICTION -> RESEARCHING and revoke readiness/current subject ownership. Otherwise every required SATISFIED -> MERGE_PENDING. Otherwise IMPLEMENTATION_DEFECT and/or INSUFFICIENT_EVIDENCE -> LOOKBACK, preserve exact failed subject refs and current owner. No direct REPAIRING or source write.",
@@ -484,7 +484,8 @@
       "sourceRefs": [],
       "sourceAnchors": [],
       "supportingPlanFields": [
-        "judgeBoundary"
+        "judgeBoundary",
+        "foundationInterface"
       ]
     }
   ],
@@ -533,7 +534,7 @@
   "foundationInterface": {
     "classification": "CURRENT_SYSTEM_NOT_CHANGED",
     "workId": "BB-155",
-    "planHash": "8fef6dff0e56e2f5b9be10e3d6c7cfc9627260f0159087b44f2416533c99bebe",
+    "planHash": "2677c29d899e6bfb78528608d58d8657c6ccc2e09773f3ef382edb776da04c5c",
     "proposedRef": "https://github.com/vhwg06/ExHarness/pull/543",
     "publicMethods": [
       "readSnapshot",
@@ -543,7 +544,10 @@
     ],
     "Work": "id/resourceVersion/generation/spec/status",
     "controller": "single Node24 SQLite service",
-    "version": 1
+    "version": 1,
+    "basis": "MERGED_READY_PLAN",
+    "snapshot": "readSnapshot -> {work,records,systemFacts}; show returns .work only",
+    "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.readiness-jev-evaluation.json"
   },
   "judgeBoundary": {
     "authority": "PUBLISH_REFLECTION has actor capability and cannot publish a Decision. Strict reflection schema rejects answers/verdict/accepted/delivery/ready fields. Only judge capability plus existing validateEvaluation against freshly materialized exact subject can publish candidate correctness.",
