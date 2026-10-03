@@ -180,7 +180,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "N1 actual cli/client two checked-out branches share configured service; canonical Work bytes/RV equal; fake local graph and wrong authorityId cannot select a different authority."
+      "requiredObservations": "N1 actual cli/client two checked-out branches share configured service; equal canonical Work/RV; fake local graph and wrong authorityId cannot select a different authority."
     },
     {
       "invariant": "Work.generation increments only on semantic spec changes; resourceVersion covers every status/spec mutation and stale decisions never apply.",
@@ -255,23 +255,23 @@
         "CONTEXT",
         "ATTEMPT"
       ],
-      "requiredTestTitles": [
-        "BB-155 N1 configured client returns same Work across source checkouts",
-        "BB-155 N2 store-clock CAS permits one live owner",
-        "BB-155 N3 stale Decision cannot mutate current Work",
-        "BB-155 N4 pure nextActions is byte deterministic",
-        "BB-155 N5 stale fence cannot publish Attempt effects",
-        "BB-155 N6 read-only context needs no mutation fence"
-      ],
       "subjects": [
         "SqliteBlackboardControlStore",
         "createControlClient",
         "nextActions",
         "buildContext"
       ],
-      "mustPass": "Every named negative title and positive table/schema/auth/receipt control passes with zero skipped/TODO; actual product symbols must execute; subprocess capture reports winner/error/exit and store effects, not mock narrative",
+      "mustPass": "All requiredNegativeIds and positive schema/auth/receipt/lifecycle controls pass with zero skipped/TODO; actual candidate exports/CLI execute. Assert subprocess/SQLite state effects and exact logs, never narrative.",
       "timeoutMs": 120000,
-      "requiredOutputs": "Exact candidate-bound exit0 log/hash, N1-N6 binding extraction, schema/guard/phase matrix and no-legacy-effect snapshots"
+      "requiredOutputs": "Exact candidate-bound exit0 log/hash, N1-N6 binding extraction, schema/guard/phase matrix and no-legacy-effect snapshots",
+      "requiredNegativeIds": [
+        "NEG_155_1",
+        "NEG_155_2",
+        "NEG_155_3",
+        "NEG_155_4",
+        "NEG_155_5",
+        "NEG_155_6"
+      ]
     },
     {
       "id": "repository",
@@ -430,18 +430,16 @@
     "baseline": "d795bca0e1865685d6b11b66de12224691446897",
     "run": "33 combined research controls passed/0failed/0skip. BB-155 authority/lease/context/bootstrap controls create only fresh scratch Work; separately labelled BB-156 tests import a historical snapshot into separate owned scratch databases and do not touch live authority.",
     "controls": [
-      "Eight separate OS-process claims on the same WAL database: exactly one winner and seven CAS_CONFLICT",
-      "Two client processes with different cwd read byte-equivalent Work from one HTTP authority",
-      "Actor future clock cannot expire lease; store-clock equality permits takeover; stale fence rejected",
-      "After restart store-clock regression fails closed",
-      "Semantic revision invalidates stale Decision without Work effects",
-      "Pure next/context on immutable inputs produces identical outputs and zero read-only write scope"
+      "CAS eight processes:1winner/7conflicts",
+      "Shared authority exact CLI bytes across2Git worktrees; bootstrap before branch",
+      "Store-clock expiry/restart rollback/fence controls",
+      "Generation/actor-injection/pure next/context controls"
     ],
     "limits": "Scratch model deliberately exercises selected risks. It omits production auth, full strict schemas, trust-adapter provider dispatch and real receipt verification. Required future product tests invoke actual planned exports; no real control authority, current task migration or delivery was performed.",
     "sourceSha256": "dd1509bb34a7ed7ca3db2f62c669452811f52be89ea094aad178b1a5cca24022",
     "testSha256": "f2bd5304f888cebd19c14363d389af6b52aab2db43fd5575f95fbe3c8baa2c60",
     "logSha256": "d7fd7e6d5476d81652205f1295bcc593f40a3d50bf5e638b6f4c3ea7cbaf6256",
-    "replayRef": "researchReproduction contains full hash-bound source, tests and actual output; compressed bytes are data only, never an authority receipt."
+    "replayRef": "researchReproduction embeds exact hash-bound sources/tests/output as data; no authority receipt."
   },
   "objectiveCoverage": [
     {
