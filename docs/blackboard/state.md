@@ -71,7 +71,6 @@ NONE
 - BB-146 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-080 async steering, wakeup and recovery on current main
 - BB-147 [RESEARCH_SA/RESEARCH] — Recovery: re-establish trusted evidence for BB-081 held-out harness profile acceptance and fault-ablation on current main
 - BB-152 [RESEARCH_SA/RESEARCH] — Make fresh-agent Outer Blackboard delivery onboarding phase-complete
-- BB-153 [RESEARCH_SA/RESEARCH] — Make JEV findings drive mandatory lookback before repair
 - BB-155 [RESEARCH_SA/RESEARCH] — Build Blackboard V2 control plane
 - BB-156 [RESEARCH_SA/RESEARCH] — Migrate unfinished work to Blackboard V2 and cut over
 
@@ -169,7 +168,7 @@ BB-149 [BLOCKED] <- BB-084
 BB-150 [BLOCKED] <- BB-097
 BB-151 [BLOCKED] <- BB-105, BB-102
 BB-152 [RESEARCH_SCHEDULABLE] <- BB-056
-BB-153 [RESEARCH_SCHEDULABLE] <- BB-056, BB-059
+BB-153 [BLOCKED] <- BB-056, BB-059
 BB-154 [BLOCKED] <- BB-056
 BB-155 [RESEARCH_SCHEDULABLE] <- BB-056
 BB-156 [RESEARCH_SCHEDULABLE] <- BB-155
