@@ -1,0 +1,17 @@
+diff --git a/docs/living/system/state.md b/docs/living/system/state.md
+index cd9dbc8a..7e69e1d8 100644
+--- a/docs/living/system/state.md
++++ b/docs/living/system/state.md
+@@ -169,6 +169,12 @@ Execution facts remain split from judgment and publication: RuntimeExecutionAtte
+ 
+ This slice proves one BUSINESS_ANALYSIS-owned domain execution path. It does not select Blackboard work, dispatch another organizational domain, change ApplicationOrchestrator lifecycle semantics, widen Oracle/Core authority, or implement Integration C-J.
+ 
++## Real coding-agent execution strategy
++
++The controller now supports a real coding-agent execution strategy kind, `coding-agent-sdk`, backed by the opencode CLI (`packages/agentic-system/src/opencode-runtime-adapter.js`, driver `scripts/delivery/runtime/opencode_driver.mjs`). Strategy `opencode-local-v1` (opencode 1.18.34) binds one `runtimeInvocationKey` to exactly one durable opencode session: exclusive manifest creation, one `session-created` marker, bounded driver lifecycle (SIGTERM, 5s grace, SIGKILL), AbortSignal cancellation out-of-band, and recover that never resends the task prompt. Driver envelopes are validated (no `accepted`/`published`/verdict/mutation fields, changed paths inside allowed globs) and all evidence is content-addressed with secrets redacted before hashing. The adapter never accepts delivery or mutates Blackboard/Oracle authority; driver output is only a runtime result candidate.
++
++Limitations: only the opencode local-CLI backend is integrated (no other coding-agent SDK); workspace diffing is file-content based and excludes `node_modules`/`.git`/`.opencode`; model identity is pinned by immutable model id and the free `opencode/*` provider needs no credentials; usage/cost accounting is best-effort (null when the backend does not report it).
++
+ ## Integration B post-merge authority repair
+ 
+ The bounded domain-execution slice now fences authoritative publication across two current mutation gates held through canonical publication commit: the exact organization claim lifecycle and the current domain write-authority subject. The lifecycle fence is shared by every organization-claim lifecycle mutation that can invalidate the released capability, so recovery/invalidation/checkpoint/submit/block/supersede cannot commit while canonical publication is inside the guarded action. Unrelated Blackboard transactions retain the normal optimistic single-successor CAS protocol. A completion decision alone is not enough to publish.
