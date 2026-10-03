@@ -324,3 +324,10 @@ This resolves the evidence gap without weakening the CI trust boundary or adding
 R2 on `7d86f03fcff9aa02112b5c1760433b7de48fd084` did not reach the provider. Trusted materialization failed with `objective sourceAnchors exceeds bounded limit`: objective-4 had five exact anchors after the R1 grounding pass, while JEV allows at most four per objective. This is a plan-shape failure, not a semantic finding.
 
 The repair preserves the R1 conclusion and removes only the redundant reusable-workflow anchor. The four retained anchors prove (1) local CLI delegation into `blackboard-jev.mjs`, (2) CI adapter delegation into the same module, (3) the CI data-only/no-candidate-module boundary, and (4) controller pinning to the PR base. The reusable workflow remains listed in sourceRefs/supporting evidence but does not consume a fifth exact anchor slot.
+
+
+## JEV R3 lookback — research payload budget
+
+R3 on `a6d224a122d9a4fbdf76fa18ff4bb5282eec5ebc` again stopped before a provider call. The exact error was `payload exceeds budget; refine evidence without dropping required coverage`. RESEARCH_SA uses a 98,304-byte default cap; R1 was already 97,771 bytes. The R1 grounding additions therefore exceeded the bounded request even though the plan file itself remained small.
+
+The fix separates **durable research detail** from **JEV readiness projection**: full local/CI reasoning stays in this research record and `evidence/BB-153/research.json`, while the plan keeps only atomic decisions, compact acceptance evidence and four exact anchors. No criterion, negative case, invariant, source boundary or implementation decision is dropped.
