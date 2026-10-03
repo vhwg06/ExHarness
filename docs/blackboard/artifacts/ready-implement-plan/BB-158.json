@@ -6,7 +6,7 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-158.json",
-    "hash": "fad315fac72d557ab7ef2bf42b54b12e0b2cde23d3592868c733a6f5cdc17aa2"
+    "hash": "028326e5f57de7b21f12f6c1369677867f1a36d29555a29fb233744fcc7dd717"
   },
   "scope": [
     "ci.agent-native-feedback-contract",
@@ -315,7 +315,8 @@
     "Measure current feedback latency and identify which checks support early terminal failure, dependency cancellation and safe selective re-verification.",
     "Define evidence invalidation/dependency semantics so selective re-verification cannot reuse stale proof.",
     "Define how canonical V2 nextActions consume verification outcomes without adding a second hidden CI state machine.",
-    "Resolve the exact GitHub Actions projection contract and required-check behavior after BB-155 and BB-157 APIs are delivered."
+    "Resolve the exact GitHub Actions projection contract and required-check behavior after BB-155 and BB-157 APIs are delivered.",
+    "Account for GitHub Actions event snapshot semantics: PR metadata changes after a run is triggered are not retroactively visible to that run, so transport metadata must never be canonical delivery state."
   ],
   "researchBaselineSha": "87244662e8d2b992e4a15232e9acb2bfd41fb1c1",
   "livingDocs": {
