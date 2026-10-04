@@ -1,0 +1,29 @@
+{
+  "workId": "BB-158",
+  "baseline": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+  "missingRef": "scripts/blackboard-v2/**",
+  "reason": "Wildcard points to future dependency code, not an existing regular file. BB-155 and BB-157 READY plans specify the exact future Worker API.",
+  "preservedFields": [
+    "kind",
+    "version",
+    "artifactType",
+    "artifactId",
+    "outcome",
+    "currentProblem",
+    "scope",
+    "constraints",
+    "successCriteria"
+  ],
+  "replacementRefs": [
+    ".github/workflows/test.yml",
+    ".github/workflows/push-test.yml",
+    ".github/workflows/blackboard-jev.yml",
+    "scripts/blackboard-jev-ci.mjs",
+    "scripts/blackboard-jev.mjs",
+    "scripts/blackboard-delivery.mjs",
+    "packages/agentic-system/src/local-command-verifier.js",
+    "docs/living/system/state.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+  ]
+}
