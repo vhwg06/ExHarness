@@ -26,14 +26,14 @@
     "Implementing a vendor-specific CI platform abstraction beyond the minimal GitHub Actions adapter required to prove the canonical contract."
   ],
   "constraints": [
-    "RESEARCH_SA first: opening BB-158 grants no CI implementation authority. Research must close with a fresh exact READY plan and independent JEV satisfaction before Worker mutation.",
-    "Blackboard V2 Work generation, Attempt, candidate/evidence identities and Decisions are canonical control authority; PR numbers, workflow names, check conclusions and branch-protection state are adapter metadata only.",
-    "CI is an execution and feedback plane, not an independent source of Work lifecycle truth or correctness authority.",
-    "Deterministic verifiers and semantic supervisors may publish into one typed observation/evidence model, but their authority classes remain distinct; JEV stays independent semantic supervision.",
-    "Every observation must bind the exact Work generation, Attempt and candidate/evidence subject it evaluated. Stale or superseded results fail closed and cannot advance delivery.",
-    "Retry is driven by failure class, material candidate/evidence delta and explicit retry policy, never by blind rerun-until-green behavior.",
-    "Progressive/early failure may cancel irrelevant downstream execution, but emitted evidence and accounting must remain truthful about completed, partial, cancelled and unavailable work.",
-    "GitHub Actions is one execution adapter. The contract must remain usable by local or future CI runtimes without re-defining delivery semantics."
+    "Research revises plan only; independent current allSAT JEV required before READY/Worker.",
+    "V2 Work/gen/Attempt/candidate/evidence/Decision is canonical; GitHub metadata is transport.",
+    "CI publishes execution facts, never lifecycle/correctness authority.",
+    "Deterministic observation and independent semantic Decision authority remain distinct.",
+    "Every observation binds exact current generation/Attempt/candidate/subject; stale fails closed.",
+    "Retry requires failure-specific bound or material delta, never blind rerun.",
+    "Early cancellation retains completed/partial/cancelled/unavailable accounting.",
+    "Local and future runtimes use same canonical contract; GitHub is one adapter."
   ],
   "invariants": [
     "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
@@ -45,14 +45,16 @@
     "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state."
   ],
   "architectureDecisions": [
-    "DRAFT D1 — Model CI as Verification Execution + Observation Publication, not a PR gate. Canonical lifecycle authority remains Blackboard V2.",
-    "DRAFT D2 — Introduce one candidate-bound verification observation family carrying workId, workGeneration, attemptId, candidate identity, verifier identity/class, subject, outcome, evidence refs/hashes, freshness, failure class and execution/accounting state.",
-    "DRAFT D3 — Keep deterministic verifiers and JEV as different authority classes behind the same evidence-routing boundary: deterministic observations prove executable checks; JEV publishes independent semantic Decisions.",
-    "DRAFT D4 — Add a verification planner that can order cheap/high-information checks first, publish terminally-known failures early and cancel dependent work while preserving truthful partial state.",
-    "DRAFT D5 — Route findings back through the delivery agent/Blackboard nextActions loop. Repair/retry eligibility derives from failure class plus material delta or an explicit bounded infra/flaky retry policy.",
-    "DRAFT D6 — Define selective re-verification from declared verification dependencies/affected subjects. Full repository verification remains a policy decision, not the only feedback primitive.",
-    "DRAFT D7 — Treat GitHub Actions as an adapter that executes planned verification and projects canonical state to checks/statuses. PR head/check-name/skip semantics cannot be canonical selectors.",
-    "DRAFT D8 — Delivery/merge projection consumes canonical current readiness/evidence and exact candidate binding; transport gates may block actuation but cannot manufacture readiness."
+    "D1 — BB-155 Work/Attempt/version/Decision + BB-157 own control; immutable evidence blobs, existing apply only. No new phase/database.",
+    "D2 — Request/run/observations are EvidenceVersion blob refs, PUBLISH_EVIDENCE CAS/live fence only; suggestion is not Decision/readiness.",
+    "D3 — Strict bindingContract exact subjects and authority classes; input evidence versus output evidence avoids self-hash recursion.",
+    "D4 — Pinned registry DAG, sequential stable order, publish outcome before next launch; dependency cancellation truthful, full verification mandatory.",
+    "D5 — failureContract: product delta, verifier correction, infra <=2 retries, flake <=1 confirmation then hold; JEV transport never multiplied.",
+    "D6 — loopContract selective input closure, unknown->all, new trusted unchanged-input attestation only; no cross-Attempt reuse/fresh npm verify.",
+    "D7 — Pure action intersects actual nextActions; failed JEV BB-157 LOOKBACK/reflection/material guard; allSAT->merge, exact receipt->delivery.",
+    "D8 — adapterContract exact canonical request/controller/authority, secret-free runner/trusted importer; GitHub metadata cannot select or advance Work.",
+    "D9 — Delivered BB-155/157 required for Worker; legacy stays unchanged, isolated V2 explicit route. BB-156 owns cutover/no dual-write.",
+    "D10 — Seven bounded slices, actual adversarial exports and paired benchmark; Living describes delivered behavior only, research ends READY."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -62,13 +64,23 @@
       "scripts/blackboard-jev-ci.mjs",
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-delivery.mjs",
-      "scripts/blackboard-v2/**",
-      "packages/agentic-system/src/local-command-verifier.js"
+      "scripts/blackboard-verification-bundle.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/core-harness/src/verification-assessment.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
+      "package.json"
     ],
     "expectedNew": [
-      "docs/blackboard/process/agent-native-ci-feedback-research.md",
-      "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
-      "test/agent-native-ci-feedback.test.mjs"
+      "scripts/agent-native-ci/contract.mjs",
+      "scripts/agent-native-ci/planner.mjs",
+      "scripts/agent-native-ci/runner.mjs",
+      "scripts/agent-native-ci/feedback.mjs",
+      "scripts/agent-native-ci/github-adapter.mjs",
+      "scripts/agent-native-ci/cli.mjs",
+      "test/agent-native-ci-feedback.test.mjs",
+      "scripts/agent-native-ci/benchmark.mjs"
     ],
     "expectedTests": [
       "test/agent-native-ci-feedback.test.mjs"
@@ -88,10 +100,11 @@
     "write": [
       "docs/blackboard/process/agent-native-ci-feedback-research.md",
       "docs/blackboard/evidence/BB-158/**",
-      ".github/workflows/**",
+      ".github/workflows/test.yml",
+      ".github/workflows/push-test.yml",
+      ".github/workflows/blackboard-jev.yml",
       "scripts/blackboard-jev-ci.mjs",
-      "scripts/blackboard-jev.mjs",
-      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-v2/trust-adapter.mjs",
       "scripts/agent-native-ci/**",
       "test/agent-native-ci-feedback.test.mjs",
       "docs/living/system/state.md",
@@ -104,84 +117,120 @@
       "scripts/blackboard-v2/supervision.mjs",
       "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-156.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "packages/**",
+      "jev-policy.json"
     ]
   },
   "implementationSlices": [
-    "R1 — Current-state audit: map workflow/script/local-verifier/delivery/JEV surfaces, current selectors, outputs, waits, retries and authority leaks; measure baseline latency and failure feedback timing.",
-    "R2 — Contract research: compare agent-native CI/execution patterns and ratify exact VerificationObservation/Evidence/failure taxonomy plus freshness and authority semantics.",
-    "R3 — Control-loop design: specify progressive execution, early terminal failure, cancellation, diagnosis/repair, bounded retry, selective re-verification, JEV handoff and convergence.",
-    "R4 — Adapter boundary: specify GitHub Actions input/output mapping and status projection without GitHub transport facts becoming canonical domain state.",
-    "R5 — Evaluation/decomposition: define adversarial fixtures and benchmark scenarios, then publish a fresh implementation plan only after research gaps are closed."
+    "S1 — contract.mjs exports validateRequest/acceptVerificationObservation/validateRun/hashBlob: resolved Work/Attempt/candidate/registry + bindingContract schemas -> immutable validated records or rejection. Strict refs/hash/closed keys/partitions/PASS/full logs/authority. Test real exports with each stale/forged/partial binding and positive native publication. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY.",
+    "S2 — planner.mjs exports planVerification/planReverification: exact request/prior run/resolved input delta -> pure stable topological schedule and invalidation/reuse reasons. Unknown deps ->all, reverse closure, no cross-Attempt reuse, fresh mandatory npm verify. Actual export tests cover source/env/registry delta, cyclic/duplicate gates and forged old PASS. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP.",
+    "S3 — runner.mjs exports executeVerificationRequest/publishVerificationRun: pinned request, clean checkout, blobStore, client/current token -> argv process + full hashed logs + incremental/final EvidenceVersion via PUBLISH_EVIDENCE CAS. Implement failureContract bounds, reap/cancel/accounting, no secrets/new SQL. Actual runner/store tests for every outcome, stale callbacks/lease/CAS/restart/conflict; first failure before dependent launch. Own FAILURE_TAXONOMY/CANONICAL_FEEDBACK_CONTRACT/AGENT_CONTROL_LOOP.",
+    "S4 — feedback.mjs + V2 trust-adapter exports deriveVerificationAction/buildJevInput: current snapshot/resolved run -> advisory intersection with actual nextActions and existing typed judgment input. Follow loopContract, preserve forbidden lifecycle/store/supervision and evaluator grammar. Real native fixtures test failed Decision LOOKBACK/reflection/material/signature guard, zero unchanged dispatch, allSAT merge and receipt-only delivery. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY.",
+    "S5 — github-adapter.mjs/cli.mjs + jev-ci + three workflows + package.json: projectGitHubStatus/validateGitHubCallback; CLI run --config ABS --request REF --request-hash HASH, project --config ABS WORK_ID. Exact adapterContract, secret-free execution/trusted importer, lost upload unavailable, legacy unchanged. Actual exports tests mutate check/skip/head/base/body/SHA/authority/status API/two cwd: no Work effects. Own ADAPTER_BOUNDARY.",
+    "S6 — test/agent-native-ci-feedback.test.mjs and benchmark.mjs: all N1-N7 actual symbols/titles, every invariant/criterion positive+negative; runBenchmark emits 20 paired samples/scenario per benchmarkContract, truthful safety/time/retry/provider/log data. All verificationPlan commands mandatory, no fixture/provider simulation acceptance. Own BENCHMARK/all negatives.",
+    "S7 — research brief/audit + Living state: verify complete pinned inventory/source/timing from auditEvidence/researchEvidence, document actual implemented operations after S1-S6. Native API dependency mismatch reopens research. Actual independent allSAT/exact candidate/main/tree/Living receipt gates Worker delivery; BB-156 retains migration. Own CURRENT_STATE_AUDIT/BENCHMARK. All new modules live scripts/agent-native-ci; no undefined handoff."
   ],
   "acceptanceCriteria": [
     {
       "id": "CURRENT_STATE_AUDIT",
-      "statement": "The current CI/JEV/delivery execution graph is fully mapped, including selectors, authority sources, feedback timing, retry behavior and transport/domain coupling.",
+      "statement": "Every current workflow, verification command, JEV/local/delivery path and authority/feedback edge is mapped against the exact baseline.",
       "verificationIds": [
-        "research-audit"
+        "focused"
       ],
       "evidenceRequired": [
-        "Machine-readable surface audit plus narrative causal map with no unknown execution/authority edge for current main."
+        "All 3 workflows, expanded verify, local/JEV/delivery edges and exact baseline hashes in audit; absent V2 dependency code explicit."
       ]
     },
     {
       "id": "CANONICAL_FEEDBACK_CONTRACT",
-      "statement": "One exact-subject-bound verification observation/evidence contract represents deterministic execution results without depending on GitHub PR/check semantics.",
+      "statement": "Every accepted observation has immutable exact Work generation/spec/Attempt/candidate/request/verifier/input/evidence bindings.",
       "verificationIds": [
-        "contract-fixtures"
+        "focused"
       ],
       "evidenceRequired": [
-        "Positive and stale/mismatched fixture matrix covering Work generation, Attempt, candidate, verifier, evidence and execution state bindings."
+        "Actual exports reject each stale ref/hash, forged authority, collision and missing/full-log digest; exact native positive publication."
+      ]
+    },
+    {
+      "id": "FAILURE_TAXONOMY",
+      "statement": "Product, verifier, infra, flake, insufficient, cancelled and unavailable outcomes remain distinct and bounded.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Assertion/nonzero/spawn/timeout/eviction/conflict fixtures map distinct classes; <=3 infra executions, <=1 flake confirmation, no erased conflict."
       ]
     },
     {
       "id": "AGENT_CONTROL_LOOP",
-      "statement": "The delivery agent can consume published observations to choose diagnose, repair, bounded retry, selective re-verify, JEV or delivery without polling human-oriented check semantics.",
+      "statement": "Progressive exact observations yield only lifecycle-legal diagnosis, repair, retry, re-verification, judgment or delivery suggestions.",
       "verificationIds": [
-        "control-loop-fixtures"
+        "focused",
+        "base"
       ],
       "evidenceRequired": [
-        "Scenario fixtures for early product failure, infra retry, suspected flake, stale result, insufficient evidence, material repair and semantic JEV failure."
+        "Real runner first failure before next launch; native scope/phase/fence/CAS reject stale callbacks; persisted bounded retry history."
+      ]
+    },
+    {
+      "id": "SELECTIVE_VERIFICATION",
+      "statement": "Selective feedback reruns invalidate the complete changed-input closure and cannot waive fresh mandatory verification.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Real input closure/unknown->all/current attestation tests; no cross-Attempt reuse or mandatory npm verify waiver."
       ]
     },
     {
       "id": "ADAPTER_BOUNDARY",
-      "statement": "GitHub Actions executes and projects canonical verification/delivery state but cannot create readiness or alter lifecycle semantics through skip/check/head behavior.",
+      "statement": "GitHub executes/project canonical V2 requests while check/event/head/skip/status changes cannot create domain readiness.",
       "verificationIds": [
-        "adapter-negatives"
+        "focused",
+        "base"
       ],
       "evidenceRequired": [
-        "Negative cases showing skipped/missing/stale/wrong-SHA GitHub checks cannot manufacture canonical readiness and exact canonical readiness can be projected consistently."
+        "Actual adapter rejects skip/missing/wrongSHA/stale event/callback; local/GitHub canonical equality, legacy unchanged."
       ]
     },
     {
-      "id": "RESEARCH_CLOSURE",
-      "statement": "Research closes with measured baseline, primary-source evidence, explicit trade-offs, implementation decomposition and a fresh JEV-reviewable READY plan.",
+      "id": "JEV_BOUNDARY",
+      "statement": "Independent current JEV Decisions and existing BB-157 supervision alone control semantic acceptance and repair authorization.",
       "verificationIds": [
-        "research-audit"
+        "focused",
+        "base"
       ],
       "evidenceRequired": [
-        "Research brief, benchmark/eval protocol, resolved researchGaps and Living Docs impact statement."
+        "Real materializer grammar + supervision LOOKBACK/reflection/material/signature guards; zero unguarded dispatch, receipt trust unchanged."
+      ]
+    },
+    {
+      "id": "BENCHMARK",
+      "statement": "Paired benchmark reports truthful safety, feedback latency, execution/retry counts and research limits.",
+      "verificationIds": [
+        "focused",
+        "benchmark"
+      ],
+      "evidenceRequired": [
+        "20 paired samples/scenario, all raw outcomes, zero false ready/stale effects, protocol latency/count gates with honest limits."
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "research-audit",
-      "command": "node --test test/blackboard-work-graph.test.mjs"
-    },
-    {
-      "id": "contract-fixtures",
+      "id": "focused",
       "command": "node --test test/agent-native-ci-feedback.test.mjs"
     },
     {
-      "id": "control-loop-fixtures",
-      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+      "id": "base",
+      "command": "node --test test/blackboard-v2-control.test.mjs test/blackboard-v2-supervision.test.mjs"
     },
     {
-      "id": "adapter-negatives",
-      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+      "id": "benchmark",
+      "command": "node scripts/agent-native-ci/benchmark.mjs --seed 158 --pairs 20 --out artifacts/agent-native-ci/benchmark.json"
     },
     {
       "id": "repository",
@@ -193,46 +242,76 @@
       "invariant": "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
       "criterionIds": [
         "ADAPTER_BOUNDARY"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "projectGitHubStatus: green/skip/head/body changes leave native Decision/actions unchanged."
     },
     {
       "invariant": "Verification observations are immutable and exact-subject-bound; stale generation/Attempt/candidate/evidence results are non-authoritative.",
       "criterionIds": [
         "CANONICAL_FEEDBACK_CONTRACT"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "acceptVerificationObservation/publishVerificationRun: each stale ref/hash rejects with zero Work effect; exact positive immutable."
     },
     {
       "invariant": "Deterministic verification failure, verifier failure, infrastructure failure, suspected flake, cancellation and insufficient evidence remain distinct states.",
       "criterionIds": [
-        "CANONICAL_FEEDBACK_CONTRACT",
-        "AGENT_CONTROL_LOOP"
-      ]
+        "FAILURE_TAXONOMY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "executeVerificationRequest: all classes distinct; unknown timeout/nonzero not product/flake."
     },
     {
       "invariant": "A retry that can change delivery conclusions requires an allowed retry class or material candidate/evidence progress; control/prose-only churn cannot unlock product re-evaluation.",
       "criterionIds": [
-        "AGENT_CONTROL_LOOP"
-      ]
+        "AGENT_CONTROL_LOOP",
+        "JEV_BOUNDARY"
+      ],
+      "verificationIds": [
+        "focused",
+        "base"
+      ],
+      "requiredObservations": "deriveVerificationAction/native reservation: metadata delta zero dispatch; infra<=3, no churn budget reset."
     },
     {
       "invariant": "Early termination/cancellation preserves truthful partial execution and evidence accounting.",
       "criterionIds": [
-        "AGENT_CONTROL_LOOP"
-      ]
+        "AGENT_CONTROL_LOOP",
+        "FAILURE_TAXONOMY"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "executeVerificationRequest: cancelled/lost-upload partitions complete, full logs, dependent not spawned."
     },
     {
       "invariant": "Local verification and CI execution consume the same canonical verification contract even when their transport/runtime differs.",
       "criterionIds": [
         "CANONICAL_FEEDBACK_CONTRACT",
         "ADAPTER_BOUNDARY"
-      ]
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "requiredObservations": "Local/GitHub identical request -> equal canonical results; transport forgery rejects."
     },
     {
       "invariant": "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state.",
       "criterionIds": [
-        "AGENT_CONTROL_LOOP",
-        "ADAPTER_BOUNDARY"
-      ]
+        "JEV_BOUNDARY"
+      ],
+      "verificationIds": [
+        "focused",
+        "base"
+      ],
+      "requiredObservations": "buildJevInput/native LOOKBACK: grammar exact, empty source scope, reflection/material guard, actor pass no allSAT."
     }
   ],
   "negativeVerificationCases": [
@@ -249,7 +328,7 @@
       "id": "NEG_158_1",
       "negativeCaseIndex": 0,
       "criterionId": "ADAPTER_BOUNDARY",
-      "verificationId": "adapter-negatives",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N1 GitHub status cannot manufacture canonical readiness",
       "subjectSymbol": "projectGitHubStatus"
@@ -258,7 +337,7 @@
       "id": "NEG_158_2",
       "negativeCaseIndex": 1,
       "criterionId": "CANONICAL_FEEDBACK_CONTRACT",
-      "verificationId": "contract-fixtures",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N2 stale verification subject binding fails closed",
       "subjectSymbol": "acceptVerificationObservation"
@@ -267,7 +346,7 @@
       "id": "NEG_158_3",
       "negativeCaseIndex": 2,
       "criterionId": "AGENT_CONTROL_LOOP",
-      "verificationId": "control-loop-fixtures",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N3 failure classes drive distinct bounded actions",
       "subjectSymbol": "deriveVerificationAction"
@@ -276,7 +355,7 @@
       "id": "NEG_158_4",
       "negativeCaseIndex": 3,
       "criterionId": "AGENT_CONTROL_LOOP",
-      "verificationId": "control-loop-fixtures",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N4 control churn cannot unlock re-evaluation",
       "subjectSymbol": "deriveVerificationAction"
@@ -285,7 +364,7 @@
       "id": "NEG_158_5",
       "negativeCaseIndex": 4,
       "criterionId": "AGENT_CONTROL_LOOP",
-      "verificationId": "control-loop-fixtures",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N5 early cancellation remains truthful partial execution",
       "subjectSymbol": "publishVerificationRun"
@@ -293,8 +372,8 @@
     {
       "id": "NEG_158_6",
       "negativeCaseIndex": 5,
-      "criterionId": "AGENT_CONTROL_LOOP",
-      "verificationId": "control-loop-fixtures",
+      "criterionId": "SELECTIVE_VERIFICATION",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N6 invalidated evidence cannot satisfy selective re-verification",
       "subjectSymbol": "planReverification"
@@ -302,23 +381,15 @@
     {
       "id": "NEG_158_7",
       "negativeCaseIndex": 6,
-      "criterionId": "ADAPTER_BOUNDARY",
-      "verificationId": "adapter-negatives",
+      "criterionId": "JEV_BOUNDARY",
+      "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N7 JEV consumes canonical evidence not GitHub status",
       "subjectSymbol": "buildJevInput"
     }
   ],
-  "researchGaps": [
-    "Audit current main end to end: every workflow trigger/condition, verification script, JEV dispatch, local verifier, delivery finalizer, status projection and retry path.",
-    "Ratify the minimal typed VerificationObservation/ExecutionRun contract and failure taxonomy from primary-source agent-native CI/runtime patterns; public repository examples must meet the existing >=1000-star research rule.",
-    "Measure current feedback latency and identify which checks support early terminal failure, dependency cancellation and safe selective re-verification.",
-    "Define evidence invalidation/dependency semantics so selective re-verification cannot reuse stale proof.",
-    "Define how canonical V2 nextActions consume verification outcomes without adding a second hidden CI state machine.",
-    "Resolve the exact GitHub Actions projection contract and required-check behavior after BB-155 and BB-157 APIs are delivered.",
-    "Account for GitHub Actions event snapshot semantics: PR metadata changes after a run is triggered are not retroactively visible to that run, so transport metadata must never be canonical delivery state."
-  ],
-  "researchBaselineSha": "87244662e8d2b992e4a15232e9acb2bfd41fb1c1",
+  "researchGaps": [],
+  "researchBaselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
@@ -326,5 +397,406 @@
     "questionId": "LIVING_DOCS",
     "statement": "Living system state must describe CI as an agent-facing verification execution/feedback plane with exact candidate-bound evidence, explicit authority boundaries, progressive failure semantics and GitHub Actions as an adapter only after the contract is actually delivered."
   },
-  "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization."
+  "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization.",
+  "ciContract": {
+    "profile": "V2_FEEDBACK_V1",
+    "canonical": "Strict bindingContract via native EvidenceVersion/CAS/fence. loopContract supplies execution/material/selective/native judgment; failureContract bounds retries; adapterContract supplies exact local/GitHub boundary. No new phase/store/Decision. Fresh mandatory npm verify, independent JEV and actual main/tree/Living receipt required; BB-157 supervision and BB-156 cutover ownership preserved."
+  },
+  "auditEvidence": {
+    "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+    "inventory": [
+      ".github/workflows/test.yml",
+      ".github/workflows/push-test.yml",
+      ".github/workflows/blackboard-jev.yml",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-verification-bundle.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/experiment/runner.js",
+      "packages/core-harness/src/verification.js",
+      "packages/core-harness/src/verification-assessment.js",
+      "scripts/blackboard-implementation-bootstrap.mjs"
+    ],
+    "edges": [
+      "PR event -> living+kernel -> trusted select -> semantic/publication/supersession -> merge-gate",
+      "explicit local CLI -> same materializer/collector/evaluator/publisher -> exact main verification",
+      "agent-tools run/deliver/MCP/experiment -> localCommandVerifier -> Core artifact/assessment -> existing supervised promotion"
+    ],
+    "authorityFindings": [
+      {
+        "ref": ".github/workflows/test.yml",
+        "finding": "GitHub needs/conclusions control scheduling and merge actuation; separate from real semantic authority"
+      },
+      {
+        "ref": ".github/workflows/push-test.yml",
+        "finding": "duplicate terminal kernel transport; no Work subject"
+      },
+      {
+        "ref": ".github/workflows/blackboard-jev.yml",
+        "finding": "artifact missing/collector failure suppresses downstream; raw GitHub job status lacks domain failure class"
+      },
+      {
+        "ref": "scripts/blackboard-jev-ci.mjs",
+        "finding": "domain validators sound; GH event/base used for trust selection, no V2 transport yet"
+      },
+      {
+        "ref": "scripts/blackboard-jev.mjs",
+        "finding": "correctness authority is independent provider; do not replace with command pass; no failed/partial deterministic bundle accepted"
+      },
+      {
+        "ref": "scripts/blackboard-delivery.mjs",
+        "finding": "first-failure log exists but no complete typed failed/partial run, later checks unaccounted; file graph transaction legacy only"
+      },
+      {
+        "ref": "scripts/blackboard-verification-bundle.mjs",
+        "finding": "keep integrity and path checks; new observation bundle must cover partial outcomes without converting to accepted implementation evidence"
+      },
+      {
+        "ref": "scripts/blackboard-jev-cli.mjs",
+        "finding": "local actor actuation does not consume GitHub status; legacy stays unchanged until BB-156"
+      },
+      {
+        "ref": "packages/agentic-system/src/local-command-verifier.js",
+        "finding": "PASS/FAIL/INCONCLUSIVE; SPAWN_ERROR and product failure both FAIL; timeout INCONCLUSIVE; summary is not structured V2 feedback"
+      },
+      {
+        "ref": "packages/agent-tools/src/supervisor.js",
+        "finding": "independent existing agent-tools task contract, not outer Work; preserve API; no new CI correctness authority"
+      },
+      {
+        "ref": "packages/agent-tools/src/deliver-slice.js",
+        "finding": "separate local delivery entrypoint; bridge observation wrapper, do not redefine acceptance"
+      },
+      {
+        "ref": "packages/agent-tools/src/mcp-server.js",
+        "finding": "runtime entrypoint to same local verifier; stays compatible"
+      },
+      {
+        "ref": "packages/agent-tools/src/experiment/runner.js",
+        "finding": "benchmark provenance is not outer delivery authority"
+      },
+      {
+        "ref": "packages/core-harness/src/verification.js",
+        "finding": "do not rewrite Core public schema; adapter preserves distinctions in its own V2 envelope"
+      },
+      {
+        "ref": "packages/core-harness/src/verification-assessment.js",
+        "finding": "PASS/FAIL conflicts block; same principle retained by new typed aggregate"
+      },
+      {
+        "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+        "finding": "no source checkout authority in V2; consumes BB-155 public configured client only after delivered dependency"
+      }
+    ],
+    "workflows": 3,
+    "absence": "scripts/blackboard-v2 is not delivered on baseline. BB-155/157 merged READY plans are future dependency contracts, not runnable APIs.",
+    "npmVerifyExpansion": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
+    "timing": {
+      "runId": 37156393847,
+      "headSha": "e957e5b3560696b032ac7d138760f9892a31f064",
+      "seconds": {
+        "kernel": 111.727,
+        "collect": 0.281,
+        "evaluate": 0.734
+      },
+      "providerMs": 438.627,
+      "samples": 1,
+      "boundary": "group to next upload/post cleanup"
+    },
+    "localTiming": {
+      "command": "npm run verify",
+      "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+      "node": "v24.19.0",
+      "elapsedSeconds": 66.58,
+      "exitCode": 1,
+      "sampleCount": 1,
+      "scope": "single local baseline, no speedup inference",
+      "failure": "RB2 process-tree timeout test reports remaining PID at bb096-real-backend-qa.test.js:383; 791/792 agentic tests pass, command stops before later suites. This is an observed test/environment failure, not a green baseline or a proved flake."
+    }
+  },
+  "researchEvidence": {
+    "sources": [
+      {
+        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/tasks.md",
+        "sha256": "9facab59733aef6d3e9648b45f62543119e483b9b85708e4d9d3960f79f41f19",
+        "bytes": 63526
+      },
+      {
+        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelines.md",
+        "sha256": "cddea630939f9303fc32e27e770fb14c40a47ca1432c12997809b9b9ce9f7ec7",
+        "bytes": 89790
+      },
+      {
+        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelineruns.md",
+        "sha256": "f899e8136dff838837ecbc9c11655abe51b7defee8e9843d3d4f8e7a8bbd02a8",
+        "bytes": 61915
+      },
+      {
+        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/taskruns.md",
+        "sha256": "ff0025c47401923aff3f11dbdc4914da083a0b133d0e36387dabd64030eb9843",
+        "bytes": 48104
+      }
+    ],
+    "eligibility": {
+      "repository": "tektoncd/pipeline",
+      "checkedAt": "2026-10-04",
+      "method": "GitHub repository search query repo:tektoncd/pipeline stars:>=1000 returned exact repository id 146641150, archived=false",
+      "minimumStars": 1000,
+      "meaning": "Eligibility only; no fabricated exact star count or correctness inference"
+    },
+    "findings": [
+      "Tekton pipelines.md documents runAfter/results dependencies, retries (not cancellations), when-skips and finally outcome handling; taskruns/pipelineruns document retry attempts and cancellation status. Adopt explicit dependency/run accounting and separate result bytes from execution status.",
+      "Reject Tekton retry-on-failure as domain policy: ExHarness needs product/verifier/infra/flake distinctions and exact material progress. Do not add Kubernetes, Tekton dependency or another scheduler.",
+      "Current pinned GitHub workflows are primary executable evidence for event snapshots, needs/status, always upload and concurrency. Adapter inputs are exact V2 requests; never rediscover Work from PR metadata."
+    ],
+    "tradeoffs": [
+      "Sequential registry DAG initially: reduce first-failure feedback latency by publishing after each check, no unmeasured concurrency optimization. Mandatory full repository verification remains mandatory before JEV/delivery.",
+      "Selective re-verification is fast feedback only in initial profile. No optimization can waive a required gate. Unknown dependencies force all checks.",
+      "Keep public Core/local verifier API unchanged: wrap current records and separately retain raw classified results. No meaning inferred from success prose or arbitrary summary text."
+    ],
+    "limits": "Single historical CI run and one failing local sample establish timings and concrete gaps only; no general performance/cost claim. Research models do not prove future controller implementation."
+  },
+  "bindingContract": {
+    "requestSchema": "VERIFICATION_REQUEST_V1={id,hash,subject:{workId,workGeneration,specHash,planHash,attemptRef:{id,hash},candidateVersionRef:{id,hash},candidateSha,candidateTree,inputEvidenceRef:{ref,hash}|null},registryHash,policyHash,requiredGateIds,checks:[{id,verifier:{id,implementationHash,authorityClass:DETERMINISTIC},command,args,inputDigests:[{ref,hash}],dependencies,timeoutMs,maxOutputBytes}],retryPolicy:{infraRetries:2,flakeConfirmations:1},environment:{profile,hash},controllerDigest}. Strict known keys, immutable canonical hash excluding hash field; all refs resolve before scheduling, unique check ids, acyclic deps, required gate ids exactly approved plan. No PR/check fields in semantic subject.",
+    "observationSchema": "VERIFICATION_OBSERVATION_V1={id,hash,requestRef:{ref,hash},subject:exact request.subject,checkId,verifier:exact registered verifier,executionId,executionState:COMPLETED|CANCELLED|UNAVAILABLE|PARTIAL,outcome:PASS|FAIL|INCONCLUSIVE,failureClass:NONE|PRODUCT|VERIFIER|INFRA|FLAKE_SUSPECTED|INSUFFICIENT_EVIDENCE|CANCELLED,exitCode:int|null,signal:string|null,evidence:[{ref,hash,bytes,complete:boolean}],inputDigests,attemptOrdinal,reuseOf:{ref,hash}|null,transport:optional metadata}. hash excludes hash; subject/input/verifier binds request, ordinal is canonical run accounting. PASS only completed exit0, verified full required evidence and no subject/tree mutation. Captured truncated preview distinct from full log blob/hash/bytes; missing full required evidence -> INCONCLUSIVE.",
+    "runSchema": "EXECUTION_RUN_V1={id,hash,requestRef,subject,registryHash,policyHash,executions:[{executionId,checkId,ordinal,startedAt,finishedAt,observationRef}],plannedIds,completedIds,cancelledIds,unavailableIds,partialIds,pendingIds,retryHistory:[{checkId,ordinal,causeRef,class,policyHash}],previousRunRef:null|{ref,hash}}. Sets are disjoint and cover every planned id for latest outcome; executions retain all attempts/conflicts; pending allowed in incremental snapshots, terminal snapshot has pendingIds=[]. No ready/correct/delivered booleans. Timestamps runtime diagnostics only, not material evidence digest.",
+    "publication": "publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) validates hashes/registry/subject/log closure and appends ordinary EvidenceVersion with these blob refs through apply(PUBLISH_EVIDENCE,expectedGeneration/RV). Store assigns native version identity and repeats current Attempt/lease/fence checks. Parallel callbacks conflict: reread current version, validate same subject then append immutable union using new CAS; conflicting same id/body rejects. Late generation/owner/candidate or read-only phase publication rejects with zero Work effect; preserve raw callback as non-authoritative diagnostic in external hash archive. No extra SQL or mutable run authority.",
+    "authorityClasses": "Deterministic observation proves its declared executable check only. SEMANTIC_DECISION_REF_V1={decisionRef,workId,workGeneration,attemptRef,candidateVersionRef,evidenceVersionRef} resolves actual independently validated native Decision, never producer supplied answers. Unified routing envelope refers to either observation or Decision; authorityClass remains distinct. JEV failures route exclusively to BB-157 LOOKBACK; no feedback observation grants reflection acceptance or allSAT."
+  },
+  "loopContract": {
+    "progressiveExecution": "planVerification(request) validates registry and topologically orders stable id tie-break: schema/binding -> focused negatives -> targeted tests -> full npm verify -> independent JEV. Initial runner concurrency=1. After each completed check publish incremental EvidenceVersion before next launch. Product blocking failure stops dependent checks, emits CANCELLED records for them, leaves independent diagnostic checks explicit; process-group termination reaps child before final accounting. Failure to publish/current fence lost stops launching, diagnostics retained only. Whole workflow cancellation may prevent finally callback; canonical controller later marks missing execution UNAVAILABLE by pinned run timeout, not by GitHub cancelled conclusion.",
+    "feedbackLoop": "deriveVerificationAction(snapshot,resolvedRun) checks exact freshness first; stale -> DISCARD_DIAGNOSTIC, invalid/missing -> ACQUIRE_EVIDENCE, product -> DIAGNOSE_AND_REPAIR with material candidate delta, verifier -> FIX_VERIFIER, infra allowed -> RETRY_CHECK with budget ordinal, flake -> CONFIRM_ONCE/HOLD, partial -> RECONCILE. suggestions must intersect existing nextActions legality, current scope/owner/dependencies and phase; no direct phase setter. Complete fresh mandatory passes -> REQUEST_CANDIDATE_JUDGMENT suggestion only if native guards allow; failure Decision -> READ_FAILURE/DERIVE_REFLECTION/PUBLISH_REFLECTION through BB-157; allSAT -> verify merge then native receipt. Generation/Attempt takeover clears applicability but does not reset retry history/material baseline; new semantic request binds changed inputs. Same request replay is idempotent.",
+    "selective": "planReverification({request,priorRun,sourceDelta,resolvedInputs}) computes changed registered input digests plus reverse dependency closure. Product changed authorized syntax-normalized implementation uses BB-157 trusted material profile; evidence delta uses typed observed projection; prose/control/id/timing churn cannot unlock product/JEV. Unknown/undeclared reads or env/profile change invalidate all. Proven unchanged input checks may get a new trusted REUSE_ATTESTATION observation bound new subject and reuseOf original, validate full original proof and input closure; no raw old PASS accepted. Cross-Attempt reuse disabled in initial profile. Required npm verify is never reused; fresh complete execution required before JEV/delivery.",
+    "nativeIntegration": "EvidenceVersion binds current Attempt/gen/spec/candidate; its body contains request/run/observation refs plus existing implementation evidence projection. Snapshot records resolve hashed blob closure before pure feedback. BB-155 accepts typed evidence payload refs; Worker compatibility test proves this with actual PUBLISH_EVIDENCE without modifying forbidden core. Extend only trust-adapter.mjs evidence loading/projection: require complete passing mandatory checks and exact subject before existing materializeWorkJudgment; preserve question grammar, negative test bindings, main/equal-tree/Living policy. No provider call on missing evidence; only actual REQUEST_CANDIDATE_JUDGMENT from existing nextActions/CAS and BB-157 guard can dispatch."
+  },
+  "failureContract": {
+    "failureTaxonomy": [
+      "COMPLETED/exit0 with exact full evidence -> PASS/NONE; no lifecycle advancement.",
+      "Trusted assertion adapter identifies executable product-test assertion failure -> FAIL/PRODUCT; raw nonzero unclassified command -> INCONCLUSIVE/VERIFIER, never assumed product defect. No rerun same product subject.",
+      "Spawn error, invalid verifier protocol/schema or test harness error -> INCONCLUSIVE/VERIFIER; fix declared verifier/config/environment with changed hash, new request. Existing local SPAWN_ERROR is mapped structurally from reason evidence token, not user prose.",
+      "Known runner eviction/network/artifact-upload outage -> INCONCLUSIVE/INFRA, full diagnostics and up to two additional executions on exact same subject; timeout default INSUFFICIENT_EVIDENCE unless trusted adapter establishes infra cause, never assume flake.",
+      "Same pinned subject/check/environment conflicting pass/fail or known nondeterminism -> INCONCLUSIVE/FLAKE_SUSPECTED; retain both, at most one diagnostic confirmation then HOLD even if confirmation passes; trusted policy/verifier correction and new complete evidence required.",
+      "Missing logs, unverified digest, incomplete executed coverage or timeout without cause -> INCONCLUSIVE/INSUFFICIENT_EVIDENCE; acquire missing proof or repair check, no product correctness inference.",
+      "Early dependent cancellation -> CANCELLED/INCONCLUSIVE; lost callback/runner -> UNAVAILABLE or PARTIAL/INCONCLUSIVE; reconcile exact run accounting, never green-on-skip."
+    ]
+  },
+  "adapterContract": {
+    "githubAdapter": "dispatch input={requestRef,requestHash,workId,workGeneration,attemptRef,candidateVersionRef,candidateSha,controllerDigest,authorityId,configuredClientRef}. Resolve pinned controller outside candidate checkout, verify request from canonical authority; no branch/current/PR fallback. Runner receives commands from approved registry, no judge/operator/provider secret. Narrow publication capability via trusted controller mediator; no fence/token in artifact/log. Callback raw files are hash validated by trusted importer; missing/wrong SHA/subject reject. status projection reads current canonical facts: no Work -> neutral, pending/partial -> pending, deterministic failure/blocker -> failure, current complete passes+independent allSAT -> success for semantic projection; merge actuation still requires actual candidate/main/tree/Living proof. Status API outage records adapter error only. Branch protection may block actuation but never creates Work facts. Old trigger event after head/base/body edit remains transport-old and cannot select subject.",
+    "legacyCompatibility": "Default existing legacy CI unchanged while LEGACY selector active. Explicit canonical V2 request executes V2 adapter; no create from PR or graph discovery. On BB-156 cutover wrappers select pinned V2 authority; BB-158 does not migrate task ids/change selector, dual-write or reinterpret legacy DONE. Isolated V2 path can be delivered before migration.",
+    "dependencies": "Worker pins actual delivered BB-155/157 controller identity, schema and exports. Mismatch returns research. READY plans on baseline are sufficient research design evidence, not runtime delivery."
+  },
+  "benchmarkContract": {
+    "command": "node scripts/agent-native-ci/benchmark.mjs --seed 158 --pairs 20 --out artifacts/agent-native-ci/benchmark.json",
+    "scenarios": [
+      "early assertion failure",
+      "late product failure",
+      "runner eviction",
+      "timeout unknown cause",
+      "flaky conflict",
+      "cancelled callback",
+      "stale candidate",
+      "metadata-only delta",
+      "material repair",
+      "invalid selective cache",
+      "independent JEV failure",
+      "successful exact delivery"
+    ],
+    "protocol": "Paired same fixture/candidate/hardware/runtime/commands per seed, baseline current sequential terminal collector versus progressive adapter. Publish every sample and failures, p50/p95 first diagnostic latency, total elapsed, spawned checks/cancelled counts, retry/provider counts and log/evidence bytes; unknown cost stays null. No live paid provider for timing; deterministic provider fixture counted as synthetic, genuine correctness gate separate. Timing uses monotonic clock outside semantic digests.",
+    "gates": "All adversarial safety cases pass with zero false ready/delivery, zero stale effects and no repeated paid identical subject; progressive early-error first feedback precedes dependent launch. No performance regression over 10% median successful complete-run latency relative paired baseline; if sample noise blocks conclusion retain baseline scheduling and reopen optimization, not correctness gate. Full npm verify still mandatory.",
+    "baselineRef": "auditEvidence.timing/localTiming: historical CI and failing local single samples, not optimization evidence",
+    "limitation": "No claimed productivity/speedup from these single baseline observations."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Audit every current CI/delivery verification path and identify where GitHub transport state, JEV state, deterministic verification and Blackboard lifecycle currently overlap or contradict.",
+      "criterionIds": [
+        "CURRENT_STATE_AUDIT"
+      ],
+      "planElements": [
+        "S7"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        0,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "export function collectEvidence"
+        }
+      ],
+      "supportingPlanFields": [
+        "auditEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define one typed, immutable verification observation/evidence contract bound to exact Work generation, Attempt, candidate and verifier subject, including failure classification and freshness.",
+      "criterionIds": [
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "FAILURE_TAXONOMY"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/local-command-verifier.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "export const LocalVerificationReason"
+        }
+      ],
+      "supportingPlanFields": [
+        "bindingContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define an agent control loop for progressive verification, early failure, diagnosis/repair, material-delta retry, selective re-verification, JEV supervision and convergence to delivery readiness.",
+      "criterionIds": [
+        "AGENT_CONTROL_LOOP",
+        "SELECTIVE_VERIFICATION",
+        "JEV_BOUNDARY"
+      ],
+      "planElements": [
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "export async function callJev"
+        }
+      ],
+      "supportingPlanFields": [
+        "loopContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define fail-closed semantics for stale observations, verifier/infra failure, flaky suspicion, partial/cancelled runs and insufficient evidence without converting those states into product correctness claims.",
+      "criterionIds": [
+        "FAILURE_TAXONOMY",
+        "CANONICAL_FEEDBACK_CONTRACT"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "export function collectEvidence"
+        }
+      ],
+      "supportingPlanFields": [
+        "failureContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define the GitHub Actions adapter boundary so required checks/statuses are projections of canonical delivery state rather than inputs that create canonical state.",
+      "criterionIds": [
+        "ADAPTER_BOUNDARY"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        0,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        ".github/workflows/test.yml"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "merge-gate:"
+        }
+      ],
+      "supportingPlanFields": [
+        "adapterContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a bounded implementation decomposition, negative cases, benchmark/evaluation plan and Living Docs impact ready for independent JEV review.",
+      "criterionIds": [
+        "BENCHMARK",
+        "CURRENT_STATE_AUDIT"
+      ],
+      "planElements": [
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "focused",
+        "benchmark"
+      ],
+      "decisionIndexes": [
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "package.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "\"verify\":"
+        }
+      ],
+      "supportingPlanFields": [
+        "benchmarkContract",
+        "researchEvidence"
+      ]
+    }
+  ]
 }
