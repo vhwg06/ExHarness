@@ -15,11 +15,11 @@
     "outer-blackboard.migration-parity"
   ],
   "outOfScope": [
-    "Re-migrating DONE work or reconstructing its historical Blackboard lifecycle.",
-    "Long-lived dual-write or compatibility reads after cutover.",
-    "Redesigning Blackboard V2 semantics delivered by BB-155.",
-    "Changing Jev provider/model/verdict semantics.",
-    "Bulk archival/pruning of historical raw evidence not required for current unfinished work."
+    "DONE lifecycle reconstruction.",
+    "Dual-write or postcutover legacy current readers.",
+    "Redesigning delivered BB-155 semantics.",
+    "Changing JEV provider/model/verdict.",
+    "Unneeded historical evidence pruning."
   ],
   "constraints": [
     "BB-155 must be DELIVERED before migration execution begins.",
@@ -122,13 +122,13 @@
     ]
   },
   "implementationSlices": [
-    "S0 — scripts/blackboard-v2/{cli,transport,trust-adapter}.mjs; declared public scripts/workflows/AGENTS/package/docs: implement readAuthority/createControlClient routing and schema upgrade. Inputs pinned config/controller/protocol + LEGACY/ISOLATED selector; output installed activation-conditional adapter with no imports. Preserve legitimate legacy publication while LEGACY, deny raw-current APIs before I/O after V2. Test two cwd, pin/network failures and zero graph/service mutation. Own CUTOVER. Build only; no live switch.",
+    "S0 — scripts/blackboard-v2/{cli,server,transport,trust-adapter,control-store}.mjs; declared public scripts/workflows/AGENTS/package/docs: implement readAuthority/createControlClient routing and schema upgrade. Inputs pinned config/controller/protocol + LEGACY/ISOLATED selector; output installed activation-conditional adapter with no imports. Preserve legitimate legacy publication while LEGACY, deny raw-current APIs before I/O after V2. Test two cwd, pin/network failures and zero graph/service mutation. Own CUTOVER. Server GET /v2/authority; operator-only POST /v2/migrations/commit calls S4 with exact payload; no live switch.",
     "S1 — scripts/blackboard-v2/main-freeze.mjs + migrate-legacy.mjs: buildMigrationManifest({snapshotSha,archive,freezeReceipt,capabilities}) -> exact manifest/source closure. Inputs complete frozen graph/registry/Living/artifacts and delivered pins. Drain admission, zero active owners/callbacks, enforce native main lock before capture. Unique/disjoint/exhaustive included/DONE/withdrawn sets; ordinary BLOCKED included, unknown/dangling withdrawal aborts. Test N1 and lock/main races with owned Git/API fixtures. Own MANIFEST/TERMINAL_EXCLUSION.",
     "S2 — scripts/blackboard-v2/migrate-legacy.mjs + work-resource/trust-adapter/lifecycle/context-builder.mjs: transformLegacyWork -> gen1 strict templates/archive proofs; resolveImportedAuthority(snapshot,purpose) -> typed validated facts. Inputs original unchanged materialized input/evaluation bytes, exact semantic spec and versions; output migration-only importAuthorityRef, never native Decision/old live lease. Claim guard/context use readiness gen/spec/plan; receipt guard uses exact accepted candidate/evidence. Native Decision priority including nonSAT, apply rechecks purpose under CAS. N2 tests every stale field, semantic revision, owner/new-candidate readiness survival and failed native Decision no fallback. Own SEMANTICS/TERMINAL_EXCLUSION.",
     "S3 — scripts/blackboard-v2/migrate-legacy.mjs + control-store.mjs: implement internal readMigrationSnapshot(tx,id) and assertMigrationParity({manifest,archive,nativeSnapshots,capabilities})->Report. Inputs real staged rows/records on same SQL handle; resolve strict native snapshots and typed import/dependency/Living facts, call actual nextActions/buildContext. Independently validated legacy guards/actions/scopes versus all native ids/guards/required inputs/diagnostics/current-postclaim scope; zero diffs or throw. No HTTP/second connection/clock prediction. Test every phase row, last-id scope/dependency/authority mutation aborts. Own PARITY.",
     "S4 — scripts/blackboard-v2/control-store.mjs: commitMigration({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash})->CutoverReceipt. BEGIN IMMEDIATE checks exact LEGACY/ISOLATED revision/pins/freeze/main/destination; insert all native Work/Attempt/fence/Lease/version/proof records using store clock. Stage selectors privately, call S3 with same handle, require full zero-diff/live continuation leases; persist report/receipt/allocator then one COMMIT. Fault ROLLBACK all; identical receipt retry idempotent. N3 two real SQLite connections/crash/restart/lost-response/isolated-row tests. Own CUTOVER/PARITY.",
-    "S5 — test/blackboard-v2-migration.test.mjs + declared base/supervision suites: N1/N2/N3 exact titles invoke buildMigrationManifest/transformLegacyWork/commitMigration. Every invariant/criterion has positive and rejecting observations, including phase rows/purpose bindings/external Living/last-id parity/leases/freeze/atomic visibility and fresh public/raw routes. Execute all three verificationPlan commands, preserve typed evaluator/negative/merge/tree/Living checks, no skips. Output exact candidate-bound verification evidence for independent genuine correctness judgment. Own all criteria; fixture cutover is no live delivery.",
-    "S6 — installed migrate-legacy/transport/main-freeze operator flow after S0-S5 independently accepted code, normal main merge and pinned install. Inputs actual current authority/source; drain on writable main, zero owners/callbacks, hard maintenance+main lock, fresh S1/S2 manifest/templates, actual S3 inside S4. Output one actual receipt and exhaustive all-id/hash/next/context/public/raw postcheck; release only after checks. Preserve BB-156 MERGE_PENDING accepted candidate bridge; verifyWorkMerge read-only, PUBLISH_DELIVERY_RECEIPT needs actual cutover/main/equal-tree/Living proofs. Prepared docs declare selector-dependent authority before approval; no postapproval code/spec mutation, legacy DONE or automatic rollback after COMMIT. Own CUTOVER/TERMINAL_EXCLUSION."
+    "S5 — test/blackboard-v2-migration.test.mjs + declared base/supervision suites: N1/N2/N3 exact titles invoke buildMigrationManifest/transformLegacyWork/commitMigration. Every invariant/criterion: positive/negative phase/purpose/Living/last-id/lease/freeze/atomic/public-route fixtures. All verificationPlan commands, evaluator/negative/main/tree/Living checks mandatory, no skips. Output exact candidate-bound verification evidence for independent genuine correctness judgment. Own all criteria; fixture cutover is no live delivery.",
+    "S6 — installed migrate-legacy/transport/main-freeze operator flow after S0-S5 independently accepted code, normal main merge and pinned install. CLI bb migrate --config ABS --manifest ABS_JSON; verified operator client sends S4 exact request to pinned server. Inputs actual authority/source; drain on writable main, zero owners/callbacks, hard maintenance+main lock, fresh S1/S2 manifest/templates, actual S3 inside S4. Output one actual receipt and exhaustive all-id/hash/next/context/public/raw postcheck; release only after checks. Preserve BB-156 MERGE_PENDING accepted candidate bridge; verifyWorkMerge read-only, PUBLISH_DELIVERY_RECEIPT needs actual cutover/main/equal-tree/Living proofs. Prepared docs declare selector-dependent authority before approval; no postapproval code/spec mutation, legacy DONE or automatic rollback after COMMIT. Own CUTOVER/TERMINAL_EXCLUSION."
   ],
   "acceptanceCriteria": [
     {
@@ -149,7 +149,7 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Per-work hash/edge parity and stale-authority rejection fixtures."
+        "Actual transform/native lifecycle tests: strict gen1 wire and equal semantic hashes/edges/components/scopes; original typed allSAT input/evaluation hashes unchanged. Readiness survives new owner/candidate but gen/spec/plan revision rejects; candidate bridge requires exact accepted versions. Native nonSAT priority, stale/forged import no Work effects."
       ]
     },
     {
@@ -706,12 +706,11 @@
     "records": "LOOKBACK/failureAnchorRef/repairReflectionRef; reflection failedAttemptRef binds original failure, publishingAttemptRef binds current live owner; independently resolved immutable records, no synthetic reflection."
   },
   "migrationContract": {
-    "profile": "Require actual delivered BB-155/157 V2_SUPERVISION_V1 pins; READY is design only.",
-    "exports": "migrate-legacy: buildMigrationManifest, transformLegacyWork, resolveImportedAuthority, prepareMigrationSnapshot, assertMigrationParity. Store.commitMigration({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash}) creates native rows/records then computes parity inside uncommitted SQL transaction; caller cannot supply equal=true. transport.verifyWorkMerge is read-only.",
-    "boundary": "S4 one BEGIN IMMEDIATE: validate exact source/destination/freeze/revision, insert native records, private selector, S3 same-handle exhaustive parity; zero diffs/live leases -> report/receipt/allocator COMMIT. Fault rolls back all; WAL peers see old until COMMIT.",
+    "profile": "Delivered BB-155/157 V2_SUPERVISION_V1 pinned; READY is design only.",
+    "exports": "migrate-legacy exports buildMigrationManifest/transformLegacyWork/resolveImportedAuthority/prepareMigrationSnapshot/assertMigrationParity. Store commitMigration takes exact S4 payload, no caller equal flag. transport.verifyWorkMerge read-only.",
+    "boundary": "S4 single transaction stages native records/selectors, S3 same-handle exhaustive parity; zero diffs/live leases -> report/receipt/allocator COMMIT, fault ROLLBACK. WAL peers see old until commit.",
     "nativeContracts": {
       "sourceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
-      "semanticHash": "2677c29d899e6bfb78528608d58d8657c6ccc2e09773f3ef382edb776da04c5c",
       "nextActions": "nextActions(snapshot) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}",
       "buildContext": "buildContext(snapshot,systemFacts) -> {goal,inputs,readScope,writeScope,forbidden,requiredOutput,bindings}"
     },
