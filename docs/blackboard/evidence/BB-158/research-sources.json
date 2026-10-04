@@ -1,0 +1,42 @@
+{
+  "sources": [
+    {
+      "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/tasks.md",
+      "sha256": "9facab59733aef6d3e9648b45f62543119e483b9b85708e4d9d3960f79f41f19",
+      "bytes": 63526
+    },
+    {
+      "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelines.md",
+      "sha256": "cddea630939f9303fc32e27e770fb14c40a47ca1432c12997809b9b9ce9f7ec7",
+      "bytes": 89790
+    },
+    {
+      "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelineruns.md",
+      "sha256": "f899e8136dff838837ecbc9c11655abe51b7defee8e9843d3d4f8e7a8bbd02a8",
+      "bytes": 61915
+    },
+    {
+      "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/taskruns.md",
+      "sha256": "ff0025c47401923aff3f11dbdc4914da083a0b133d0e36387dabd64030eb9843",
+      "bytes": 48104
+    }
+  ],
+  "eligibility": {
+    "repository": "tektoncd/pipeline",
+    "checkedAt": "2026-10-04",
+    "method": "GitHub repository search query repo:tektoncd/pipeline stars:>=1000 returned exact repository id 146641150, archived=false",
+    "minimumStars": 1000,
+    "meaning": "Eligibility only; no fabricated exact star count or correctness inference"
+  },
+  "findings": [
+    "Tekton pipelines.md documents runAfter/results dependencies, retries (not cancellations), when-skips and finally outcome handling; taskruns/pipelineruns document retry attempts and cancellation status. Adopt explicit dependency/run accounting and separate result bytes from execution status.",
+    "Reject Tekton retry-on-failure as domain policy: ExHarness needs product/verifier/infra/flake distinctions and exact material progress. Do not add Kubernetes, Tekton dependency or another scheduler.",
+    "Current pinned GitHub workflows are primary executable evidence for event snapshots, needs/status, always upload and concurrency. Adapter inputs are exact V2 requests; never rediscover Work from PR metadata."
+  ],
+  "tradeoffs": [
+    "Sequential registry DAG initially: reduce first-failure feedback latency by publishing after each check, no unmeasured concurrency optimization. Mandatory full repository verification remains mandatory before JEV/delivery.",
+    "Selective re-verification is fast feedback only in initial profile. No optimization can waive a required gate. Unknown dependencies force all checks.",
+    "Keep public Core/local verifier API unchanged: wrap current records and separately retain raw classified results. No meaning inferred from success prose or arbitrary summary text."
+  ],
+  "limits": "Single historical CI run and one failing local sample establish timings and concrete gaps only; no general performance/cost claim. Research models do not prove future controller implementation."
+}

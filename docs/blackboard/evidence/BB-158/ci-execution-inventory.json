@@ -1,0 +1,2498 @@
+{
+  "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+  "boundary": "Dynamic worker commands are exact plan registry inputs to collectEvidence; extraction does not execute them or claim checks passed. No secrets, network, control mutation or future V2 source used.",
+  "classification": "EXECUTED_READ_ONLY_SOURCE_AUDIT",
+  "packageScripts": {
+    "benchmark": "node benchmarks/kernel-benchmark.mjs",
+    "benchmark:oracle-retrieval": "node scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
+    "claim:blackboard": "node scripts/blackboard-jev-cli.mjs claim",
+    "collect:blackboard-evidence": "node scripts/blackboard-jev-cli.mjs collect",
+    "eval:agent-tools": "node packages/agent-tools/bin/exharness-agent.mjs eval",
+    "eval:agentic": "node scripts/agentic-backend-qa-eval.mjs",
+    "eval:artifact-manifest-research": "node scripts/artifact-manifest-eval.mjs",
+    "eval:blackboard-context": "node scripts/blackboard-context-eval.mjs",
+    "eval:blackboard-jev": "node scripts/blackboard-jev-cli.mjs evaluate",
+    "eval:blackboard-jev-stability": "node scripts/blackboard-jev-stability.mjs",
+    "eval:cognition": "node scripts/cognition-eval.mjs",
+    "eval:fidelity": "node scripts/fidelity-eval.mjs",
+    "eval:memory-reuse": "node scripts/semantic-memory-reuse-eval.mjs",
+    "eval:reference": "node scripts/reference-eval.mjs",
+    "eval:self-upgrade-research": "node scripts/self-upgrade-loop-eval.mjs",
+    "eval:turn-memory": "node scripts/turn-memory-eval.mjs",
+    "eval:workflow-replay": "node scripts/workflow-policy-replay-eval.mjs",
+    "example": "node examples/reference-harness.mjs",
+    "materialize:blackboard-context": "node scripts/blackboard-context-materialize.mjs",
+    "materialize:blackboard-evaluation": "node scripts/blackboard-jev-cli.mjs materialize",
+    "migrate:blackboard-delivery": "node scripts/blackboard-delivery-migrate.mjs",
+    "project:blackboard-state": "node scripts/blackboard-state-project.mjs --write",
+    "publish:blackboard-delivery": "node scripts/blackboard-jev-cli.mjs publish-delivery",
+    "publish:blackboard-evaluation": "node scripts/blackboard-jev-cli.mjs publish",
+    "resolve:blackboard-task-context": "node scripts/blackboard-task-context-resolver.mjs",
+    "smoke:agent-tools": "node packages/agent-tools/bin/exharness-agent.mjs smoke",
+    "start:blackboard-implementation": "node scripts/blackboard-implementation-bootstrap.mjs",
+    "test": "npm run test:core && npm run test:agentic && npm run test:oracle && npm run test:agent-tools",
+    "test:agent-tools": "node --test packages/agent-tools/test/*.test.js",
+    "test:agentic": "node --test packages/agentic-system/test/*.test.js",
+    "test:benchmark": "node --test packages/benchmark/test/*.test.js benchmarks/substrate/test/*.test.mjs",
+    "test:blackboard-artifacts": "node --test test/blackboard-artifact-*.test.mjs",
+    "test:blackboard-context": "node --test test/blackboard-context-*.test.mjs",
+    "test:blackboard-jev": "node --test test/blackboard-jev.test.mjs test/blackboard-jev-response.test.mjs test/blackboard-jev-batching.test.mjs test/blackboard-jev-living-sections.test.mjs test/blackboard-jev-living-delivery.test.mjs test/blackboard-jev-criterion-sources.test.mjs test/blackboard-negative-case-binding.test.mjs test/blackboard-scope-glob.test.mjs",
+    "test:blackboard-work-graph": "node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs test/blackboard-objective-supersession.test.mjs",
+    "test:core": "node --test packages/core-harness/test/*.test.js",
+    "test:oracle": "node --test packages/oracle/test/*.test.js test/oracle-*.test.mjs",
+    "verify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
+    "verify:blackboard-artifacts": "node scripts/blackboard-artifact-verify.mjs && npm run test:blackboard-artifacts",
+    "verify:blackboard-context": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && node scripts/blackboard-context-verify.mjs && npm run test:blackboard-context && npm run test:blackboard-jev && npm run eval:blackboard-context",
+    "verify:blackboard-delivery": "node scripts/blackboard-jev-cli.mjs verify-delivery",
+    "verify:blackboard-delivery-contracts": "node scripts/blackboard-delivery-verify.mjs",
+    "verify:blackboard-state": "node scripts/blackboard-state-project.mjs --verify",
+    "verify:blackboard-work-graph": "node scripts/blackboard-work-graph.mjs && npm run verify:blackboard-delivery-contracts && npm run verify:blackboard-state && npm run test:blackboard-work-graph",
+    "verify:consumer": "node scripts/consumer-smoke.mjs && node scripts/discovery-consumer-smoke.mjs && node scripts/javascript-codeact-consumer-smoke.mjs && node scripts/cognition-consumer-smoke.mjs",
+    "verify:current-docs": "node scripts/current-docs-verify.mjs",
+    "verify:package": "npm pack --dry-run --workspace packages/core-harness"
+  },
+  "unfinishedVerificationRegistry": [
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js",
+          "id": "unit-adapter"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+          "id": "domain-regression"
+        },
+        {
+          "command": "node --test test/delivery/bb-066-live-contract.test.mjs",
+          "id": "live-contract"
+        },
+        {
+          "command": "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project > \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\" && node scripts/delivery/bb-066-probe.mjs --audit-lock \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\"",
+          "id": "lock-audit"
+        },
+        {
+          "command": "node scripts/delivery/bb-066-probe.mjs --mode dispatch-interrupt-recover --profile \"$EXHARNESS_BB066_PROFILE\" --workspace \"$EXHARNESS_BB066_WORKSPACE\" --output \"$EXHARNESS_BB066_OUTPUT\"",
+          "id": "live-probe"
+        },
+        {
+          "command": "test -n \"$(git diff --name-only \\\"$BASELINE_SHA\\\"...\\\"$CANDIDATE_SHA\\\" -- docs/living/system/state.md)\"",
+          "id": "living-docs"
+        }
+      ],
+      "id": "BB-066",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "992ef43e7833b6e91d2e0ffb211097221d62eeec5a9986fc27dd52952fc4d000",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/bb067-sandbox-policy.test.js",
+          "id": "unit-sandbox"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb067-capability-gateway.test.js",
+          "id": "unit-capability"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb067-sandbox-policy.test.js packages/agentic-system/test/bb067-capability-gateway.test.js",
+          "id": "unit-proxy"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb067-openhands-sandbox-integration.test.js packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js",
+          "id": "integration-runtime"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+          "id": "domain-regression"
+        },
+        {
+          "command": "node scripts/delivery/bb-067-probe.mjs --mode preflight --profile scripts/delivery/sandbox/bb-067-profile.json",
+          "id": "runtime-preflight"
+        },
+        {
+          "command": "node scripts/delivery/bb-067-probe.mjs --mode adversarial-dispatch-interrupt-recover --profile scripts/delivery/sandbox/bb-067-profile.json --workspace \"$EXHARNESS_BB067_WORKSPACE\" --output \"$EXHARNESS_BB067_OUTPUT\"",
+          "id": "live-probe"
+        },
+        {
+          "command": "node scripts/delivery/bb-067-probe.mjs --mode verify-secret-hygiene --output \"$EXHARNESS_BB067_OUTPUT\"",
+          "id": "secret-scan"
+        },
+        {
+          "command": "test -n \"$(git diff --name-only \\\"$BASELINE_SHA\\\"...\\\"$CANDIDATE_SHA\\\" -- docs/living/system/state.md)\"",
+          "id": "living-docs"
+        }
+      ],
+      "id": "BB-067",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "c81110fa4ebed8644abcf36e5b8ce23c79ec181fdc6f225512b912092c57db9c",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-067.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/bb068-github-scm-provider.test.js",
+          "id": "unit-provider"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+          "id": "unit-delivery"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+          "id": "domain-regression"
+        },
+        {
+          "command": "node scripts/delivery/bb-068-probe.mjs",
+          "id": "live-probe"
+        },
+        {
+          "command": "node --test test/delivery/bb-068-live-contract.test.mjs",
+          "id": "live-contract"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository-verify"
+        }
+      ],
+      "id": "BB-068",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "375c4d6d947234cc4e7699dca0951cbeaf115e4aee7cd0e7e6405b030dfbcdec",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/delivery/bb-069-contract.test.mjs",
+          "id": "contract"
+        },
+        {
+          "command": "node scripts/delivery/bb-069-probe.mjs --mode deterministic",
+          "id": "deterministic"
+        },
+        {
+          "command": "node scripts/delivery/bb-069-probe.mjs --mode live --output \"$EXHARNESS_BB069_OUTPUT\"",
+          "id": "live-probe"
+        },
+        {
+          "command": "node scripts/delivery/bb-069-probe.mjs --mode audit-live --input \"$EXHARNESS_BB069_OUTPUT\"",
+          "id": "audit-live"
+        },
+        {
+          "command": "node --test test/delivery/bb-069-live-contract.test.mjs",
+          "id": "live-contract"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository-verify"
+        }
+      ],
+      "id": "BB-069",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "b5f070f872cc44a7e3502b72c1e67e66a68858eb4d3f15df5384362bb679c500",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node scripts/delivery/bb-070-probe.mjs --mode live --browser-adapter playwright@1.63.0",
+          "id": "live-probe"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js test/delivery/bb-070.test.mjs",
+          "id": "boundary-probe"
+        },
+        {
+          "command": "node scripts/delivery/bb-070-probe.mjs --mode live --protocol BB070_SEED_EQUIVALENCE_V1 --output \"$EXHARNESS_BB070_OUTPUT\"",
+          "id": "seed-equivalence-live"
+        },
+        {
+          "command": "node scripts/delivery/bb-070-probe.mjs --mode audit-live --protocol BB070_SEED_EQUIVALENCE_V1 --input \"$EXHARNESS_BB070_OUTPUT\"",
+          "id": "seed-equivalence-audit"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"seed|clarification\"",
+          "id": "seed-contract"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"domain|parallel|authority\"",
+          "id": "domain-boundary"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"closure|stale|acceptance\"",
+          "id": "closure-boundary"
+        },
+        {
+          "command": "node scripts/delivery/bb-070-probe.mjs --mode deterministic",
+          "id": "deterministic-probe"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-070",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "b0eaa86c0977c316254dd2cbb0bfbbf06a8c8ed1a1f1ea1b9f93dc2142c1169c",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node scripts/delivery/bb-071-probe.mjs --mode live --browser-adapter playwright@1.63.0",
+          "id": "live-probe"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js test/delivery/bb-071.test.mjs",
+          "id": "boundary-probe"
+        },
+        {
+          "command": "node scripts/delivery/bb-071-probe.mjs --mode live --protocol BB071_CHANGE_RECOVERY_V1 --output \"$EXHARNESS_BB071_OUTPUT\"",
+          "id": "change-live"
+        },
+        {
+          "command": "node scripts/delivery/bb-071-probe.mjs --mode audit-live --protocol BB071_CHANGE_RECOVERY_V1 --input \"$EXHARNESS_BB071_OUTPUT\"",
+          "id": "change-audit"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"change|identity|scenario\"",
+          "id": "change-contract"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"invalidation|unrelated|lineage\"",
+          "id": "selective-invalidation"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"recovery|duplicate|stale\"",
+          "id": "recovery-fencing"
+        },
+        {
+          "command": "node scripts/delivery/bb-071-probe.mjs --mode deterministic",
+          "id": "deterministic-probe"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-071",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "655a7023fa3f82d87bf42848d873ec7be6f4da70337a7055816daa16e32d8189",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-071.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node scripts/delivery/bb-072-probe.mjs --mode operations",
+          "id": "live-probe"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js test/delivery/bb-072.test.mjs",
+          "id": "boundary-probe"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"projection|provenance|blocker\"",
+          "id": "projection"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"accounting|budget|unknown\"",
+          "id": "accounting-budget"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"restart|backup|restore|effect\"",
+          "id": "recovery-backup"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"telemetry|otel|non-authority\"",
+          "id": "telemetry-boundary"
+        },
+        {
+          "command": "node scripts/delivery/bb-072-probe.mjs --mode deterministic",
+          "id": "deterministic-probe"
+        },
+        {
+          "command": "node scripts/delivery/operator.mjs doctor --fixture test/delivery/fixtures/bb-072",
+          "id": "operator-smoke"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-072",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "55c259493858b31529973ed1f0ea724006d115dfb9590a581ce5be012fecca6a",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_OUTPUT\"",
+          "id": "live-probe"
+        },
+        {
+          "command": "node --test packages/delivery-cli/test/cli.test.js test/delivery/bb-073.test.mjs",
+          "id": "boundary-probe"
+        },
+        {
+          "command": "node --test test/delivery/bb-073.test.mjs --test-name-pattern=\"base digest|release schema|package manifest|image archive|imageContentId|pull never|no checkout\"",
+          "id": "image-contract"
+        },
+        {
+          "command": "node scripts/delivery/build-release.mjs --mode verify-contract --base-selector node:24-bookworm-slim --platform linux/amd64",
+          "id": "release-build"
+        },
+        {
+          "command": "node --test packages/delivery-cli/test/cli.test.js",
+          "id": "cli-contract"
+        },
+        {
+          "command": "node --test test/delivery/bb-073.test.mjs",
+          "id": "distribution-contract"
+        },
+        {
+          "command": "docker compose -f \"$EXHARNESS_BB073_BUNDLE/compose.yaml\" run --pull never --rm delivery doctor --config /release/config.json",
+          "id": "doctor"
+        },
+        {
+          "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_OUTPUT\"",
+          "id": "clean-install"
+        },
+        {
+          "command": "node scripts/delivery/bb-073-probe.mjs --mode upgrade-rollback --from-release BB073_RC0 --to-release BB073_V1 --output \"$EXHARNESS_BB073_UPGRADE_OUTPUT\"",
+          "id": "upgrade-rollback"
+        },
+        {
+          "command": "npm pack --dry-run --workspace packages/delivery-cli",
+          "id": "pack"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-073",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "a04f27d4ae9224c84971444f26fa3d24ef03ec49526438d31dd7b49890e75cab",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-073.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test benchmarks/delivery_value/test/contract.test.mjs",
+          "id": "contract"
+        },
+        {
+          "command": "node --test benchmarks/delivery_value/test/human-events.test.mjs",
+          "id": "human-events"
+        },
+        {
+          "command": "node --test benchmarks/delivery_value/test/lifecycle.test.mjs",
+          "id": "lifecycle"
+        },
+        {
+          "command": "node --test benchmarks/delivery_value/test/decision.test.mjs",
+          "id": "decision"
+        },
+        {
+          "command": "node benchmarks/delivery_value/run.mjs --mode external --cohort benchmarks/delivery_value/external-cohort.json",
+          "id": "live-external"
+        },
+        {
+          "command": "git diff --name-only \"$BB074_BASELINE_SHA\" \"$BB074_CANDIDATE_SHA\" | node benchmarks/delivery_value/run.mjs --mode verify-boundary",
+          "id": "boundary"
+        }
+      ],
+      "id": "BB-074",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "76062cad566064b3d60bec9d7b34d62ac5dbd878a2e4156362f229035111ba60",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-074.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/dependency-binding.test.mjs",
+          "id": "dependency"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/selection.test.mjs",
+          "id": "selection"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/cohort-partition.test.mjs",
+          "id": "cohort"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/fixed-factors.test.mjs",
+          "id": "fixed-factors"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/candidate-boundary.test.mjs",
+          "id": "candidate-boundary"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/report.test.mjs",
+          "id": "report"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/decision.test.mjs",
+          "id": "decision"
+        },
+        {
+          "command": "node --test benchmarks/delivery_evolution/test/currentness.test.mjs",
+          "id": "currentness"
+        },
+        {
+          "command": "node benchmarks/delivery_evolution/run.mjs --mode preflight --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+          "id": "preflight"
+        },
+        {
+          "command": "node benchmarks/delivery_evolution/run.mjs --mode heldout --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+          "id": "heldout"
+        },
+        {
+          "command": "node benchmarks/delivery_evolution/run.mjs --mode audit --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+          "id": "audit"
+        },
+        {
+          "command": "git diff --name-only \"$BB075_BASELINE_SHA\" \"$BB075_CANDIDATE_SHA\" | node benchmarks/delivery_evolution/run.mjs --mode verify-boundary",
+          "id": "boundary"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        }
+      ],
+      "id": "BB-075",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "fea846694da066594c83f06b053d0017f384e9ef88e9577db1759333db35ed59",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-075.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test benchmarks/release_acceptance/test/dependency-binding.test.mjs",
+          "id": "dependency"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/provenance.test.mjs",
+          "id": "provenance"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/freeze-contract.test.mjs",
+          "id": "freeze-contract"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/reserve-boundary.test.mjs",
+          "id": "reserve-boundary"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/clean-room.test.mjs",
+          "id": "clean-room-contract"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/fixed-factors.test.mjs",
+          "id": "fixed-factors"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/value-gate.test.mjs",
+          "id": "value-gate"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/lifecycle.test.mjs",
+          "id": "lifecycle-contract"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/support-manifest.test.mjs",
+          "id": "support-manifest"
+        },
+        {
+          "command": "node --test benchmarks/release_acceptance/test/decision.test.mjs",
+          "id": "decision"
+        },
+        {
+          "command": "node scripts/release/build.mjs --mode freeze --dependency-manifest benchmarks/release_acceptance/dependency-manifest.json --output benchmarks/release_acceptance/release-freeze.json",
+          "id": "freeze"
+        },
+        {
+          "command": "node benchmarks/release_acceptance/run.mjs --mode clean-room --freeze benchmarks/release_acceptance/release-freeze.json",
+          "id": "clean-room-live"
+        },
+        {
+          "command": "node benchmarks/release_acceptance/run.mjs --mode release-reserve --freeze benchmarks/release_acceptance/release-freeze.json --reserve benchmarks/release_acceptance/release-reserve.json",
+          "id": "release-reserve"
+        },
+        {
+          "command": "node benchmarks/release_acceptance/run.mjs --mode lifecycle --freeze benchmarks/release_acceptance/release-freeze.json",
+          "id": "lifecycle-live"
+        },
+        {
+          "command": "node benchmarks/release_acceptance/run.mjs --mode audit --freeze benchmarks/release_acceptance/release-freeze.json",
+          "id": "audit"
+        },
+        {
+          "command": "git diff --name-only \"$BB076_BASELINE_SHA\" \"$BB076_CANDIDATE_SHA\" | node benchmarks/release_acceptance/run.mjs --mode verify-boundary",
+          "id": "boundary"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository-regression"
+        }
+      ],
+      "id": "BB-076",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "c37e649281267da8c2a0cc6d7579aee8dacd6d0ce1fedf67f76f8d095a711566",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-076.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/feedback-dependency-contract.test.mjs",
+          "id": "dependency"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-contracts.test.js",
+          "id": "contracts"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-controller.test.js",
+          "id": "controller"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-projection.test.js",
+          "id": "projection"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-improvement.test.js",
+          "id": "improvement"
+        },
+        {
+          "command": "node --test test/feedback-gepa-bridge.test.mjs",
+          "id": "bridge"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-083",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "f0224b69e8517d78da128391e9ac9ae7af170c35a7cbccf3d61c37365b50b5c1",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/feedback-lifecycle-dependency-contract.test.mjs",
+          "id": "dependency"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+          "id": "contracts"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+          "id": "controller"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-outcome.test.js",
+          "id": "outcome"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+          "id": "recovery"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-085",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "355b23041a7f0ae94bf7aec13a4df5f8d9f588540333082007c8f284f35c2500",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-085.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/self-improve-dependency-contract.test.mjs",
+          "id": "dependency"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/improvement-pattern.test.js",
+          "id": "pattern"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/improvement-proposal.test.js",
+          "id": "proposal"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/improvement-handoff.test.js",
+          "id": "handoff"
+        },
+        {
+          "command": "node --test test/self-improve-gepa-bridge.test.mjs",
+          "id": "bridge"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-086",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "94f42d47b66e58d2ce4db243b50a10a33d2f2e201b1fcb2dbd26f03577af230c",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-086.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/oracle-core-profile-conformance.test.mjs",
+          "id": "conformance"
+        },
+        {
+          "command": "node --test test/oracle-core-interaction-protocol.test.mjs",
+          "id": "protocol"
+        },
+        {
+          "command": "npm run test:core",
+          "id": "core-regression"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-094",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "5c4ea7a0a80b83be82ecf6fe8d0873c72dab6b4f98810cf56b7700b7e9a2738f",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-094.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/oracle-profile-acceptance.test.mjs",
+          "id": "acceptance"
+        },
+        {
+          "command": "node --test test/oracle-context-intelligence-benchmark-contract.test.mjs",
+          "id": "benchmark-contract"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-095",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "d588e847dd0a7a166d4824a3a1d3ce21a3a8e5d94c294993a64db08dbb537ddd",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-095.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test --test-name-pattern=\"^RP1 \" packages/oracle/test/retrieval-planner.test.js",
+          "id": "rp1-fit"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^RP2 \" packages/oracle/test/retrieval-planner.test.js",
+          "id": "rp2-oversize"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^RP3 \" packages/oracle/test/retrieval-planner.test.js",
+          "id": "rp3-docs"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^RP4 \" packages/oracle/test/retrieval-planner.test.js",
+          "id": "rp4-graph"
+        },
+        {
+          "command": "npm run test:oracle",
+          "id": "oracle"
+        },
+        {
+          "command": "node --test test/oracle-context-graph-boundary.test.mjs",
+          "id": "graph-boundary"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-107",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "4ab6031c688f6255ed4f12731eae0bc19ab5920765d5d541f98396cdca7ec4a2",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-107.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en1-allowlist"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en2-secrets"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en4-path-home"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en5-auth"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^EN6 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en6-bin"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^EN7 \" packages/agent-tools/test/child-env.test.js",
+          "id": "en7-docs"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-120",
+      "lane": "WORKER",
+      "phase": "MERGE_PENDING",
+      "planFileSha256": "974f0f97ba358206b2acf7bf1a57ea07ffd5231a927e369a3c606ef5ad125b12",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test --test-name-pattern=\"^DB1 |^DB4 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+          "id": "db1-factory"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^DB2 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+          "id": "db2-board"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^DB3 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+          "id": "db3-failclosed"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^DB5 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+          "id": "db5-docs"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-121",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "da475456897cc2ff11310a168e077054e81cc973697e0c700cc113e9986aed79",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-121.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test --test-name-pattern=\"^FU1 \" packages/agent-tools/test/followup-correctness.test.js",
+          "id": "fu1-cost"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^FU2 \" packages/agent-tools/test/followup-correctness.test.js",
+          "id": "fu2-context"
+        },
+        {
+          "command": "node --test --test-name-pattern=\"^FU3 \" packages/agent-tools/test/followup-correctness.test.js",
+          "id": "fu3-docs"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/followup-correctness.test.js",
+          "id": "followup"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-123",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "a970744c3b74cc29a69af4a02cee2cb5594ccf1806ba4ddde5cb140a99361d60",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/accounting-completeness.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-124",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "07ed56078de5b801ff4e6d41e468815c2c52937a2daf7dc65d452ee747cc99a3",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-124.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/recovery-contract-binding.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/recovery.test.js",
+          "id": "recovery-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-125",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "701480f94c41d1f14845ff254c51bf235e92ee70b48d44c8534c7d76562627ec",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-125.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/agent-tools.test.js packages/agent-tools/test/recovery.test.js",
+          "id": "supervisor-recovery-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-126",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "84d2b858cc13829c10e2c43b2b072f286b2ca4a57aef652569dfd018c1c82975",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-126.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/local-protected-acceptance.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-127",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "d36c7cbaac645ac0402610132350e6fd6adb078d6995d365e7d57614827371ef",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-127.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/deliver-tool-parity.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+          "id": "deliver-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-128",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "a17a43bdafa42c2e437bb4c4513fce73381655a73fdc8feb902f9ba0975a75a4",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-128.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/review-bundle.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-129",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "84d239ead72bea6058e8a0101b1befa967cad1243528777a5a17887202a9cfdd",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-129.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-130",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "1bd0c4bf94e74b9a92ef5c1b49b62bb4be10234fe1dc97a06dac220dfa17f301",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-130.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/local-preview.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-131",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "744ca923866ea947ab9b699c05c1bdd4d5a89a39554f70ed782a6b6b13436fca",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-131.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-132",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "b4be571d6a35c2e04d98a50b8487ab5e18402f457f94b15ccddbd5d382079d3d",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-132.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
+          "id": "qa-authority"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-133",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "4796cbc80301546bdeebad391c5edd3804983d0047f9f540d9e18b2a0fb4765c",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-133.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/run-cli-recovery.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/recovery.test.js",
+          "id": "recovery-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-135",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "854d21d34095e5deda136e9b93821628f878242778e122eb278ce8b1e381f5f6",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-135.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/deliver-observation.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+          "id": "deliver-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-136",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "309e872722c1143b94f739d604b203ddd0cc54d841f42c2fd55fdbc93b341937",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-136.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/operator-mcp-opt-in.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/mcp-server.test.js",
+          "id": "mcp-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-137",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "fe0c876239e81948c5e6aaf581cc829b647cfc438400e9c99b17d77cc370afd0",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-137.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/deliver-run-options.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+          "id": "deliver-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-138",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "c37b41cf3295f92fef442a6c68bac2dd6fac6006cd1f3d56d27e7a6bf4866961",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-138.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/deliver-cli-limits.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+          "id": "deliver-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-139",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "cc2d47b2adeea974c857a73e8ff4a889cb13000ad357b312bcddda7fcd6201c9",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-139.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/eval-cli-factors.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-140",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "69fad25742ae4634404fce83c46be8620c54c5d51fd294039cd5efc693d156f4",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-140.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/smoke-cli-options.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-141",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "0c58a0cc411ab13640c1937600495042e3ecf53c3c6ba1a481d06caa03c2e456",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-141.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/bb142-adapter-recovery.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        }
+      ],
+      "id": "BB-142",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "5d0fe59aa3ad117fea5b126fe073a6537bbbc8e3bbe066c93d5ec6982bc33efd",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-142.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agentic-system/test/bb143-adapter-mcp.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-143",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "2b62572d9dacf823b094a9fa0ea67a06ad104e0b76827767b90aa87d7ea517e1",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-143.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/agent-tools/test/deliver-cli-tool.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+          "id": "deliver-regression"
+        },
+        {
+          "command": "npm run test:agent-tools",
+          "id": "agent-tools-regression"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm test",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-144",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "b0b957441eac7bd628887507edac43c2f021b394b48417ab7d058a48274db387",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-144.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "cd packages/agentic-system && node --test test/how-evolution-evaluation.test.js test/how-evolution-promotion.test.js test/how-evolution-currentness.test.js test/how-evolution-jev-adapter.test.js test/how-evolution-rollback.test.js test/how-evolution-attempt-pinning.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm run test:agentic",
+          "id": "agentic"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-145",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "f50b5a1e94afe82bcf2653d72f0de568a472ec27966c7c039d9eabeada12e8bf",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-145.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test packages/core-harness/test/async-agent-coordinator.test.js packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+          "id": "focused"
+        },
+        {
+          "command": "npm test --workspace=@exharness/core-harness",
+          "id": "core"
+        },
+        {
+          "command": "node --test benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+          "id": "profile"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-146",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "5c01ce336473ad303ab62422e6c5fe6c7b927c0a5406bac6f97d215617ff430b",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-146.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test benchmarks/harness_efficiency/bb081/test/*.test.mjs",
+          "id": "bb081-focused"
+        },
+        {
+          "command": "npm run test:bb081",
+          "id": "bb081-wired"
+        },
+        {
+          "command": "npm run test:core",
+          "id": "core"
+        },
+        {
+          "command": "npm run test:benchmark",
+          "id": "benchmark"
+        },
+        {
+          "command": "npm run verify:current-docs",
+          "id": "docs"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-147",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "3c9fb0ee4380eb2b8dad958714ef4103e4ae82726f6665630a63092df36bab46",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-147.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/blackboard-v2-control.test.mjs",
+          "id": "focused"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-155",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "dfb8c4107d133ff3507a3b47ca068cfc8e6fbd96ee5fd6a44142f47577fe2878",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/blackboard-v2-migration.test.mjs test/blackboard-v2-control.test.mjs",
+          "id": "focused"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-156",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "1309bdbf0a89317caf6e33bce686528cfcbe91ab6fd60119bf9f91b760f16be2",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-156.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/blackboard-v2-supervision.test.mjs test/blackboard-v2-control.test.mjs",
+          "id": "focused"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-157",
+      "lane": "WORKER",
+      "phase": "EXECUTION",
+      "planFileSha256": "14e76c2afb796582308f5e90679386d3f7b8febd3c93a84468175be69033750c",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-157.json"
+    },
+    {
+      "commands": [
+        {
+          "command": "node --test test/blackboard-work-graph.test.mjs",
+          "id": "research-audit"
+        },
+        {
+          "command": "node --test test/agent-native-ci-feedback.test.mjs",
+          "id": "contract-fixtures"
+        },
+        {
+          "command": "node --test test/agent-native-ci-feedback.test.mjs",
+          "id": "control-loop-fixtures"
+        },
+        {
+          "command": "node --test test/agent-native-ci-feedback.test.mjs",
+          "id": "adapter-negatives"
+        },
+        {
+          "command": "npm run verify",
+          "id": "repository"
+        }
+      ],
+      "id": "BB-158",
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH",
+      "planFileSha256": "d6b9bff9f02406a9d53994b11c28fbec249e90559b7fc2ab3331d8e81f02d743",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-158.json"
+    }
+  ],
+  "uniquePlanCommands": [
+    "cd packages/agentic-system && node --test test/how-evolution-evaluation.test.js test/how-evolution-promotion.test.js test/how-evolution-currentness.test.js test/how-evolution-jev-adapter.test.js test/how-evolution-rollback.test.js test/how-evolution-attempt-pinning.test.js",
+    "docker compose -f \"$EXHARNESS_BB073_BUNDLE/compose.yaml\" run --pull never --rm delivery doctor --config /release/config.json",
+    "git diff --name-only \"$BB074_BASELINE_SHA\" \"$BB074_CANDIDATE_SHA\" | node benchmarks/delivery_value/run.mjs --mode verify-boundary",
+    "git diff --name-only \"$BB075_BASELINE_SHA\" \"$BB075_CANDIDATE_SHA\" | node benchmarks/delivery_evolution/run.mjs --mode verify-boundary",
+    "git diff --name-only \"$BB076_BASELINE_SHA\" \"$BB076_CANDIDATE_SHA\" | node benchmarks/release_acceptance/run.mjs --mode verify-boundary",
+    "node --test --test-name-pattern=\"^DB1 |^DB4 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+    "node --test --test-name-pattern=\"^DB2 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+    "node --test --test-name-pattern=\"^DB3 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+    "node --test --test-name-pattern=\"^DB5 \" packages/agentic-system/test/bb121-supervised-durable.test.js",
+    "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^EN6 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^EN7 \" packages/agent-tools/test/child-env.test.js",
+    "node --test --test-name-pattern=\"^FU1 \" packages/agent-tools/test/followup-correctness.test.js",
+    "node --test --test-name-pattern=\"^FU2 \" packages/agent-tools/test/followup-correctness.test.js",
+    "node --test --test-name-pattern=\"^FU3 \" packages/agent-tools/test/followup-correctness.test.js",
+    "node --test --test-name-pattern=\"^RP1 \" packages/oracle/test/retrieval-planner.test.js",
+    "node --test --test-name-pattern=\"^RP2 \" packages/oracle/test/retrieval-planner.test.js",
+    "node --test --test-name-pattern=\"^RP3 \" packages/oracle/test/retrieval-planner.test.js",
+    "node --test --test-name-pattern=\"^RP4 \" packages/oracle/test/retrieval-planner.test.js",
+    "node --test benchmarks/delivery_evolution/test/candidate-boundary.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/cohort-partition.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/currentness.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/decision.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/dependency-binding.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/fixed-factors.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/report.test.mjs",
+    "node --test benchmarks/delivery_evolution/test/selection.test.mjs",
+    "node --test benchmarks/delivery_value/test/contract.test.mjs",
+    "node --test benchmarks/delivery_value/test/decision.test.mjs",
+    "node --test benchmarks/delivery_value/test/human-events.test.mjs",
+    "node --test benchmarks/delivery_value/test/lifecycle.test.mjs",
+    "node --test benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+    "node --test benchmarks/harness_efficiency/bb081/test/*.test.mjs",
+    "node --test benchmarks/release_acceptance/test/clean-room.test.mjs",
+    "node --test benchmarks/release_acceptance/test/decision.test.mjs",
+    "node --test benchmarks/release_acceptance/test/dependency-binding.test.mjs",
+    "node --test benchmarks/release_acceptance/test/fixed-factors.test.mjs",
+    "node --test benchmarks/release_acceptance/test/freeze-contract.test.mjs",
+    "node --test benchmarks/release_acceptance/test/lifecycle.test.mjs",
+    "node --test benchmarks/release_acceptance/test/provenance.test.mjs",
+    "node --test benchmarks/release_acceptance/test/reserve-boundary.test.mjs",
+    "node --test benchmarks/release_acceptance/test/support-manifest.test.mjs",
+    "node --test benchmarks/release_acceptance/test/value-gate.test.mjs",
+    "node --test packages/agent-tools/test/accounting-completeness.test.js",
+    "node --test packages/agent-tools/test/agent-tools.test.js packages/agent-tools/test/recovery.test.js",
+    "node --test packages/agent-tools/test/deliver-cli-limits.test.js",
+    "node --test packages/agent-tools/test/deliver-cli-tool.test.js",
+    "node --test packages/agent-tools/test/deliver-observation.test.js",
+    "node --test packages/agent-tools/test/deliver-run-options.test.js",
+    "node --test packages/agent-tools/test/deliver-slice.test.js",
+    "node --test packages/agent-tools/test/deliver-tool-parity.test.js",
+    "node --test packages/agent-tools/test/eval-cli-factors.test.js",
+    "node --test packages/agent-tools/test/followup-correctness.test.js",
+    "node --test packages/agent-tools/test/local-preview.test.js",
+    "node --test packages/agent-tools/test/local-protected-acceptance.test.js",
+    "node --test packages/agent-tools/test/mcp-server.test.js",
+    "node --test packages/agent-tools/test/operator-mcp-opt-in.test.js",
+    "node --test packages/agent-tools/test/recovery-contract-binding.test.js",
+    "node --test packages/agent-tools/test/recovery.test.js",
+    "node --test packages/agent-tools/test/retry-progress-policy.test.js",
+    "node --test packages/agent-tools/test/review-bundle.test.js",
+    "node --test packages/agent-tools/test/run-cli-recovery.test.js",
+    "node --test packages/agent-tools/test/smoke-cli-options.test.js",
+    "node --test packages/agentic-system/test/api-state-verifier.test.js",
+    "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+    "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js",
+    "node --test packages/agentic-system/test/bb067-capability-gateway.test.js",
+    "node --test packages/agentic-system/test/bb067-openhands-sandbox-integration.test.js packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js",
+    "node --test packages/agentic-system/test/bb067-sandbox-policy.test.js",
+    "node --test packages/agentic-system/test/bb067-sandbox-policy.test.js packages/agentic-system/test/bb067-capability-gateway.test.js",
+    "node --test packages/agentic-system/test/bb068-github-scm-provider.test.js",
+    "node --test packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+    "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"closure|stale|acceptance\"",
+    "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"domain|parallel|authority\"",
+    "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"seed|clarification\"",
+    "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js test/delivery/bb-070.test.mjs",
+    "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"change|identity|scenario\"",
+    "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"invalidation|unrelated|lineage\"",
+    "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"recovery|duplicate|stale\"",
+    "node --test packages/agentic-system/test/bb071-product-change-control.test.js test/delivery/bb-071.test.mjs",
+    "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"accounting|budget|unknown\"",
+    "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"projection|provenance|blocker\"",
+    "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"restart|backup|restore|effect\"",
+    "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"telemetry|otel|non-authority\"",
+    "node --test packages/agentic-system/test/bb072-delivery-operations.test.js test/delivery/bb-072.test.mjs",
+    "node --test packages/agentic-system/test/bb142-adapter-recovery.test.js",
+    "node --test packages/agentic-system/test/bb143-adapter-mcp.test.js",
+    "node --test packages/agentic-system/test/browser-journey-verifier.test.js",
+    "node --test packages/agentic-system/test/feedback-contracts.test.js",
+    "node --test packages/agentic-system/test/feedback-controller.test.js",
+    "node --test packages/agentic-system/test/feedback-improvement.test.js",
+    "node --test packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+    "node --test packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+    "node --test packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+    "node --test packages/agentic-system/test/feedback-outcome.test.js",
+    "node --test packages/agentic-system/test/feedback-projection.test.js",
+    "node --test packages/agentic-system/test/improvement-handoff.test.js",
+    "node --test packages/agentic-system/test/improvement-pattern.test.js",
+    "node --test packages/agentic-system/test/improvement-proposal.test.js",
+    "node --test packages/agentic-system/test/local-verifier-environment.test.js",
+    "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
+    "node --test packages/core-harness/test/async-agent-coordinator.test.js packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+    "node --test packages/delivery-cli/test/cli.test.js",
+    "node --test packages/delivery-cli/test/cli.test.js test/delivery/bb-073.test.mjs",
+    "node --test test/agent-native-ci-feedback.test.mjs",
+    "node --test test/blackboard-v2-control.test.mjs",
+    "node --test test/blackboard-v2-migration.test.mjs test/blackboard-v2-control.test.mjs",
+    "node --test test/blackboard-v2-supervision.test.mjs test/blackboard-v2-control.test.mjs",
+    "node --test test/blackboard-work-graph.test.mjs",
+    "node --test test/delivery/bb-066-live-contract.test.mjs",
+    "node --test test/delivery/bb-068-live-contract.test.mjs",
+    "node --test test/delivery/bb-069-contract.test.mjs",
+    "node --test test/delivery/bb-069-live-contract.test.mjs",
+    "node --test test/delivery/bb-073.test.mjs",
+    "node --test test/delivery/bb-073.test.mjs --test-name-pattern=\"base digest|release schema|package manifest|image archive|imageContentId|pull never|no checkout\"",
+    "node --test test/feedback-dependency-contract.test.mjs",
+    "node --test test/feedback-gepa-bridge.test.mjs",
+    "node --test test/feedback-lifecycle-dependency-contract.test.mjs",
+    "node --test test/oracle-context-graph-boundary.test.mjs",
+    "node --test test/oracle-context-intelligence-benchmark-contract.test.mjs",
+    "node --test test/oracle-core-interaction-protocol.test.mjs",
+    "node --test test/oracle-core-profile-conformance.test.mjs",
+    "node --test test/oracle-profile-acceptance.test.mjs",
+    "node --test test/self-improve-dependency-contract.test.mjs",
+    "node --test test/self-improve-gepa-bridge.test.mjs",
+    "node benchmarks/delivery_evolution/run.mjs --mode audit --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+    "node benchmarks/delivery_evolution/run.mjs --mode heldout --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+    "node benchmarks/delivery_evolution/run.mjs --mode preflight --profile benchmarks/delivery_evolution/profile.json --partition benchmarks/delivery_evolution/cohort-partition.json",
+    "node benchmarks/delivery_value/run.mjs --mode external --cohort benchmarks/delivery_value/external-cohort.json",
+    "node benchmarks/release_acceptance/run.mjs --mode audit --freeze benchmarks/release_acceptance/release-freeze.json",
+    "node benchmarks/release_acceptance/run.mjs --mode clean-room --freeze benchmarks/release_acceptance/release-freeze.json",
+    "node benchmarks/release_acceptance/run.mjs --mode lifecycle --freeze benchmarks/release_acceptance/release-freeze.json",
+    "node benchmarks/release_acceptance/run.mjs --mode release-reserve --freeze benchmarks/release_acceptance/release-freeze.json --reserve benchmarks/release_acceptance/release-reserve.json",
+    "node scripts/delivery/bb-066-probe.mjs --mode dispatch-interrupt-recover --profile \"$EXHARNESS_BB066_PROFILE\" --workspace \"$EXHARNESS_BB066_WORKSPACE\" --output \"$EXHARNESS_BB066_OUTPUT\"",
+    "node scripts/delivery/bb-067-probe.mjs --mode adversarial-dispatch-interrupt-recover --profile scripts/delivery/sandbox/bb-067-profile.json --workspace \"$EXHARNESS_BB067_WORKSPACE\" --output \"$EXHARNESS_BB067_OUTPUT\"",
+    "node scripts/delivery/bb-067-probe.mjs --mode preflight --profile scripts/delivery/sandbox/bb-067-profile.json",
+    "node scripts/delivery/bb-067-probe.mjs --mode verify-secret-hygiene --output \"$EXHARNESS_BB067_OUTPUT\"",
+    "node scripts/delivery/bb-068-probe.mjs",
+    "node scripts/delivery/bb-069-probe.mjs --mode audit-live --input \"$EXHARNESS_BB069_OUTPUT\"",
+    "node scripts/delivery/bb-069-probe.mjs --mode deterministic",
+    "node scripts/delivery/bb-069-probe.mjs --mode live --output \"$EXHARNESS_BB069_OUTPUT\"",
+    "node scripts/delivery/bb-070-probe.mjs --mode audit-live --protocol BB070_SEED_EQUIVALENCE_V1 --input \"$EXHARNESS_BB070_OUTPUT\"",
+    "node scripts/delivery/bb-070-probe.mjs --mode deterministic",
+    "node scripts/delivery/bb-070-probe.mjs --mode live --browser-adapter playwright@1.63.0",
+    "node scripts/delivery/bb-070-probe.mjs --mode live --protocol BB070_SEED_EQUIVALENCE_V1 --output \"$EXHARNESS_BB070_OUTPUT\"",
+    "node scripts/delivery/bb-071-probe.mjs --mode audit-live --protocol BB071_CHANGE_RECOVERY_V1 --input \"$EXHARNESS_BB071_OUTPUT\"",
+    "node scripts/delivery/bb-071-probe.mjs --mode deterministic",
+    "node scripts/delivery/bb-071-probe.mjs --mode live --browser-adapter playwright@1.63.0",
+    "node scripts/delivery/bb-071-probe.mjs --mode live --protocol BB071_CHANGE_RECOVERY_V1 --output \"$EXHARNESS_BB071_OUTPUT\"",
+    "node scripts/delivery/bb-072-probe.mjs --mode deterministic",
+    "node scripts/delivery/bb-072-probe.mjs --mode operations",
+    "node scripts/delivery/bb-073-probe.mjs --mode clean-install --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_OUTPUT\"",
+    "node scripts/delivery/bb-073-probe.mjs --mode upgrade-rollback --from-release BB073_RC0 --to-release BB073_V1 --output \"$EXHARNESS_BB073_UPGRADE_OUTPUT\"",
+    "node scripts/delivery/build-release.mjs --mode verify-contract --base-selector node:24-bookworm-slim --platform linux/amd64",
+    "node scripts/delivery/operator.mjs doctor --fixture test/delivery/fixtures/bb-072",
+    "node scripts/release/build.mjs --mode freeze --dependency-manifest benchmarks/release_acceptance/dependency-manifest.json --output benchmarks/release_acceptance/release-freeze.json",
+    "npm pack --dry-run --workspace packages/delivery-cli",
+    "npm run test:agent-tools",
+    "npm run test:agentic",
+    "npm run test:bb081",
+    "npm run test:benchmark",
+    "npm run test:core",
+    "npm run test:oracle",
+    "npm run verify",
+    "npm run verify:current-docs",
+    "npm test",
+    "npm test --workspace=@exharness/core-harness",
+    "test -n \"$(git diff --name-only \\\"$BASELINE_SHA\\\"...\\\"$CANDIDATE_SHA\\\" -- docs/living/system/state.md)\"",
+    "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project > \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\" && node scripts/delivery/bb-066-probe.mjs --audit-lock \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\""
+  ],
+  "workflows": [
+    {
+      "concurrency": {
+        "cancel-in-progress": "false",
+        "group": "blackboard-jev-${{ inputs.work_id }}-${{ inputs.candidate_sha || 'current' }}"
+      },
+      "jobs": [
+        {
+          "id": "select",
+          "if": null,
+          "needs": [],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "controller",
+                "persist-credentials": "false",
+                "ref": "${{ inputs.controller_sha || 'main' }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "controller",
+              "run": "echo \"sha=$(git -C controller rev-parse HEAD)\" >> \"$GITHUB_OUTPUT\"",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ inputs.trusted_sha || 'main' }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "trusted",
+              "run": "echo \"sha=$(git -C trusted rev-parse HEAD)\" >> \"$GITHUB_OUTPUT\"",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ inputs.candidate_sha || inputs.trusted_sha || 'main' }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "subject",
+              "run": "echo \"sha=$(git -C subject rev-parse HEAD)\" >> \"$GITHUB_OUTPUT\"",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT",
+                "WORK_ID"
+              ],
+              "if": null,
+              "name": "select",
+              "run": "node controller/scripts/blackboard-jev-ci.mjs select",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [
+                "WORK"
+              ],
+              "if": null,
+              "name": "Require exactly one evaluation subject",
+              "run": "count=\"$(jq 'length' <<<\"$WORK\")\"\ntest \"$count\" = \"1\" || { echo \"Expected exactly one Jev subject, got $count\"; exit 1; }\n",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "evidence",
+          "if": null,
+          "needs": "select",
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "path": "controller",
+                "persist-credentials": "false",
+                "ref": "${{ needs.select.outputs.controller_sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ needs.select.outputs.trusted_sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ matrix.work.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/setup-node@v4",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "22"
+              }
+            },
+            {
+              "envKeys": [
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT",
+                "WORK_ID"
+              ],
+              "if": null,
+              "name": "Collect evidence without provider credentials",
+              "run": "node controller/scripts/blackboard-jev-ci.mjs collect",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/upload-artifact@v4",
+              "run": null,
+              "uses": "actions/upload-artifact@v4",
+              "with": {
+                "if-no-files-found": "error",
+                "name": "jev-input-${{ matrix.work.id }}",
+                "path": "subject/artifacts/blackboard-verification/"
+              }
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "evaluate",
+          "if": null,
+          "needs": [
+            "select",
+            "evidence"
+          ],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "path": "controller",
+                "persist-credentials": "false",
+                "ref": "${{ needs.select.outputs.controller_sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ needs.select.outputs.trusted_sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ matrix.work.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/setup-node@v4",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "22"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/download-artifact@v4",
+              "run": null,
+              "uses": "actions/download-artifact@v4",
+              "with": {
+                "name": "jev-input-${{ matrix.work.id }}",
+                "path": "subject/artifacts/blackboard-verification/"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/cache/restore@v4",
+              "run": null,
+              "uses": "actions/cache/restore@v4",
+              "with": {
+                "key": "jev-${{ matrix.work.id }}-${{ github.run_id }}",
+                "path": "subject/.cache/blackboard-jev",
+                "restore-keys": "jev-${{ matrix.work.id }}-"
+              }
+            },
+            {
+              "envKeys": [
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT",
+                "TYPESAFE_API_KEY",
+                "WORK_ID"
+              ],
+              "if": null,
+              "name": "Materialize, evaluate and validate using trusted evaluator",
+              "run": "node controller/scripts/blackboard-jev-ci.mjs evaluate",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [],
+              "if": "always()",
+              "name": "actions/upload-artifact@v4",
+              "run": null,
+              "uses": "actions/upload-artifact@v4",
+              "with": {
+                "if-no-files-found": "warn",
+                "name": "jev-evaluation-${{ matrix.work.id }}",
+                "path": "subject/artifacts/blackboard-jev/"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": "always() && hashFiles('subject/.cache/blackboard-jev/*.json') != ''",
+              "name": "actions/cache/save@v4",
+              "run": null,
+              "uses": "actions/cache/save@v4",
+              "with": {
+                "key": "jev-${{ matrix.work.id }}-${{ github.run_id }}",
+                "path": "subject/.cache/blackboard-jev"
+              }
+            }
+          ],
+          "uses": null,
+          "with": null
+        }
+      ],
+      "permissions": {
+        "actions": "read",
+        "contents": "read"
+      },
+      "ref": ".github/workflows/blackboard-jev.yml",
+      "sha256": "55042c9d8c518592ef0ae9cb807a9578cfdf197e75f29b70c7851f8d79c2b1c5",
+      "triggers": {
+        "workflow_call": {
+          "inputs": {
+            "candidate_sha": {
+              "description": "Exact subject commit",
+              "required": "true",
+              "type": "string"
+            },
+            "controller_sha": {
+              "description": "Exact trusted evaluator/controller implementation commit",
+              "required": "false",
+              "type": "string"
+            },
+            "trusted_sha": {
+              "description": "Exact trusted control-plane commit",
+              "required": "true",
+              "type": "string"
+            },
+            "work_id": {
+              "description": "Exact current Blackboard work id",
+              "required": "true",
+              "type": "string"
+            }
+          },
+          "secrets": {
+            "TYPESAFE_API_KEY": {
+              "required": "true"
+            }
+          }
+        },
+        "workflow_dispatch": {
+          "inputs": {
+            "candidate_sha": {
+              "description": "Exact subject commit",
+              "required": "false",
+              "type": "string"
+            },
+            "controller_sha": {
+              "description": "Exact trusted evaluator/controller implementation commit",
+              "required": "false",
+              "type": "string"
+            },
+            "trusted_sha": {
+              "description": "Exact trusted control-plane commit",
+              "required": "false",
+              "type": "string"
+            },
+            "work_id": {
+              "description": "Exact current Blackboard work id",
+              "required": "true",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "concurrency": null,
+      "jobs": [
+        {
+          "id": "kernel",
+          "if": null,
+          "needs": [],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Checkout",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Setup Node",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "24"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Verify kernel",
+              "run": "npm run verify",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        }
+      ],
+      "permissions": null,
+      "ref": ".github/workflows/push-test.yml",
+      "sha256": "ed2fc268b3ac740ca2c8c4965d518e1699151d6085ea322929cca326044b0598",
+      "triggers": {
+        "push": ""
+      }
+    },
+    {
+      "concurrency": {
+        "cancel-in-progress": "true",
+        "group": "test-pr-${{ github.event.pull_request.number }}"
+      },
+      "jobs": [
+        {
+          "id": "living-doc-impact",
+          "if": null,
+          "needs": [],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Checkout",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0"
+              }
+            },
+            {
+              "envKeys": [
+                "BASE_SHA",
+                "HEAD_SHA"
+              ],
+              "if": null,
+              "name": "Verify living-doc impact contract",
+              "run": "body=\"$(jq -r '.pull_request.body // \"\"' \"$GITHUB_EVENT_PATH\")\"\nclassification=\"$(printf '%s\\n' \"$body\" | sed -n 's/^\\*\\*Classification:\\*\\*[[:space:]]*\\(CURRENT_SYSTEM_CHANGED\\|CURRENT_SYSTEM_NOT_CHANGED\\)[[:space:]]*$/\\1/p' | head -n 1)\"\n\nif [ -z \"$classification\" ]; then\n  echo \"PR body must declare exactly one living-doc impact classification on the **Classification:** line.\"\n  echo \"Allowed values: CURRENT_SYSTEM_CHANGED | CURRENT_SYSTEM_NOT_CHANGED\"\n  exit 1\nfi\n\ncount=\"$(printf '%s\\n' \"$body\" | sed -n 's/^\\*\\*Classification:\\*\\*[[:space:]]*\\(CURRENT_SYSTEM_CHANGED\\|CURRENT_SYSTEM_NOT_CHANGED\\)[[:space:]]*$/\\1/p' | wc -l | tr -d ' ')\"\nif [ \"$count\" != \"1\" ]; then\n  echo \"PR body must contain exactly one living-doc impact classification; found $count.\"\n  exit 1\nfi\n\necho \"living-doc impact: $classification\"\n\nif [ \"$classification\" = \"CURRENT_SYSTEM_CHANGED\" ]; then\n  git fetch --no-tags origin \"$BASE_SHA\" \"$HEAD_SHA\"\n  changed=\"$(git diff --name-only \"$BASE_SHA\" \"$HEAD_SHA\")\"\n  printf '%s\\n' \"$changed\"\n  if ! printf '%s\\n' \"$changed\" | grep -q '^docs/living/system/'; then\n    echo \"CURRENT_SYSTEM_CHANGED requires affected docs/living/system/* updates in the same PR.\"\n    exit 1\n  fi\nfi\n\necho \"Living-doc impact declaration gate passed. Semantic truth of the classification remains a review responsibility.\"\n",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "kernel",
+          "if": null,
+          "needs": [],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Checkout",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Setup Node",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "24"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "Verify kernel",
+              "run": "npm run verify",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "blackboard",
+          "if": null,
+          "needs": [
+            "living-doc-impact",
+            "kernel"
+          ],
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ github.event.pull_request.base.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ github.event.pull_request.head.sha }}"
+              }
+            },
+            {
+              "envKeys": [
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT"
+              ],
+              "if": null,
+              "name": "select",
+              "run": "node trusted/scripts/blackboard-jev-ci.mjs select",
+              "uses": null,
+              "with": null
+            },
+            {
+              "envKeys": [
+                "PUBLICATIONS",
+                "SUPERSESSIONS",
+                "WORK"
+              ],
+              "if": null,
+              "name": "Report Blackboard gate mode",
+              "run": "work_count=\"$(jq 'length' <<<\"$WORK\")\"\npublication_count=\"$(jq 'length' <<<\"$PUBLICATIONS\")\"\nsupersession_count=\"$(jq 'length' <<<\"$SUPERSESSIONS\")\"\nif [ \"$supersession_count\" -gt 0 ]; then\n  echo \"::notice::Blackboard objective supersession verification required for $supersession_count subject(s).\"\nfi\nif [ \"$work_count\" -gt 0 ]; then\n  echo \"::notice::Blackboard semantic judgment required for $work_count subject(s).\"\nelif [ \"$publication_count\" -gt 0 ]; then\n  echo \"::notice::Blackboard readiness publication verification required for $publication_count subject(s).\"\nelse\n  echo \"::notice::No Blackboard semantic judgment required.\"\nfi\n",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "blackboard-jev",
+          "if": "needs.blackboard.outputs.work != '[]'",
+          "needs": "blackboard",
+          "steps": [],
+          "uses": "vhwg06/ExHarness/.github/workflows/blackboard-jev.yml@main",
+          "with": {
+            "candidate_sha": "${{ matrix.work.sha }}",
+            "controller_sha": "${{ github.event.pull_request.base.sha }}",
+            "trusted_sha": "${{ github.event.pull_request.base.sha }}",
+            "work_id": "${{ matrix.work.id }}"
+          }
+        },
+        {
+          "id": "readiness-verify",
+          "if": "needs.blackboard.outputs.publications != '[]'",
+          "needs": "blackboard",
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ github.event.pull_request.base.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ matrix.work.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/setup-node@v4",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "22"
+              }
+            },
+            {
+              "envKeys": [
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT",
+                "WORK_ID"
+              ],
+              "if": null,
+              "name": "Verify canonical readiness publication",
+              "run": "node trusted/scripts/blackboard-jev-ci.mjs verify-publication",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "objective-supersession-verify",
+          "if": "needs.blackboard.outputs.supersessions != '[]'",
+          "needs": "blackboard",
+          "steps": [
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "trusted",
+                "persist-credentials": "false",
+                "ref": "${{ github.event.pull_request.base.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/checkout@v4",
+              "run": null,
+              "uses": "actions/checkout@v4",
+              "with": {
+                "fetch-depth": "0",
+                "path": "subject",
+                "persist-credentials": "false",
+                "ref": "${{ matrix.work.sha }}"
+              }
+            },
+            {
+              "envKeys": [],
+              "if": null,
+              "name": "actions/setup-node@v4",
+              "run": null,
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "node-version": "22"
+              }
+            },
+            {
+              "envKeys": [
+                "BASE_SHA",
+                "CANDIDATE_SHA",
+                "SUBJECT_ROOT",
+                "TRUSTED_ROOT",
+                "WORK_ID"
+              ],
+              "if": null,
+              "name": "Verify objective supersession publication",
+              "run": "node trusted/scripts/blackboard-jev-ci.mjs verify-supersession",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        },
+        {
+          "id": "merge-gate",
+          "if": "${{ always() }}",
+          "needs": [
+            "living-doc-impact",
+            "kernel",
+            "blackboard",
+            "blackboard-jev",
+            "readiness-verify",
+            "objective-supersession-verify"
+          ],
+          "steps": [
+            {
+              "envKeys": [
+                "BLACKBOARD_RESULT",
+                "JEV_RESULT",
+                "KERNEL_RESULT",
+                "LIVING_DOC_RESULT",
+                "PR_HEAD_SHA",
+                "PUBLICATIONS",
+                "READINESS_RESULT",
+                "SUPERSESSIONS",
+                "SUPERSESSION_RESULT",
+                "WORK"
+              ],
+              "if": null,
+              "name": "Require complete CI for exact PR head",
+              "run": "set -euo pipefail\n\nfail() {\n  echo \"::error::$*\"\n  exit 1\n}\n\nrequire_success() {\n  stage=\"$1\"\n  result=\"$2\"\n  [ \"$result\" = \"success\" ] || fail \"$stage must succeed; got $result\"\n}\n\nassert_exact_subjects() {\n  label=\"$1\"\n  payload=\"$2\"\n  bad=\"$(jq -r --arg sha \"$PR_HEAD_SHA\" '[.[] | select(.sha != $sha)] | length' <<<\"$payload\")\"\n  [ \"$bad\" = \"0\" ] || fail \"$label contains subject SHA different from PR head $PR_HEAD_SHA\"\n}\n\nrequire_success \"living-doc-impact\" \"$LIVING_DOC_RESULT\"\nrequire_success \"kernel\" \"$KERNEL_RESULT\"\nrequire_success \"blackboard-gate\" \"$BLACKBOARD_RESULT\"\n\nassert_exact_subjects \"blackboard work\" \"$WORK\"\nassert_exact_subjects \"readiness publications\" \"$PUBLICATIONS\"\nassert_exact_subjects \"objective supersessions\" \"$SUPERSESSIONS\"\n\nif [ \"$(jq 'length' <<<\"$WORK\")\" -gt 0 ]; then\n  require_success \"blackboard-jev\" \"$JEV_RESULT\"\nelse\n  echo \"blackboard-jev not applicable: selector emitted no JEV work\"\nfi\n\nif [ \"$(jq 'length' <<<\"$PUBLICATIONS\")\" -gt 0 ]; then\n  require_success \"readiness-verify\" \"$READINESS_RESULT\"\nelse\n  echo \"readiness-verify not applicable: selector emitted no readiness publication\"\nfi\n\nif [ \"$(jq 'length' <<<\"$SUPERSESSIONS\")\" -gt 0 ]; then\n  require_success \"objective-supersession-verify\" \"$SUPERSESSION_RESULT\"\nelse\n  echo \"objective-supersession-verify not applicable: selector emitted no supersession\"\nfi\n\necho \"MERGE_GATE_ACCEPT candidate=$PR_HEAD_SHA\"\n",
+              "uses": null,
+              "with": null
+            }
+          ],
+          "uses": null,
+          "with": null
+        }
+      ],
+      "permissions": {
+        "actions": "read",
+        "contents": "read"
+      },
+      "ref": ".github/workflows/test.yml",
+      "sha256": "e07b357b698003b93506a73d38af239433e79773b7663317b06ab236cf821dac",
+      "triggers": {
+        "pull_request": ""
+      }
+    }
+  ]
+}
