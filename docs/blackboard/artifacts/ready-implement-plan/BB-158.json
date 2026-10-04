@@ -65,12 +65,11 @@
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-delivery.mjs",
       "scripts/blackboard-verification-bundle.mjs",
-      "scripts/blackboard-jev-cli.mjs",
       "packages/agentic-system/src/local-command-verifier.js",
-      "packages/core-harness/src/verification-assessment.js",
       "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
-      "package.json"
+      "package.json",
+      "docs/blackboard/evidence/BB-158/ci-surface-audit.json"
     ],
     "expectedNew": [
       "scripts/agent-native-ci/contract.mjs",
@@ -136,7 +135,7 @@
   "acceptanceCriteria": [
     {
       "id": "CURRENT_STATE_AUDIT",
-      "statement": "Every current workflow, verification command, JEV/local/delivery path and authority/feedback edge is mapped against the exact baseline.",
+      "statement": "All current CI/local/JEV/delivery paths and exact selectors/authority edges are audited.",
       "verificationIds": [
         "focused"
       ],
@@ -146,7 +145,7 @@
     },
     {
       "id": "CANONICAL_FEEDBACK_CONTRACT",
-      "statement": "Every accepted observation has immutable exact Work generation/spec/Attempt/candidate/request/verifier/input/evidence bindings.",
+      "statement": "Accepted observations are immutable and bind exact current subject/verifier/input/evidence.",
       "verificationIds": [
         "focused"
       ],
@@ -156,7 +155,7 @@
     },
     {
       "id": "FAILURE_TAXONOMY",
-      "statement": "Product, verifier, infra, flake, insufficient, cancelled and unavailable outcomes remain distinct and bounded.",
+      "statement": "Every failure class stays distinct with its declared retry bound.",
       "verificationIds": [
         "focused"
       ],
@@ -166,7 +165,7 @@
     },
     {
       "id": "AGENT_CONTROL_LOOP",
-      "statement": "Progressive exact observations yield only lifecycle-legal diagnosis, repair, retry, re-verification, judgment or delivery suggestions.",
+      "statement": "Published progressive feedback yields only current lifecycle-legal actions.",
       "verificationIds": [
         "focused",
         "base"
@@ -177,7 +176,7 @@
     },
     {
       "id": "SELECTIVE_VERIFICATION",
-      "statement": "Selective feedback reruns invalidate the complete changed-input closure and cannot waive fresh mandatory verification.",
+      "statement": "Selective input closure cannot reuse stale proof or waive fresh mandatory verification.",
       "verificationIds": [
         "focused"
       ],
@@ -187,7 +186,7 @@
     },
     {
       "id": "ADAPTER_BOUNDARY",
-      "statement": "GitHub executes/project canonical V2 requests while check/event/head/skip/status changes cannot create domain readiness.",
+      "statement": "GitHub execution/projection metadata cannot create canonical readiness.",
       "verificationIds": [
         "focused",
         "base"
@@ -198,7 +197,7 @@
     },
     {
       "id": "JEV_BOUNDARY",
-      "statement": "Independent current JEV Decisions and existing BB-157 supervision alone control semantic acceptance and repair authorization.",
+      "statement": "Independent current Decisions and BB-157 alone authorize semantic acceptance/repair.",
       "verificationIds": [
         "focused",
         "base"
@@ -209,7 +208,7 @@
     },
     {
       "id": "BENCHMARK",
-      "statement": "Paired benchmark reports truthful safety, feedback latency, execution/retry counts and research limits.",
+      "statement": "Paired benchmark reports raw safety/latency/counts with explicit limits.",
       "verificationIds": [
         "focused",
         "benchmark"
@@ -330,7 +329,7 @@
       "criterionId": "ADAPTER_BOUNDARY",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N1 GitHub status cannot manufacture canonical readiness",
+      "testTitle": "BB-158 N1 GitHub cannot create readiness",
       "subjectSymbol": "projectGitHubStatus"
     },
     {
@@ -339,7 +338,7 @@
       "criterionId": "CANONICAL_FEEDBACK_CONTRACT",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N2 stale verification subject binding fails closed",
+      "testTitle": "BB-158 N2 stale subject rejects",
       "subjectSymbol": "acceptVerificationObservation"
     },
     {
@@ -348,7 +347,7 @@
       "criterionId": "AGENT_CONTROL_LOOP",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N3 failure classes drive distinct bounded actions",
+      "testTitle": "BB-158 N3 distinct bounded failure actions",
       "subjectSymbol": "deriveVerificationAction"
     },
     {
@@ -357,7 +356,7 @@
       "criterionId": "AGENT_CONTROL_LOOP",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N4 control churn cannot unlock re-evaluation",
+      "testTitle": "BB-158 N4 control churn blocks reevaluation",
       "subjectSymbol": "deriveVerificationAction"
     },
     {
@@ -366,7 +365,7 @@
       "criterionId": "AGENT_CONTROL_LOOP",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N5 early cancellation remains truthful partial execution",
+      "testTitle": "BB-158 N5 cancellation remains partial",
       "subjectSymbol": "publishVerificationRun"
     },
     {
@@ -375,7 +374,7 @@
       "criterionId": "SELECTIVE_VERIFICATION",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N6 invalidated evidence cannot satisfy selective re-verification",
+      "testTitle": "BB-158 N6 stale reuse rejects",
       "subjectSymbol": "planReverification"
     },
     {
@@ -384,18 +383,18 @@
       "criterionId": "JEV_BOUNDARY",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
-      "testTitle": "BB-158 N7 JEV consumes canonical evidence not GitHub status",
+      "testTitle": "BB-158 N7 JEV ignores GitHub status",
       "subjectSymbol": "buildJevInput"
     }
   ],
   "researchGaps": [],
-  "researchBaselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+  "researchBaselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living system state must describe CI as an agent-facing verification execution/feedback plane with exact candidate-bound evidence, explicit authority boundaries, progressive failure semantics and GitHub Actions as an adapter only after the contract is actually delivered."
+    "statement": "Living state describes actual delivered candidate-bound feedback, failure/retry/cancellation semantics and GitHub adapter authority; no research or fixture delivery claim."
   },
   "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization.",
   "ciContract": {
@@ -403,21 +402,19 @@
     "canonical": "Native EvidenceVersion/CAS/fence only; exact bindingContract, loopContract, failureContract, adapterContract in objective evidence. No new phase/store/Decision. Mandatory full verify + independent JEV + actual main/tree/Living receipt; BB-157 supervision, BB-156 cutover."
   },
   "auditEvidence": {
-    "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+    "baselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
     "coverage": "Every file below inspected at exact baseline; full byte/hash inventory and raw timing retained in ci-surface-audit.json. Three workflows only. V2 source absent; merged BB-155/157 plans are future contracts.",
     "paths": [
-      ".github/workflows/test.yml: PR event fixed base/head/body -> living-doc-impact classification + kernel npm verify -> blackboard-gate select -> optional semantic matrix/readiness-verify/objective-supersession-verify -> always merge-gate. Empty matrices may skip, applicable jobs must succeed and each sha==event head. GitHub needs controls launch/actuation, typed JEV supplies correctness.",
-      ".github/workflows/push-test.yml: every push checkout -> Node24 npm verify -> terminal kernel conclusion; no Work selector/evidence/JEV. Duplicate PR/push execution, no canonical observation.",
-      ".github/workflows/blackboard-jev.yml: workflow_call/dispatch work_id + candidate/trusted/controller inputs (missing dispatch SHAs default main) -> resolve actual SHAs -> select exactly1 -> secret-free collect artifact jev-input-ID -> evaluate with provider secret -> always upload jev-evaluation-ID/cache. Node22 collector/evaluator, cancel-in-progress=false per work/candidate; failed collection suppresses evaluate, missing artifact is infra/insufficient not product judgment.",
-      "scripts/blackboard-jev-ci.mjs: trusted base Board selects changed research plan, exact worker candidate, READY publication or supersession. Candidate objective/policy not trusted. Copies trusted docs then restores permitted research draft/baseline; collect -> verification bundle, evaluate -> materialize/evaluate/validate actual verdict; unsatisfied exit1. Publication validates exact trusted plan/cache. GH snapshots select trusted transport refs, no V2 controller yet.",
-      "scripts/blackboard-jev.mjs: canonical objective/plan/subject/evidence -> typed required questions -> state/spec/model/policy cache -> independent provider -> validated all answers -> genuine JEV_EVALUATION. callJev max2 transport attempts/30s; research failure -> RESEARCH_REQUIRED, candidate failure -> repair/research. Confidence telemetry. No check conclusion enters verdict.",
-      "scripts/blackboard-delivery.mjs: clean exact candidate/baseline/plan -> sequential verificationPlan shell commands (300s each), write log then first error throws; IMPLEMENTATION_RESULT emitted only after all pass. publishEvaluation sets DRAFT/READY or repair from exact genuine verdict. verifyDelivery requires candidate ancestor merge ancestor observed main, equal candidate/merge tree and required Living/source blobs; publishDelivery sets DONE. Partial failed runs have logs but no final typed result.",
-      "scripts/blackboard-verification-bundle.mjs: result run logs + claims -> dedup union blobs; install checks canonical safe paths/missing bodies/every digest before write. Preserve checks; no failed/partial observation envelope currently.",
-      "scripts/blackboard-jev-cli.mjs and blackboard-implementation-bootstrap.mjs: explicit work id/profile -> graph contract/context -> collect/eval/publish/verify-delivery/claim; readiness/dependency/scope validated. graph/state projection after publication is legacy authority; local CLI needs no GH status.",
-      "packages/agentic-system/src/local-command-verifier.js: candidate.version==HEAD; argv shell:false + timeout/reap + stdout/stderr full digests; unchanged HEAD/status after execution. exit0 PASS, exit nonzero/SPAWN_ERROR both FAIL, TIMEOUT INCONCLUSIVE, mutation FAIL. No Work generation or structured domain taxonomy.",
-      "packages/agent-tools/src/supervisor.js: localCommandVerifier per task.verifications -> current candidate PASS set -> all claims evaluation -> Core promotion; maxAttempts default3 resumes feedback. Agent message/exit not authority, separate agent-tools contract.",
-      "packages/agent-tools/src/deliver-slice.js: local verifier/promotion + external acceptance profile; src/mcp-server.js: verify route creates same verifier; src/experiment/runner.js: held-out unit/attempt verifiers. All bind candidate.version; separate APIs retained, new CI wrapper adds V2 envelope without changing them.",
-      "packages/core-harness/src/verification.js normalizes candidate/claim/evidence/status/source; verification-assessment.js aggregates minSources, rejectFailures/conflicts/incomplete. These prove declared executable claims inside Core, never outer independent JEV or main delivery."
+      "PR test.yml: event fixed base/head/body; living classification+kernel -> trusted select -> semantic/publication/supersession matrices -> always merge-gate exact head. Applicable needs must succeed; empty matrices may skip. GH scheduling/actuation, genuine JEV correctness.",
+      "push-test.yml: push checkout -> Node24 npm verify only. No Work selection/typed observations/JEV; duplicates kernel execution.",
+      "blackboard-jev.yml: call/dispatch exact work + resolved controller/trusted/subject SHA -> select exactly1 -> secret-free Node22 collect/input artifact -> credentialed evaluate -> always eval/cache upload. Missing dispatch refs default main; collect failure suppresses evaluate. Per-work/candidate concurrency does not cancel.",
+      "jev-ci.mjs: trusted Board selects changed research draft/exact Worker candidate/readiness/supersession; copies trusted control then permitted draft. Collect bundle; evaluate actual materializer/independent verdict; failed judgment exit1. Publication exact plan/cache, no check-derived verdict.",
+      "jev.mjs: exact objective/plan/candidate/evidence + model/policy -> state/spec/cache -> typed independent answers; max2 transport attempts/30s. Research failure research; candidate failure repair/research. Confidence telemetry only.",
+      "delivery.mjs: clean candidate/baseline/plan -> sequential plan commands, 300s each, log then first failure throws, final result only all-pass. Genuine publish routes; candidate ancestor merge ancestor main/equal tree/Living guard then DONE. Partial logs lack typed final accounting.",
+      "verification-bundle.mjs: run/claim union, missing body/safe path/every hash before installation. jev-cli.mjs/bootstrap: explicit Work/profile/context/claim/eval/publication + derived state, legacy graph authority, no GH status.",
+      "local-command-verifier.js: candidate.version==HEAD, argv no shell, timeout/reap/full digests/unchanged HEAD+status. Nonzero+spawn both FAIL, timeout INCONCLUSIVE, mutation FAIL; no Work generation/taxonomy.",
+      "agent-tools supervisor: declared current-candidate PASS claims -> Core promotion, maxAttempts3 feedback resume. deliver-slice external acceptance, MCP verify, experiment held-out unit/attempt all use same local verifier; separate API/authority preserved.",
+      "Core verification normalize candidate/claim/evidence/source; assessment minSources rejects failures/conflicts/incomplete. Executable claims only, no outer semantic/main authority."
     ],
     "measurement": {
       "ciRun": 37156393847,
@@ -434,31 +431,67 @@
       "localFailure": "RB2 process-tree timeout assertion: 791/792 agentic pass, later suites not reached",
       "samples": 1,
       "limit": "No speedup, product verification or proved flake claim."
+    },
+    "extraction": {
+      "command": "python docs/blackboard/evidence/BB-158/extract-ci-audit.py",
+      "sourceSha256": "207df2749a899d86d2cfea2a85f60cb8e4c2bd08517148eb438aa3a4eca0f2d1",
+      "outputSha256": "c951fb207a20d5e8cdb618230eb7d1cb521da1d78a883004c5ebad81909253fc",
+      "jobIds": {
+        ".github/workflows/blackboard-jev.yml": [
+          "select",
+          "evidence",
+          "evaluate"
+        ],
+        ".github/workflows/push-test.yml": [
+          "kernel"
+        ],
+        ".github/workflows/test.yml": [
+          "living-doc-impact",
+          "kernel",
+          "blackboard",
+          "blackboard-jev",
+          "readiness-verify",
+          "objective-supersession-verify",
+          "merge-gate"
+        ]
+      },
+      "unfinishedRegistryCount": 47,
+      "uniqueCommandCount": 172
+    },
+    "provenance": {
+      "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+      "hash": "2e85316eebd217c921869deea71b94f1170d75854997198ee7dc9446f815d3d6",
+      "codeSnapshotSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+      "inventoryRef": "docs/blackboard/evidence/BB-158/ci-execution-inventory.json"
     }
   },
   "researchEvidence": {
-    "sources": [
-      {
-        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/tasks.md",
-        "sha256": "9facab59733aef6d3e9648b45f62543119e483b9b85708e4d9d3960f79f41f19",
-        "bytes": 63526
-      },
-      {
-        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelines.md",
-        "sha256": "cddea630939f9303fc32e27e770fb14c40a47ca1432c12997809b9b9ce9f7ec7",
-        "bytes": 89790
-      },
-      {
-        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/pipelineruns.md",
-        "sha256": "f899e8136dff838837ecbc9c11655abe51b7defee8e9843d3d4f8e7a8bbd02a8",
-        "bytes": 61915
-      },
-      {
-        "url": "https://github.com/tektoncd/pipeline/blob/6cb58f393211d498c2aded1b1a32f4e838f1cff6/docs/taskruns.md",
-        "sha256": "ff0025c47401923aff3f11dbdc4914da083a0b133d0e36387dabd64030eb9843",
-        "bytes": 48104
-      }
-    ],
+    "sources": {
+      "repository": "tektoncd/pipeline",
+      "commit": "6cb58f393211d498c2aded1b1a32f4e838f1cff6",
+      "files": [
+        {
+          "path": "docs/tasks.md",
+          "sha256": "9facab59733aef6d3e9648b45f62543119e483b9b85708e4d9d3960f79f41f19",
+          "bytes": 63526
+        },
+        {
+          "path": "docs/pipelines.md",
+          "sha256": "cddea630939f9303fc32e27e770fb14c40a47ca1432c12997809b9b9ce9f7ec7",
+          "bytes": 89790
+        },
+        {
+          "path": "docs/pipelineruns.md",
+          "sha256": "f899e8136dff838837ecbc9c11655abe51b7defee8e9843d3d4f8e7a8bbd02a8",
+          "bytes": 61915
+        },
+        {
+          "path": "docs/taskruns.md",
+          "sha256": "ff0025c47401923aff3f11dbdc4914da083a0b133d0e36387dabd64030eb9843",
+          "bytes": 48104
+        }
+      ]
+    },
     "eligibility": {
       "repository": "tektoncd/pipeline",
       "checkedAt": "2026-10-04",
@@ -547,12 +580,27 @@
         8
       ],
       "sourceRefs": [
-        "scripts/blackboard-delivery.mjs"
+        "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+        ".github/workflows/test.yml",
+        ".github/workflows/blackboard-jev.yml",
+        "packages/agentic-system/src/local-command-verifier.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "scripts/blackboard-delivery.mjs",
-          "match": "export function collectEvidence"
+          "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+          "match": "\"unfinishedRegistryCount\": 47"
+        },
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "merge-gate:"
+        },
+        {
+          "ref": ".github/workflows/blackboard-jev.yml",
+          "match": "collect Jev evidence"
+        },
+        {
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "export const LocalVerificationReason"
         }
       ],
       "supportingPlanFields": [
