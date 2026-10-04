@@ -1,6 +1,6 @@
 {
   "kind": "BB158_CI_SURFACE_AUDIT",
-  "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+  "baselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
   "checkedAt": "2026-10-04",
   "workflows": 3,
   "surfaces": [
@@ -131,12 +131,69 @@
       "execution": "exact task/profile route and source/context binding; research versus worker authority",
       "selectors": "canonical graph contract plus required readiness/dependencies",
       "finding": "no source checkout authority in V2; consumes BB-155 public configured client only after delivered dependency"
+    },
+    {
+      "ref": "packages/agentic-system/src/supervised-backend.js",
+      "sha256": "e2df3e4dfe97fc06c720dbaa71a2d7c0029d9fb6a7b3f86a5add85eb3cff564d",
+      "bytes": 13004,
+      "execution": "Backend accepted candidate re-grounded in isolated worktree with local verifier for each declared verification; requires typecheck/tests PASS and nonempty diff, then produces Backend evidence",
+      "selectors": "exact accepted SHA plus Backend order/context/declared claim",
+      "finding": "Previously omitted direct verifier consumer; Backend APPLIED is not outer Blackboard DELIVERED"
+    },
+    {
+      "ref": "packages/core-harness/src/core-harness.js",
+      "sha256": "0989cb8bae3c1282c5a2ad4d63e968e4b4648c8f7315bb440f9658b1d555c847",
+      "bytes": 21448,
+      "execution": "recordVerification normalizes record and stores verification artifact",
+      "selectors": "candidate/claim/verifier source",
+      "finding": "Core artifact state remains separate from outer Work authority"
+    },
+    {
+      "ref": "packages/core-harness/src/avo-harness.js",
+      "sha256": "b8d11acd3b93f54feda8f239de3e3bc5372e3380849a9564e1c44a0bcc3e660e",
+      "bytes": 12639,
+      "execution": "assessClaimVerification gates objective/variation assessment",
+      "selectors": "declared claims and evidence sources",
+      "finding": "no branch/main/outer-JEV authority"
+    },
+    {
+      "ref": "scripts/blackboard-work-graph.mjs",
+      "sha256": "26a4c30923f88a058f3dc8c3bcb3826ac50039a03453c305099468879f2f34c1",
+      "bytes": 10115,
+      "execution": "taskReadiness derives scheduler phase/dependency eligibility; validateGraph checks lifecycle routing",
+      "selectors": "canonical legacy graph and receipt refs",
+      "finding": "scheduler readiness does not independently validate semantic allSAT"
+    },
+    {
+      "ref": "scripts/blackboard-delivery-context.mjs",
+      "sha256": "b93282679081a94b8be6fbf824ccb6f7de428319e277b4ee942082a34e5f7e4d",
+      "bytes": 3436,
+      "execution": "deriveDeliveryContext checks dependencies and genuine readiness, exposes current lane/write scope",
+      "selectors": "exact goal/plan plus direct dependency truth",
+      "finding": "unclaimed prospective IMPLEMENT scope is not actual claim authority"
+    },
+    {
+      "ref": "scripts/blackboard-delivery-contract.mjs",
+      "sha256": "0a6db2cf0ffe50d5c09eea3588d48bb90c13985dac6f4389990d386d477388db",
+      "bytes": 12487,
+      "execution": "loadSubject/assertDeliveryArtifact validate typed subject and source seams, candidate/evidence/receipt wire",
+      "selectors": "canonical refs and semantic hashes",
+      "finding": "schema validation is not semantic correctness"
+    },
+    {
+      "ref": "scripts/blackboard-task-context-resolver.mjs",
+      "sha256": "332f8d5be27eb80b45cea72dd3eda949fad498b7daa265d627cfbccbf39e786f",
+      "bytes": 6304,
+      "execution": "explicit task route to delivery or legacy context",
+      "selectors": "canonical graph, registry and exact refs",
+      "finding": "public entrypoint still reads legacy authority until cutover"
     }
   ],
   "edges": [
     "PR event -> living+kernel -> trusted select -> semantic/publication/supersession -> merge-gate",
     "explicit local CLI -> same materializer/collector/evaluator/publisher -> exact main verification",
-    "agent-tools run/deliver/MCP/experiment -> localCommandVerifier -> Core artifact/assessment -> existing supervised promotion"
+    "agent-tools run/deliver/MCP/experiment -> localCommandVerifier -> Core artifact/assessment -> existing supervised promotion",
+    "Backend accepted candidate -> supervised-backend isolated re-ground -> local verifier -> Backend evidence/APPLIED (separate outer Work authority)"
   ],
   "absence": "scripts/blackboard-v2 is not delivered on baseline. BB-155/157 merged READY plans are future dependency contracts, not runnable APIs.",
   "npmVerifyExpansion": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
@@ -183,8 +240,8 @@
   },
   "extraction": {
     "command": "python docs/blackboard/evidence/BB-158/extract-ci-audit.py",
-    "sourceSha256": "207df2749a899d86d2cfea2a85f60cb8e4c2bd08517148eb438aa3a4eca0f2d1",
-    "outputSha256": "c951fb207a20d5e8cdb618230eb7d1cb521da1d78a883004c5ebad81909253fc",
+    "sourceSha256": "3235f41459885ffd7c0df861667d8b759d266915419fda2177865e168c31b8d2",
+    "outputSha256": "14237eaab0f6b6fe900b42d6a42d08076da3c408c921345162c158ff0268b8e8",
     "workflowIds": [
       ".github/workflows/blackboard-jev.yml",
       ".github/workflows/push-test.yml",
@@ -211,6 +268,47 @@
     },
     "unfinishedRegistryCount": 47,
     "uniqueCommandCount": 172,
-    "npmVerify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs"
+    "npmVerify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
+    "runtimeCensusFiles": 14,
+    "literalImportClosureFiles": 208,
+    "npmVerifyScriptClosure": [
+      "benchmark",
+      "eval:agentic",
+      "eval:artifact-manifest-research",
+      "eval:blackboard-context",
+      "eval:cognition",
+      "eval:fidelity",
+      "eval:memory-reuse",
+      "eval:reference",
+      "eval:self-upgrade-research",
+      "eval:turn-memory",
+      "eval:workflow-replay",
+      "example",
+      "test",
+      "test:agent-tools",
+      "test:agentic",
+      "test:blackboard-artifacts",
+      "test:blackboard-context",
+      "test:blackboard-jev",
+      "test:blackboard-work-graph",
+      "test:core",
+      "test:oracle",
+      "verify",
+      "verify:blackboard-artifacts",
+      "verify:blackboard-context",
+      "verify:blackboard-delivery-contracts",
+      "verify:blackboard-state",
+      "verify:blackboard-work-graph",
+      "verify:consumer",
+      "verify:current-docs",
+      "verify:package"
+    ]
+  },
+  "coverageMethod": {
+    "workflowEnumeration": "all git-tracked .github/workflows YAML jobs/needs/conditions/steps/triggers",
+    "commandRegistry": "all root package scripts + recursive verify npm-script expansion + all unfinished/non-withdrawn plan verification commands",
+    "runtimeDiscovery": "all scripts and packages src/bin JS modules searched for six verifier/assessment/collector/judge/delivery symbols; every hit retained with line and source hash",
+    "dependencyClosure": "literal relative import/export/dynamic import closure from all discovered files; unresolved and nonliteral imports retained explicitly",
+    "limits": "arbitrary dynamic plan shell commands are catalogued, not symbolically executed; test glob commands retained in scripts. Census hits include definitions/imports/reexports as well as invocations. No command-pass or future V2 runtime claim."
   }
 }
