@@ -120,7 +120,7 @@
     ]
   },
   "implementationSlices": [
-    "S0 \u2014 scripts/blackboard-v2/control-store.mjs exports offline free installMigrationProfile; cli.mjs owns bb upgrade --config ABS. Read DB/auth from explicit operator/server config; open raw SQLite only in authenticated upgrade, avoiding normal new-controller pin rejection. Apply migrationContract.upgrade exactly, no Work/import/selector changes. Tests wrong old pins/live claim/fault rollback and correct new-pin reopen with all incumbent bytes unchanged. Actual upgrade waits S6 accepted main code. Own CUTOVER.",
+    "S0 \u2014 control-store.mjs exports offline free installMigrationProfile; cli.mjs bb upgrade --config ABS. Explicit DB/auth config, operator-only raw SQLite open avoids new-controller pin rejection. Exact migrationContract.upgrade: Work/records/fences/leases/selector unchanged; sampled store-clock watermark advances atomically. Tests wrong pin/live claim/fault rollback, post-upgrade clock regression and new-pin reopen. Actual upgrade waits accepted main code in S6. Own CUTOVER.",
     "S0a \u2014 Depends S0; scripts/blackboard-v2/server.mjs and transport.mjs. Implement readAuthority(config), operator commitMigration HTTP request, read-only verifyWorkMerge; GET /v2/authority and POST /v2/migrations/commit exact S4 payload. HTTPS server key/cert, client CA/hostname plus authority/controller/protocol pins per cutoverContract.transport. Credentials outside checkout; errors reject, no fallback. Tests two cwd, wrong cert/pin/role, missing service and same installed authority. Own CUTOVER.",
     "S0b \u2014 Depends S0a; public bootstrap/task-context/context-materialize/context-verify/work-graph/state-project/delivery-context/delivery/jev-cli/jev-ci scripts and test.yml/blackboard-jev.yml. Implement currentSessionBlueprint routing: query one pinned selector, LEGACY executes existing path, V2 calls native service only; raw old current APIs reject RETIRED before I/O. Immutable historical reads require exact SHA. Tests every entrypoint with contradictory cwd graphs, missing config/network/wrong protocol, zero legacy-current reads or dual writes. Own CUTOVER.",
     "S1 \u2014 Depends S0. scripts/blackboard-v2/main-freeze.mjs owns GithubMainFreeze; migrate-legacy.mjs owns buildMigrationManifest({snapshotSha,archive,freezeReceipt,capabilities})->Manifest; GithubMainFreeze.acquire({expectedMainSha,authorityRevision})->FreezeReceipt; release restores saved protection. Quiesce claims/callbacks on writable main, then held hard barrier/main lock. Enumerate complete exact source closure into unique exhaustive included/DONE/withdrawn sets. Unknown/ambiguous/dangling source fails before import. N1 verifies all ids and lock races. Own MANIFEST/TERMINAL_EXCLUSION.",
@@ -171,7 +171,7 @@
         "repository"
       ],
       "evidenceRequired": [
-        "S0 actual upgrade: wrong pins/schema/live claim and each fault reject/rollback; restart preserves all incumbent Work/record/fence/clock and selector, no import.",
+        "S0 actual upgrade: wrong pins/schema/live claim and faults reject/rollback; restart preserves incumbent Work/records/fences/lease records/selector. Clock watermark advances atomically; regression cannot revive expired ownership. No import.",
         "S4 actual two-connection cutover: every staged-row/proof/selector/report/receipt/allocator fault rolls back; exact source/destination/revision/freeze/main/live-lease guards; peers old-until-COMMIT then full-new.",
         "Postcommit every id/hash/next/context/public/raw route checked before unlock; raw current legacy RETIRED before I/O, no fallback/dual-write. Fixtures are no live delivery."
       ]
@@ -226,7 +226,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "S0 installMigrationProfile: old pin/live claim/fault refuses with every incumbent row/selector unchanged. S4 commitMigration: all row/proof/selector/report/receipt/allocator faults ROLLBACK; two WAL peers observe old-until-COMMIT then full-new. Held freeze/main/source/destination/revision/live-clock guards required; identical lost-response retry yields same receipt."
+      "requiredObservations": "S0 installMigrationProfile: old pin/live claim/fault refuses with incumbent Work/records/selector unchanged; clock regression cannot resurrect leases after successful upgrade. S4 commitMigration: all row/proof/selector/report/receipt/allocator faults ROLLBACK; two WAL peers observe old-until-COMMIT then full-new. Held freeze/main/source/destination/revision/live-clock guards required; identical lost-response retry yields same receipt."
     },
     {
       "invariant": "After selector commit current Work uses only V2; unsupported clients/legacy writes reject and no fallback or dual-write occurs.",
@@ -712,15 +712,15 @@
     "records": "LOOKBACK/failureAnchorRef/repairReflectionRef; reflection failedAttemptRef binds original failure, publishingAttemptRef binds current live owner; independently resolved immutable records, no synthetic reflection."
   },
   "migrationContract": {
-    "profile": "Delivered BB-155/157 V2_SUPERVISION_V1 pinned; READY is design only.",
+    "profile": "Pinned delivered BB-155/157 V2_SUPERVISION_V1; READY is design only.",
     "exports": "migrate-legacy: buildMigrationManifest/transformLegacyWork/resolveImportedAuthority/assertMigrationParity; control-store: installMigrationProfile/commitMigration; transport: verifyWorkMerge read-only.",
     "boundary": "One SQL handle: stage rows/selector -> S3 full parity -> zero diff/live leases -> report/receipt/allocator COMMIT, otherwise ROLLBACK. WAL peers see old. Import proof has no report hash; receipt binds report.",
     "nativeContracts": {
       "sourceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json"
     },
     "nativePhaseMap": "Exact parityBlueprint.phaseRows and actionEquivalence: preserve source semantic phase; incompatible source aborts, never downgrades.",
-    "nativeAcceptance": "Native snapshot resolves importedReadinessAuthority/importedCandidateAuthority from status.importAuthorityRef={kind,id,hash}. Readiness gen1/spec/plan; candidate exact accepted version refs/SHA/tree. Purpose ref: readinessDecisionRef or latestCandidateDecisionRef; native nonSAT prevails. Lifecycle/context use store facts, apply revalidates; no actor flags. Original typed input/eval/cache unchanged. Proof has no report ref; CutoverReceipt binds report.",
+    "nativeAcceptance": "Store resolves importAuthorityRef into purpose facts: readiness binds gen/spec/plan; candidate binds accepted versions/SHA/tree. Matching native purpose Decision prevails even nonSAT. Lifecycle/context consume store facts; CAS apply revalidates. Original typed input/eval/cache unchanged; receipt binds report, import proof does not.",
     "doneBinding": "Precontract DONE: LIVING_CONSOLIDATION_V1={snapshotSha,taskHash,state:DONE,consolidatedRefs/hashes}; prove pinned trusted DONE + Living hashes, no terminal Work/fabricated receipt. Contracted DONE: actual valid receipt+Living required. Native LIVING consumes stored proof; invalid contract/missing Living aborts, no fallback.",
-    "upgrade": "Offline free function installMigrationProfile({serverConfigFile,operatorTokenFile,expectedAuthorityId,expectedControllerDigest,expectedSchemaVersion,expectedAuthorityRevision,newControllerDigest}): read pinned absolute database/token config, authenticate operator, open SQLite directly (not normal new-controller reopen). BEGIN IMMEDIATE validates old pins/store clock/zero live claims and every old row; additive MIGRATION_PROFILE_V1 schema/metadata only. Preserve all Work/record/fence/clock/selector bytes, fault ROLLBACK. Then normal reopen requires new pins. Actual upgrade follows accepted main code, never implicit."
+    "upgrade": "Offline free installMigrationProfile({serverConfigFile,operatorTokenFile,expectedAuthorityId,expectedControllerDigest,expectedSchemaVersion,expectedAuthorityRevision,newControllerDigest}): pinned absolute DB/auth config, operator auth, direct SQLite open (not normal new-controller reopen). BEGIN IMMEDIATE validates old pins, samples store clock/regression and zero live claims, validates all old rows; additive MIGRATION_PROFILE_V1 only. Preserve Work/records/fences/lease records/selector; persist sampled lastCommittedTime with profile metadata to prevent expired lease resurrection. Fault ROLLBACK all. Normal reopen requires new pins; actual upgrade follows accepted main code."
   }
 }
