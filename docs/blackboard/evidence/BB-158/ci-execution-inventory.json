@@ -1,7 +1,2381 @@
 {
-  "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+  "baselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
   "boundary": "Dynamic worker commands are exact plan registry inputs to collectEvidence; extraction does not execute them or claim checks passed. No secrets, network, control mutation or future V2 source used.",
   "classification": "EXECUTED_READ_ONLY_SOURCE_AUDIT",
+  "literalImportClosure": [
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/tool-adapters.js",
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/local-git-workspace.js"
+      ],
+      "sha256": "3d1dda849d2d364267b8dc94d367952759b575c047effae47823f54a2b485006",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/experiment/arms.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/experiment/suite.js",
+        "packages/agent-tools/src/observation.js",
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/tool-adapters.js"
+      ],
+      "sha256": "065e34ae1fa70d9c1dd92ce70b6b2f539d9a06004d426d9aaeb01cf4d8c22c37",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/experiment/registration.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/experiment/arms.js",
+        "packages/benchmark/src/index.js"
+      ],
+      "sha256": "ea18da651df9c518ec98067a46f24ec4f875cad70c3ec7751f13d6ffd73894b4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/experiment/runner.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/experiment/arms.js",
+        "packages/agent-tools/src/experiment/registration.js",
+        "packages/agent-tools/src/experiment/suite.js",
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/run-trace.js",
+        "packages/agent-tools/src/tool-adapters.js",
+        "packages/agentic-system/src/index.js",
+        "packages/benchmark/src/index.js"
+      ],
+      "sha256": "772cdb6040e7a42dfed8bebfcec363ee243ea2c0feeb27d5e30748fd4839dd8a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/experiment/suite.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/process-runner.js"
+      ],
+      "sha256": "69a0fc34a7776a9b49b235d06422d95099d290d36e0fa3683e72b92f3891614a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/mcp-server.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agentic-system/src/index.js"
+      ],
+      "sha256": "455c03691df84aaf50faf78883ed3469ed5447f8df6dfe113b5760a3344c9513",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/observation.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/redaction.js",
+        "packages/agent-tools/src/run-trace.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "74b2ba5f5736a4c26782178f3443626fecc94afc22c40ac9b1a6b911c574c0db",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/output-parsers.js",
+      "relativeDependencies": [],
+      "sha256": "bdf2497868b536e57789991e09ef644e908835bee25d81ebbcf5f1d19feeaa9b",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/process-runner.js",
+      "relativeDependencies": [],
+      "sha256": "4d8d1154547440dc6fd2fe258892f9707dd3d971f29512aa696293fe7db1518a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/recovery.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/run-trace.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "b61b98a9718eb343ecbef0a59239bb4c6ddd813372e540fbfc1b0eef3c67a562",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/redaction.js",
+      "relativeDependencies": [],
+      "sha256": "3b4992723f0d1a0b9fa77daa155d7a31dfc62a11561a587582899982754dc245",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/run-trace.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/output-parsers.js",
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/redaction.js"
+      ],
+      "sha256": "af728599dbda35d2a9d81cc1738506d549d888e6666159adacb676251fb91c82",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/mcp-server.js",
+        "packages/agent-tools/src/process-runner.js",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/task-context.js",
+        "packages/agent-tools/src/tool-adapters.js",
+        "packages/agentic-system/src/index.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "722e28c621bed7f51ef75500f783375611af02cb31496e84f3556a5c86bf4014",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/task-context.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/index.js",
+        "packages/oracle/src/index.js"
+      ],
+      "sha256": "c144ff09630c785f0450c0fdec89162c23c7d2d937d9da2fe15c0b0aee414df1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agent-tools/src/tool-adapters.js",
+      "relativeDependencies": [],
+      "sha256": "0cfc10e6e6ad3cb9de5a16c1212b9a58b4d91d4c2c5120722fe52b70a52e1650",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/acceptance-snapshot.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/deployable-artifact.js"
+      ],
+      "sha256": "496936b18b4fd66862332f7d8c8ce510e2121e7ce88cb49f72a5a9f615a0e8b1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/application-orchestrator-base.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-graph.js",
+        "packages/agentic-system/src/blackboard-orchestrator.js"
+      ],
+      "sha256": "c27ae8b3ea3e420e4c015ad47e45cf7ca87b9a2078ce4f6db5e7dd35e85d00c4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/application-orchestrator.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/application-orchestrator-base.js",
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "130c121435cf5ab3950291cdf8bd570be2bbd435e4f90873e489819d1d339120",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/artifact-manifest.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/blackboard-json-payload.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "a0cb777f894a5cf8ed83c7632be90bb88d52b318a183f2d500a9d23f941a4f20",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/artifact-ref.js",
+      "relativeDependencies": [],
+      "sha256": "a7b08116b0563faa03e5032a0ba3394736ef1f4b75df91baf914205496658b52",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-advisor.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/contracts.js"
+      ],
+      "sha256": "994eeef1ec0ee167f8d6c40289b8bba2b46fce8662f17e2803634211b1fc36f2",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-application.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-advisor.js",
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/backend-worker.js",
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/oracle.js"
+      ],
+      "sha256": "56cb31c0ceb4c8904c392c229866d7bcd3332587dd8caff4d25efaf2ed53a4cc",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-completion.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/evidence.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "576133f9dd47d80c080a31713883f5a3cde6fb47483d31b891b96ea21f20ab65",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-execution-strategy.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/domain-execution-input.js"
+      ],
+      "sha256": "92e60220a86c0d0661ed290559f9a9d546a7ab00c26e9331426f0f6c27390359",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-qa-project-acceptance.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/trust-artifact-store.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "cc01253ae5598bacaa679d913b643a6a310ffdc101e52a4fd7a55b5102345192",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-session-store.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "a0122c24ebeee055301c281a0461c929ad9370c25a7e8d3c1937bb74ca2349c7",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/backend-worker.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/contracts.js",
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "fe8b02d611619fdcf7b479d4992154e890d3d89008395948e4b3778462d6e8fd",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/blackboard-graph.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/blackboard-store.js"
+      ],
+      "sha256": "b12523ba8b985accb622d36f360cd2b10d78abdb50ecbe0bae4185a432facc11",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/blackboard-json-payload.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-graph.js"
+      ],
+      "sha256": "274b4cb6362e1d18358799fa1cd3354c8fd2b61f8cacb5a360cf39f21f03f5c0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/blackboard-orchestrator.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "0093987fb0977fb1fc5680e98bd8c52c513079c21333f5281ba991844a0894c5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/blackboard-store.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js"
+      ],
+      "sha256": "be337a6ec862acebd1cdf300e0a95f8b002986fd36bc53ecca1706ed5d68c09a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/causal-provenance.js",
+      "relativeDependencies": [],
+      "sha256": "da7546e4e8cbdaed6c5850e841c47ca265a9fe58c147dcfacf467c3da1e53de7",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/causal-reconstruction.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/causal-provenance.js",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/product-closure.js",
+        "packages/agentic-system/src/product-lineage.js"
+      ],
+      "sha256": "2610bbcbb25f970b10b29b07d298a67454ea84304f4fba83eff8dfa725e821e4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/composition.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/qa-application.js"
+      ],
+      "sha256": "8dd2f43d12f088812c760b7519fb445f22b8de157523b341858137b8376c610f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/contracts.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/artifact-ref.js"
+      ],
+      "sha256": "676c32f4293ddc6a3488e5e50ee81ca7c4268b61c3c189d4843568c2beeffac1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/cross-domain-obligation.js",
+      "relativeDependencies": [],
+      "sha256": "6c913168891067f7f7b75cd9757702049091187f01a56a0853d810d843f1de7e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/decision-outcome-pilot.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "721b009692387265596dd268e4b62c6e17b0ab3348dd2d42195a4ec32b4ca549",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/dependency-invalidation.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/cross-domain-obligation.js"
+      ],
+      "sha256": "dc511e004b225eddab14e1f4d2747e98847764ea529cea09f67fe3c1f7951741",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/deployable-artifact.js",
+      "relativeDependencies": [],
+      "sha256": "4d612c1ba001764098c5e9ce5ca58abdcee8e8c9676fb54abc06ab17f82de07d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/deployment-release.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/deployable-artifact.js",
+        "packages/agentic-system/src/devops-execution-strategy.js",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sha256": "f9b41ec5a87d6d2d438d1f938cf96d2ae8c7a80d6153f5641e4af93efbbdb066",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/devops-execution-strategy.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/deployable-artifact.js",
+        "packages/agentic-system/src/domain-execution-input.js"
+      ],
+      "sha256": "554f59c3435e7cf71e0dbdb03fd9ed8f93091c826b7a14d65cf0f1ae8b327094",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-activation-host.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/domain-activation-source.js",
+        "packages/agentic-system/src/domain-activation.js"
+      ],
+      "sha256": "ee3a4b1d0c8759bbe54998f42007734ca9f003864100adc6e07e21019d5e01bb",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-activation-source.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/cross-domain-obligation.js"
+      ],
+      "sha256": "6122002343225851f74ff8a2d18a50e884adb49b049232021937aba48d857644",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-activation.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/domain-activation-source.js"
+      ],
+      "sha256": "27fb4ba4c4fb069696094eb6223202db06773b9047f1f11f3a11e4c0344429f0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-execution-control.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/domain-execution-store.js",
+        "packages/agentic-system/src/organization-authority-store.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/organization-work.js"
+      ],
+      "sha256": "2db216b75aee3cd4429525e2ac7baecb39076130f3bc875fbe961c82f0afead6",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-execution-input.js",
+      "relativeDependencies": [],
+      "sha256": "21e567db1f80a33e0521f45adef1c7ef40011f24fcccb8e1d9f9026258fc5218",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-execution-store.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sha256": "f793c73190cf295231afa92f9d205d31bb24945cb197d21e01b75800efef3095",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-runtime-composition.js",
+      "relativeDependencies": [],
+      "sha256": "36a72b03cf5018ed6fb0f4a1acd44c46d88bc25eb1d33b40727adfaa960767ab",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/domain-write-authority.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/cross-domain-obligation.js",
+        "packages/agentic-system/src/domain-execution-store.js",
+        "packages/agentic-system/src/product-lineage.js"
+      ],
+      "sha256": "60328c138e0cb328e4b122a641aab9a3576a358de1625471da4de3e928b6b7ec",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/durable-backend-qa.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/qa-application.js",
+        "packages/agentic-system/src/qa-completion.js",
+        "packages/agentic-system/src/qa-contracts.js"
+      ],
+      "sha256": "3caadd96e5238c6f0862da1c985e7a1c0e9b2a6faa6a8b372992edeb1a92d36d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/evidence.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "d632647ef39e3eb9b1748f0ee2218fe046d3b487d4e7eeec6657e22b579bd88e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-contracts.js",
+      "relativeDependencies": [],
+      "sha256": "2d05c796f0c18c391220d1baec0724e60c683302bce79bbced1d406cdbadf951",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-controller.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-contracts.js"
+      ],
+      "sha256": "af50c5b7041913ee95ba0831f8039cd95fa43f0f4f3854d05d5cd591a3f4dd86",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-dependencies.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/how-evolution.js",
+        "packages/benchmark/src/index.js",
+        "packages/oracle/src/index.js"
+      ],
+      "sha256": "561a2594ed07bb759016cd3d085022ec2a610e3d704f777bd4a78eb3a6e4aaf4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-improvement.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-contracts.js"
+      ],
+      "sha256": "a3f4a8a50bc56f7dd06b32655513a4d0fbd315e72c884a9506909a4076b49051",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "relativeDependencies": [],
+      "sha256": "02d746a9ca1ff09ebab7361b09ce53a0237a2239e6865305838a79e765ab2f4c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+        "packages/agentic-system/src/feedback-outcome.js",
+        "packages/agentic-system/src/grounded-observation.js",
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sha256": "3e2a9c36cf86f16630fa109fa793c284c0f7c8d3adb93e135249843c77711cec",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-outcome.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-lifecycle-contracts.js"
+      ],
+      "sha256": "a081f543e488244725915cd00623f50df39b3baeed1424f06ebb8e524b2729ed",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/feedback-projection.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-contracts.js"
+      ],
+      "sha256": "fd18e1db37601c5ce87d18e3bed65ce8985ed5ba6695e4dcf3c1dc47eb0d35e2",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/frontend-application.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/frontend-completion.js",
+        "packages/agentic-system/src/frontend-contracts.js",
+        "packages/agentic-system/src/frontend-worker.js",
+        "packages/oracle/src/index.js"
+      ],
+      "sha256": "6dd1ea2068d72bd7293a543fd16af2ad2e14bfae116f536169ce191e8705c2a3",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/frontend-completion.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/evidence.js",
+        "packages/agentic-system/src/frontend-contracts.js"
+      ],
+      "sha256": "c18f5c89f8e0319b69648f049d99cd25883399eef1e99c1d101866f6574e02a3",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/frontend-contracts.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/artifact-ref.js"
+      ],
+      "sha256": "d4ab924dac4584b1f84db272f71a34abee592f1572861711f77e0348c2001aa7",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/frontend-execution-strategy.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/domain-execution-input.js",
+        "packages/agentic-system/src/frontend-application.js",
+        "packages/agentic-system/src/frontend-completion.js",
+        "packages/agentic-system/src/frontend-contracts.js"
+      ],
+      "sha256": "39a433efa5981d410c1a75fae087183f9c064e3eedac280eeb7164e42b41ece0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/frontend-worker.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/frontend-contracts.js"
+      ],
+      "sha256": "c03b15d4111ea20df1a33c1297aa5b74fb041231dfaa726a04532a6ac89671ca",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/grounded-observation.js",
+      "relativeDependencies": [],
+      "sha256": "f15bb44b450e3170ab997cef4d7b8ee62e3a17be4eeb0102954495a54f3c1196",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/how-evolution.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "08dfdb846553edc0ee29603801dd43294e8726f7f6b869078a106c4da135e9d1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/how-evolution.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "164843521d99bb738c00c55d7f9836cb47b1e850d59e28ec466fc6ffca45f55d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/improvement-pattern.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/feedback-lifecycle-contracts.js"
+      ],
+      "sha256": "29533065a2b1fa00f3033be50b4e16fe54d42554853ca856299d8cfb10ab2625",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/improvement-proposal.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/how-evolution.js"
+      ],
+      "sha256": "3f9f07bf9e7926a9f543d9a03ff1d1213cb8f20809f79aa3939d3026de755dd0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/index.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/acceptance-snapshot.js",
+        "packages/agentic-system/src/artifact-manifest.js",
+        "packages/agentic-system/src/artifact-ref.js",
+        "packages/agentic-system/src/backend-advisor.js",
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/backend-execution-strategy.js",
+        "packages/agentic-system/src/backend-qa-project-acceptance.js",
+        "packages/agentic-system/src/backend-session-store.js",
+        "packages/agentic-system/src/backend-worker.js",
+        "packages/agentic-system/src/blackboard-graph.js",
+        "packages/agentic-system/src/blackboard-json-payload.js",
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/causal-provenance.js",
+        "packages/agentic-system/src/causal-reconstruction.js",
+        "packages/agentic-system/src/composition.js",
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/cross-domain-obligation.js",
+        "packages/agentic-system/src/decision-outcome-pilot.js",
+        "packages/agentic-system/src/dependency-invalidation.js",
+        "packages/agentic-system/src/deployable-artifact.js",
+        "packages/agentic-system/src/deployment-release.js",
+        "packages/agentic-system/src/devops-execution-strategy.js",
+        "packages/agentic-system/src/domain-activation-host.js",
+        "packages/agentic-system/src/domain-activation-source.js",
+        "packages/agentic-system/src/domain-activation.js",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/domain-execution-input.js",
+        "packages/agentic-system/src/domain-execution-store.js",
+        "packages/agentic-system/src/domain-runtime-composition.js",
+        "packages/agentic-system/src/domain-write-authority.js",
+        "packages/agentic-system/src/durable-backend-qa.js",
+        "packages/agentic-system/src/feedback-contracts.js",
+        "packages/agentic-system/src/feedback-controller.js",
+        "packages/agentic-system/src/feedback-dependencies.js",
+        "packages/agentic-system/src/feedback-improvement.js",
+        "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+        "packages/agentic-system/src/feedback-lifecycle-controller.js",
+        "packages/agentic-system/src/feedback-outcome.js",
+        "packages/agentic-system/src/feedback-projection.js",
+        "packages/agentic-system/src/frontend-application.js",
+        "packages/agentic-system/src/frontend-completion.js",
+        "packages/agentic-system/src/frontend-contracts.js",
+        "packages/agentic-system/src/frontend-execution-strategy.js",
+        "packages/agentic-system/src/frontend-worker.js",
+        "packages/agentic-system/src/grounded-observation.js",
+        "packages/agentic-system/src/how-evolution-jev-adapter.js",
+        "packages/agentic-system/src/how-evolution.js",
+        "packages/agentic-system/src/improvement-pattern.js",
+        "packages/agentic-system/src/improvement-proposal.js",
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/local-git-workspace.js",
+        "packages/agentic-system/src/observation-context-binding.js",
+        "packages/agentic-system/src/opencode-runtime-adapter.js",
+        "packages/agentic-system/src/oracle-context-requirements.js",
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/organization-artifact-store.js",
+        "packages/agentic-system/src/organization-authority-store.js",
+        "packages/agentic-system/src/organization-authority.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/organization-observer.js",
+        "packages/agentic-system/src/organization-work.js",
+        "packages/agentic-system/src/persisted-payload-application-orchestrator.js",
+        "packages/agentic-system/src/pm-sa-coordination-store.js",
+        "packages/agentic-system/src/pm-sa-coordination.js",
+        "packages/agentic-system/src/product-acceptance-policy.js",
+        "packages/agentic-system/src/product-closure.js",
+        "packages/agentic-system/src/product-history.js",
+        "packages/agentic-system/src/product-lineage.js",
+        "packages/agentic-system/src/product-qa.js",
+        "packages/agentic-system/src/product-state-projection.js",
+        "packages/agentic-system/src/qa-application.js",
+        "packages/agentic-system/src/qa-completion.js",
+        "packages/agentic-system/src/qa-contracts.js",
+        "packages/agentic-system/src/qa-worker.js",
+        "packages/agentic-system/src/runtime-observation.js",
+        "packages/agentic-system/src/self-upgrade-pilot.js",
+        "packages/agentic-system/src/session-handoff.js",
+        "packages/agentic-system/src/supervised-backend.js",
+        "packages/agentic-system/src/trust-artifact-store.js",
+        "packages/agentic-system/src/work-selection.js"
+      ],
+      "sha256": "f64d216478c0587e9d487a9c50f807e44992545af7452edb23871e6d0182774a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/local-command-verifier.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "f626fae5ba916469518da47373de07fe54320ec180f67b3711f625f75efd8967",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/local-git-workspace.js",
+      "relativeDependencies": [],
+      "sha256": "a125a7b5554ea8121f1bb6caea7a88d4bf8ced4aa0089a2283568c1da42acd15",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/observation-context-binding.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/grounded-observation.js"
+      ],
+      "sha256": "37a9c6b71fd94adeab17e07d635e0bd20b850462520df29ba7c3bfa461d63ee1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/opencode-runtime-adapter.js",
+      "relativeDependencies": [],
+      "sha256": "930445f89e28ca2b49873c245ffbf4f3373e5f7a076a635df93a39dfa99c1ee7",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/oracle-context-requirements.js",
+      "relativeDependencies": [
+        "packages/oracle/src/index.js"
+      ],
+      "sha256": "221c81d565ae66ee8d53d72f09e8639780962ede4d333416551504eab32700fa",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/oracle.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/oracle-context-requirements.js",
+        "packages/agentic-system/src/qa-contracts.js",
+        "packages/oracle/src/index.js"
+      ],
+      "sha256": "357025bfdbdd8c9996e72064b9531f3c48719c801856ea2fc269744a3d3e1461",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-artifact-store.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/domain-execution-input.js"
+      ],
+      "sha256": "0670da89d393e5063e2660a47e50b61585125cae50837339e6983ea1d608fdf5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-authority-store.js",
+      "relativeDependencies": [],
+      "sha256": "ba8dbccde6030944649250131606ebf9ce7ac6bd7d33ae46e6d82c034d023d50",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-authority.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sha256": "26a79e9417ea54182c2dde656dd3a1dd1ad3a8b88f01551ae6243a7fc9bbfe2f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-claim.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/organization-authority-store.js",
+        "packages/agentic-system/src/organization-work.js"
+      ],
+      "sha256": "32d8d04d33f4bd10ca60f602d859f08eebe544a06d4b448d17857bc7c16fc50e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-observer.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/causal-reconstruction.js"
+      ],
+      "sha256": "4ffd3c97097c8efd1e6e5ddc53307aad5082d4b731b66ea423ea2d094e14bb0e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/organization-work.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sha256": "fc8cfa92bad7829e13fdb398e577301ef3371fe37d2805a8e307cb70891e14d4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/persisted-payload-application-orchestrator.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/application-orchestrator.js",
+        "packages/agentic-system/src/blackboard-json-payload.js"
+      ],
+      "sha256": "b633449a6ec25f2ff21e0570c8348badf3ee614860140bb81faf58ea69bee7ce",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/pm-sa-coordination-store.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "c694987f972645aa318039c2d8c6abd2a8dca9c10314d1108ab874eb0216ec8c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/pm-sa-coordination.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/pm-sa-coordination-store.js",
+        "packages/agentic-system/src/session-handoff.js"
+      ],
+      "sha256": "d5e93f08cf35d86d5ab143abafd12a162d7a9ea33198d0b06b026c727b01cbd4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-acceptance-policy.js",
+      "relativeDependencies": [],
+      "sha256": "84c9598a9e83aa0737d8f1a7035b806a3993fa837b54edb2597952c1bbbcb4e5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-closure.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/product-history.js"
+      ],
+      "sha256": "44ce9f92464cba293bb763e6860090ed538bd3849170dd16c3d0fa476c9cf43f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-history.js",
+      "relativeDependencies": [],
+      "sha256": "96f7f0658bf57527139def10142efc23242d7ce4a8f4f28d16b04f822559a5c8",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-lineage.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/cross-domain-obligation.js",
+        "packages/agentic-system/src/domain-execution-store.js"
+      ],
+      "sha256": "50ef462d24f767d3e226acdbdfdddb0a2597e8cd191eef6afa389463dc45c95a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-qa.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/deployable-artifact.js",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/domain-execution-input.js",
+        "packages/agentic-system/src/runtime-observation.js"
+      ],
+      "sha256": "890049555d1b8aa3210227e568a855b1e61c1533f69241243ae89c26e48155e8",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/product-state-projection.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/product-acceptance-policy.js"
+      ],
+      "sha256": "3494e570e53fe8563477cbeb4b7331c7dcc6d68e39d2d16c61314c7367b2765c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/qa-application.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/backend-completion.js",
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/qa-completion.js",
+        "packages/agentic-system/src/qa-contracts.js"
+      ],
+      "sha256": "eb08f4901dcdc3cc6f880d6b8d4cedfd4603d4f306dea1e347e243b41e8ecfdf",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/qa-completion.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/evidence.js",
+        "packages/agentic-system/src/qa-contracts.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "85e58a09d8746134e6f56f45761657a4532abea4d0aa2ebca174ae6764800938",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/qa-contracts.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/artifact-ref.js"
+      ],
+      "sha256": "2d9bca85c9c90c16b64296332f5b5e913a5f596390939cf33c302b1228065ebb",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/qa-worker.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/qa-contracts.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "487dd5e3a291879a8496bacd14d22016f83bd896c346af76ac28e0bf9e98e170",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/research-continuation-base.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/session-handoff.js"
+      ],
+      "sha256": "f628a54269a9d55558b7116f7ad6101c8ffaa9526c9e0b72299f5f1bbf8ea8d6",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/research-continuation.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-orchestrator.js",
+        "packages/agentic-system/src/research-continuation-base.js",
+        "packages/agentic-system/src/session-handoff.js"
+      ],
+      "sha256": "91a2b4220f26959c0717000fd8c308426ab983e045891ae769769da723991bc4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/runtime-observation.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/deployable-artifact.js"
+      ],
+      "sha256": "49723ed8e058d25ab5260b6304a61e74efa677c50a722a36d5dfe3a92b3c7881",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/self-upgrade-pilot.js",
+      "relativeDependencies": [
+        "packages/agentic-system/src/blackboard-json-payload.js",
+        "packages/agentic-system/src/research-continuation.js",
+        "packages/agentic-system/src/session-handoff.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "dc64ce034ae4ee0807f0aaa782050fc32e1026b5ad37826082e9f813c247c9e9",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/session-handoff.js",
+      "relativeDependencies": [],
+      "sha256": "6e3b017afa44374d6a1c53ed4316862090a881e4bacf85d30f25e7f91b131fbd",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [
+        "// import() inside runSupervisedBackendWork only."
+      ],
+      "ref": "packages/agentic-system/src/supervised-backend.js",
+      "relativeDependencies": [
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/tool-adapters.js",
+        "packages/agentic-system/src/contracts.js",
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/local-git-workspace.js",
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "e2df3e4dfe97fc06c720dbaa71a2d7c0029d9fb6a7b3f86a5add85eb3cff564d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/trust-artifact-store.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "da1657aa9152ad659467fd53adc3c5be4872f24c64b5806b46f13cfe8d909e63",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/agentic-system/src/work-selection.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sha256": "f2a722f38cd08cdb08fb2eccde045c47016213cc95fdc9841ec66fa53013a620",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/accounting.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js"
+      ],
+      "sha256": "1ff7b4148d5c7b22a63352def7d3da6051078aeff801a759344b555fda8baedd",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/attempt-ledger.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/accounting.js",
+        "packages/benchmark/src/contracts.js",
+        "packages/benchmark/src/experiment.js",
+        "packages/benchmark/src/unit.js"
+      ],
+      "sha256": "4491f34e50df9f1e89400d44105e6bdb65c9d1eff1e2eccba4c057a9767f498d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/audit.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/accounting.js",
+        "packages/benchmark/src/attempt-ledger.js",
+        "packages/benchmark/src/contracts.js",
+        "packages/benchmark/src/evidence.js",
+        "packages/benchmark/src/experiment.js",
+        "packages/benchmark/src/outcome.js",
+        "packages/benchmark/src/unit.js"
+      ],
+      "sha256": "63d187b2f6862059bc619b11491d0588c5bc012c56fb237d6241a373fab0137c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/contracts.js",
+      "relativeDependencies": [],
+      "sha256": "258d712a3a08b46fa710b42e1b60dc6eee839f48dc7103b840c42eb50d80f093",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/evidence.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js"
+      ],
+      "sha256": "9adcf4970ea7b068cc466951f329f4d64faf8b082d7d3bdcc9d4fa2db83777f1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/experiment.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js"
+      ],
+      "sha256": "446509b6b74d857fbb6812ab846d3a611fa0b3826761a0878d2782b55681ab8d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/index.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/accounting.js",
+        "packages/benchmark/src/attempt-ledger.js",
+        "packages/benchmark/src/audit.js",
+        "packages/benchmark/src/contracts.js",
+        "packages/benchmark/src/evidence.js",
+        "packages/benchmark/src/experiment.js",
+        "packages/benchmark/src/outcome.js",
+        "packages/benchmark/src/ports.js",
+        "packages/benchmark/src/unit.js"
+      ],
+      "sha256": "40f67f6ad76665ca51b41fde9e35a085909a77aace62a02b1275110a3b1610ea",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/outcome.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js"
+      ],
+      "sha256": "e0ada26c88c48a846db9d00d43c7cdb6121fedeafaa6224d53c89b83adf00a44",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/ports.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js"
+      ],
+      "sha256": "c583719b68ab3a093c649584d163c4c15ee3fbea5efe58c20760d960dc5d5fb5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/benchmark/src/unit.js",
+      "relativeDependencies": [
+        "packages/benchmark/src/contracts.js",
+        "packages/benchmark/src/experiment.js"
+      ],
+      "sha256": "91fa4e9f9d8ba7f40b17733eeca18126bb73dfec711afb40c187b019877bc171",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/agent-events.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "6dcab897cd396366ab0894a2dbcf8e9f56b5b0a215e6c28e62cf70684935c259",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/agent-runtime.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/context-resolution.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/judgment.js",
+        "packages/core-harness/src/live-object.js",
+        "packages/core-harness/src/model-routing.js",
+        "packages/core-harness/src/resource.js",
+        "packages/core-harness/src/runtime-execution.js",
+        "packages/core-harness/src/tracing.js",
+        "packages/core-harness/src/turn-events.js",
+        "packages/core-harness/src/variation.js"
+      ],
+      "sha256": "38505fd4915507b0ad7a8fb68b6615d0d3671882420f07a6088117bcf451778f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/async-agent-coordinator.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/async-result-context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/persistence.js"
+      ],
+      "sha256": "a6785a73d0982d5ed74f0d829fb0bf3f4393b5164eb40a7b9c2a05e815d03bb9",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/async-result-context.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/detached-operation-store.js",
+        "packages/core-harness/src/model.js"
+      ],
+      "sha256": "d058c0e951db3c3b5c10b2c5a2abe051e19814a9ffa24bd59bd88029d8154bba",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/avo-action-effect.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/environment.js",
+        "packages/core-harness/src/persistence.js"
+      ],
+      "sha256": "6a80aeaeec31d2001e68f18e1b3a2a52a9f3fc0f895e5f64adfaa5d7ddb76920",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/avo-harness.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/core-harness.js",
+        "packages/core-harness/src/evaluation-freshness.js",
+        "packages/core-harness/src/memory.js",
+        "packages/core-harness/src/variation.js",
+        "packages/core-harness/src/verification-assessment.js",
+        "packages/core-harness/src/verification.js"
+      ],
+      "sha256": "b8d11acd3b93f54feda8f239de3e3bc5372e3380849a9564e1c44a0bcc3e660e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/codeact-strategy.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/execution.js",
+        "packages/core-harness/src/model.js",
+        "packages/core-harness/src/tracing.js",
+        "packages/core-harness/src/variation.js"
+      ],
+      "sha256": "defc65935998d996d14a06f7ca95f5f4c83e5f88d79e68645a294e7de50e537a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/cognition-tracing.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/tracing.js"
+      ],
+      "sha256": "03b56b8cc2d0a5ab7643db26259e9ecb54c31562209288282ec246deb6d9dcf6",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/context-resolution.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "629bee96d2d1d85e6e44d0189e749241a93b6831ed3b4286003f7c044a43c04c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/context.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "a990d2646a2c7701e420e5fd75dd635c47422c90cbbaafe4850f8182e1caffcd",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/contracts.js",
+      "relativeDependencies": [],
+      "sha256": "8ace030e053da5399bf1bf8131ef5374241db99a2c27990918846a2a075a9500",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/core-harness.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/observation.js",
+        "packages/core-harness/src/ports.js",
+        "packages/core-harness/src/state.js",
+        "packages/core-harness/src/variation.js",
+        "packages/core-harness/src/verification.js"
+      ],
+      "sha256": "0989cb8bae3c1282c5a2ad4d63e968e4b4648c8f7315bb440f9658b1d555c847",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/detached-operation-store.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/persistence.js",
+        "packages/core-harness/src/store.js"
+      ],
+      "sha256": "61e2c7f30aeb5a918a0a233ab68ad5129b96859cda8c51ab8ed0d860dcac15a5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/detached-operation.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/detached-operation-store.js",
+        "packages/core-harness/src/effect-reconciliation.js"
+      ],
+      "sha256": "1e0106dcc7a75dbe4cb262c936a94422f5d624a78d556cb268329565806cddd7",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/discovery.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "00191ba2b44b2b3d953c8bfe157d125a87d655cec4d18cb63331475072d661cb",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/effect-aware-harness.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/avo-action-effect.js",
+        "packages/core-harness/src/avo-harness.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/harness.js",
+        "packages/core-harness/src/store.js"
+      ],
+      "sha256": "e835adc7ba885c66d1f921d67d505904aa30f330131d648ebdd0765e5bdd9c3e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/effect-reconciliation.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "1efd2b7bdf365b23959de62c3b2a79130beac757676f908f4a6b03c90148a364",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/environment.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "4577dc978b6a5e8838c4959e6330c497044d9f0938feea2c2c2fbe0a991f871f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/errors.js",
+      "relativeDependencies": [],
+      "sha256": "3996a57af75937ec84153a1343960ad69ef80bd7e3a8435545632f7f71687359",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/evaluation-freshness.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "7d27e737f8ccf6bc38f8f118197f8c65f801cbb1e909a6cc7af3e371537a34f3",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/execution-profile.js",
+      "relativeDependencies": [],
+      "sha256": "c279690d12bc966ba9b663a5569e68364587e84c7fe48c13589cdba2423bed60",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/execution.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "b0e577c3735c35511bd17dcae6c94aff3cdf9a706621bc3472f426d12c4a5155",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/feedback.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "664ff23c9c7c2fc3446b1c04260c22e713b2fd4ff0bc695ef6eec23866b5a71b",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/grounded-cognition.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/evaluation-freshness.js",
+        "packages/core-harness/src/knowledge.js",
+        "packages/core-harness/src/semantic-memory.js",
+        "packages/core-harness/src/trust.js"
+      ],
+      "sha256": "bc3005811d944f9d2283fc2f71bc34811c3b516e4598ca3f04ed27f98916c1cd",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/harness.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/avo-harness.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/environment.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/evaluation-freshness.js",
+        "packages/core-harness/src/observability.js",
+        "packages/core-harness/src/persistence.js",
+        "packages/core-harness/src/recovery.js",
+        "packages/core-harness/src/search-investment.js",
+        "packages/core-harness/src/store.js",
+        "packages/core-harness/src/supervision.js",
+        "packages/core-harness/src/trust.js"
+      ],
+      "sha256": "1a6634c7c6828c18f32c950da982c67dd3760163ec5ac751c10a424d502d02b0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/index.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/async-agent-coordinator.js",
+        "packages/core-harness/src/async-result-context.js",
+        "packages/core-harness/src/avo-harness.js",
+        "packages/core-harness/src/codeact-strategy.js",
+        "packages/core-harness/src/cognition-tracing.js",
+        "packages/core-harness/src/context-resolution.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/core-harness.js",
+        "packages/core-harness/src/detached-operation-store.js",
+        "packages/core-harness/src/detached-operation.js",
+        "packages/core-harness/src/discovery.js",
+        "packages/core-harness/src/effect-aware-harness.js",
+        "packages/core-harness/src/environment.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/evaluation-freshness.js",
+        "packages/core-harness/src/execution-profile.js",
+        "packages/core-harness/src/execution.js",
+        "packages/core-harness/src/feedback.js",
+        "packages/core-harness/src/javascript-codeact-strategy.js",
+        "packages/core-harness/src/judgment.js",
+        "packages/core-harness/src/knowledge.js",
+        "packages/core-harness/src/live-object.js",
+        "packages/core-harness/src/memory.js",
+        "packages/core-harness/src/model-routing.js",
+        "packages/core-harness/src/model.js",
+        "packages/core-harness/src/object-agent.js",
+        "packages/core-harness/src/observability.js",
+        "packages/core-harness/src/persistence.js",
+        "packages/core-harness/src/ports.js",
+        "packages/core-harness/src/predict-strategy.js",
+        "packages/core-harness/src/process-trust.js",
+        "packages/core-harness/src/recovery.js",
+        "packages/core-harness/src/resource.js",
+        "packages/core-harness/src/resumable-agent-runtime.js",
+        "packages/core-harness/src/runtime-snapshot.js",
+        "packages/core-harness/src/search-investment.js",
+        "packages/core-harness/src/semantic-memory-evolution.js",
+        "packages/core-harness/src/semantic-memory-graph.js",
+        "packages/core-harness/src/semantic-memory-intelligence.js",
+        "packages/core-harness/src/semantic-memory-retrieval.js",
+        "packages/core-harness/src/semantic-memory.js",
+        "packages/core-harness/src/spontaneous-recall.js",
+        "packages/core-harness/src/store.js",
+        "packages/core-harness/src/supervision.js",
+        "packages/core-harness/src/testing.js",
+        "packages/core-harness/src/tracing.js",
+        "packages/core-harness/src/trust-boundary.js",
+        "packages/core-harness/src/trust-chain.js",
+        "packages/core-harness/src/trust.js",
+        "packages/core-harness/src/turn-events.js",
+        "packages/core-harness/src/variation.js",
+        "packages/core-harness/src/verification-assessment.js",
+        "packages/core-harness/src/verification.js"
+      ],
+      "sha256": "b086c095b35ebf784211abc0de59a092cf8dd4dbb09d8aa6f10d51be03888193",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/discovery.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/model.js",
+        "packages/core-harness/src/tracing.js",
+        "packages/core-harness/src/variation.js"
+      ],
+      "sha256": "bf9a8f78abd61bbbeb4f183b7f8350c492f7834e653ff418ffb52f6e9cba45fb",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/judgment.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/model-routing.js"
+      ],
+      "sha256": "5a923cd069619453b14d88a6f1f40706a62539ce85ca3f1072a04f34c7bec1e1",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/knowledge.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "2a60a6e8b7ac095e7db613c0b8f96ee8b76390d1486291712bdedf6b2ba94fcc",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/live-object.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/resource.js"
+      ],
+      "sha256": "bd053ddc92fbf0de555b94e303d950ea3b0e07cb6e2d77f85fe9eb8ff663026d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/memory.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/feedback.js",
+        "packages/core-harness/src/knowledge.js"
+      ],
+      "sha256": "badeb66d42a1f368f1dfc09083bf3d5a53422f445d960ee4db8e13224f0b692c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/model-routing.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/model.js"
+      ],
+      "sha256": "d19e82d5ec421bc3f90f438a56eb447b4d0cc42633698717d50623cc3b5c1657",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/model.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "cc16dc637e211310e713479d45532ffaa20fce00562c3f602072a135afd98512",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/object-agent.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/discovery.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "9932f722b8a7d74f0235575484b69bfbcd9f715eac6500c8ed375c0afbe48d06",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/observability.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "c2197c9c3a3dc4e750e4990597b419541d749cae47e450494aa45041fcef08a4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/observation.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/runtime-execution.js"
+      ],
+      "sha256": "49a964f5ec67c436984f3f3a8e64ae9ee61878bc46c1e66283dc89b0d9ba4294",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/persistence.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "eccce6c28ee205fbf20fa35696a145e1c553d25ed42ac1c86bbb945a256eac76",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/ports.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "433a2f2c9e5fd2395e627d62107de7795852bfb698a41fb9198b4b510708348f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/predict-strategy.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/model.js",
+        "packages/core-harness/src/tracing.js"
+      ],
+      "sha256": "489a9fd7ff771cd5eef996bcba8e6d436bbc5fe88ef4a2a5ccf33caf6f78a20c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/process-trust.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/trust.js"
+      ],
+      "sha256": "0ca98b097b268177f582f86f4c4ce56658a3d5a57b8027c886cce2c29306a703",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/recovery.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/variation.js"
+      ],
+      "sha256": "6b09e0f251f1027401bfe6b820d48d899a7bc564ae8d292479328f088ca6298b",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/resource.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "297c6c9805092ae295f1c58d3f354e47eaa1ee214685a3f5337df9714851e3f0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/resumable-agent-runtime.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/agent-events.js",
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/judgment.js",
+        "packages/core-harness/src/live-object.js",
+        "packages/core-harness/src/model-routing.js",
+        "packages/core-harness/src/resource.js",
+        "packages/core-harness/src/runtime-snapshot.js"
+      ],
+      "sha256": "900495a8992e3667555030196df3e9a91470d5ad9fb735f9889c49592fbc235c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/runtime-execution.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "fe453825a224d76aed082f0bebda17f942e59c5ee352314517de2a40f22e789e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/runtime-snapshot.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/live-object.js",
+        "packages/core-harness/src/resource.js",
+        "packages/core-harness/src/trust.js"
+      ],
+      "sha256": "6761edcf0b274e6eda383a3aa7ee2cb96ded2a8b583d6a0531ebc7a2d03d6b41",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/search-investment.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/evaluation-freshness.js"
+      ],
+      "sha256": "36df8c7910f20cc57c0e814dde5a9fb32473b1169b7e256c1f4f091467149ef9",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/semantic-memory-evolution.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/semantic-memory-graph.js",
+        "packages/core-harness/src/semantic-memory.js"
+      ],
+      "sha256": "60bdb0d82f0cb3fa79cfa0bba528a39eea57438a0a239eb34b91e9b5e11bbcee",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/semantic-memory-graph.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/semantic-memory.js"
+      ],
+      "sha256": "bbc1b1b9806a6cad12407d0b34ef517c98276d7b395904a2d7b3583181a97491",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/semantic-memory-intelligence.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/semantic-memory-graph.js",
+        "packages/core-harness/src/semantic-memory-retrieval.js",
+        "packages/core-harness/src/semantic-memory.js"
+      ],
+      "sha256": "4c0c68ba177c7f11dd27282b92ef49d6eb248ab3aae368b368a1a84aa9203f30",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/semantic-memory-retrieval.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/semantic-memory.js"
+      ],
+      "sha256": "ec457515459e1b5896c8bbdef1841c57696033cb104c3ea4eeb203a83ad5e9f9",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/semantic-memory.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "872792b18e61d29e30545143321c401c975f77e5f32d1609a9886bded147a126",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/spontaneous-recall.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "4ba97c57dce0e20596678ddf048b521429012997a76e0817a00c3681a4fc5b58",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/state.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/persistence.js"
+      ],
+      "sha256": "d7fe526a8b288f5909dc013955ce801aeabba6f3563bf681c25ab385549ccc95",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/store.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/persistence.js"
+      ],
+      "sha256": "393beb1d484cdca1d5e68e7bd55f8d4c2d7aaa3e5b2d49d9277b85e35aa21618",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/supervision.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/knowledge.js",
+        "packages/core-harness/src/variation.js"
+      ],
+      "sha256": "f4d8b23b4509bda673b39af237ff766f0a222dfeb930200c2ca2ae51e2bf7e98",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/testing.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js",
+        "packages/core-harness/src/execution.js",
+        "packages/core-harness/src/grounded-cognition.js",
+        "packages/core-harness/src/persistence.js",
+        "packages/core-harness/src/semantic-memory.js"
+      ],
+      "sha256": "4924236055ad4ae2a4691330e45fbfc2edac73feeb3c288b48628c320aeedeae",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/tracing.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/errors.js"
+      ],
+      "sha256": "8365182be00ff2cbada1ffd2c8baf272857f54bf8d20c3276a20759049724af4",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/trust-boundary.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/trust.js"
+      ],
+      "sha256": "15c4b27f7b36469451d0f338ed1df6d34ab71d593282ed1d2a11716371c9d9d5",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/trust-chain.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/trust-boundary.js"
+      ],
+      "sha256": "abeb91528bb02fed74e64ed4d46c0a45689c0259269f95c1e6d74d44daad2abe",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/trust.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "e0798571911a204cdf07c5cd41d62ec33fef2382ac0c292b98e0b1048779802d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/turn-events.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "426502b25de2c257ef8bff31f150895ba8e39edb3a57b852b9cf363f301dc214",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/variation.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "0029ed6623ae43b78a950e50f4ff6ba311ed5d4c352229dbdf28004fcba74208",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/verification-assessment.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js",
+        "packages/core-harness/src/verification.js"
+      ],
+      "sha256": "75090c6782e3b1d4de63959cf91336411ed4947c26cb2a5aa3ad0ba59bca14f9",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/core-harness/src/verification.js",
+      "relativeDependencies": [
+        "packages/core-harness/src/contracts.js"
+      ],
+      "sha256": "a6b7b23d00b2416845d17c9361dd031bb482432c0c66a603d5441a3461c30e00",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/context-contract.js",
+      "relativeDependencies": [],
+      "sha256": "c3e6adbf1ced6d99fa149ac314c06aa81e895420bb2b9a9d3a465f396713d38f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [
+        "exclusions: ['dynamic import() is not an edge', 'bare package specifiers are not edges', 'side-effect-only imports without from are not edges', 'no symbol-level edges', 'no model-inferred edges']"
+      ],
+      "ref": "packages/oracle/src/context-graph.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "bd55409f38adb95919ed3188aed75fd78c29f95d7cecc8970e51f508900d7f4a",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/context-resolution.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/resolution-durability.js"
+      ],
+      "sha256": "9f5fd6fcbf9e36a19dbdd2e95df5f2d4bc7dd1c2067716a9068897617f1c7f52",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/index.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/context-graph.js",
+        "packages/oracle/src/context-resolution.js",
+        "packages/oracle/src/provider-contract.js",
+        "packages/oracle/src/providers/application-artifact-source.js",
+        "packages/oracle/src/providers/context-graph.js",
+        "packages/oracle/src/providers/external-source.js",
+        "packages/oracle/src/providers/lexical-search.js",
+        "packages/oracle/src/providers/repository-source.js",
+        "packages/oracle/src/providers/semantic-code.js",
+        "packages/oracle/src/providers/structural-map.js",
+        "packages/oracle/src/resolution-durability.js",
+        "packages/oracle/src/resolution-store.js",
+        "packages/oracle/src/retrieval-planner.js",
+        "packages/oracle/src/source-catalog.js"
+      ],
+      "sha256": "522302d06486156164a05a19ee802babb7c5ad508e4a27d96b9f110f65ccda45",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/provider-contract.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js"
+      ],
+      "sha256": "9312adde229e595115958f2c9bce3c53a7a03b5c99f2241c2f6e7e3cd59ff33b",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/application-artifact-source.js",
+      "relativeDependencies": [],
+      "sha256": "c38338c4edcc14f50818221dc775e0a352eeded5c99a063eb01570ed8175dc8e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/context-graph.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "7c143437c2cfeac8c0547886712abefb58376f213698df9979fb4da908a43e55",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/external-source.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "327f9ceacec88bd8aea00ac43043f809274aa0459a837d3d77ef14258fd6d428",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/lexical-search.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "9a0996a8d074d2199d475e31cbadd919a889ff0d1e393d0666c5b24779af4c5c",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/repository-source.js",
+      "relativeDependencies": [],
+      "sha256": "5a28543259a0ee4ed81f6eb53c9a8c60ce7b9d89adb416072d189d2348b04059",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/semantic-code.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "718077399889d1cc8b1c012242a1263373ff0ce0d63112d2bf1b5ab6e4053a38",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/providers/structural-map.js",
+      "relativeDependencies": [
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "174f66b2588d4270b47842e645039b69cc9ca4e3400c068a9a87505bb111f64e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/resolution-durability.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "3f8f4c1e957412c5e6bbb042dc10bc266085bfeadf4fbc77ff60dc3617946227",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/resolution-store.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/resolution-durability.js"
+      ],
+      "sha256": "7d0ec9bb37ea5d7e22f36dc4732cc4bd0c2de34ab8223ba72fc73b439973b36f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/retrieval-planner.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/provider-contract.js"
+      ],
+      "sha256": "851209ca946ba93fc8815a4d90f6d38702c2698db7d20d341146df8812dde648",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "packages/oracle/src/source-catalog.js",
+      "relativeDependencies": [
+        "packages/oracle/src/context-contract.js",
+        "packages/oracle/src/provider-contract.js",
+        "packages/oracle/src/providers/application-artifact-source.js",
+        "packages/oracle/src/providers/repository-source.js"
+      ],
+      "sha256": "7153019603605e01d9fb79aa184e14d8f318a37d5ca3052e33c0af597f4cb323",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-artifact-contract.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs"
+      ],
+      "sha256": "fb7346cbe0ea6e6f1c0f1a4edbe30f700ccd47db883240b53ece5c30a57c2b46",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-context-contract.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs"
+      ],
+      "sha256": "cfc6a9c453dc24acca4a9b6b543f8cbd73ab9d358fad2ac856b81c87c12c4ce0",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-delivery-context.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-jev.mjs"
+      ],
+      "sha256": "b93282679081a94b8be6fbf824ccb6f7de428319e277b4ee942082a34e5f7e4d",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-delivery-contract.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-negative-case-binding.mjs"
+      ],
+      "sha256": "0a6db2cf0ffe50d5c09eea3588d48bb90c13985dac6f4389990d386d477388db",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-delivery.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-jev.mjs",
+        "scripts/blackboard-negative-case-binding.mjs"
+      ],
+      "sha256": "5dc4b9eff631eef51784ac2543893a9799a35aa04acb2711037fd9f147cfad17",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-env.mjs",
+      "relativeDependencies": [],
+      "sha256": "9b3bd1e055ed4c5c4087cd39c66f8e6dc17f8840e3f8ece901caf94012e98a01",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-jev-ci.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-jev.mjs",
+        "scripts/blackboard-objective-supersession.mjs",
+        "scripts/blackboard-verification-bundle.mjs"
+      ],
+      "sha256": "0c97d767939a6533f478ccd1f863445bac35a37dccd1dd4a567104b2dff8eefe",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-jev-cli.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-env.mjs",
+        "scripts/blackboard-jev.mjs",
+        "scripts/blackboard-state-project.mjs",
+        "scripts/blackboard-task-context-resolver.mjs",
+        "scripts/blackboard-work-graph.mjs"
+      ],
+      "sha256": "1d3c324734acb02d87e1707d2eb6e8e01dbdde2cf94d84612c72c4ec58bc2a43",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-jev.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-negative-case-binding.mjs"
+      ],
+      "sha256": "533dd8de9cd7c4e1514ad715ece50ca6627a49b84720b7d7da1a6200acefbfd2",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-negative-case-binding.mjs",
+      "relativeDependencies": [],
+      "sha256": "44f94829868141b712abc2e9b24c20ce9491112efb0939544a603ac27c077971",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-objective-supersession.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-work-graph.mjs"
+      ],
+      "sha256": "eeb30b62044738de5cbb49e55b4e1d252bbfe1666fc387f45186577941917adc",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-state-project.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-work-graph.mjs"
+      ],
+      "sha256": "49ec53bae7555fe0e6e5905009886e23675f3b8165c3de3773103a17a87eaf22",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-task-context-resolver.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-artifact-contract.mjs",
+        "scripts/blackboard-context-contract.mjs",
+        "scripts/blackboard-delivery-context.mjs",
+        "scripts/blackboard-work-graph.mjs"
+      ],
+      "sha256": "332f8d5be27eb80b45cea72dd3eda949fad498b7daa265d627cfbccbf39e786f",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-verification-bundle.mjs",
+      "relativeDependencies": [
+        "scripts/blackboard-delivery-contract.mjs"
+      ],
+      "sha256": "b51f1ccb88b3ee354c9b0219531b71a4fb2f74112796d179a20a826576a9686e",
+      "unresolvedRelative": []
+    },
+    {
+      "nonliteralImportLines": [],
+      "ref": "scripts/blackboard-work-graph.mjs",
+      "relativeDependencies": [],
+      "sha256": "26a4c30923f88a058f3dc8c3bcb3826ac50039a03453c305099468879f2f34c1",
+      "unresolvedRelative": []
+    }
+  ],
+  "npmScriptEdges": {
+    "benchmark": [],
+    "benchmark:oracle-retrieval": [],
+    "claim:blackboard": [],
+    "collect:blackboard-evidence": [],
+    "eval:agent-tools": [],
+    "eval:agentic": [],
+    "eval:artifact-manifest-research": [],
+    "eval:blackboard-context": [],
+    "eval:blackboard-jev": [],
+    "eval:blackboard-jev-stability": [],
+    "eval:cognition": [],
+    "eval:fidelity": [],
+    "eval:memory-reuse": [],
+    "eval:reference": [],
+    "eval:self-upgrade-research": [],
+    "eval:turn-memory": [],
+    "eval:workflow-replay": [],
+    "example": [],
+    "materialize:blackboard-context": [],
+    "materialize:blackboard-evaluation": [],
+    "migrate:blackboard-delivery": [],
+    "project:blackboard-state": [],
+    "publish:blackboard-delivery": [],
+    "publish:blackboard-evaluation": [],
+    "resolve:blackboard-task-context": [],
+    "smoke:agent-tools": [],
+    "start:blackboard-implementation": [],
+    "test": [
+      "test:agent-tools",
+      "test:agentic",
+      "test:core",
+      "test:oracle"
+    ],
+    "test:agent-tools": [],
+    "test:agentic": [],
+    "test:benchmark": [],
+    "test:blackboard-artifacts": [],
+    "test:blackboard-context": [],
+    "test:blackboard-jev": [],
+    "test:blackboard-work-graph": [],
+    "test:core": [],
+    "test:oracle": [],
+    "verify": [
+      "benchmark",
+      "eval:agentic",
+      "eval:artifact-manifest-research",
+      "eval:cognition",
+      "eval:fidelity",
+      "eval:memory-reuse",
+      "eval:reference",
+      "eval:self-upgrade-research",
+      "eval:turn-memory",
+      "eval:workflow-replay",
+      "example",
+      "test",
+      "verify:blackboard-context",
+      "verify:consumer",
+      "verify:current-docs",
+      "verify:package"
+    ],
+    "verify:blackboard-artifacts": [
+      "test:blackboard-artifacts"
+    ],
+    "verify:blackboard-context": [
+      "eval:blackboard-context",
+      "test:blackboard-context",
+      "test:blackboard-jev",
+      "verify:blackboard-artifacts",
+      "verify:blackboard-work-graph"
+    ],
+    "verify:blackboard-delivery": [],
+    "verify:blackboard-delivery-contracts": [],
+    "verify:blackboard-state": [],
+    "verify:blackboard-work-graph": [
+      "test:blackboard-work-graph",
+      "verify:blackboard-delivery-contracts",
+      "verify:blackboard-state"
+    ],
+    "verify:consumer": [],
+    "verify:current-docs": [],
+    "verify:package": []
+  },
+  "npmVerifyScriptClosure": [
+    "benchmark",
+    "eval:agentic",
+    "eval:artifact-manifest-research",
+    "eval:blackboard-context",
+    "eval:cognition",
+    "eval:fidelity",
+    "eval:memory-reuse",
+    "eval:reference",
+    "eval:self-upgrade-research",
+    "eval:turn-memory",
+    "eval:workflow-replay",
+    "example",
+    "test",
+    "test:agent-tools",
+    "test:agentic",
+    "test:blackboard-artifacts",
+    "test:blackboard-context",
+    "test:blackboard-jev",
+    "test:blackboard-work-graph",
+    "test:core",
+    "test:oracle",
+    "verify",
+    "verify:blackboard-artifacts",
+    "verify:blackboard-context",
+    "verify:blackboard-delivery-contracts",
+    "verify:blackboard-state",
+    "verify:blackboard-work-graph",
+    "verify:consumer",
+    "verify:current-docs",
+    "verify:package"
+  ],
   "packageScripts": {
     "benchmark": "node benchmarks/kernel-benchmark.mjs",
     "benchmark:oracle-retrieval": "node scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
@@ -51,6 +2425,200 @@
     "verify:current-docs": "node scripts/current-docs-verify.mjs",
     "verify:package": "npm pack --dry-run --workspace packages/core-harness"
   },
+  "runtimeCensus": [
+    {
+      "hits": [
+        {
+          "line": 13,
+          "text": "import { createLocalCommandVerifier } from \"../../agentic-system/src/local-command-verifier.js\";"
+        },
+        {
+          "line": 133,
+          "text": "const verifier = createLocalCommandVerifier({"
+        }
+      ],
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "sha256": "3d1dda849d2d364267b8dc94d367952759b575c047effae47823f54a2b485006"
+    },
+    {
+      "hits": [
+        {
+          "line": 11,
+          "text": "import { createLocalCommandVerifier, createLocalGitWorkspace } from \"../../../agentic-system/src/index.js\";"
+        },
+        {
+          "line": 83,
+          "text": "const verifier = createLocalCommandVerifier({ name: item.name, claim: `agent-tools.hidden.${item.name}`, root: workspace.root, command: item.command, args: [...item.args], timeoutMs: item.timeoutMs, maxOutputBytes: 65536 });"
+        }
+      ],
+      "ref": "packages/agent-tools/src/experiment/runner.js",
+      "sha256": "772cdb6040e7a42dfed8bebfcec363ee243ea2c0feeb27d5e30748fd4839dd8a"
+    },
+    {
+      "hits": [
+        {
+          "line": 5,
+          "text": "import { createLocalCommandVerifier } from \"../../agentic-system/src/index.js\";"
+        },
+        {
+          "line": 255,
+          "text": "const verifiers = specs.map((spec) => createLocalCommandVerifier({"
+        }
+      ],
+      "ref": "packages/agent-tools/src/mcp-server.js",
+      "sha256": "455c03691df84aaf50faf78883ed3469ed5447f8df6dfe113b5760a3344c9513"
+    },
+    {
+      "hits": [
+        {
+          "line": 29,
+          "text": "import { createLocalCommandVerifier, createLocalGitWorkspace } from \"../../agentic-system/src/index.js\";"
+        },
+        {
+          "line": 314,
+          "text": "return task.verifications.map((verification) => createLocalCommandVerifier({"
+        }
+      ],
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "sha256": "722e28c621bed7f51ef75500f783375611af02cb31496e84f3556a5c86bf4014"
+    },
+    {
+      "hits": [
+        {
+          "line": 215,
+          "text": "createLocalCommandVerifier"
+        }
+      ],
+      "ref": "packages/agentic-system/src/index.js",
+      "sha256": "f64d216478c0587e9d487a9c50f807e44992545af7452edb23871e6d0182774a"
+    },
+    {
+      "hits": [
+        {
+          "line": 104,
+          "text": "export function createLocalCommandVerifier({"
+        }
+      ],
+      "ref": "packages/agentic-system/src/local-command-verifier.js",
+      "sha256": "f626fae5ba916469518da47373de07fe54320ec180f67b3711f625f75efd8967"
+    },
+    {
+      "hits": [
+        {
+          "line": 33,
+          "text": "import { createLocalCommandVerifier } from \"./local-command-verifier.js\";"
+        },
+        {
+          "line": 245,
+          "text": "const record = await createLocalCommandVerifier({"
+        }
+      ],
+      "ref": "packages/agentic-system/src/supervised-backend.js",
+      "sha256": "e2df3e4dfe97fc06c720dbaa71a2d7c0029d9fb6a7b3f86a5add85eb3cff564d"
+    },
+    {
+      "hits": [
+        {
+          "line": 18,
+          "text": "import { normalizeVerificationRecord } from \"./verification.js\";"
+        },
+        {
+          "line": 431,
+          "text": "const normalized = normalizeVerificationRecord(record);"
+        }
+      ],
+      "ref": "packages/core-harness/src/core-harness.js",
+      "sha256": "0989cb8bae3c1282c5a2ad4d63e968e4b4648c8f7315bb440f9658b1d555c847"
+    },
+    {
+      "hits": [
+        {
+          "line": 115,
+          "text": "normalizeVerificationRecord,"
+        }
+      ],
+      "ref": "packages/core-harness/src/index.js",
+      "sha256": "b086c095b35ebf784211abc0de59a092cf8dd4dbb09d8aa6f10d51be03888193"
+    },
+    {
+      "hits": [
+        {
+          "line": 30,
+          "text": "export function normalizeVerificationRecord(record) {"
+        }
+      ],
+      "ref": "packages/core-harness/src/verification.js",
+      "sha256": "a6b7b23d00b2416845d17c9361dd031bb482432c0c66a603d5441a3461c30e00"
+    },
+    {
+      "hits": [
+        {
+          "line": 96,
+          "text": "export function collectEvidence(root, id) {"
+        },
+        {
+          "line": 152,
+          "text": "export function verifyDelivery(root, id, { mainRef = 'refs/remotes/origin/main', mergeSha } = {}) {"
+        },
+        {
+          "line": 190,
+          "text": "const { graph, task, receipt } = verifyDelivery(root, id, options);"
+        }
+      ],
+      "ref": "scripts/blackboard-delivery.mjs",
+      "sha256": "5dc4b9eff631eef51784ac2543893a9799a35aa04acb2711037fd9f147cfad17"
+    },
+    {
+      "hits": [
+        {
+          "line": 5,
+          "text": "import { collectEvidence } from './blackboard-delivery.mjs';"
+        },
+        {
+          "line": 159,
+          "text": "const result=collectEvidence(root,id);"
+        }
+      ],
+      "ref": "scripts/blackboard-jev-ci.mjs",
+      "sha256": "0c97d767939a6533f478ccd1f863445bac35a37dccd1dd4a567104b2dff8eefe"
+    },
+    {
+      "hits": [
+        {
+          "line": 5,
+          "text": "import { publishEvaluation, collectEvidence, verifyDelivery, publishDelivery, importEvaluationEvidence } from './blackboard-delivery.mjs';"
+        },
+        {
+          "line": 31,
+          "text": "result=collectEvidence(root,id);"
+        },
+        {
+          "line": 36,
+          "text": "else if(command==='verify-delivery') result=verifyDelivery(root,id,{mergeSha:arg}).receipt;"
+        }
+      ],
+      "ref": "scripts/blackboard-jev-cli.mjs",
+      "sha256": "1d3c324734acb02d87e1707d2eb6e8e01dbdde2cf94d84612c72c4ec58bc2a43"
+    },
+    {
+      "hits": [
+        {
+          "line": 414,
+          "text": "export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, fetchImpl = fetch, timeoutMs = 30000, sleep = ms => new Promise(r => setTimeout(r, ms)) } = {}) {"
+        },
+        {
+          "line": 1471,
+          "text": "const result = await callJev(payload, { fetchImpl, apiKey });"
+        },
+        {
+          "line": 1515,
+          "text": "({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));"
+        }
+      ],
+      "ref": "scripts/blackboard-jev.mjs",
+      "sha256": "533dd8de9cd7c4e1514ad715ece50ca6627a49b84720b7d7da1a6200acefbfd2"
+    }
+  ],
   "unfinishedVerificationRegistry": [
     {
       "commands": [
@@ -1592,7 +4160,7 @@
       "id": "BB-158",
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH",
-      "planFileSha256": "d6b9bff9f02406a9d53994b11c28fbec249e90559b7fc2ab3331d8e81f02d743",
+      "planFileSha256": "c1d5115e65634b871e68bb8460569e998b678db9da6059f1ede4150c1be24a49",
       "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-158.json"
     }
   ],
