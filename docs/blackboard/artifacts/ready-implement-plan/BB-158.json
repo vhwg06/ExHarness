@@ -36,13 +36,13 @@
     "Local and future runtimes use same canonical contract; GitHub is one adapter."
   ],
   "invariants": [
-    "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
-    "Verification observations are immutable and exact-subject-bound; stale generation/Attempt/candidate/evidence results are non-authoritative.",
-    "Deterministic verification failure, verifier failure, infrastructure failure, suspected flake, cancellation and insufficient evidence remain distinct states.",
-    "A retry that can change delivery conclusions requires an allowed retry class or material candidate/evidence progress; control/prose-only churn cannot unlock product re-evaluation.",
-    "Early termination/cancellation preserves truthful partial execution and evidence accounting.",
-    "Local verification and CI execution consume the same canonical verification contract even when their transport/runtime differs.",
-    "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state."
+    "GitHub conclusions never create readiness/correctness/repair authority.",
+    "Immutable observations bind exact current generation/Attempt/candidate/evidence; stale is non-authoritative.",
+    "Product/verifier/infra/flake/cancelled/insufficient remain distinct.",
+    "Retries need allowed bound or material delta; prose/control churn cannot unlock product/JEV.",
+    "Early cancellation preserves truthful partial execution/evidence.",
+    "Local/CI use the same canonical contract.",
+    "Independent JEV consumes canonical subject/evidence, never GitHub status."
   ],
   "architectureDecisions": [
     "D1 — BB-155 Work/Attempt/version/Decision + BB-157 own control; immutable evidence blobs, existing apply only. No new phase/database.",
@@ -239,7 +239,7 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "A GitHub check conclusion never creates canonical readiness, correctness or repair authority.",
+      "invariant": "GitHub conclusions never create readiness/correctness/repair authority.",
       "criterionIds": [
         "ADAPTER_BOUNDARY"
       ],
@@ -249,7 +249,7 @@
       "requiredObservations": "projectGitHubStatus: green/skip/head/body changes leave native Decision/actions unchanged."
     },
     {
-      "invariant": "Verification observations are immutable and exact-subject-bound; stale generation/Attempt/candidate/evidence results are non-authoritative.",
+      "invariant": "Immutable observations bind exact current generation/Attempt/candidate/evidence; stale is non-authoritative.",
       "criterionIds": [
         "CANONICAL_FEEDBACK_CONTRACT"
       ],
@@ -259,7 +259,7 @@
       "requiredObservations": "acceptVerificationObservation/publishVerificationRun: each stale ref/hash rejects with zero Work effect; exact positive immutable."
     },
     {
-      "invariant": "Deterministic verification failure, verifier failure, infrastructure failure, suspected flake, cancellation and insufficient evidence remain distinct states.",
+      "invariant": "Product/verifier/infra/flake/cancelled/insufficient remain distinct.",
       "criterionIds": [
         "FAILURE_TAXONOMY"
       ],
@@ -269,7 +269,7 @@
       "requiredObservations": "executeVerificationRequest: all classes distinct; unknown timeout/nonzero not product/flake."
     },
     {
-      "invariant": "A retry that can change delivery conclusions requires an allowed retry class or material candidate/evidence progress; control/prose-only churn cannot unlock product re-evaluation.",
+      "invariant": "Retries need allowed bound or material delta; prose/control churn cannot unlock product/JEV.",
       "criterionIds": [
         "AGENT_CONTROL_LOOP",
         "JEV_BOUNDARY"
@@ -281,7 +281,7 @@
       "requiredObservations": "deriveVerificationAction/native reservation: metadata delta zero dispatch; infra<=3, no churn budget reset."
     },
     {
-      "invariant": "Early termination/cancellation preserves truthful partial execution and evidence accounting.",
+      "invariant": "Early cancellation preserves truthful partial execution/evidence.",
       "criterionIds": [
         "AGENT_CONTROL_LOOP",
         "FAILURE_TAXONOMY"
@@ -292,7 +292,7 @@
       "requiredObservations": "executeVerificationRequest: cancelled/lost-upload partitions complete, full logs, dependent not spawned."
     },
     {
-      "invariant": "Local verification and CI execution consume the same canonical verification contract even when their transport/runtime differs.",
+      "invariant": "Local/CI use the same canonical contract.",
       "criterionIds": [
         "CANONICAL_FEEDBACK_CONTRACT",
         "ADAPTER_BOUNDARY"
@@ -303,7 +303,7 @@
       "requiredObservations": "Local/GitHub identical request -> equal canonical results; transport forgery rejects."
     },
     {
-      "invariant": "JEV remains independent semantic supervision and consumes canonical candidate/evidence context rather than GitHub check state.",
+      "invariant": "Independent JEV consumes canonical subject/evidence, never GitHub status.",
       "criterionIds": [
         "JEV_BOUNDARY"
       ],
