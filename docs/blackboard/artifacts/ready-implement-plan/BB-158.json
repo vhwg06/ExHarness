@@ -18,12 +18,12 @@
     "ci.delivery-readiness-projection"
   ],
   "outOfScope": [
-    "Treating GitHub branch protection, required checks, PR approval or check-run naming as the ExHarness delivery state machine.",
-    "Rewriting Blackboard V2 Work/Attempt/CAS/lease/fence primitives owned by BB-155.",
-    "Changing JEV provider/model/verdict semantics or duplicating BB-157 LOOKBACK/material-delta supervision logic.",
-    "Migrating unfinished legacy tasks to V2; BB-156 owns cutover/migration.",
-    "Optimizing CI duration or parallelism without a measured verification dependency/latency baseline.",
-    "Implementing a vendor-specific CI platform abstraction beyond the minimal GitHub Actions adapter required to prove the canonical contract."
+    "GitHub checks/protection/approval as domain lifecycle.",
+    "Rewriting BB-155 Work/Attempt/CAS/lease/fence primitives.",
+    "Changing JEV provider/model/verdict or duplicating BB-157 supervision.",
+    "BB-156 migration/cutover.",
+    "Unmeasured duration/parallelism optimization.",
+    "Vendor platform abstraction beyond minimal GitHub adapter."
   ],
   "constraints": [
     "Research revises plan only; independent current allSAT JEV required before READY/Worker.",
@@ -125,13 +125,13 @@
     ]
   },
   "implementationSlices": [
-    "S1 — contract.mjs exports validateRequest/acceptVerificationObservation/validateRun/hashBlob: resolved Work/Attempt/candidate/registry + bindingContract schemas -> immutable validated records or rejection. Strict refs/hash/closed keys/partitions/PASS/full logs/authority. Test real exports with each stale/forged/partial binding and positive native publication. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY.",
-    "S2 — planner.mjs exports planVerification/planReverification: exact request/prior run/resolved input delta -> pure stable topological schedule and invalidation/reuse reasons. Unknown deps ->all, reverse closure, no cross-Attempt reuse, fresh mandatory npm verify. Actual export tests cover source/env/registry delta, cyclic/duplicate gates and forged old PASS. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP.",
-    "S3 — runner.mjs exports executeVerificationRequest/publishVerificationRun: pinned request, clean checkout, blobStore, client/current token -> argv process + full hashed logs + incremental/final EvidenceVersion via PUBLISH_EVIDENCE CAS. Implement failureContract bounds, reap/cancel/accounting, no secrets/new SQL. Actual runner/store tests for every outcome, stale callbacks/lease/CAS/restart/conflict; first failure before dependent launch. Own FAILURE_TAXONOMY/CANONICAL_FEEDBACK_CONTRACT/AGENT_CONTROL_LOOP.",
-    "S4 — feedback.mjs + V2 trust-adapter exports deriveVerificationAction/buildJevInput: current snapshot/resolved run -> advisory intersection with actual nextActions and existing typed judgment input. Follow loopContract, preserve forbidden lifecycle/store/supervision and evaluator grammar. Real native fixtures test failed Decision LOOKBACK/reflection/material/signature guard, zero unchanged dispatch, allSAT merge and receipt-only delivery. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY.",
-    "S5 — github-adapter.mjs/cli.mjs + jev-ci + three workflows + package.json: projectGitHubStatus/validateGitHubCallback; CLI run --config ABS --request REF --request-hash HASH, project --config ABS WORK_ID. Exact adapterContract, secret-free execution/trusted importer, lost upload unavailable, legacy unchanged. Actual exports tests mutate check/skip/head/base/body/SHA/authority/status API/two cwd: no Work effects. Own ADAPTER_BOUNDARY.",
-    "S6 — test/agent-native-ci-feedback.test.mjs and benchmark.mjs: all N1-N7 actual symbols/titles, every invariant/criterion positive+negative; runBenchmark emits 20 paired samples/scenario per benchmarkContract, truthful safety/time/retry/provider/log data. All verificationPlan commands mandatory, no fixture/provider simulation acceptance. Own BENCHMARK/all negatives.",
-    "S7 — research brief/audit + Living state: verify complete pinned inventory/source/timing from auditEvidence/researchEvidence, document actual implemented operations after S1-S6. Native API dependency mismatch reopens research. Actual independent allSAT/exact candidate/main/tree/Living receipt gates Worker delivery; BB-156 retains migration. Own CURRENT_STATE_AUDIT/BENCHMARK. All new modules live scripts/agent-native-ci; no undefined handoff."
+    "S1 — scripts/agent-native-ci/contract.mjs exports validateRequest/acceptVerificationObservation/validateRun/hashBlob: resolved Work/Attempt/candidate/registry + bindingContract schemas -> immutable validated records or rejection. Strict refs/hash/closed keys/partitions/PASS/full logs/authority. Test real exports with each stale/forged/partial binding and positive native publication. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY. validateRequest(request,resolved), acceptVerificationObservation(observation,request,resolved), validateRun(run,request,observations); no fs/store writes.",
+    "S2 — scripts/agent-native-ci/planner.mjs exports planVerification/planReverification: exact request/prior run/resolved input delta -> pure stable topological schedule and invalidation/reuse reasons. Unknown deps ->all, reverse closure, no cross-Attempt reuse, fresh mandatory npm verify. Actual export tests cover source/env/registry delta, cyclic/duplicate gates and forged old PASS. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP. planVerification(request)->checks; planReverification({request,priorRun,sourceDelta,resolvedInputs})->{checks,invalidated,reused,reasons}.",
+    "S3 — scripts/agent-native-ci/runner.mjs exports executeVerificationRequest/publishVerificationRun: pinned request, clean checkout, blobStore, client/current token -> argv process + full hashed logs + incremental/final EvidenceVersion via PUBLISH_EVIDENCE CAS. Implement failureContract bounds, reap/cancel/accounting, no secrets/new SQL. Actual runner/store tests for every outcome, stale callbacks/lease/CAS/restart/conflict; first failure before dependent launch. Own FAILURE_TAXONOMY/CANONICAL_FEEDBACK_CONTRACT/AGENT_CONTROL_LOOP.",
+    "S4 — scripts/agent-native-ci/feedback.mjs + V2 trust-adapter exports deriveVerificationAction/buildJevInput: current snapshot/resolved run -> advisory intersection with actual nextActions and existing typed judgment input. Follow loopContract, preserve forbidden lifecycle/store/supervision and evaluator grammar. Real native fixtures test failed Decision LOOKBACK/reflection/material/signature guard, zero unchanged dispatch, allSAT merge and receipt-only delivery. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY. deriveVerificationAction(snapshot,resolvedRun)->{suggestion,blockers}; buildJevInput(snapshot,resolvedRun)->existing materialized envelope or blocker.",
+    "S5 — scripts/agent-native-ci/github-adapter.mjs/scripts/agent-native-ci/cli.mjs + jev-ci + three workflows + package.json: projectGitHubStatus/validateGitHubCallback; CLI run --config ABS --request REF --request-hash HASH, project --config ABS WORK_ID. Exact adapterContract, secret-free execution/trusted importer, lost upload unavailable, legacy unchanged. Actual exports tests mutate check/skip/head/base/body/SHA/authority/status API/two cwd: no Work effects. Own ADAPTER_BOUNDARY. projectGitHubStatus(snapshot,resolvedRun)->metadata projection, validateGitHubCallback(callback,request,resolved)->bound import facts or rejection.",
+    "S6 — test/agent-native-ci-feedback.test.mjs and scripts/agent-native-ci/benchmark.mjs: all N1-N7 actual symbols/titles, every invariant/criterion positive+negative; runBenchmark emits 20 paired samples/scenario per benchmarkContract, truthful safety/time/retry/provider/log data. All verificationPlan commands mandatory, no fixture/provider simulation acceptance. Own BENCHMARK/all negatives.",
+    "S7 — research brief/audit + Living state: verify complete pinned inventory/source/timing from auditEvidence/researchEvidence, document actual implemented operations after S1-S6. Native API dependency mismatch reopens research. Actual independent allSAT/exact candidate/main/tree/Living receipt gates Worker delivery; BB-156 retains migration. Own CURRENT_STATE_AUDIT/BENCHMARK."
   ],
   "acceptanceCriteria": [
     {
@@ -400,123 +400,40 @@
   "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization.",
   "ciContract": {
     "profile": "V2_FEEDBACK_V1",
-    "canonical": "Strict bindingContract via native EvidenceVersion/CAS/fence. loopContract supplies execution/material/selective/native judgment; failureContract bounds retries; adapterContract supplies exact local/GitHub boundary. No new phase/store/Decision. Fresh mandatory npm verify, independent JEV and actual main/tree/Living receipt required; BB-157 supervision and BB-156 cutover ownership preserved."
+    "canonical": "Native EvidenceVersion/CAS/fence only; exact bindingContract, loopContract, failureContract, adapterContract in objective evidence. No new phase/store/Decision. Mandatory full verify + independent JEV + actual main/tree/Living receipt; BB-157 supervision, BB-156 cutover."
   },
   "auditEvidence": {
     "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
-    "inventory": [
-      ".github/workflows/test.yml",
-      ".github/workflows/push-test.yml",
-      ".github/workflows/blackboard-jev.yml",
-      "scripts/blackboard-jev-ci.mjs",
-      "scripts/blackboard-jev.mjs",
-      "scripts/blackboard-delivery.mjs",
-      "scripts/blackboard-verification-bundle.mjs",
-      "scripts/blackboard-jev-cli.mjs",
-      "packages/agentic-system/src/local-command-verifier.js",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/mcp-server.js",
-      "packages/agent-tools/src/experiment/runner.js",
-      "packages/core-harness/src/verification.js",
-      "packages/core-harness/src/verification-assessment.js",
-      "scripts/blackboard-implementation-bootstrap.mjs"
+    "coverage": "Every file below inspected at exact baseline; full byte/hash inventory and raw timing retained in ci-surface-audit.json. Three workflows only. V2 source absent; merged BB-155/157 plans are future contracts.",
+    "paths": [
+      ".github/workflows/test.yml: PR event fixed base/head/body -> living-doc-impact classification + kernel npm verify -> blackboard-gate select -> optional semantic matrix/readiness-verify/objective-supersession-verify -> always merge-gate. Empty matrices may skip, applicable jobs must succeed and each sha==event head. GitHub needs controls launch/actuation, typed JEV supplies correctness.",
+      ".github/workflows/push-test.yml: every push checkout -> Node24 npm verify -> terminal kernel conclusion; no Work selector/evidence/JEV. Duplicate PR/push execution, no canonical observation.",
+      ".github/workflows/blackboard-jev.yml: workflow_call/dispatch work_id + candidate/trusted/controller inputs (missing dispatch SHAs default main) -> resolve actual SHAs -> select exactly1 -> secret-free collect artifact jev-input-ID -> evaluate with provider secret -> always upload jev-evaluation-ID/cache. Node22 collector/evaluator, cancel-in-progress=false per work/candidate; failed collection suppresses evaluate, missing artifact is infra/insufficient not product judgment.",
+      "scripts/blackboard-jev-ci.mjs: trusted base Board selects changed research plan, exact worker candidate, READY publication or supersession. Candidate objective/policy not trusted. Copies trusted docs then restores permitted research draft/baseline; collect -> verification bundle, evaluate -> materialize/evaluate/validate actual verdict; unsatisfied exit1. Publication validates exact trusted plan/cache. GH snapshots select trusted transport refs, no V2 controller yet.",
+      "scripts/blackboard-jev.mjs: canonical objective/plan/subject/evidence -> typed required questions -> state/spec/model/policy cache -> independent provider -> validated all answers -> genuine JEV_EVALUATION. callJev max2 transport attempts/30s; research failure -> RESEARCH_REQUIRED, candidate failure -> repair/research. Confidence telemetry. No check conclusion enters verdict.",
+      "scripts/blackboard-delivery.mjs: clean exact candidate/baseline/plan -> sequential verificationPlan shell commands (300s each), write log then first error throws; IMPLEMENTATION_RESULT emitted only after all pass. publishEvaluation sets DRAFT/READY or repair from exact genuine verdict. verifyDelivery requires candidate ancestor merge ancestor observed main, equal candidate/merge tree and required Living/source blobs; publishDelivery sets DONE. Partial failed runs have logs but no final typed result.",
+      "scripts/blackboard-verification-bundle.mjs: result run logs + claims -> dedup union blobs; install checks canonical safe paths/missing bodies/every digest before write. Preserve checks; no failed/partial observation envelope currently.",
+      "scripts/blackboard-jev-cli.mjs and blackboard-implementation-bootstrap.mjs: explicit work id/profile -> graph contract/context -> collect/eval/publish/verify-delivery/claim; readiness/dependency/scope validated. graph/state projection after publication is legacy authority; local CLI needs no GH status.",
+      "packages/agentic-system/src/local-command-verifier.js: candidate.version==HEAD; argv shell:false + timeout/reap + stdout/stderr full digests; unchanged HEAD/status after execution. exit0 PASS, exit nonzero/SPAWN_ERROR both FAIL, TIMEOUT INCONCLUSIVE, mutation FAIL. No Work generation or structured domain taxonomy.",
+      "packages/agent-tools/src/supervisor.js: localCommandVerifier per task.verifications -> current candidate PASS set -> all claims evaluation -> Core promotion; maxAttempts default3 resumes feedback. Agent message/exit not authority, separate agent-tools contract.",
+      "packages/agent-tools/src/deliver-slice.js: local verifier/promotion + external acceptance profile; src/mcp-server.js: verify route creates same verifier; src/experiment/runner.js: held-out unit/attempt verifiers. All bind candidate.version; separate APIs retained, new CI wrapper adds V2 envelope without changing them.",
+      "packages/core-harness/src/verification.js normalizes candidate/claim/evidence/status/source; verification-assessment.js aggregates minSources, rejectFailures/conflicts/incomplete. These prove declared executable claims inside Core, never outer independent JEV or main delivery."
     ],
-    "edges": [
-      "PR event -> living+kernel -> trusted select -> semantic/publication/supersession -> merge-gate",
-      "explicit local CLI -> same materializer/collector/evaluator/publisher -> exact main verification",
-      "agent-tools run/deliver/MCP/experiment -> localCommandVerifier -> Core artifact/assessment -> existing supervised promotion"
-    ],
-    "authorityFindings": [
-      {
-        "ref": ".github/workflows/test.yml",
-        "finding": "GitHub needs/conclusions control scheduling and merge actuation; separate from real semantic authority"
-      },
-      {
-        "ref": ".github/workflows/push-test.yml",
-        "finding": "duplicate terminal kernel transport; no Work subject"
-      },
-      {
-        "ref": ".github/workflows/blackboard-jev.yml",
-        "finding": "artifact missing/collector failure suppresses downstream; raw GitHub job status lacks domain failure class"
-      },
-      {
-        "ref": "scripts/blackboard-jev-ci.mjs",
-        "finding": "domain validators sound; GH event/base used for trust selection, no V2 transport yet"
-      },
-      {
-        "ref": "scripts/blackboard-jev.mjs",
-        "finding": "correctness authority is independent provider; do not replace with command pass; no failed/partial deterministic bundle accepted"
-      },
-      {
-        "ref": "scripts/blackboard-delivery.mjs",
-        "finding": "first-failure log exists but no complete typed failed/partial run, later checks unaccounted; file graph transaction legacy only"
-      },
-      {
-        "ref": "scripts/blackboard-verification-bundle.mjs",
-        "finding": "keep integrity and path checks; new observation bundle must cover partial outcomes without converting to accepted implementation evidence"
-      },
-      {
-        "ref": "scripts/blackboard-jev-cli.mjs",
-        "finding": "local actor actuation does not consume GitHub status; legacy stays unchanged until BB-156"
-      },
-      {
-        "ref": "packages/agentic-system/src/local-command-verifier.js",
-        "finding": "PASS/FAIL/INCONCLUSIVE; SPAWN_ERROR and product failure both FAIL; timeout INCONCLUSIVE; summary is not structured V2 feedback"
-      },
-      {
-        "ref": "packages/agent-tools/src/supervisor.js",
-        "finding": "independent existing agent-tools task contract, not outer Work; preserve API; no new CI correctness authority"
-      },
-      {
-        "ref": "packages/agent-tools/src/deliver-slice.js",
-        "finding": "separate local delivery entrypoint; bridge observation wrapper, do not redefine acceptance"
-      },
-      {
-        "ref": "packages/agent-tools/src/mcp-server.js",
-        "finding": "runtime entrypoint to same local verifier; stays compatible"
-      },
-      {
-        "ref": "packages/agent-tools/src/experiment/runner.js",
-        "finding": "benchmark provenance is not outer delivery authority"
-      },
-      {
-        "ref": "packages/core-harness/src/verification.js",
-        "finding": "do not rewrite Core public schema; adapter preserves distinctions in its own V2 envelope"
-      },
-      {
-        "ref": "packages/core-harness/src/verification-assessment.js",
-        "finding": "PASS/FAIL conflicts block; same principle retained by new typed aggregate"
-      },
-      {
-        "ref": "scripts/blackboard-implementation-bootstrap.mjs",
-        "finding": "no source checkout authority in V2; consumes BB-155 public configured client only after delivered dependency"
-      }
-    ],
-    "workflows": 3,
-    "absence": "scripts/blackboard-v2 is not delivered on baseline. BB-155/157 merged READY plans are future dependency contracts, not runnable APIs.",
-    "npmVerifyExpansion": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
-    "timing": {
-      "runId": 37156393847,
-      "headSha": "e957e5b3560696b032ac7d138760f9892a31f064",
+    "measurement": {
+      "ciRun": 37156393847,
+      "ciHead": "e957e5b3560696b032ac7d138760f9892a31f064",
       "seconds": {
         "kernel": 111.727,
         "collect": 0.281,
         "evaluate": 0.734
       },
       "providerMs": 438.627,
+      "boundary": "command group to next upload/post cleanup; readiness-only historic run",
+      "localSeconds": 66.58,
+      "localExit": 1,
+      "localFailure": "RB2 process-tree timeout assertion: 791/792 agentic pass, later suites not reached",
       "samples": 1,
-      "boundary": "group to next upload/post cleanup"
-    },
-    "localTiming": {
-      "command": "npm run verify",
-      "baselineSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
-      "node": "v24.19.0",
-      "elapsedSeconds": 66.58,
-      "exitCode": 1,
-      "sampleCount": 1,
-      "scope": "single local baseline, no speedup inference",
-      "failure": "RB2 process-tree timeout test reports remaining PID at bb096-real-backend-qa.test.js:383; 791/792 agentic tests pass, command stops before later suites. This is an observed test/environment failure, not a green baseline or a proved flake."
+      "limit": "No speedup, product verification or proved flake claim."
     }
   },
   "researchEvidence": {
@@ -608,7 +525,7 @@
     ],
     "protocol": "Paired same fixture/candidate/hardware/runtime/commands per seed, baseline current sequential terminal collector versus progressive adapter. Publish every sample and failures, p50/p95 first diagnostic latency, total elapsed, spawned checks/cancelled counts, retry/provider counts and log/evidence bytes; unknown cost stays null. No live paid provider for timing; deterministic provider fixture counted as synthetic, genuine correctness gate separate. Timing uses monotonic clock outside semantic digests.",
     "gates": "All adversarial safety cases pass with zero false ready/delivery, zero stale effects and no repeated paid identical subject; progressive early-error first feedback precedes dependent launch. No performance regression over 10% median successful complete-run latency relative paired baseline; if sample noise blocks conclusion retain baseline scheduling and reopen optimization, not correctness gate. Full npm verify still mandatory.",
-    "baselineRef": "auditEvidence.timing/localTiming: historical CI and failing local single samples, not optimization evidence",
+    "baselineRef": "auditEvidence.measurement",
     "limitation": "No claimed productivity/speedup from these single baseline observations."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
