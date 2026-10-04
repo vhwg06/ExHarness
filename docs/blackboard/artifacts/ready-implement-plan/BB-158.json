@@ -45,16 +45,16 @@
     "Independent JEV consumes canonical subject/evidence, never GitHub status."
   ],
   "architectureDecisions": [
-    "D1 — BB-155 Work/Attempt/version/Decision + BB-157 own control; immutable evidence blobs, existing apply only. No new phase/database.",
-    "D2 — Request/run/observations are EvidenceVersion blob refs, PUBLISH_EVIDENCE CAS/live fence only; suggestion is not Decision/readiness.",
-    "D3 — Strict bindingContract exact subjects and authority classes; input evidence versus output evidence avoids self-hash recursion.",
-    "D4 — Pinned registry DAG, sequential stable order, publish outcome before next launch; dependency cancellation truthful, full verification mandatory.",
-    "D5 — failureContract: product delta, verifier correction, infra <=2 retries, flake <=1 confirmation then hold; JEV transport never multiplied.",
-    "D6 — loopContract selective input closure, unknown->all, new trusted unchanged-input attestation only; no cross-Attempt reuse/fresh npm verify.",
-    "D7 — Pure action intersects actual nextActions; failed JEV BB-157 LOOKBACK/reflection/material guard; allSAT->merge, exact receipt->delivery.",
-    "D8 — Hosted Actions receives immutable canonical bundle; loopback controller alone owns guarded artifact import/publication. No runner service access/secrets or GitHub-derived Work state.",
-    "D9 — Delivered BB-155/157 required for Worker; legacy stays unchanged, isolated V2 explicit route. BB-156 owns cutover/no dual-write.",
-    "D10 — Seven bounded slices, actual adversarial exports and paired benchmark; Living describes delivered behavior only, research ends READY."
+    "D1 \u2014 BB-155 Work/Attempt/version/Decision + BB-157 own control; immutable evidence blobs, existing apply only. No new phase/database.",
+    "D2 \u2014 Request/run/observations are EvidenceVersion blob refs, PUBLISH_EVIDENCE CAS/live fence only; suggestion is not Decision/readiness.",
+    "D3 \u2014 Strict bindingContract exact subjects and authority classes; input evidence versus output evidence avoids self-hash recursion.",
+    "D4 \u2014 Pinned registry DAG, sequential stable order, publish outcome before next launch; dependency cancellation truthful, full verification mandatory.",
+    "D5 \u2014 failureContract: product delta, verifier correction, infra <=2 retries, flake <=1 confirmation then hold; JEV transport never multiplied.",
+    "D6 \u2014 loopContract selective input closure, unknown->all, new trusted unchanged-input attestation only; no cross-Attempt reuse/fresh npm verify.",
+    "D7 \u2014 Pure action intersects actual nextActions; failed JEV BB-157 LOOKBACK/reflection/material guard; allSAT->merge, exact receipt->delivery.",
+    "D8 \u2014 Hosted Actions receives immutable canonical bundle; loopback controller alone owns guarded artifact import/publication. No runner service access/secrets or GitHub-derived Work state.",
+    "D9 \u2014 Delivered BB-155/157 required for Worker; legacy stays unchanged, isolated V2 explicit route. BB-156 owns cutover/no dual-write.",
+    "D10 \u2014 Seven bounded slices, actual adversarial exports and paired benchmark; Living describes delivered behavior only, research ends READY."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -69,7 +69,8 @@
       "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-157.json",
       "package.json",
-      "docs/blackboard/evidence/BB-158/ci-surface-audit.json"
+      "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+      "packages/agentic-system/src/supervised-backend.js"
     ],
     "expectedNew": [
       "scripts/agent-native-ci/contract.mjs",
@@ -124,13 +125,13 @@
     ]
   },
   "implementationSlices": [
-    "S1 — scripts/agent-native-ci/contract.mjs exports validateRequest/acceptVerificationObservation/validateRun/hashBlob: resolved Work/Attempt/candidate/registry + bindingContract schemas -> immutable validated records or rejection. Strict refs/hash/closed keys/partitions/PASS/full logs/authority. Test real exports with each stale/forged/partial binding and positive native publication. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY. validateRequest(request,resolved), acceptVerificationObservation(observation,request,resolved), validateRun(run,request,observations); no fs/store writes.",
-    "S2 — scripts/agent-native-ci/planner.mjs exports planVerification/planReverification: exact request/prior run/resolved input delta -> pure stable topological schedule and invalidation/reuse reasons. Unknown deps ->all, reverse closure, no cross-Attempt reuse, fresh mandatory npm verify. Actual export tests cover source/env/registry delta, cyclic/duplicate gates and forged old PASS. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP. planVerification(request)->checks; planReverification({request,priorRun,sourceDelta,resolvedInputs})->{checks,invalidated,reused,reasons}.",
-    "S3 — scripts/agent-native-ci/runner.mjs exports executeVerificationRequest/publishVerificationRun: pinned request, clean checkout, blobStore, client/current token -> argv process + full hashed logs + incremental/final EvidenceVersion via PUBLISH_EVIDENCE CAS. Implement failureContract bounds, reap/cancel/accounting, no secrets/new SQL. Actual runner/store tests for every outcome, stale callbacks/lease/CAS/restart/conflict; first failure before dependent launch. Own FAILURE_TAXONOMY/CANONICAL_FEEDBACK_CONTRACT/AGENT_CONTROL_LOOP. Native record refs retain {kind,id,hash}; EvidenceVersion uses existing header and hashed result/blob content, no unknown Work/status keys.",
-    "S4 — scripts/agent-native-ci/feedback.mjs + V2 trust-adapter exports deriveVerificationAction/buildJevInput: current snapshot/resolved run -> advisory intersection with actual nextActions and existing typed judgment input. Follow loopContract, preserve forbidden lifecycle/store/supervision and evaluator grammar. Real native fixtures test failed Decision LOOKBACK/reflection/material/signature guard, zero unchanged dispatch, allSAT merge and receipt-only delivery. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY. deriveVerificationAction(snapshot,resolvedRun)->{suggestion,blockers}; buildJevInput(snapshot,resolvedRun)->existing materialized envelope or blocker.",
-    "S5 — scripts/agent-native-ci/github-adapter.mjs/cli.mjs, jev-ci, three workflows/package.json: dispatchVerificationRequest(config,request,bundle), collectGitHubRun(config,requestId), validateGitHubCallback(callback,request,resolved), projectGitHubStatus(snapshot,run). Implement adapterContract artifact round trip, pending native request before dispatch, lost-response lookup, pinned executor, secret-free worker/separate judge, current native guarded import. CLI dispatch|collect|project --config ABS --request REF. Real export fixtures: stale/duplicate/wrongSHA/skip/head/body/API failure never Work authority; local/hosted same canonical outputs. Own ADAPTER_BOUNDARY.",
-    "S6 — test/agent-native-ci-feedback.test.mjs and scripts/agent-native-ci/benchmark.mjs: all N1-N7 actual symbols/titles, every invariant/criterion positive+negative; runBenchmark emits 20 paired samples/scenario per benchmarkContract, truthful safety/time/retry/provider/log data. All verificationPlan commands mandatory, no fixture/provider simulation acceptance. Own BENCHMARK/all negatives.",
-    "S7 — research brief/audit + Living state: verify complete pinned inventory/source/timing from auditEvidence/researchEvidence, document actual implemented operations after S1-S6. Native API dependency mismatch reopens research. Actual independent allSAT/exact candidate/main/tree/Living receipt gates Worker delivery; BB-156 retains migration. Own CURRENT_STATE_AUDIT/BENCHMARK."
+    "S1 \u2014 scripts/agent-native-ci/contract.mjs implements validateRequest(request,resolved), acceptVerificationObservation(observation,request,resolved), validateRun(run,request,observations), hashBlob(value). Pure closed schemas per bindingContract: exact current native refs/hash/input/verifier/registry, full log proof and exhaustive disjoint run accounting; malformed/stale rejects. N1/N2 actual exports plus positive native EvidenceVersion compatibility test. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY.",
+    "S2 \u2014 Depends S1. scripts/agent-native-ci/planner.mjs implements planVerification(request) and planReverification({request,priorRun,sourceDelta,resolvedInputs}). Stable DAG/check registry, reverse dependency invalidation; unknown reads/environment forces all. No cross-Attempt reuse; required full npm verify always fresh. Return checks/invalidated/reused/reasons without IO. N3/N4 actual exports cover cycles, undeclared inputs, prose-only delta and forged old PASS. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP.",
+    "S3 \u2014 Depends S1/S2. scripts/agent-native-ci/runner.mjs implements executeVerificationRequest({request,checkout,blobStore,onProgress,signal}) and separate publishVerificationRun controller sink. Execute argv sequentially, retain full hashed logs/all retries, classify via failureContract; await sink after each result, cancel/reap dependent work and account every planned check. Hosted sink emits artifacts only; local/controller sink performs existing PUBLISH_EVIDENCE CAS. Tests cover stale native append, sink failure, partial restart and every outcome. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY/AGENT_CONTROL_LOOP.",
+    "S4 \u2014 Depends S3 and delivered BB-155/157. scripts/agent-native-ci/feedback.mjs implements deriveVerificationAction(snapshot,resolvedRun) and buildJevInput(snapshot,resolvedRun); extend only scripts/blackboard-v2/trust-adapter.mjs loading. Exact complete mandatory deterministic passes may suggest native REQUEST_CANDIDATE_JUDGMENT; actual nextActions/CAS/material guard alone dispatch. Failed independent Decision -> LOOKBACK/reflection; allSAT -> MERGE_PENDING; actual receipt -> DELIVERED. N4/N6 invoke actual native guard/context and typed evaluator. No core lifecycle/store changes. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY.",
+    "S5 \u2014 Depends S3/S4. scripts/agent-native-ci/github-adapter.mjs implements dispatchVerificationRequest, collectGitHubRun, validateGitHubCallback, projectGitHubStatus. cli.mjs dispatch|collect|project --config ABS --request REF uses adapterContract; edit declared three workflows/jev-ci/package for explicit V2 route, preserve LEGACY. Trusted artifact sink/poll collector owns hosted onProgress; credentials never reach command children. N5 covers lost dispatch/duplicates/stale/workflow mismatch/missing artifact and N7 compares local/hosted semantic projection, excluding runtime ids/timing/transport. Own ADAPTER_BOUNDARY.",
+    "S6 \u2014 Depends S1-S5. test/agent-native-ci-feedback.test.mjs executes every declared N1-N7 title against actual exports plus positive controls/invariant observations. scripts/agent-native-ci/benchmark.mjs implements runBenchmark with 20 paired seeded samples/scenario per benchmarkContract, using actual runner/planner/export fixtures. Output truthful failures/timings/provider counts; all verificationPlan commands mandatory. Genuine independent correctness remains separate from fixture tests. Own BENCHMARK/all negative coverage.",
+    "S7 \u2014 Depends S6. Re-run read-only audit extractor and inspect coverage deltas against pinned source; preserve source ledger and benchmark limits in research brief/audit. Update declared Living state only with genuinely delivered operations. Exact API mismatch reopens research; normal candidate/main/equal-tree/Living gates apply and BB-156 retains migration. Own CURRENT_STATE_AUDIT/BENCHMARK."
   ],
   "acceptanceCriteria": [
     {
@@ -299,7 +300,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Local/GitHub identical request -> equal canonical results; transport forgery rejects."
+      "requiredObservations": "N7: same registered inputs/outcomes yield equal semantic subject/observations/accounting; runtime ids/timestamps/transport differ legitimately, never acceptance. Forged callback rejects."
     },
     {
       "invariant": "Independent JEV consumes canonical subject/evidence, never GitHub status.",
@@ -388,7 +389,7 @@
     }
   ],
   "researchGaps": [],
-  "researchBaselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
+  "researchBaselineSha": "58219b8c97b5184cae908fba97daaaec95d32d0f",
   "livingDocs": {
     "refs": [
       "docs/living/system/state.md"
@@ -403,19 +404,15 @@
     "remote": "Hosted runner receives immutable artifacts; loopback controller alone imports via native guards. No runner service access/credentials."
   },
   "auditEvidence": {
-    "baselineSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
-    "coverage": "Every file below inspected at exact baseline; full byte/hash inventory and raw timing retained in ci-surface-audit.json. Three workflows only. V2 source absent; merged BB-155/157 plans are future contracts.",
+    "baselineSha": "58219b8c97b5184cae908fba97daaaec95d32d0f",
+    "coverage": "Read-only audit on code snapshot 3fbdac000ea6d51f431001c03934ec6e777214f3, merged in #553 and visible at research baseline. Every workflow/job/step and unfinished verification command catalogued; shipped verifier entrypoints and their literal import closure enumerated. V2 runtime absent; BB-155/157 READY plans are future contracts.",
     "paths": [
-      "PR test.yml: event fixed base/head/body; living classification+kernel -> trusted select -> semantic/publication/supersession matrices -> always merge-gate exact head. Applicable needs must succeed; empty matrices may skip. GH scheduling/actuation, genuine JEV correctness.",
-      "push-test.yml: push checkout -> Node24 npm verify only. No Work selection/typed observations/JEV; duplicates kernel execution.",
-      "blackboard-jev.yml: call/dispatch exact work + resolved controller/trusted/subject SHA -> select exactly1 -> secret-free Node22 collect/input artifact -> credentialed evaluate -> always eval/cache upload. Missing dispatch refs default main; collect failure suppresses evaluate. Per-work/candidate concurrency does not cancel.",
-      "jev-ci.mjs: trusted Board selects changed research draft/exact Worker candidate/readiness/supersession; copies trusted control then permitted draft. Collect bundle; evaluate actual materializer/independent verdict; failed judgment exit1. Publication exact plan/cache, no check-derived verdict.",
-      "jev.mjs: exact objective/plan/candidate/evidence + model/policy -> state/spec/cache -> typed independent answers; max2 transport attempts/30s. Research failure research; candidate failure repair/research. Confidence telemetry only.",
-      "delivery.mjs: clean candidate/baseline/plan -> sequential plan commands, 300s each, log then first failure throws, final result only all-pass. Genuine publish routes; candidate ancestor merge ancestor main/equal tree/Living guard then DONE. Partial logs lack typed final accounting.",
-      "verification-bundle.mjs: run/claim union, missing body/safe path/every hash before installation. jev-cli.mjs/bootstrap: explicit Work/profile/context/claim/eval/publication + derived state, legacy graph authority, no GH status.",
-      "local-command-verifier.js: candidate.version==HEAD, argv no shell, timeout/reap/full digests/unchanged HEAD+status. Nonzero+spawn both FAIL, timeout INCONCLUSIVE, mutation FAIL; no Work generation/taxonomy.",
-      "agent-tools supervisor: declared current-candidate PASS claims -> Core promotion, maxAttempts3 feedback resume. deliver-slice external acceptance, MCP verify, experiment held-out unit/attempt all use same local verifier; separate API/authority preserved.",
-      "Core verification normalize candidate/claim/evidence/source; assessment minSources rejects failures/conflicts/incomplete. Executable claims only, no outer semantic/main authority."
+      "GitHub PR test.yml: living/kernel then trusted select and semantic/publication/supersession, exact-head merge-gate; push-test.yml duplicates npm verify. Reusable blackboard-jev.yml: exact SHAs -> secret-free collect -> credentialed genuine evaluate -> artifact/cache. needs/conclusions schedule/block merge; never semantic acceptance.",
+      "jev-ci/jev-cli/bootstrap: explicit canonical Work or trusted changed subject; exact source/control selection. jev.mjs materializes exact typed policy/model/subject and validates independent answers. Semantic provider alone judges; confidence telemetry only, max2 transport attempts. No check-derived verdict.",
+      "delivery/verification-bundle: sequential registered commands, first failure throws with partial logs; only all-pass produces implementation evidence. Full hashes/safe refs required. Exact accepted candidate/main/equal-tree/Living guard publishes DONE; deterministic pass alone is insufficient.",
+      "local-command-verifier: candidate==HEAD and unchanged head/status, argv process/reap/hash; SPAWN_ERROR and assertion failure both FAIL, timeout INCONCLUSIVE. supervisor/deliver-slice/MCP/experiment call it under their own declared task/candidate contracts.",
+      "supervised-backend.js re-grounds accepted SHA in isolated worktree; declared typecheck/tests must PASS and actual diff nonempty before Backend APPLIED evidence. Core normalize/assessment retain candidate/claim/source and reject missing/conflicting evidence. Neither Backend APPLIED nor Core promotion is outer Work DELIVERED.",
+      "work-graph/task-context/delivery-context/contract: canonical legacy graph still routes; scheduler eligibility differs from genuine readiness and claimed write authority. Context prospective IMPLEMENT is not owner grant. V2 plans require configured native authority; runtime not yet delivered."
     ],
     "measurement": {
       "ciRun": 37156393847,
@@ -435,36 +432,24 @@
     },
     "extraction": {
       "command": "python docs/blackboard/evidence/BB-158/extract-ci-audit.py",
-      "sourceSha256": "207df2749a899d86d2cfea2a85f60cb8e4c2bd08517148eb438aa3a4eca0f2d1",
-      "outputSha256": "c951fb207a20d5e8cdb618230eb7d1cb521da1d78a883004c5ebad81909253fc",
-      "jobIds": {
-        ".github/workflows/blackboard-jev.yml": [
-          "select",
-          "evidence",
-          "evaluate"
-        ],
-        ".github/workflows/push-test.yml": [
-          "kernel"
-        ],
-        ".github/workflows/test.yml": [
-          "living-doc-impact",
-          "kernel",
-          "blackboard",
-          "blackboard-jev",
-          "readiness-verify",
-          "objective-supersession-verify",
-          "merge-gate"
-        ]
-      },
+      "sourceSha256": "3235f41459885ffd7c0df861667d8b759d266915419fda2177865e168c31b8d2",
+      "outputSha256": "14237eaab0f6b6fe900b42d6a42d08076da3c408c921345162c158ff0268b8e8",
       "unfinishedRegistryCount": 47,
-      "uniqueCommandCount": 172
+      "uniqueCommandCount": 172,
+      "runtimeCensusFiles": 14,
+      "literalImportClosureFiles": 208,
+      "npmVerifyReachableScripts": 30,
+      "workflows": 3,
+      "unresolvedRelativeImports": 0
     },
     "provenance": {
       "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
-      "hash": "2e85316eebd217c921869deea71b94f1170d75854997198ee7dc9446f815d3d6",
-      "codeSnapshotSha": "15bf970b8a61d0c369d60984acdc3c75b5a80a8f",
+      "hash": "46956af6f413aa129da00306c8244f80ab5ff5622e23d293165a3ec964d470ed",
+      "codeSnapshotSha": "3fbdac000ea6d51f431001c03934ec6e777214f3",
       "inventoryRef": "docs/blackboard/evidence/BB-158/ci-execution-inventory.json"
-    }
+    },
+    "coverageMethod": "Enumerate all workflow YAML and npm scripts; recursively expand verify; catalogue every unfinished plan command. Search all runtime scripts/packages src/bin for six verifier/assessment/collector/judge/delivery symbols; retain line hits and literal import closure. Dynamic shell/import limits remain explicit in full hashed audit.",
+    "authorityPartition": "GitHub schedules/blocks actuation; deterministic checks prove their exact executable claim; independent typed JEV judges correctness; validated graph publication/main/tree/Living owns outer lifecycle. Backend APPLIED/Core/agent-tools promotion are separate contracts."
   },
   "researchEvidence": {
     "sources": {
@@ -516,11 +501,11 @@
     "requestSchema": "VERIFICATION_REQUEST_V1={id,hash,subject:{workId,workGeneration,specHash,planHash,attemptRef:{kind,id,hash},candidateVersionRef:{kind,id,hash},candidateSha,candidateTree,inputEvidenceRef:{ref,hash}|null},registryHash,policyHash,requiredGateIds,checks:[{id,verifier:{id,implementationHash,authorityClass:DETERMINISTIC},command,args,inputDigests:[{ref,hash}],dependencies,timeoutMs,maxOutputBytes}],retryPolicy:{infraRetries:2,flakeConfirmations:1},environment:{profile,hash},controllerDigest}. Strict known keys, immutable canonical hash excluding hash field; all refs resolve before scheduling, unique check ids, acyclic deps, required gate ids exactly approved plan. No PR/check fields in semantic subject.",
     "observationSchema": "VERIFICATION_OBSERVATION_V1={id,hash,requestRef:{ref,hash},subject:exact request.subject,checkId,verifier:exact registered verifier,executionId,executionState:COMPLETED|CANCELLED|UNAVAILABLE|PARTIAL,outcome:PASS|FAIL|INCONCLUSIVE,failureClass:NONE|PRODUCT|VERIFIER|INFRA|FLAKE_SUSPECTED|INSUFFICIENT_EVIDENCE|CANCELLED,exitCode:int|null,signal:string|null,evidence:[{ref,hash,bytes,complete:boolean}],inputDigests,attemptOrdinal,reuseOf:{ref,hash}|null,transport:optional metadata}. hash excludes hash; subject/input/verifier binds request, ordinal is canonical run accounting. PASS only completed exit0, verified full required evidence and no subject/tree mutation. Captured truncated preview distinct from full log blob/hash/bytes; missing full required evidence -> INCONCLUSIVE.",
     "runSchema": "EXECUTION_RUN_V1={id,hash,requestRef,subject,registryHash,policyHash,executions:[{executionId,checkId,ordinal,startedAt,finishedAt,observationRef}],plannedIds,completedIds,cancelledIds,unavailableIds,partialIds,pendingIds,retryHistory:[{checkId,ordinal,causeRef,class,policyHash}],previousRunRef:null|{ref,hash}}. Sets are disjoint and cover every planned id for latest outcome; executions retain all attempts/conflicts; pending allowed in incremental snapshots, terminal snapshot has pendingIds=[]. No ready/correct/delivered booleans. Timestamps runtime diagnostics only, not material evidence digest.",
-    "publication": "publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) validates hashes/registry/subject/log closure and appends ordinary EvidenceVersion with these blob refs through apply(PUBLISH_EVIDENCE,expectedGeneration/RV). Store assigns native version identity and repeats current Attempt/lease/fence checks. Parallel callbacks conflict: reread current version, validate same subject then append immutable union using new CAS; conflicting same id/body rejects. Late generation/owner/candidate or read-only phase publication rejects with zero Work effect; preserve raw callback as non-authoritative diagnostic in external hash archive. No extra SQL or mutable run authority.",
+    "publication": "executeVerificationRequest({request,checkout,blobStore,onProgress,signal})->{run,observations,blobRefs} uses argv processes and no service credential. Await onProgress after each execution. publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) is trusted controller/local sink only: resolve full closure, append ordinary EvidenceVersion through existing PUBLISH_EVIDENCE CAS/current gen/Attempt/lease/fence. Concurrent progress: reread same subject, immutable union/revalidate/new CAS; conflicting id/body rejects. Hosted artifact sink cannot mutate native Work; late artifacts retained externally but stale native publication rejects. Run history remains immutable, no new SQL.",
     "authorityClasses": "Deterministic observation proves its declared executable check only. SEMANTIC_DECISION_REF_V1={decisionRef,workId,workGeneration,attemptRef,candidateVersionRef,evidenceVersionRef} resolves actual independently validated native Decision, never producer supplied answers. Unified routing envelope refers to either observation or Decision; authorityClass remains distinct. JEV failures route exclusively to BB-157 LOOKBACK; no feedback observation grants reflection acceptance or allSAT."
   },
   "loopContract": {
-    "progressiveExecution": "planVerification(request) validates registry and topologically orders stable id tie-break: schema/binding -> focused negatives -> targeted tests -> full npm verify -> independent JEV. Initial runner concurrency=1. After each completed check publish incremental EvidenceVersion before next launch. Product blocking failure stops dependent checks, emits CANCELLED records for them, leaves independent diagnostic checks explicit; process-group termination reaps child before final accounting. Failure to publish/current fence lost stops launching, diagnostics retained only. Whole workflow cancellation may prevent finally callback; canonical controller later marks missing execution UNAVAILABLE by pinned run timeout, not by GitHub cancelled conclusion.",
+    "progressiveExecution": "Stable topological ordering (id tie-break), concurrency=1, from registered schema/binding/focused/targeted/full verification dependencies. After each check await onProgress({run,observations,blobRefs}) before next launch. Local sink validates and PUBLISH_EVIDENCE CAS; hosted sink uploads immutable progress artifact, with no native service/token. Controller polls/imports hosted progress under native CAS. A product failure cancels its dependents before spawn, independent diagnostics remain accounted. Sink failure stops launch and retains diagnostic blobs. Cancellation reaps process tree; lost runner callback becomes UNAVAILABLE only after canonical timeout. Deterministic registry excludes semantic JEV; JEV is subsequent independent native guarded dispatch.",
     "feedbackLoop": "deriveVerificationAction(snapshot,resolvedRun) checks exact freshness first; stale -> DISCARD_DIAGNOSTIC, invalid/missing -> ACQUIRE_EVIDENCE, product -> DIAGNOSE_AND_REPAIR with material candidate delta, verifier -> FIX_VERIFIER, infra allowed -> RETRY_CHECK with budget ordinal, flake -> CONFIRM_ONCE/HOLD, partial -> RECONCILE. suggestions must intersect existing nextActions legality, current scope/owner/dependencies and phase; no direct phase setter. Complete fresh mandatory passes -> REQUEST_CANDIDATE_JUDGMENT suggestion only if native guards allow; failure Decision -> READ_FAILURE/DERIVE_REFLECTION/PUBLISH_REFLECTION through BB-157; allSAT -> verify merge then native receipt. Generation/Attempt takeover clears applicability but does not reset retry history/material baseline; new semantic request binds changed inputs. Same request replay is idempotent.",
     "selective": "planReverification({request,priorRun,sourceDelta,resolvedInputs}) computes changed registered input digests plus reverse dependency closure. Product changed authorized syntax-normalized implementation uses BB-157 trusted material profile; evidence delta uses typed observed projection; prose/control/id/timing churn cannot unlock product/JEV. Unknown/undeclared reads or env/profile change invalidate all. Proven unchanged input checks may get a new trusted REUSE_ATTESTATION observation bound new subject and reuseOf original, validate full original proof and input closure; no raw old PASS accepted. Cross-Attempt reuse disabled in initial profile. Required npm verify is never reused; fresh complete execution required before JEV/delivery.",
     "nativeIntegration": "EvidenceVersion binds current Attempt/gen/spec/candidate; its body contains request/run/observation refs plus existing implementation evidence projection. Snapshot records resolve hashed blob closure before pure feedback. BB-155 accepts typed evidence payload refs; Worker compatibility test proves this with actual PUBLISH_EVIDENCE without modifying forbidden core. Extend only trust-adapter.mjs evidence loading/projection: require complete passing mandatory checks and exact subject before existing materializeWorkJudgment; preserve question grammar, negative test bindings, main/equal-tree/Living policy. No provider call on missing evidence; only actual REQUEST_CANDIDATE_JUDGMENT from existing nextActions/CAS and BB-157 guard can dispatch."
@@ -537,7 +522,7 @@
     ]
   },
   "adapterContract": {
-    "githubAdapter": "Hosted runner never connects to loopback V2 or receives service credentials. Trusted installed controller creates exact hash-bound request/context bundle from current native snapshot and CAS appends pending request in EvidenceVersion before dispatch. Config={repository,workflowId,trustedWorkflowRef,expectedWorkflowSha,controllerDigest,githubTokenFile:absolute,clientConfig:absolute}; token stays controller-only. Dispatch input request id/hash, immutable bundle location, candidateSha/controllerSha. Actual run head/workflow digest must equal pin; mismatch rejects evidence. Trusted workflow checks out exact controller and candidate separately, command runner secret-free, judge separate job with existing provider boundary. Raw observation/run/log or genuine evaluation artifacts uploaded always-attempt. Controller collect reads GitHub API/artifacts using outside-checkout token, validates registered request/hash/subject/executor provenance/full blobs, then native PUBLISH_EVIDENCE or trusted Decision publication rechecks current gen/Attempt/lease/fence/CAS. No GitHub conclusion advances Work. Lost dispatch response -> correlate registered request id/run-name and WAIT/LOOKUP, never blind redispatch; duplicate same bytes idempotent, conflicting result rejects. Cancellation/missing artifact remains PARTIAL/UNAVAILABLE by canonical timeout reconciliation, no false pass. Projection derives current canonical facts, API outage diagnostic only; branch protection may block actuation. PR head/body/base/skips never select Work. Initial local mode runs same request directly; no HTTPS/new server/BB-156 dependency.",
+    "githubAdapter": "Trusted installed controller CAS-registers pending request+bundle in EvidenceVersion before dispatch. Config={repository,workflowId,trustedWorkflowRef,expectedWorkflowSha,controllerDigest,githubTokenFile:absolute,clientConfig:absolute}; exact request id/hash/candidate/controller are dispatch inputs. Hosted trusted executor checks out pinned controller/candidate separately, never connects to loopback V2. onProgress uploads immutable artifacts named requestId/checkId/ordinal/contentHash; upload credential is isolated in trusted sink, child env allowlist excludes all service/provider/GitHub/runtime tokens. Controller collect polls artifacts during run, validates request/subject/workflow SHA/provenance/full hash closure then PUBLISH_EVIDENCE under current native CAS. Separate judge job uses existing provider credential boundary; only trusted genuine evaluation imports can publish Decision. Lost dispatch response -> lookup request-correlated run-name, never blind redispatch. Exact duplicate artifact id/body idempotent, conflict rejects. Canonical timeout accounts missing callbacks as PARTIAL/UNAVAILABLE; GitHub green/skipped/cancelled is not Work authority. Status projection is read-only; API outage blocks transport, never correctness. Local sink instead publishes directly using same contracts. No HTTPS/new server or BB-156 dependency.",
     "legacyCompatibility": "LEGACY unchanged; explicit V2 request never discovers/creates Work from PR or writes graph. BB-156 owns selector/migration, no dual-write.",
     "dependencies": "Worker pins actual delivered BB-155/157 controller identity, schema and exports. Mismatch returns research. READY plans on baseline are sufficient research design evidence, not runtime delivery."
   },
@@ -581,26 +566,22 @@
       ],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
-        ".github/workflows/test.yml",
-        ".github/workflows/blackboard-jev.yml",
-        "packages/agentic-system/src/local-command-verifier.js"
+        "packages/agentic-system/src/supervised-backend.js",
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-jev.mjs"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
-          "match": "\"unfinishedRegistryCount\": 47"
+          "match": "\"coverageMethod\":"
         },
         {
-          "ref": ".github/workflows/test.yml",
-          "match": "merge-gate:"
+          "ref": "packages/agentic-system/src/supervised-backend.js",
+          "match": "Re-ground the accepted commit in an isolated worktree"
         },
         {
-          "ref": ".github/workflows/blackboard-jev.yml",
-          "match": "collect Jev evidence"
-        },
-        {
-          "ref": "packages/agentic-system/src/local-command-verifier.js",
-          "match": "export const LocalVerificationReason"
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "export function verifyDelivery"
         }
       ],
       "supportingPlanFields": [
