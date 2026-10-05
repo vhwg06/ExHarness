@@ -377,7 +377,8 @@
       "sourceRefs": [],
       "supportingPlanFields": [
         "manifestBlueprint"
-      ]
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Every manifest entry becomes exactly one V2 Work with preserved id, objective/plan semantics, dependencies/components and phase-relevant authority bindings.",
@@ -398,7 +399,8 @@
         "transformBlueprint",
         "importAuthorityContract",
         "foundationInterface"
-      ]
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Legacy and V2 derivations agree for dependency readiness/blockers and the legal immediate next action for every migrated work item before cutover.",
@@ -422,6 +424,24 @@
       ],
       "supportingPlanFields": [
         "parityBlueprint"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "return {taskId,ready:true,reason:\"RESEARCH_CAN_RUN_AHEAD\",blockedBy:[]};"
+        },
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "const blockedBy=task.dependencies.filter(d=>byId.get(d.taskId)?.status!==\"DONE\").map(d=>d.taskId);"
+        },
+        {
+          "ref": "scripts/blackboard-implementation-bootstrap.mjs",
+          "match": "BLACKBOARD_BOOTSTRAP_INVALID: no active implementation task"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-155.json",
+          "match": "nextActions(snapshot) -> {actions:[{id,requiredInputs,preconditions}],blockers:[{code,refs}],forbidden:[actionId]}"
+        }
       ]
     },
     {
@@ -442,7 +462,8 @@
       "sourceRefs": [],
       "supportingPlanFields": [
         "cutoverBlueprint"
-      ]
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "After cutover, fresh sessions create/show/next/build context exclusively through V2; no current unfinished work requires work-graph registration, currentContextRef, process docs or jev.md to infer lifecycle.",
@@ -467,7 +488,8 @@
       "sourceRefs": [],
       "supportingPlanFields": [
         "currentSessionBlueprint"
-      ]
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Legacy DONE work is absent from V2 migration state and remains represented only by delivered Living Docs/backup; withdrawn duplicates remain absent.",
@@ -487,7 +509,8 @@
       "sourceRefs": [],
       "supportingPlanFields": [
         "transformContract"
-      ]
+      ],
+      "sourceAnchors": []
     }
   ],
   "foundationInterface": {
@@ -642,5 +665,73 @@
     "assertMigrationParity": "({manifest,archive,nativeSnapshots,capabilities})->Report; exact checked set and zero semantic diff or throw.",
     "commitMigration": "({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash})->CutoverReceipt; operator only, same SQL handle/parity and atomic commit.",
     "readMigrationSnapshot": "(tx,id)->resolved native snapshot; private to cutover, reads actual staged Work/records/proofs/Living, no second connection."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "migrationContract": {
+    "api": {
+      "buildMigrationManifest": "({snapshotSha,archive,freezeReceipt,capabilities})->Manifest; closure/partition failure throws before rows.",
+      "transformLegacyWork": "(entry,{manifest,archive,capabilities})->{workTemplate,recordTemplates,importProofs}; strict native schemas or abort.",
+      "resolveImportedAuthority": "(snapshot,purpose:READINESS|CANDIDATE)->validated purpose facts; native same-purpose Decision prevails.",
+      "assertMigrationParity": "({manifest,archive,nativeSnapshots,capabilities})->Report; exact checked set and zero semantic diff or throw.",
+      "commitMigration": "({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash})->CutoverReceipt; operator only, same SQL handle/parity and atomic commit.",
+      "readMigrationSnapshot": "(tx,id)->resolved native snapshot; private to cutover, reads actual staged Work/records/proofs/Living, no second connection."
+    },
+    "phaseRows": [
+      {
+        "source": "RESEARCH_SA/RESEARCH",
+        "target": "RESEARCHING",
+        "action": "START_RESEARCH"
+      },
+      {
+        "source": "WORKER/EXECUTION",
+        "target": "READY",
+        "action": "CLAIM_EXECUTION"
+      },
+      {
+        "source": "RESEARCH_SA/JUDGMENT",
+        "target": "PLAN_JUDGMENT",
+        "action": "PUBLISH_DECISION(readiness)"
+      },
+      {
+        "source": "WORKER/JUDGMENT",
+        "target": "JUDGING",
+        "action": "PUBLISH_DECISION(candidate)"
+      },
+      {
+        "source": "WORKER/MERGE_PENDING",
+        "target": "MERGE_PENDING",
+        "action": "PUBLISH_DELIVERY_RECEIPT"
+      },
+      {
+        "source": "BLOCKED",
+        "target": "BLOCKED",
+        "action": null
+      },
+      {
+        "source": "REPAIR/ACTIVE/unknown incompatible",
+        "target": "PREPARE_ABORT",
+        "action": null
+      }
+    ],
+    "comparisonFields": [
+      "id",
+      "objectiveHash",
+      "planSemanticHash",
+      "directDependencies",
+      "components",
+      "readinessProof",
+      "candidateProof",
+      "dependencyBlockers",
+      "phaseIntent",
+      "currentProductScope",
+      "prospectiveClaimScope",
+      "mutations",
+      "diagnostics"
+    ],
+    "comparisonRule": "Normalize only action names and protocol CAS/token/lease encoding. Compare sorted guard atoms {name,subjectHash,expected,actual,satisfied}, dependency ids and product effects. Retain raw requiredInputs/forbidden/actions and every refinement. Renewal is ownership protocol only. Every product mutation has exactly one equivalent; missing/extra semantic guard/action, scope or blocker is a diff. Never suppress semantic differences.",
+    "commit": "BEGIN IMMEDIATE: CAS LEGACY/ISOLATED_NEW_WORK revision; verify pinned profile/freeze/main/source/destination. Insert ALL Work/native controller claims/versions/typed proofs, stage V2/ALL_WORK selectors privately. Compute same-connection native snapshots and exhaustive parity against validated source; zero diff/full set/live leases required. Insert report+receipt+allocator, COMMIT. Any fault rolls back everything; WAL readers retain old state until commit. Identical receipt resolves lost response; conflicting manifest aborts.",
+    "routing": "Public wrappers query pinned GET authority and validate protocol/controller. LEGACY legitimate operations remain until barrier; V2 uses service. Raw current APIs RETIRED before I/O; separate immutable SHA reads only. No transport/pin fallback.",
+    "purpose": "Store resolves importAuthorityRef into purpose facts: readiness binds gen/spec/plan; candidate binds accepted versions/SHA/tree. Matching native purpose Decision prevails even nonSAT. Lifecycle/context consume store facts; CAS apply revalidates. Original typed input/eval/cache unchanged; receipt binds report, import proof does not.",
+    "upgrade": "Offline free installMigrationProfile({serverConfigFile,operatorTokenFile,expectedAuthorityId,expectedControllerDigest,expectedSchemaVersion,expectedAuthorityRevision,newControllerDigest}): pinned absolute DB/auth config, operator auth, direct SQLite open (not normal new-controller reopen). BEGIN IMMEDIATE validates old pins, samples store clock/regression and zero live claims, validates all old rows; additive MIGRATION_PROFILE_V1 only. Preserve Work/records/fences/lease records/selector; persist sampled lastCommittedTime with profile metadata to prevent expired lease resurrection. Fault ROLLBACK all. Normal reopen requires new pins; actual upgrade follows accepted main code."
   }
 }
