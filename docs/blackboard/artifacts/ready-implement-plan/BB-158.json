@@ -444,7 +444,19 @@
   "valueHypothesis": "Measure feedback latency, retry cost and safety before optimizing.",
   "ciContract": {
     "profile": "V2_FEEDBACK_V1",
-    "canonical": "bindingContract/loopContract/adapterContract; existing native guards, independent JEV and exact delivery receipt. BB-156 owns cutover."
+    "canonical": "bindingContract/loopContract/adapterContract; existing native guards, independent JEV and exact delivery receipt. BB-156 owns cutover.",
+    "readinessDesign": {
+      "api": {
+        "deriveVerificationAction": "({snapshot,request,run,observations,resolved})->{suggestion,blockers}; pure, native nextActions intersection; no provider/store writes.",
+        "buildJevInput": "({snapshot,request,run,observations,blobStore,systemFacts})->existing materializeWorkJudgment input; read/validate complete immutable closure first, no dispatch.",
+        "computeMaterialInputProjection": "({request,checkout,registry})->sorted trusted syntax/input facts under delivered BB-157 pinned profiles; no native failed Decision required."
+      },
+      "hostedApi": "dispatchVerificationCheck({config,request,checkId,ordinal,bundle,client,snapshot,attemptToken})->dispatchRef after native reservation; collectVerificationCheck({config,dispatchRef,request,client,snapshot,blobStore,attemptToken})->validated observation or pending/unavailable; acceptVerificationCallback({request,dispatchRef,artifact,provenance,resolved})->observation; projectGitHubStatus({run,observations})->display only. Controller collect uses publishVerificationRun; no runner publishes native state.",
+      "publication": "executeRegisteredCheck({request,checkId,ordinal,checkout,blobStore,signal})->{observation,blobRefs}; argv process, no service credentials. executeVerificationRequest({request,checkout,blobStore,onProgress,signal})->{run,observations,blobRefs} is local sequential wrapper, awaiting sink. publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) validates full hash closure and appends ordinary EvidenceVersion through existing PUBLISH_EVIDENCE CAS/current gen/Attempt/lease/fence. Hosted controller builds the same run from imported one-check bundles. Parallel append rereads same subject, immutable union/revalidates/new CAS; conflicting id/body rejects. Stale artifacts remain external diagnostics, no Work effect/new SQL.",
+      "admission": "Freshness first: stale->diagnostic discard; missing/partial->acquire/reconcile; product->diagnose/repair; verifier->fix authorized verifier or reopen research; infra->bounded retry (<=3 executions), flake->one confirmation then HOLD. These are advisory execution verbs, NOT native action ids. Collect/retry requires current live owner, executable phase and legal PUBLISH_EVIDENCE; product repair also legal PUBLISH_CANDIDATE and exact plan scope. LOOKBACK never executes checks/provider/source repair: read failure, publish exact reflection via BB-157. Fresh complete mandatory passes suggest native REQUEST_CANDIDATE_JUDGMENT only with actual nextActions/CAS/material guard/reservation. Genuine allSAT -> merge verification/receipt. Takeover preserves retry/material baseline; same request replay idempotent.",
+      "productRetry": "Before repeating product-failed check, resolve exact failed observation/input baseline from immutable run history for same generation/spec/plan/check/profile. computeMaterialInputProjection uses controller-owned BB-157 parser profiles and existing locked parsers. Require new candidate tree AND changed trusted semantic inputs; unsupported/missing facts block. No fabricated Decision/reflection: actual failed JEV still uses native BB-157. Persist retry history across ownership takeover; check current owner/fence/phase before publication. N4 covers comments/timing/id churn and positive syntax change.",
+      "executionFacts": "resolvedExecutionFacts pins runtime/toolchain/OS profile and all declared input hashes from installed registry. Both executors probe facts before spawn; mismatch is INCONCLUSIVE/VERIFIER, no PASS. Cross-adapter equivalence requires identical facts; transport cannot silently substitute environment. Unknown input invalidates all."
+    }
   },
   "auditEvidence": {
     "baselineSha": "58219b8c97b5184cae908fba97daaaec95d32d0f",
@@ -621,6 +633,12 @@
       ],
       "supportingPlanFields": [
         "auditEvidence"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
+          "match": "\"coverageMethod\":"
+        }
       ]
     },
     {
@@ -645,8 +663,9 @@
         "packages/agentic-system/src/local-command-verifier.js"
       ],
       "supportingPlanFields": [
-        "bindingContract"
-      ]
+        "schemaDesign"
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Define an agent control loop for progressive verification, early failure, diagnosis/repair, material-delta retry, selective re-verification, JEV supervision and convergence to delivery readiness.",
@@ -673,8 +692,9 @@
         "scripts/blackboard-jev.mjs"
       ],
       "supportingPlanFields": [
-        "loopContract"
-      ]
+        "planningDesign"
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Define fail-closed semantics for stale observations, verifier/infra failure, flaky suspicion, partial/cancelled runs and insufficient evidence without converting those states into product correctness claims.",
@@ -698,7 +718,8 @@
       ],
       "supportingPlanFields": [
         "failureContract"
-      ]
+      ],
+      "sourceAnchors": []
     },
     {
       "objectiveCriterion": "Define the GitHub Actions adapter boundary so required checks/statuses are projections of canonical delivery state rather than inputs that create canonical state.",
@@ -721,6 +742,12 @@
       ],
       "supportingPlanFields": [
         "adapterContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "merge-gate:"
+        }
       ]
     },
     {
@@ -745,8 +772,13 @@
         "package.json"
       ],
       "supportingPlanFields": [
-        "benchmarkContract",
-        "researchEvidence"
+        "benchmarkContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "\"verify\":"
+        }
       ]
     }
   ],
@@ -754,5 +786,16 @@
     "deriveVerificationAction": "({snapshot,request,run,observations,resolved})->{suggestion,blockers}; pure, native nextActions intersection; no provider/store writes.",
     "buildJevInput": "({snapshot,request,run,observations,blobStore,systemFacts})->existing materializeWorkJudgment input; read/validate complete immutable closure first, no dispatch.",
     "computeMaterialInputProjection": "({request,checkout,registry})->sorted trusted syntax/input facts under delivered BB-157 pinned profiles; no native failed Decision required."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "planningDesign": {
+    "progressiveExecution": "Stable id-tiebreak topological DAG, concurrency=1, deterministic registered checks only. Local executeVerificationRequest invokes executeRegisteredCheck then awaits native onProgress CAS. Hosted controller dispatches ONE check/ordinal, imports uploaded observation via native CAS before next dispatch. Product failure cancels dependents before spawn; independent diagnostics retained. All retries remain explicit executions. Cancellation reaps process tree; missing hosted callback becomes UNAVAILABLE by canonical timeout. Lost lease/sink stops launch; JEV is subsequent independent native guarded dispatch.",
+    "selective": "planReverification({request,priorRun,sourceDelta,resolvedInputs}) computes changed registered input digests plus reverse dependency closure. Product changed authorized syntax-normalized implementation uses BB-157 trusted material profile; evidence delta uses typed observed projection; prose/control/id/timing churn cannot unlock product/JEV. Unknown/undeclared reads or env/profile change invalidate all. Proven unchanged input checks may get a new trusted REUSE_ATTESTATION observation bound new subject and reuseOf original, validate full original proof and input closure; no raw old PASS accepted. Cross-Attempt reuse disabled in initial profile. Required npm verify is never reused; fresh complete execution required before JEV/delivery."
+  },
+  "schemaDesign": {
+    "requestSchema": "VERIFICATION_REQUEST_V1={id,hash,subject:{workId,workGeneration,specHash,planHash,attemptRef:{kind,id,hash},candidateVersionRef:{kind,id,hash},candidateSha,candidateTree,inputEvidenceRef:{ref,hash}|null},registryHash,policyHash,requiredGateIds,checks:[{id,verifier:{id,implementationHash,authorityClass:DETERMINISTIC},command,args,inputDigests:[{ref,hash}],dependencies,timeoutMs,maxOutputBytes}],retryPolicy:{infraRetries:2,flakeConfirmations:1},environment:{profile,hash},controllerDigest}. Strict known keys, immutable canonical hash excluding hash field; all refs resolve before scheduling, unique check ids, acyclic deps, required gate ids exactly approved plan. No PR/check fields in semantic subject.",
+    "observationSchema": "VERIFICATION_OBSERVATION_V1={id,hash,requestRef:{ref,hash},subject:exact request.subject,checkId,verifier:exact registered verifier,executionId,executionState:COMPLETED|CANCELLED|UNAVAILABLE|PARTIAL,outcome:PASS|FAIL|INCONCLUSIVE,failureClass:NONE|PRODUCT|VERIFIER|INFRA|FLAKE_SUSPECTED|INSUFFICIENT_EVIDENCE|CANCELLED,exitCode:int|null,signal:string|null,evidence:[{ref,hash,bytes,complete:boolean}],inputDigests,attemptOrdinal,reuseOf:{ref,hash}|null,transport:optional metadata}. hash excludes hash; subject/input/verifier binds request, ordinal is canonical run accounting. PASS only completed exit0, verified full required evidence and no subject/tree mutation. Captured truncated preview distinct from full log blob/hash/bytes; missing full required evidence -> INCONCLUSIVE.",
+    "runSchema": "EXECUTION_RUN_V1={id,hash,requestRef,subject,registryHash,policyHash,executions:[{executionId,checkId,ordinal,startedAt,finishedAt,observationRef}],plannedIds,completedIds,cancelledIds,unavailableIds,partialIds,pendingIds,retryHistory:[{checkId,ordinal,causeRef,class,policyHash}],previousRunRef:null|{ref,hash}}. Sets are disjoint and cover every planned id for latest outcome; executions retain all attempts/conflicts; pending allowed in incremental snapshots, terminal snapshot has pendingIds=[]. No ready/correct/delivered booleans. Timestamps runtime diagnostics only, not material evidence digest.",
+    "authorityClasses": "Deterministic observation proves its declared executable check only. SEMANTIC_DECISION_REF_V1={decisionRef,workId,workGeneration,attemptRef,candidateVersionRef,evidenceVersionRef} resolves actual independently validated native Decision, never producer supplied answers. Unified routing envelope refers to either observation or Decision; authorityClass remains distinct. JEV failures route exclusively to BB-157 LOOKBACK; no feedback observation grants reflection acceptance or allSAT."
   }
 }
