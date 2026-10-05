@@ -122,8 +122,8 @@
   "implementationSlices": [
     "S0 — control-store.mjs/cli.mjs: implement offline installMigrationProfile(migrationProfile.upgrade) and bb upgrade --config ABS. Operator-authenticated raw SQLite transaction, old-pin validation, additive profile and monotonic watermark; preserve incumbent rows/selector. Tests reject wrong pins/live claims/clock regression/faults. Own CUTOVER.",
     "S0a — after S0, server.mjs/transport.mjs: read-only listWorkSummaries/readAuthority/verifyWorkMerge; operator commitMigration transport. GET /v2/works returns all id/RV/gen/phase rows consistently; GET /v2/authority and POST /v2/migrations/commit. Implement pinned HTTPS per cutoverBlueprint.transport. Test roles/cert/pins/network/two cwd. Own CUTOVER.",
-    "S0b — after S0a, declared bootstrap/context/graph/state/delivery/JEV public scripts and test.yml/blackboard-jev.yml: implement currentSessionBlueprint. LEGACY before flip; V2 native service; retired raw current APIs deny before I/O; explicit frozen-SHA historical reads. Test every route with contradictory cwd and zero legacy writes/fallback. Own CUTOVER.",
-    "S0c — AGENTS/package/declared Blackboard docs: activation-conditional startup requires pinned config/explicit Work id; prepared docs treat state as display. No postapproval code edit. Own CUTOVER.",
+    "S0b — after S0a, declared bootstrap/context/graph/state/delivery/JEV public scripts and test.yml/blackboard-jev.yml: implement currentSessionBlueprint. LEGACY before flip; V2 native service; retired raw current APIs deny before I/O; explicit frozen-SHA historical reads. Test every route with contradictory cwd and zero legacy writes/fallback. Own SOLE_AUTHORITY.",
+    "S0c — AGENTS/package/Blackboard docs: selector-conditional startup, pinned config and explicit Work id; state display only, no postapproval mutation. Own SOLE_AUTHORITY.",
     "S1 — after S0, main-freeze.mjs/migrate-legacy.mjs: GithubMainFreeze.acquire/release and buildMigrationManifest(snapshotSha,archive,freezeReceipt,capabilities). Implement snapshotContract and manifestBlueprint; exact source closure/partition after writable-main quiesce then held barrier/lock. N1/full-id/race tests. Own MANIFEST/TERMINAL_EXCLUSION.",
     "S2 — after S1, migrate-legacy/work-resource/trust-adapter/lifecycle/context-builder: transformLegacyWork and resolveImportedAuthority implement publicMigrationApi and transformBlueprint/importAuthorityContract. Strict gen1 Work/templates and original typed authority; native nonSAT priority, purpose guards under CAS, external DONE Living. N2 rejects each stale/forged binding. Own SEMANTICS/TERMINAL_EXCLUSION.",
     "S3 — after S2, migrate-legacy/control-store: assertMigrationParity and private readMigrationSnapshot(tx,id) implement publicMigrationApi and parityBlueprint. Independently validate legacy guards versus actual same-handle native nextActions/buildContext; exhaustive report, last-id corruption abort. Own PARITY.",
@@ -208,7 +208,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute the positive/rejection observations in MANIFEST evidenceRequired; retain exact per-id/guard/transaction/route assertions, not counts alone."
+      "requiredObservations": "Execute MANIFEST evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Imported Work generation1 preserves semantics/edges/components and only current validated phase-relevant authority; no fake Jev verdict or historical generations.",
@@ -238,7 +238,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute the positive/rejection observations in CUTOVER evidenceRequired; retain exact per-id/guard/transaction/route assertions, not counts alone."
+      "requiredObservations": "Execute CUTOVER evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "After selector commit current Work uses only V2; unsupported clients/legacy writes reject and no fallback or dual-write occurs.",
@@ -248,7 +248,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute the positive/rejection observations in SOLE_AUTHORITY evidenceRequired; retain exact per-id/guard/transaction/route assertions, not counts alone."
+      "requiredObservations": "Execute SOLE_AUTHORITY evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "DONE/withdrawn task resources remain absent; DONE dependency truth is externally bound Living delivery evidence.",
@@ -460,7 +460,8 @@
     {
       "objectiveCriterion": "The authority switch is atomic/fail-closed: either all manifest work is available from V2 and legacy current-work authority is retired, or no cutover is published.",
       "criterionIds": [
-        "CUTOVER"
+        "CUTOVER",
+        "SOLE_AUTHORITY"
       ],
       "planElements": [
         "S4",
@@ -481,7 +482,8 @@
     {
       "objectiveCriterion": "After cutover, fresh sessions create/show/next/build context exclusively through V2; no current unfinished work requires work-graph registration, currentContextRef, process docs or jev.md to infer lifecycle.",
       "criterionIds": [
-        "CUTOVER"
+        "CUTOVER",
+        "SOLE_AUTHORITY"
       ],
       "planElements": [
         "S0",
