@@ -127,9 +127,9 @@
   "implementationSlices": [
     "S1 — scripts/agent-native-ci/contract.mjs implements validateRequest(request,resolved), acceptVerificationObservation(observation,request,resolved), validateRun(run,request,observations), hashBlob(value). Closed bindingContract schemas: exact current subject/verifier/input/hash, full logs, exhaustive disjoint accounting; stale/malformed rejects. N2 invokes acceptVerificationObservation plus positive native EvidenceVersion compatibility test. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY. Own computeMaterialInputProjection using delivered locked profiles; unsupported input blocks.",
     "S2 — Depends S1. scripts/agent-native-ci/planner.mjs implements planVerification(request) and planReverification({request,priorRun,sourceDelta,resolvedInputs}). Stable DAG/check registry, reverse dependency invalidation; unknown reads/environment forces all. No cross-Attempt reuse; required full npm verify always fresh. Return checks/invalidated/reused/reasons without IO. N6 invokes planReverification for stale reuse; additional positive/negative checks cover cycles, undeclared inputs and unchanged attestation. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP.",
-    "S3 — Depends S1/S2. runner.mjs exports executeRegisteredCheck exact bindingContract.publication and local executeVerificationRequest/publishVerificationRun. One argv check retains full logs/class/ordinal, reaps cancellation; local wrapper awaits native sink before next launch. Hosted CLI emits one-check bundle only. N5 invokes publishVerificationRun for partial/cancelled accounting; test stale append, lost sink, restart and all outcomes. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY/AGENT_CONTROL_LOOP.",
-    "S4 — after S3/delivered155+157, feedback.mjs implements feedbackApi deriveVerificationAction/buildJevInput, deterministicProductRetry and nativeIntegration; trust-adapter validates complete exact evidence/original grammar. Actual nextActions/CAS, product material baseline and BB-157 judge guard govern advice. N3 bounds, N4 churn, N7 GitHub-independent judge. No core mutation. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY.",
-    "S5 — Depends S3/S4. github-adapter.mjs implements all four adapterContract.publicApi exports; cli.mjs dispatch|collect|project --config ABS --request REF, execute-check --bundle ABS --check ID --ordinal INT --out DIR. Decode bounded base64 dispatch bundle from env into ABS file; reject oversize/hash/inline closure before child. One-check workflow plus upload-artifact@v4; native controller owns reserve/poll/import/retry/renew, independent native judge. N1 projection; additional lost reply/duplicate/pin/lease/input-cap/local-equivalence cases. Declared workflows/jev-ci/package only; LEGACY unchanged. Own ADAPTER_BOUNDARY.",
+    "S3 — Depends S1/S2. runner.mjs exports executeRegisteredCheck exact bindingContract.publication and local executeVerificationRequest/publishVerificationRun. One argv check retains full logs/class/ordinal, reaps cancellation; local wrapper awaits native sink before next launch. Hosted CLI emits one-check bundle only. N5 invokes publishVerificationRun for partial/cancelled accounting; test stale append, lost sink, restart and all outcomes. Own CANONICAL_FEEDBACK_CONTRACT/OUTCOME_ACCOUNTING.",
+    "S4 — after S3/delivered155+157, feedback.mjs implements feedbackApi deriveVerificationAction/buildJevInput, deterministicProductRetry and nativeIntegration; trust-adapter validates complete exact evidence/original grammar. Actual nextActions/CAS, product material baseline and BB-157 judge guard govern advice. N3 bounds, N4 churn, N7 GitHub-independent judge. No core mutation. Own RETRY_PROGRESS/JEV_BOUNDARY.",
+    "S5 — Depends S3/S4. github-adapter.mjs implements all four adapterContract.publicApi exports; cli.mjs dispatch|collect|project --config ABS --request REF, execute-check --bundle ABS --check ID --ordinal INT --out DIR. Decode bounded base64 dispatch bundle from env into ABS file; reject oversize/hash/inline closure before child. One-check workflow plus upload-artifact@v4; native controller owns reserve/poll/import/retry/renew, independent native judge. N1 projection; additional lost reply/duplicate/pin/lease/input-cap/local-equivalence cases. Declared workflows/jev-ci/package only; LEGACY unchanged. Own ADAPTER_BOUNDARY/EXECUTOR_EQUIVALENCE.",
     "S6 — Depends S1-S5. test/agent-native-ci-feedback.test.mjs invokes all N1-N7 bound symbols/titles plus every invariant positive/negative. benchmark.mjs runBenchmark: 20 seeded paired samples/scenario, actual runner/planner, raw failures/timings/retries/provider counts per benchmarkContract. All verificationPlan commands mandatory; independent correctness separate. Own BENCHMARK/negative coverage.",
     "S7 — after S6, replay pinned audit extractor and retain coverage/benchmark limits. Living records delivered behavior only; API mismatch reopens research. Main/tree/Living receipt gates delivery; BB-156 owns migration. Own CURRENT_STATE_AUDIT/BENCHMARK."
   ],
@@ -331,7 +331,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in ADAPTER_BOUNDARY evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute ADAPTER_BOUNDARY evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Immutable observations bind exact current generation/Attempt/candidate/evidence; stale is non-authoritative.",
@@ -341,7 +341,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in CANONICAL_FEEDBACK_CONTRACT evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute CANONICAL_FEEDBACK_CONTRACT evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Product/verifier/infra/flake/cancelled/insufficient remain distinct.",
@@ -351,7 +351,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in FAILURE_TAXONOMY evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute FAILURE_TAXONOMY evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Retries need allowed bound or material delta; prose/control churn cannot unlock product/JEV.",
@@ -362,7 +362,7 @@
         "focused",
         "base"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in RETRY_PROGRESS evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute RETRY_PROGRESS evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Early cancellation preserves truthful partial execution/evidence.",
@@ -372,7 +372,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in OUTCOME_ACCOUNTING evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute OUTCOME_ACCOUNTING evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Local/CI use the same canonical contract.",
@@ -382,7 +382,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in EXECUTOR_EQUIVALENCE evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute EXECUTOR_EQUIVALENCE evidenceRequired positives/rejections via actual exports; zero skips."
     },
     {
       "invariant": "Independent JEV consumes canonical subject/evidence, never GitHub status.",
@@ -393,7 +393,7 @@
         "focused",
         "base"
       ],
-      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in JEV_BOUNDARY evidenceRequired, with zero skipped observations."
+      "requiredObservations": "Execute JEV_BOUNDARY evidenceRequired positives/rejections via actual exports; zero skips."
     }
   ],
   "negativeVerificationCases": [
@@ -427,7 +427,7 @@
     {
       "id": "NEG_158_3",
       "negativeCaseIndex": 2,
-      "criterionId": "AGENT_CONTROL_LOOP",
+      "criterionId": "RETRY_PROGRESS",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N3 distinct bounded failure actions",
@@ -436,7 +436,7 @@
     {
       "id": "NEG_158_4",
       "negativeCaseIndex": 3,
-      "criterionId": "AGENT_CONTROL_LOOP",
+      "criterionId": "RETRY_PROGRESS",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N4 control churn blocks reevaluation",
@@ -445,7 +445,7 @@
     {
       "id": "NEG_158_5",
       "negativeCaseIndex": 4,
-      "criterionId": "AGENT_CONTROL_LOOP",
+      "criterionId": "OUTCOME_ACCOUNTING",
       "verificationId": "focused",
       "testRef": "test/agent-native-ci-feedback.test.mjs",
       "testTitle": "BB-158 N5 cancellation remains partial",
@@ -709,7 +709,9 @@
       "criterionIds": [
         "AGENT_CONTROL_LOOP",
         "SELECTIVE_VERIFICATION",
-        "JEV_BOUNDARY"
+        "JEV_BOUNDARY",
+        "RETRY_PROGRESS",
+        "OUTCOME_ACCOUNTING"
       ],
       "planElements": [
         "S2",
@@ -737,7 +739,9 @@
       "objectiveCriterion": "Define fail-closed semantics for stale observations, verifier/infra failure, flaky suspicion, partial/cancelled runs and insufficient evidence without converting those states into product correctness claims.",
       "criterionIds": [
         "FAILURE_TAXONOMY",
-        "CANONICAL_FEEDBACK_CONTRACT"
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "RETRY_PROGRESS",
+        "OUTCOME_ACCOUNTING"
       ],
       "planElements": [
         "S1",
@@ -761,7 +765,8 @@
     {
       "objectiveCriterion": "Define the GitHub Actions adapter boundary so required checks/statuses are projections of canonical delivery state rather than inputs that create canonical state.",
       "criterionIds": [
-        "ADAPTER_BOUNDARY"
+        "ADAPTER_BOUNDARY",
+        "EXECUTOR_EQUIVALENCE"
       ],
       "planElements": [
         "S5"
