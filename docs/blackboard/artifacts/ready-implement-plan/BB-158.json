@@ -129,7 +129,7 @@
     "S2 — Depends S1. scripts/agent-native-ci/planner.mjs implements planVerification(request) and planReverification({request,priorRun,sourceDelta,resolvedInputs}). Stable DAG/check registry, reverse dependency invalidation; unknown reads/environment forces all. No cross-Attempt reuse; required full npm verify always fresh. Return checks/invalidated/reused/reasons without IO. N6 invokes planReverification for stale reuse; additional positive/negative checks cover cycles, undeclared inputs and unchanged attestation. Own SELECTIVE_VERIFICATION/AGENT_CONTROL_LOOP.",
     "S3 — Depends S1/S2. runner.mjs exports executeRegisteredCheck exact bindingContract.publication and local executeVerificationRequest/publishVerificationRun. One argv check retains full logs/class/ordinal, reaps cancellation; local wrapper awaits native sink before next launch. Hosted CLI emits one-check bundle only. N5 invokes publishVerificationRun for partial/cancelled accounting; test stale append, lost sink, restart and all outcomes. Own CANONICAL_FEEDBACK_CONTRACT/FAILURE_TAXONOMY/AGENT_CONTROL_LOOP.",
     "S4 — Depends S3 and delivered BB-155/157. feedback.mjs owns deriveVerificationAction/buildJevInput; trust-adapter.mjs loads exact complete evidence with original grammar. Execution verbs admit only legal PUBLISH_EVIDENCE/current owner; repair additionally PUBLISH_CANDIDATE/plan scope. No invented native RETRY action. Mandatory passes suggest guarded REQUEST_CANDIDATE_JUDGMENT; failed native Decision -> LOOKBACK/reflection, allSAT -> MERGE_PENDING, receipt -> DELIVERED. N3/N4 invoke deriveVerificationAction for bounds/control churn/phase admission; N7 invokes buildJevInput proving GitHub irrelevant. No core lifecycle/store changes. Own AGENT_CONTROL_LOOP/JEV_BOUNDARY.",
-    "S5 — Depends S3/S4. github-adapter.mjs owns dispatch/collect/callback/projection exports; cli.mjs dispatch|collect|project --config ABS --request REF, execute-check --bundle ABS --check ID --ordinal INT --out DIR. Decode bounded base64 dispatch bundle from env into ABS file; reject oversize/hash/inline closure before child. One-check workflow plus upload-artifact@v4; native controller owns reserve/poll/import/retry/renew, independent native judge. N1 projection; additional lost reply/duplicate/pin/lease/input-cap/local-equivalence cases. Declared workflows/jev-ci/package only; LEGACY unchanged. Own ADAPTER_BOUNDARY.",
+    "S5 — Depends S3/S4. github-adapter.mjs implements all four adapterContract.publicApi exports; cli.mjs dispatch|collect|project --config ABS --request REF, execute-check --bundle ABS --check ID --ordinal INT --out DIR. Decode bounded base64 dispatch bundle from env into ABS file; reject oversize/hash/inline closure before child. One-check workflow plus upload-artifact@v4; native controller owns reserve/poll/import/retry/renew, independent native judge. N1 projection; additional lost reply/duplicate/pin/lease/input-cap/local-equivalence cases. Declared workflows/jev-ci/package only; LEGACY unchanged. Own ADAPTER_BOUNDARY.",
     "S6 — Depends S1-S5. test/agent-native-ci-feedback.test.mjs invokes all N1-N7 bound symbols/titles plus every invariant positive/negative. benchmark.mjs runBenchmark: 20 seeded paired samples/scenario, actual runner/planner, raw failures/timings/retries/provider counts per benchmarkContract. All verificationPlan commands mandatory; independent correctness separate. Own BENCHMARK/negative coverage.",
     "S7 — Depends S6. Re-run pinned audit extractor, inspect coverage deltas and retain source/benchmark limits in research brief/audit. Update Living only for actually delivered operations. API mismatch reopens research; exact main/tree/Living receipt gates delivery. BB-156 owns migration. Own CURRENT_STATE_AUDIT/BENCHMARK."
   ],
@@ -138,7 +138,8 @@
       "id": "CURRENT_STATE_AUDIT",
       "statement": "All current CI/local/JEV/delivery paths and exact selectors/authority edges are audited.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "repository"
       ],
       "evidenceRequired": [
         "All 3 workflows, expanded verify, local/JEV/delivery edges and exact baseline hashes in audit; absent V2 dependency code explicit."
@@ -148,7 +149,8 @@
       "id": "CANONICAL_FEEDBACK_CONTRACT",
       "statement": "Accepted observations are immutable and bind exact current subject/verifier/input/evidence.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "repository"
       ],
       "evidenceRequired": [
         "Actual exports reject each stale ref/hash, forged authority, collision and missing/full-log digest; exact native positive publication."
@@ -158,7 +160,8 @@
       "id": "FAILURE_TAXONOMY",
       "statement": "Every failure class stays distinct with its declared retry bound.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "repository"
       ],
       "evidenceRequired": [
         "Assertion/nonzero/spawn/timeout/eviction/conflict fixtures map distinct classes; <=3 infra executions, <=1 flake confirmation, no erased conflict."
@@ -169,7 +172,8 @@
       "statement": "Published progressive feedback yields only current lifecycle-legal actions.",
       "verificationIds": [
         "focused",
-        "base"
+        "base",
+        "repository"
       ],
       "evidenceRequired": [
         "Real runner first failure before next launch; native scope/phase/fence/CAS reject stale callbacks; persisted bounded retry history."
@@ -179,7 +183,8 @@
       "id": "SELECTIVE_VERIFICATION",
       "statement": "Selective input closure cannot reuse stale proof or waive fresh mandatory verification.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "repository"
       ],
       "evidenceRequired": [
         "Real input closure/unknown->all/current attestation tests; no cross-Attempt reuse or mandatory npm verify waiver."
@@ -190,7 +195,8 @@
       "statement": "GitHub execution/projection metadata cannot create canonical readiness.",
       "verificationIds": [
         "focused",
-        "base"
+        "base",
+        "repository"
       ],
       "evidenceRequired": [
         "Actual adapter rejects skip/missing/wrongSHA/stale event/callback; local/hosted equal semantic subject/outcome/accounting after excluding runtime ids/timing/transport. Legacy route unchanged."
@@ -201,7 +207,8 @@
       "statement": "Independent current Decisions and BB-157 alone authorize semantic acceptance/repair.",
       "verificationIds": [
         "focused",
-        "base"
+        "base",
+        "repository"
       ],
       "evidenceRequired": [
         "Real materializer grammar + supervision LOOKBACK/reflection/material/signature guards; zero unguarded dispatch, receipt trust unchanged."
@@ -212,7 +219,8 @@
       "statement": "Paired benchmark reports raw safety/latency/counts with explicit limits.",
       "verificationIds": [
         "focused",
-        "benchmark"
+        "benchmark",
+        "repository"
       ],
       "evidenceRequired": [
         "20 paired samples/scenario, all raw outcomes, zero false ready/stale effects, protocol latency/count gates with honest limits."
@@ -222,19 +230,55 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test test/agent-native-ci-feedback.test.mjs"
+      "command": "node --test test/agent-native-ci-feedback.test.mjs",
+      "criterionIds": [
+        "CURRENT_STATE_AUDIT",
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "FAILURE_TAXONOMY",
+        "AGENT_CONTROL_LOOP",
+        "SELECTIVE_VERIFICATION",
+        "ADAPTER_BOUNDARY",
+        "JEV_BOUNDARY",
+        "BENCHMARK"
+      ],
+      "mustPass": "Actual exports: all N1-N7 titles, zero skips; every invariant positive/rejection, distinct local/hosted equivalence, native publication and hosted bounds.",
+      "requiredOutputs": "Candidate log/hash/exit0; extracted negative bodies, criterion observations and zero-effect assertions."
     },
     {
       "id": "base",
-      "command": "node --test test/blackboard-v2-control.test.mjs test/blackboard-v2-supervision.test.mjs"
+      "command": "node --test test/blackboard-v2-control.test.mjs test/blackboard-v2-supervision.test.mjs",
+      "criterionIds": [
+        "AGENT_CONTROL_LOOP",
+        "ADAPTER_BOUNDARY",
+        "JEV_BOUNDARY"
+      ],
+      "mustPass": "Delivered control/supervision suites, zero skips; preserve native guards, independent grammar, LOOKBACK/reflection/material/repetition and receipts.",
+      "requiredOutputs": "Candidate log/hash/exit0 and delivered controller/profile pins."
     },
     {
       "id": "benchmark",
-      "command": "node scripts/agent-native-ci/benchmark.mjs --seed 158 --pairs 20 --out artifacts/agent-native-ci/benchmark.json"
+      "command": "node scripts/agent-native-ci/benchmark.mjs --seed 158 --pairs 20 --out artifacts/agent-native-ci/benchmark.json",
+      "criterionIds": [
+        "BENCHMARK"
+      ],
+      "mustPass": "12 scenarios x20 complete pairs; mandatory safety gates. Latency failure/inconclusive retains baseline; no correctness waiver.",
+      "requiredOutputs": "Candidate log/hash/exit0 and full hashed JSON: pins, raw outcomes/counts/p50/p95, cost/limits."
     },
     {
       "id": "repository",
-      "command": "npm run verify"
+      "command": "npm run verify",
+      "criterionIds": [
+        "CURRENT_STATE_AUDIT",
+        "CANONICAL_FEEDBACK_CONTRACT",
+        "FAILURE_TAXONOMY",
+        "AGENT_CONTROL_LOOP",
+        "SELECTIVE_VERIFICATION",
+        "ADAPTER_BOUNDARY",
+        "JEV_BOUNDARY",
+        "BENCHMARK"
+      ],
+      "mustPass": "Fresh full npm verify exit0; no reuse/skips. Existing failures require authorized resolution before delivery.",
+      "requiredOutputs": "Candidate full log/hash/exit0 and declared Living diff."
     }
   ],
   "invariantCoverage": [
@@ -300,7 +344,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "N7: same registered inputs/outcomes yield equal semantic subject/observations/accounting; runtime ids/timestamps/transport differ legitimately, never acceptance. Forged callback rejects."
+      "requiredObservations": "Separate local/hosted equivalence test calls executeRegisteredCheck plus callback validator on identical pinned execution facts: semantic subject/input/verifier/outcome/accounting equal; transport/id/timing differ. Forged provenance or environment mismatch rejects."
     },
     {
       "invariant": "Independent JEV consumes canonical subject/evidence, never GitHub status.",
@@ -397,11 +441,10 @@
     "questionId": "LIVING_DOCS",
     "statement": "Living state describes actual delivered candidate-bound feedback, failure/retry/cancellation semantics and GitHub adapter authority; no research or fixture delivery claim."
   },
-  "valueHypothesis": "Reducing CI from a human-oriented terminal gate to a machine-readable feedback/control plane should shorten agent failure-to-repair latency, eliminate PR/check-state authority leaks, and make autonomous delivery retries/re-verification more correct and cheaper. Research must measure these claims before optimization.",
+  "valueHypothesis": "Progressive machine-readable feedback may reduce failure latency/retry cost; benchmark safety and latency gates measure that hypothesis.",
   "ciContract": {
     "profile": "V2_FEEDBACK_V1",
-    "canonical": "Existing native EvidenceVersion/CAS/fence and BB-157 supervision; full verify, independent JEV, exact main/tree/Living receipt. BB-156 owns cutover.",
-    "remote": "One check/ordinal per workflow run. Controller sends canonical {request,resolvedExecutionFacts,inlineInputs} as base64 + bundleHash, max32768 raw bytes and65535 total input characters. Oversize/unavailable inline input -> local profile, no partial hosted request. Trusted execute-check decodes/validates then separate always upload-artifact@v4 step emits one result. Controller native CAS import precedes next dispatch; base RENEW_LEASE maintains owner. Native independent judge, provider credentials outside runner."
+    "canonical": "bindingContract/loopContract/adapterContract; existing native guards, independent JEV and exact delivery receipt. BB-156 owns cutover."
   },
   "auditEvidence": {
     "baselineSha": "58219b8c97b5184cae908fba97daaaec95d32d0f",
@@ -509,7 +552,8 @@
     "observationSchema": "VERIFICATION_OBSERVATION_V1={id,hash,requestRef:{ref,hash},subject:exact request.subject,checkId,verifier:exact registered verifier,executionId,executionState:COMPLETED|CANCELLED|UNAVAILABLE|PARTIAL,outcome:PASS|FAIL|INCONCLUSIVE,failureClass:NONE|PRODUCT|VERIFIER|INFRA|FLAKE_SUSPECTED|INSUFFICIENT_EVIDENCE|CANCELLED,exitCode:int|null,signal:string|null,evidence:[{ref,hash,bytes,complete:boolean}],inputDigests,attemptOrdinal,reuseOf:{ref,hash}|null,transport:optional metadata}. hash excludes hash; subject/input/verifier binds request, ordinal is canonical run accounting. PASS only completed exit0, verified full required evidence and no subject/tree mutation. Captured truncated preview distinct from full log blob/hash/bytes; missing full required evidence -> INCONCLUSIVE.",
     "runSchema": "EXECUTION_RUN_V1={id,hash,requestRef,subject,registryHash,policyHash,executions:[{executionId,checkId,ordinal,startedAt,finishedAt,observationRef}],plannedIds,completedIds,cancelledIds,unavailableIds,partialIds,pendingIds,retryHistory:[{checkId,ordinal,causeRef,class,policyHash}],previousRunRef:null|{ref,hash}}. Sets are disjoint and cover every planned id for latest outcome; executions retain all attempts/conflicts; pending allowed in incremental snapshots, terminal snapshot has pendingIds=[]. No ready/correct/delivered booleans. Timestamps runtime diagnostics only, not material evidence digest.",
     "publication": "executeRegisteredCheck({request,checkId,ordinal,checkout,blobStore,signal})->{observation,blobRefs}; argv process, no service credentials. executeVerificationRequest({request,checkout,blobStore,onProgress,signal})->{run,observations,blobRefs} is local sequential wrapper, awaiting sink. publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) validates full hash closure and appends ordinary EvidenceVersion through existing PUBLISH_EVIDENCE CAS/current gen/Attempt/lease/fence. Hosted controller builds the same run from imported one-check bundles. Parallel append rereads same subject, immutable union/revalidates/new CAS; conflicting id/body rejects. Stale artifacts remain external diagnostics, no Work effect/new SQL.",
-    "authorityClasses": "Deterministic observation proves its declared executable check only. SEMANTIC_DECISION_REF_V1={decisionRef,workId,workGeneration,attemptRef,candidateVersionRef,evidenceVersionRef} resolves actual independently validated native Decision, never producer supplied answers. Unified routing envelope refers to either observation or Decision; authorityClass remains distinct. JEV failures route exclusively to BB-157 LOOKBACK; no feedback observation grants reflection acceptance or allSAT."
+    "authorityClasses": "Deterministic observation proves its declared executable check only. SEMANTIC_DECISION_REF_V1={decisionRef,workId,workGeneration,attemptRef,candidateVersionRef,evidenceVersionRef} resolves actual independently validated native Decision, never producer supplied answers. Unified routing envelope refers to either observation or Decision; authorityClass remains distinct. JEV failures route exclusively to BB-157 LOOKBACK; no feedback observation grants reflection acceptance or allSAT.",
+    "executionFacts": "resolvedExecutionFacts pins runtime/toolchain/OS profile and all declared input hashes from installed registry. Both executors probe facts before spawn; mismatch is INCONCLUSIVE/VERIFIER, no PASS. Cross-adapter equivalence requires identical facts; transport cannot silently substitute environment. Unknown input invalidates all."
   },
   "loopContract": {
     "progressiveExecution": "Stable id-tiebreak topological DAG, concurrency=1, deterministic registered checks only. Local executeVerificationRequest invokes executeRegisteredCheck then awaits native onProgress CAS. Hosted controller dispatches ONE check/ordinal, imports uploaded observation via native CAS before next dispatch. Product failure cancels dependents before spawn; independent diagnostics retained. All retries remain explicit executions. Cancellation reaps process tree; missing hosted callback becomes UNAVAILABLE by canonical timeout. Lost lease/sink stops launch; JEV is subsequent independent native guarded dispatch.",
@@ -531,7 +575,8 @@
   "adapterContract": {
     "githubAdapter": "Controller validates and CAS-registers request/bundleHash before dispatch. Config={repository,workflowId,trustedWorkflowRef,expectedWorkflowSha,controllerDigest,githubTokenFile:absolute,clientConfig:absolute}. Eight inputs={requestId,requestHash,checkId,ordinal,bundleBase64,bundleHash,candidateSha,controllerSha}; canonical bundle={request,resolvedExecutionFacts,inlineInputs} has no credentials/live-service pointers. Bound raw bytes32768, total inputs65535; strict IDs<=64chars. Required non-Git inputs inline and hashed; oversized/missing blob rejects hosted before reservation, local profile remains valid. Workflow passes inputs through env, never shell interpolation; trusted decoder checks size/base64/JSON/hash/schema, exact check/ordinal and checkout SHA/tree. One execution then separate always upload-artifact@v4 writes immutable hashed full result/log closure. Reserve tuple before API; lost reply correlates tuple run-name, never blind redispatch. Controller polls registered artifacts, validates workflow pin/tuple/provenance/full blobs and current native subject before CAS append; then schedule allowed next check/retry. Base RENEW_LEASE maintains current owner; lease/pin/upload loss stops dispatch. Duplicate exact body idempotent, conflict rejects. Missing callback UNAVAILABLE only by canonical timeout. GH conclusions never Work authority. Mandatory passes then BB-157 native reservation invokes installed independent judge role/provider; no hosted judge or provider secret. Local uses same check function and native sink, no SDK/SQL/phase/BB-156 dependency.",
     "legacyCompatibility": "LEGACY unchanged; explicit V2 request never discovers/creates Work from PR or writes graph. BB-156 owns selector/migration, no dual-write.",
-    "dependencies": "Worker pins actual delivered BB-155/157 controller identity, schema and exports. Mismatch returns research. READY plans on baseline are sufficient research design evidence, not runtime delivery."
+    "dependencies": "Worker pins actual delivered BB-155/157 controller identity, schema and exports. Mismatch returns research. READY plans on baseline are sufficient research design evidence, not runtime delivery.",
+    "publicApi": "dispatchVerificationCheck({config,request,checkId,ordinal,bundle,client,snapshot,attemptToken})->dispatchRef after native reservation; collectVerificationCheck({config,dispatchRef,request,client,snapshot,blobStore,attemptToken})->validated observation or pending/unavailable; acceptVerificationCallback({request,dispatchRef,artifact,provenance,resolved})->observation; projectGitHubStatus({run,observations})->display only. Controller collect uses publishVerificationRun; no runner publishes native state."
   },
   "benchmarkContract": {
     "command": "node scripts/agent-native-ci/benchmark.mjs --seed 158 --pairs 20 --out artifacts/agent-native-ci/benchmark.json",
@@ -576,20 +621,6 @@
         "scripts/blackboard-delivery.mjs",
         "scripts/blackboard-jev.mjs"
       ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/blackboard/evidence/BB-158/ci-surface-audit.json",
-          "match": "\"coverageMethod\":"
-        },
-        {
-          "ref": "packages/agentic-system/src/supervised-backend.js",
-          "match": "Re-ground the accepted commit in an isolated worktree"
-        },
-        {
-          "ref": "scripts/blackboard-delivery.mjs",
-          "match": "export function verifyDelivery"
-        }
-      ],
       "supportingPlanFields": [
         "auditEvidence"
       ]
@@ -614,12 +645,6 @@
       ],
       "sourceRefs": [
         "packages/agentic-system/src/local-command-verifier.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/local-command-verifier.js",
-          "match": "export const LocalVerificationReason"
-        }
       ],
       "supportingPlanFields": [
         "bindingContract"
@@ -649,12 +674,6 @@
       "sourceRefs": [
         "scripts/blackboard-jev.mjs"
       ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-jev.mjs",
-          "match": "export async function callJev"
-        }
-      ],
       "supportingPlanFields": [
         "loopContract"
       ]
@@ -679,12 +698,6 @@
       "sourceRefs": [
         "scripts/blackboard-delivery.mjs"
       ],
-      "sourceAnchors": [
-        {
-          "ref": "scripts/blackboard-delivery.mjs",
-          "match": "export function collectEvidence"
-        }
-      ],
       "supportingPlanFields": [
         "failureContract"
       ]
@@ -707,12 +720,6 @@
       ],
       "sourceRefs": [
         ".github/workflows/test.yml"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": ".github/workflows/test.yml",
-          "match": "merge-gate:"
-        }
       ],
       "supportingPlanFields": [
         "adapterContract"
@@ -738,12 +745,6 @@
       ],
       "sourceRefs": [
         "package.json"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "package.json",
-          "match": "\"verify\":"
-        }
       ],
       "supportingPlanFields": [
         "benchmarkContract",
