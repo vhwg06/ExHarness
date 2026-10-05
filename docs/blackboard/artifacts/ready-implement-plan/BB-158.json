@@ -225,6 +225,40 @@
       "evidenceRequired": [
         "20 paired samples/scenario, all raw outcomes, zero false ready/stale effects, protocol latency/count gates with honest limits."
       ]
+    },
+    {
+      "id": "RETRY_PROGRESS",
+      "statement": "Every repeated check requires its failure-specific bound or trusted semantic delta over the exact failed baseline; metadata, request-id and ownership churn never reset eligibility.",
+      "verificationIds": [
+        "focused",
+        "base",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "N3 infra<=3/flake<=1 then HOLD, preserved history across new request/takeover. N4 same-tree/comment/timing/id churn has zero dispatch; changed trusted syntax is positive. Native failed JEV also requires actual reflection/material reservation."
+      ]
+    },
+    {
+      "id": "OUTCOME_ACCOUNTING",
+      "statement": "Cancelled and partial runs preserve complete disjoint truthful accounting and cannot be accepted as complete passing coverage.",
+      "verificationIds": [
+        "focused",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "N5 publishVerificationRun: completed/cancelled/unavailable/partial/pending sets exhaust planned ids; retain all attempts/conflicts/full evidence and reap cancellation, no dependent spawn. Missing callback/log blocks judgment."
+      ]
+    },
+    {
+      "id": "EXECUTOR_EQUIVALENCE",
+      "statement": "Local and hosted executors implement the same canonical semantic contract for identical trusted execution inputs and environment.",
+      "verificationIds": [
+        "focused",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Separate local/hosted equivalence test invokes executeRegisteredCheck/acceptVerificationCallback/validateRun: equal subject/input/verifier/outcome/accounting; runtime ids/timings/raw logs/transport may differ. Forged provenance or environment mismatch rejects."
+      ]
     }
   ],
   "verificationPlan": [
@@ -239,7 +273,10 @@
         "SELECTIVE_VERIFICATION",
         "ADAPTER_BOUNDARY",
         "JEV_BOUNDARY",
-        "BENCHMARK"
+        "BENCHMARK",
+        "RETRY_PROGRESS",
+        "OUTCOME_ACCOUNTING",
+        "EXECUTOR_EQUIVALENCE"
       ],
       "mustPass": "Actual exports: all N1-N7 titles, zero skips; every invariant positive/rejection, distinct local/hosted equivalence, native publication and hosted bounds.",
       "requiredOutputs": "Candidate log/hash/exit0; extracted negative bodies, criterion observations and zero-effect assertions."
@@ -250,7 +287,8 @@
       "criterionIds": [
         "AGENT_CONTROL_LOOP",
         "ADAPTER_BOUNDARY",
-        "JEV_BOUNDARY"
+        "JEV_BOUNDARY",
+        "RETRY_PROGRESS"
       ],
       "mustPass": "Delivered control/supervision suites, zero skips; preserve native guards, independent grammar, LOOKBACK/reflection/material/repetition and receipts.",
       "requiredOutputs": "Candidate log/hash/exit0 and delivered controller/profile pins."
@@ -275,7 +313,10 @@
         "SELECTIVE_VERIFICATION",
         "ADAPTER_BOUNDARY",
         "JEV_BOUNDARY",
-        "BENCHMARK"
+        "BENCHMARK",
+        "RETRY_PROGRESS",
+        "OUTCOME_ACCOUNTING",
+        "EXECUTOR_EQUIVALENCE"
       ],
       "mustPass": "Fresh full npm verify exit0; no reuse/skips. Existing failures require authorized resolution before delivery.",
       "requiredOutputs": "Candidate full log/hash/exit0 and declared Living diff."
@@ -290,7 +331,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "projectGitHubStatus: green/skip/head/body changes leave native Decision/actions unchanged."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in ADAPTER_BOUNDARY evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Immutable observations bind exact current generation/Attempt/candidate/evidence; stale is non-authoritative.",
@@ -300,7 +341,7 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "acceptVerificationObservation/publishVerificationRun: each stale ref/hash rejects with zero Work effect; exact positive immutable."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in CANONICAL_FEEDBACK_CONTRACT evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Product/verifier/infra/flake/cancelled/insufficient remain distinct.",
@@ -310,41 +351,38 @@
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "executeVerificationRequest: all classes distinct; unknown timeout/nonzero not product/flake."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in FAILURE_TAXONOMY evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Retries need allowed bound or material delta; prose/control churn cannot unlock product/JEV.",
       "criterionIds": [
-        "AGENT_CONTROL_LOOP",
-        "JEV_BOUNDARY"
+        "RETRY_PROGRESS"
       ],
       "verificationIds": [
         "focused",
         "base"
       ],
-      "requiredObservations": "deriveVerificationAction: N3 infra<=3/flake<=1 then HOLD and takeover does not reset budget; N4 deterministic failed-input baseline rejects same tree/comment/timing/id churn, accepts changed trusted syntax. Native failed JEV additionally requires actual BB-157 reflection/material reservation."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in RETRY_PROGRESS evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Early cancellation preserves truthful partial execution/evidence.",
       "criterionIds": [
-        "AGENT_CONTROL_LOOP",
-        "FAILURE_TAXONOMY"
+        "OUTCOME_ACCOUNTING"
       ],
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "executeVerificationRequest: cancelled/lost-upload partitions complete, full logs, dependent not spawned."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in OUTCOME_ACCOUNTING evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Local/CI use the same canonical contract.",
       "criterionIds": [
-        "CANONICAL_FEEDBACK_CONTRACT",
-        "ADAPTER_BOUNDARY"
+        "EXECUTOR_EQUIVALENCE"
       ],
       "verificationIds": [
         "focused"
       ],
-      "requiredObservations": "Separate local/hosted equivalence test calls executeRegisteredCheck plus callback validator on identical pinned execution facts: semantic subject/input/verifier/outcome/accounting equal; transport/id/timing differ. Forged provenance or environment mismatch rejects."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in EXECUTOR_EQUIVALENCE evidenceRequired, with zero skipped observations."
     },
     {
       "invariant": "Independent JEV consumes canonical subject/evidence, never GitHub status.",
@@ -355,7 +393,7 @@
         "focused",
         "base"
       ],
-      "requiredObservations": "buildJevInput/native LOOKBACK: grammar exact, empty source scope, reflection/material guard, actor pass no allSAT."
+      "requiredObservations": "Actual bound exports execute each positive/rejection assertion in JEV_BOUNDARY evidenceRequired, with zero skipped observations."
     }
   ],
   "negativeVerificationCases": [
@@ -453,9 +491,8 @@
       },
       "hostedApi": "dispatchVerificationCheck({config,request,checkId,ordinal,bundle,client,snapshot,attemptToken})->dispatchRef after native reservation; collectVerificationCheck({config,dispatchRef,request,client,snapshot,blobStore,attemptToken})->validated observation or pending/unavailable; acceptVerificationCallback({request,dispatchRef,artifact,provenance,resolved})->observation; projectGitHubStatus({run,observations})->display only. Controller collect uses publishVerificationRun; no runner publishes native state.",
       "publication": "executeRegisteredCheck({request,checkId,ordinal,checkout,blobStore,signal})->{observation,blobRefs}; argv process, no service credentials. executeVerificationRequest({request,checkout,blobStore,onProgress,signal})->{run,observations,blobRefs} is local sequential wrapper, awaiting sink. publishVerificationRun({client,snapshot,request,run,observations,blobStore,attemptToken}) validates full hash closure and appends ordinary EvidenceVersion through existing PUBLISH_EVIDENCE CAS/current gen/Attempt/lease/fence. Hosted controller builds the same run from imported one-check bundles. Parallel append rereads same subject, immutable union/revalidates/new CAS; conflicting id/body rejects. Stale artifacts remain external diagnostics, no Work effect/new SQL.",
-      "admission": "Freshness first: stale->diagnostic discard; missing/partial->acquire/reconcile; product->diagnose/repair; verifier->fix authorized verifier or reopen research; infra->bounded retry (<=3 executions), flake->one confirmation then HOLD. These are advisory execution verbs, NOT native action ids. Collect/retry requires current live owner, executable phase and legal PUBLISH_EVIDENCE; product repair also legal PUBLISH_CANDIDATE and exact plan scope. LOOKBACK never executes checks/provider/source repair: read failure, publish exact reflection via BB-157. Fresh complete mandatory passes suggest native REQUEST_CANDIDATE_JUDGMENT only with actual nextActions/CAS/material guard/reservation. Genuine allSAT -> merge verification/receipt. Takeover preserves retry/material baseline; same request replay idempotent.",
-      "productRetry": "Before repeating product-failed check, resolve exact failed observation/input baseline from immutable run history for same generation/spec/plan/check/profile. computeMaterialInputProjection uses controller-owned BB-157 parser profiles and existing locked parsers. Require new candidate tree AND changed trusted semantic inputs; unsupported/missing facts block. No fabricated Decision/reflection: actual failed JEV still uses native BB-157. Persist retry history across ownership takeover; check current owner/fence/phase before publication. N4 covers comments/timing/id churn and positive syntax change.",
-      "executionFacts": "resolvedExecutionFacts pins runtime/toolchain/OS profile and all declared input hashes from installed registry. Both executors probe facts before spawn; mismatch is INCONCLUSIVE/VERIFIER, no PASS. Cross-adapter equivalence requires identical facts; transport cannot silently substitute environment. Unknown input invalidates all."
+      "executionFacts": "resolvedExecutionFacts pins runtime/toolchain/OS profile and all declared input hashes from installed registry. Both executors probe facts before spawn; mismatch is INCONCLUSIVE/VERIFIER, no PASS. Cross-adapter equivalence requires identical facts; transport cannot silently substitute environment. Unknown input invalidates all.",
+      "eligibility": "PUBLISH_EVIDENCE requires current owner/executable phase; repair also legal PUBLISH_CANDIDATE/exact scope. LOOKBACK only reflects, no checks/provider. Native REQUEST_CANDIDATE_JUDGMENT repeats CAS/material/reservation; RETRY_PROGRESS binds eligibility to exact immutable failure history."
     }
   },
   "auditEvidence": {
@@ -774,12 +811,7 @@
       "supportingPlanFields": [
         "benchmarkContract"
       ],
-      "sourceAnchors": [
-        {
-          "ref": "package.json",
-          "match": "\"verify\":"
-        }
-      ]
+      "sourceAnchors": []
     }
   ],
   "feedbackApi": {
