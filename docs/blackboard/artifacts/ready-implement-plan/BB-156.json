@@ -125,9 +125,9 @@
     "S0b — after S0a, declared bootstrap/context/graph/state/delivery/JEV public scripts and test.yml/blackboard-jev.yml: implement currentSessionBlueprint. LEGACY before flip; V2 native service; retired raw current APIs deny before I/O; explicit frozen-SHA historical reads. Test every route with contradictory cwd and zero legacy writes/fallback. Own CUTOVER.",
     "S0c — AGENTS/package/declared Blackboard docs: activation-conditional startup requires pinned config/explicit Work id; prepared docs treat state as display. No postapproval code edit. Own CUTOVER.",
     "S1 — after S0, main-freeze.mjs/migrate-legacy.mjs: GithubMainFreeze.acquire/release and buildMigrationManifest(snapshotSha,archive,freezeReceipt,capabilities). Implement snapshotContract and manifestBlueprint; exact source closure/partition after writable-main quiesce then held barrier/lock. N1/full-id/race tests. Own MANIFEST/TERMINAL_EXCLUSION.",
-    "S2 — after S1, migrate-legacy/work-resource/trust-adapter/lifecycle/context-builder: transformLegacyWork and resolveImportedAuthority implement transformBlueprint/importAuthorityContract. Strict gen1 Work/templates and original typed authority; native nonSAT priority, purpose guards under CAS, external DONE Living. N2 rejects each stale/forged binding. Own SEMANTICS/TERMINAL_EXCLUSION.",
-    "S3 — after S2, migrate-legacy/control-store: assertMigrationParity and private readMigrationSnapshot(tx,id) implement parityBlueprint. Independently validate legacy guards versus actual same-handle native nextActions/buildContext; exhaustive report, last-id corruption abort. Own PARITY.",
-    "S4 — after S3, control-store: commitMigration(cutoverBlueprint.commit) stages all rows/proofs/real claims/selector, executes S3, rechecks leases and commits report/receipt/allocator atomically. N3 two SQLite peers, every fault/crash/restart/lost reply. Own CUTOVER/PARITY.",
+    "S2 — after S1, migrate-legacy/work-resource/trust-adapter/lifecycle/context-builder: transformLegacyWork and resolveImportedAuthority implement publicMigrationApi and transformBlueprint/importAuthorityContract. Strict gen1 Work/templates and original typed authority; native nonSAT priority, purpose guards under CAS, external DONE Living. N2 rejects each stale/forged binding. Own SEMANTICS/TERMINAL_EXCLUSION.",
+    "S3 — after S2, migrate-legacy/control-store: assertMigrationParity and private readMigrationSnapshot(tx,id) implement publicMigrationApi and parityBlueprint. Independently validate legacy guards versus actual same-handle native nextActions/buildContext; exhaustive report, last-id corruption abort. Own PARITY.",
+    "S4 — after S3, control-store: commitMigration(publicMigrationApi), per cutoverBlueprint.commit stages all rows/proofs/real claims/selector, executes S3, rechecks leases and commits report/receipt/allocator atomically. N3 two SQLite peers, every fault/crash/restart/lost reply. Own CUTOVER/PARITY.",
     "S5 — after S0-S4, test/blackboard-v2-migration.test.mjs: actual N1-N3 exports and all invariantCoverage observations; run focused, supervision-regression and repository commands with zero skips. Preserve exact candidate evidence for independent correctness. Fixture cutover is not live delivery. Own all criteria.",
     "S6 — after S5 genuine correctness/normal code merge/pinned install, operator bb migrate --config ABS --manifest ABS_JSON: perform S0 upgrade, fresh held S1/S2 preparation and S4; all-id service/public/raw postchecks before unlock. Actual cutover/main/equal-tree/Living proofs alone deliver imported MERGE_PENDING BB-156; failure holds maintenance. Own CUTOVER/TERMINAL_EXCLUSION."
   ],
@@ -340,24 +340,12 @@
     "phaseMapRef": "state.plan.parityBlueprint.phaseRows"
   },
   "parityContract": {
-    "legacyOracle": "parityBlueprint.legacyDerivation and actionEquivalence are authoritative: shipped independent source validators, semantic guards and current/prospective scopes, never scheduler-only authority.",
-    "v2Oracle": "parityBlueprint.algorithmSteps: actual native snapshots on the same SQL handle, pure nextActions/buildContext; no template flags, HTTP or predicted clocks.",
-    "outputs": "parityBlueprint.reportSchema; full exact id set, zero semantic diffs, report stored atomically.",
-    "supervision": "Delivered BB-155+BB-157 required; unreflected legacy repair aborts. Canonical directdep155; operational order155->157->156."
+    "ref": "parityBlueprint; shipped legacy validators vs same-handle native pure functions, full guard/scope/action equivalence; BB-155+157 delivered; whole abort on incompatible repair."
   },
   "researchSummary": {
     "classification": "EXECUTED_RESEARCH_MODEL_NOT_MIGRATION",
     "snapshotSha": "d795bca0e1865685d6b11b66de12224691446897",
-    "graphHash": "0887ea0f2bbf3a09b3c5ccca2a08b7d4b8554d61fd3a2874b31ac9508c654675",
-    "counts": {
-      "included": 46,
-      "excludedDone": 43,
-      "excludedWithdrawn": 7
-    },
-    "manifestHash": "34ed77b29f87f77926a8df88a241e0325406a0e54d5ad73513cbab24f3205445",
-    "observed": "33 prototype checks/0skip and full46-id historical model parity; injected insert failure rolls back rows+selector and restart preserves successful selector. Scratch model only; native controller parity/live cutover remain future Worker acceptance.",
-    "trustedReadiness": "Historical validators accepted22 unfinished Worker readiness plans and BB-120 candidate. BB-085/123 unused EXECUTION candidate artifacts are stale diagnostics, never current authority.",
-    "limits": "Snapshot is historical calibration; concurrent main work may finish before execution. Worker recomputes a fresh locked set. No real Git main lock, remote transport deploy, migration or authority cutover was performed."
+    "observed": "Historical33 scratch checks,46 included ids/43 DONE/7 withdrawn; actual legacy validators accepted22 readiness plans and BB-120 candidate. Full reports/replay are hash-bound in researchReproduction. Not current native parity, source lock, cutover or delivery; Worker captures a fresh held snapshot."
   },
   "researchReproduction": {
     "classification": "EXECUTED_RESEARCH_MODEL_NOT_DELIVERY",
@@ -646,5 +634,13 @@
     "nativeAcceptance": "Store resolves importAuthorityRef into purpose facts: readiness binds gen/spec/plan; candidate binds accepted versions/SHA/tree. Matching native purpose Decision prevails even nonSAT. Lifecycle/context consume store facts; CAS apply revalidates. Original typed input/eval/cache unchanged; receipt binds report, import proof does not.",
     "doneBinding": "Precontract DONE: LIVING_CONSOLIDATION_V1={snapshotSha,taskHash,state:DONE,consolidatedRefs/hashes}; prove pinned trusted DONE + Living hashes, no terminal Work/fabricated receipt. Contracted DONE: actual valid receipt+Living required. Native LIVING consumes stored proof; invalid contract/missing Living aborts, no fallback.",
     "upgrade": "Offline free installMigrationProfile({serverConfigFile,operatorTokenFile,expectedAuthorityId,expectedControllerDigest,expectedSchemaVersion,expectedAuthorityRevision,newControllerDigest}): pinned absolute DB/auth config, operator auth, direct SQLite open (not normal new-controller reopen). BEGIN IMMEDIATE validates old pins, samples store clock/regression and zero live claims, validates all old rows; additive MIGRATION_PROFILE_V1 only. Preserve Work/records/fences/lease records/selector; persist sampled lastCommittedTime with profile metadata to prevent expired lease resurrection. Fault ROLLBACK all. Normal reopen requires new pins; actual upgrade follows accepted main code."
+  },
+  "publicMigrationApi": {
+    "buildMigrationManifest": "({snapshotSha,archive,freezeReceipt,capabilities})->Manifest; closure/partition failure throws before rows.",
+    "transformLegacyWork": "(entry,{manifest,archive,capabilities})->{workTemplate,recordTemplates,importProofs}; strict native schemas or abort.",
+    "resolveImportedAuthority": "(snapshot,purpose:READINESS|CANDIDATE)->validated purpose facts; native same-purpose Decision prevails.",
+    "assertMigrationParity": "({manifest,archive,nativeSnapshots,capabilities})->Report; exact checked set and zero semantic diff or throw.",
+    "commitMigration": "({expectedAuthorityRevision,manifest,templates,archive,freezeReceipt,destinationSetHash})->CutoverReceipt; operator only, same SQL handle/parity and atomic commit.",
+    "readMigrationSnapshot": "(tx,id)->resolved native snapshot; private to cutover, reads actual staged Work/records/proofs/Living, no second connection."
   }
 }
